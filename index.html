@@ -300,11 +300,12 @@
                             ))}
                         </div>
 
-                        <div className="hidden md:flex items-center gap-3">
-                            <button onClick={() => window.installPWA && window.installPWA()} className="text-sm font-semibold text-ink2 hover:text-peso transition-colors px-2 flex items-center gap-1.5">
+                        <div className="hidden md:flex items-center gap-5">
+                            <button onClick={() => window.installPWA && window.installPWA()} className="text-sm font-semibold text-ink2 hover:text-peso transition-colors flex items-center gap-1.5">
                                 <Icons.Download size={15} /> Install PWA
                             </button>
-                            <Button as="a" href="#hero" variant="peso" className="!py-2.5 !px-5 text-sm">Open Web App</Button>
+                            <a href="login.html" className="text-sm font-semibold text-ink2 hover:text-peso transition-colors">Log In</a>
+                            <Button as="a" href="signup.html" variant="peso" className="!py-2.5 !px-5 text-sm">Sign Up</Button>
                         </div>
 
                         <button aria-label="Toggle menu" onClick={() => setMenuOpen(v => !v)} className="md:hidden w-9 h-9 flex items-center justify-center text-ink">
@@ -317,7 +318,8 @@
                             {links.map(l => (
                                 <a key={l.href} href={l.href} onClick={() => setMenuOpen(false)} className="text-sm font-medium text-ink2">{l.label}</a>
                             ))}
-                            <Button as="a" href="#hero" variant="peso" className="!py-2.5 text-sm mt-1" onClick={() => setMenuOpen(false)}>Open Web App</Button>
+                            <a href="login.html" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-ink2">Log In</a>
+                            <Button as="a" href="signup.html" variant="peso" className="!py-2.5 text-sm mt-1" onClick={() => setMenuOpen(false)}>Sign Up</Button>
                         </div>
                     </div>
                 </nav>
@@ -440,8 +442,8 @@
                                 Tipid is an expense tracker built for how Filipinos actually spend — jeep fare, load, ulam money, and all. Log it in seconds. See exactly where it went.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3.5">
-                                <Button as="a" href="#features" variant="primary" icon={Icons.ArrowRight}>See how it works</Button>
-                                <Button onClick={() => window.installPWA && window.installPWA()} variant="outline" icon={Icons.Download}>Install PWA</Button>
+                                <Button as="a" href="signup.html" variant="primary" icon={Icons.ArrowRight}>Simulan Ngayon</Button>
+                                <Button as="a" href="login.html" variant="outline">Mag-log In</Button>
                             </div>
                             <p className="text-xs text-ink2/60 mt-5 font-mono">No card needed · Works offline · ₱0 to start</p>
                         </div>
@@ -710,8 +712,8 @@
                             </h2>
                             <p className="text-white/65 text-lg mb-9">Free to start. Works offline. Takes less time than counting your baon.</p>
                             <div className="flex flex-col sm:flex-row gap-3.5 justify-center">
-                                <Button as="a" href="#hero" variant="paper" icon={Icons.ArrowRight} className="!px-9">Start Tracking Free</Button>
-                                <Button onClick={() => window.installPWA && window.installPWA()} variant="outlineDark" icon={Icons.Download} className="!px-9">Install PWA</Button>
+                                <Button as="a" href="signup.html" variant="paper" icon={Icons.ArrowRight} className="!px-9">Start Tracking Free</Button>
+                                <Button as="a" href="login.html" variant="outlineDark" className="!px-9">Mag-log In</Button>
                             </div>
                         </div>
                     </Reveal>

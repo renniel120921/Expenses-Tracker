@@ -1,4 +1,7 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+// Use CDN links instead of bare imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB0cmCEgR09ZmY_v2RMXnhnW72ttSYIVlM",
@@ -10,5 +13,9 @@ const firebaseConfig = {
   measurementId: "G-XEPDS0FG10"
 };
 
-
+// Initialize Firebase
 export const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+// Export Firestore to use it in your React component later
+export const db = getFirestore(app);
