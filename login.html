@@ -35,9 +35,12 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Firebase -->
-    <script type="module" src="/assets/firebase-config.js"></script>
-    <script type="module" src="/assets/firebase-auth.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Firebase (root-level files, matches the rest of the project) -->
+    <script type="module" src="/firebase-config.js"></script>
+    <script type="module" src="/firebase-auth.js"></script>
 
     <style>
         html { background: #F1F4EF; }
@@ -75,6 +78,12 @@
         .panel.open { grid-template-rows: 1fr; }
         .panel > div { overflow: hidden; }
         @media (prefers-reduced-motion: reduce) { .spin, .shake, .fade-up { animation: none !important; } }
+
+        /* SweetAlert2 brand skin */
+        .swal2-popup.tipid-swal { border-radius: 20px !important; font-family: 'Inter', sans-serif; }
+        .tipid-swal .swal2-title { font-family: 'Fraunces', serif; color: #15231C; }
+        .tipid-swal .swal2-html-container { color: #33443A; }
+        .tipid-swal .swal2-confirm { border-radius: 999px !important; padding: 0.65em 1.6em !important; font-weight: 600 !important; box-shadow: none !important; }
     </style>
 </head>
 <body class="bg-paper text-ink antialiased font-body min-h-screen">
@@ -130,13 +139,45 @@
 
         function useAuthReady() {
             const [ready, setReady] = useState(!!window.TipidAuth);
+            const [timedOut, setTimedOut] = useState(false);
             useEffect(() => {
                 if (window.TipidAuth) { setReady(true); return; }
                 const h = () => setReady(true);
                 window.addEventListener("tipid-auth-ready", h, { once: true });
-                return () => window.removeEventListener("tipid-auth-ready", h);
+                // If auth still hasn't announced itself after a few seconds
+                // (bad import path, blocked script, offline, etc.) surface
+                // that instead of leaving the button silently disabled.
+                const t = setTimeout(() => setTimedOut(true), 6000);
+                return () => {
+                    window.removeEventListener("tipid-auth-ready", h);
+                    clearTimeout(t);
+                };
             }, []);
-            return ready;
+            return { ready, timedOut };
+        }
+
+        // Brand-styled SweetAlert helpers
+        function swalSuccess({ title, text, confirmButtonText }) {
+            return Swal.fire({
+                icon: "success",
+                title, text, confirmButtonText,
+                confirmButtonColor: "#1F6F54",
+                background: "#F1F4EF",
+                color: "#15231C",
+                customClass: { popup: "tipid-swal" },
+            });
+        }
+        function swalError(text) {
+            return Swal.fire({
+                icon: "error",
+                title: "Hindi Matagumpay",
+                text,
+                confirmButtonText: "Sige",
+                confirmButtonColor: "#B5483B",
+                background: "#F1F4EF",
+                color: "#15231C",
+                customClass: { popup: "tipid-swal" },
+            });
         }
 
         function Field({ icon: IconCmp, error, children }) {
@@ -244,7 +285,7 @@
                     setStatus("sent");
                 } catch (err) {
                     setStatus("error");
-                    setMsg(window.TipidAuth.friendlyError(err));
+                    setMsg(window.TipidAuth.friendlyError(err.code));
                 }
             };
 
@@ -286,7 +327,7 @@
         }
 
         function LogIn() {
-            const authReady = useAuthReady();
+            const { ready: authReady, timedOut } = useAuthReady();
             const [email, setEmail] = useState("");
             const [password, setPassword] = useState("");
             const [showPw, setShowPw] = useState(false);
@@ -312,11 +353,16 @@
                 setLoading(true);
                 try {
                     await window.TipidAuth.logIn(email.trim(), password);
+                    setLoading(false);
+                    await swalSuccess({
+                        title: "Balik ka na!",
+                        text: "Matagumpay kang naka-log in. Papasok ka na sa dashboard mo.",
+                        confirmButtonText: "Sige",
+                    });
                     window.location.href = "dashboard.html";
                 } catch (err) {
-                    fail(window.TipidAuth.friendlyError(err));
-                } finally {
                     setLoading(false);
+                    swalError(window.TipidAuth.friendlyError(err.code));
                 }
             };
 
@@ -324,11 +370,16 @@
                 setError(""); setLoading(true);
                 try {
                     await window.TipidAuth.loginWithGoogle();
+                    setLoading(false);
+                    await swalSuccess({
+                        title: "Balik ka na!",
+                        text: "Naka-log in ka gamit ang Google. Papasok ka na sa dashboard mo.",
+                        confirmButtonText: "Sige",
+                    });
                     window.location.href = "dashboard.html";
                 } catch (err) {
-                    fail(window.TipidAuth.friendlyError(err));
-                } finally {
                     setLoading(false);
+                    swalError(window.TipidAuth.friendlyError(err.code));
                 }
             };
 
@@ -356,6 +407,13 @@
                                     <h1 className="font-display text-3xl font-semibold text-ink tracking-tight">Mag-log in</h1>
                                     <p className="text-ink2 text-sm mt-2">Masaya kaming makita kang muli.</p>
                                 </div>
+
+                                {timedOut && !authReady && (
+                                    <div className="mb-5 flex items-start gap-2 bg-expense/10 text-expense text-sm rounded-xl px-3.5 py-3">
+                                        <Icons.AlertCircle size={16} className="shrink-0 mt-0.5" />
+                                        <span>Hindi ma-connect sa auth system. Paki-refresh ang page o subukan ulit mamaya.</span>
+                                    </div>
+                                )}
 
                                 <button onClick={handleGoogle} disabled={loading || !authReady} type="button"
                                     className="w-full flex items-center justify-center gap-2.5 border border-line hover:border-ink/30 hover:bg-paperDim/50 rounded-xl py-3 text-sm font-semibold text-ink transition-colors disabled:opacity-50">

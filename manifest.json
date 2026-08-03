@@ -1,21 +1,26 @@
 {
   "name": "Tipid Expense Tracker",
   "short_name": "Tipid",
+  "description": "Simple, tapat, at laging malinaw na paraan para subaybayan ang gastos mo.",
+  "id": "/",
   "start_url": "/index.html",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#f3f4f6",
-  "theme_color": "#3b82f6",
   "orientation": "portrait",
+  "lang": "fil",
+  "background_color": "#F1F4EF",
+  "theme_color": "#123D2E",
+  "categories": ["finance", "productivity"],
   "icons": [
     {
-      "src": "/icon-192x192.png",
-      "sizes": "192x192",
+      "src": "/assets/logo-512.png",
+      "sizes": "512x512",
       "type": "image/png"
     },
     {
-      "src": "/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "/assets/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
     }
   ]
 }
