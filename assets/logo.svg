@@ -1,0 +1,27 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tipid logo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1C2E23"/>
+      <stop offset="100%" stop-color="#0F1913"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Badge -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="1" y="1" width="510" height="510" rx="111" fill="none" stroke="#2B3F33" stroke-width="2"/>
+
+  <!-- Peso mark, monoline, matching the site's icon language -->
+  <g transform="translate(148,120)" fill="none" stroke="#F1F4EF" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+    <!-- stem -->
+    <line x1="52" y1="0" x2="52" y2="272"/>
+    <!-- bowl of the P -->
+    <path d="M52 0 H128 a62 62 0 0 1 0 124 H52"/>
+    <!-- double crossbar, extending left of the stem, per the peso sign -->
+    <line x1="0" y1="96" x2="150" y2="96"/>
+    <line x1="0" y1="150" x2="150" y2="150"/>
+  </g>
+
+  <!-- Ledger-tick signature -->
+  <line x1="148" y1="404" x2="290" y2="404" stroke="#C9932E" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="326" cy="404" r="7" fill="#C9932E"/>
+</svg>

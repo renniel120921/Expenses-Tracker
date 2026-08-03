@@ -1,0 +1,278 @@
+// firebase-auth.js
+// Wraps Firebase Authentication and exposes it as window.TipidAuth so the
+// non-module React pages (signup.html, login.html, dashboard.html) can call it directly.
+import { app } from "./firebase-config.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged,
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+
+// ---------------------------------------------------------------------------
+// Rate limiting
+// ---------------------------------------------------------------------------
+// IMPORTANT: this is a client-side throttle, not a real security boundary.
+// Anyone can bypass it by clearing localStorage or opening a private window,
+// so it does not stop a determined/scripted attacker — that protection has
+// to live server-side (Firebase already enforces its own quota, surfaced as
+// "auth/too-many-requests"; for anything stronger, add Firebase App Check
+// and/or move sign-up/login through a Cloud Function you control). What this
+// DOES do: slow down casual abuse from a single browser and give honest
+// users clear feedback instead of a silent retry loop.
+
+const RATE_LIMITS = {
+  login: { maxAttempts: 5, windowMs: 5 * 60 * 1000, baseLockMs: 30 * 1000 },
+  signUp: { maxAttempts: 5, windowMs: 15 * 60 * 1000, baseLockMs: 60 * 1000 },
+  resetPassword: { maxAttempts: 3, windowMs: 10 * 60 * 1000, baseLockMs: 60 * 1000 },
+};
+const MAX_LOCK_MS = 15 * 60 * 1000;
+
+class RateLimitError extends Error {
+  constructor(secondsLeft) {
+    super("rate-limited");
+    this.code = "app/rate-limited";
+    this.secondsLeft = secondsLeft;
+  }
+}
+
+function rlKey(action, ident) {
+  return `tipid_rl_${action}_${ident}`;
+}
+
+function readRecord(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeRecord(key, data) {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch {
+    // Storage unavailable (private mode, quota exceeded, etc.) — fail open
+    // rather than lock a real user out because of it.
+  }
+}
+
+// Throws RateLimitError if this action/identity is currently locked out.
+function checkRateLimit(action, ident) {
+  const cfg = RATE_LIMITS[action];
+  const key = rlKey(action, ident);
+  const now = Date.now();
+  const rec = readRecord(key);
+  if (!rec) return;
+
+  if (rec.lockUntil && now < rec.lockUntil) {
+    throw new RateLimitError(Math.ceil((rec.lockUntil - now) / 1000));
+  }
+  if (now - rec.windowStart > cfg.windowMs) {
+    writeRecord(key, { count: 0, windowStart: now, lockUntil: 0, strikes: rec.strikes || 0 });
+  }
+}
+
+function recordFailure(action, ident) {
+  const cfg = RATE_LIMITS[action];
+  const key = rlKey(action, ident);
+  const now = Date.now();
+  const rec = readRecord(key) || { count: 0, windowStart: now, lockUntil: 0, strikes: 0 };
+
+  if (now - rec.windowStart > cfg.windowMs) {
+    rec.count = 0;
+    rec.windowStart = now;
+  }
+  rec.count += 1;
+
+  if (rec.count >= cfg.maxAttempts) {
+    rec.strikes = (rec.strikes || 0) + 1;
+    rec.lockUntil = now + Math.min(cfg.baseLockMs * 2 ** (rec.strikes - 1), MAX_LOCK_MS);
+    rec.count = 0;
+    rec.windowStart = now;
+  }
+  writeRecord(key, rec);
+}
+
+function recordSuccess(action, ident) {
+  writeRecord(rlKey(action, ident), { count: 0, windowStart: Date.now(), lockUntil: 0, strikes: 0 });
+}
+
+// ---------------------------------------------------------------------------
+// Concurrent-call guard
+// ---------------------------------------------------------------------------
+// Stops a double-click or a slow network response from firing the same
+// action twice in parallel (e.g. two account-creation requests racing).
+const inFlight = new Set();
+
+function claimInFlight(action, ident) {
+  const key = `${action}:${ident}`;
+  if (inFlight.has(key)) {
+    const err = new Error("in-flight");
+    err.code = "app/in-flight";
+    throw err;
+  }
+  inFlight.add(key);
+  return key;
+}
+function releaseInFlight(key) {
+  inFlight.delete(key);
+}
+
+// ---------------------------------------------------------------------------
+// Common/breached password blocklist
+// ---------------------------------------------------------------------------
+// Rejects a short list of extremely common passwords at sign-up time (NIST
+// 800-63B recommends blocking known-weak/breached passwords rather than just
+// enforcing length+complexity rules). Not exhaustive — pair with the
+// strength meter in the UI for real guidance.
+const COMMON_PASSWORDS = new Set([
+  "123456", "password", "123456789", "12345678", "12345",
+  "qwerty", "111111", "abc123", "password1", "iloveyou",
+  "admin123", "letmein", "welcome", "monkey", "dragon",
+  "123123", "000000", "qwerty123", "1q2w3e4r", "654321",
+]);
+function isCommonPassword(password) {
+  return COMMON_PASSWORDS.has((password || "").toLowerCase());
+}
+
+function normalizeEmail(email) {
+  return (email || "").trim().toLowerCase();
+}
+
+function formatWait(seconds) {
+  if (seconds < 60) return `${seconds} segundo`;
+  return `${Math.ceil(seconds / 60)} minuto`;
+}
+
+// ---------------------------------------------------------------------------
+// Error messages
+// ---------------------------------------------------------------------------
+// Tagalog-first error messages — Firebase's default codes are English/technical.
+//
+// Note: "auth/user-not-found" and "auth/wrong-password" are deliberately
+// mapped to the SAME message as "auth/invalid-credential". If a wrong
+// password produced one message and an unregistered email produced another,
+// an attacker could use the login form to enumerate which emails have
+// accounts on this app. Keep these three identical.
+function friendlyError(errOrCode) {
+  const code = typeof errOrCode === "string" ? errOrCode : errOrCode && errOrCode.code;
+  const secondsLeft = errOrCode && typeof errOrCode === "object" ? errOrCode.secondsLeft : undefined;
+
+  if (code === "app/rate-limited") {
+    return secondsLeft
+      ? `Sobrang dami ng pagtatangka. Subukan ulit pagkalipas ng ${formatWait(secondsLeft)}.`
+      : "Sobrang dami ng pagtatangka. Subukan ulit mamaya.";
+  }
+  if (code === "app/common-password") {
+    return "Masyadong karaniwan ang password na ito. Pumili ng mas matibay.";
+  }
+  if (code === "app/in-flight") {
+    return "Sandali lang — kasalukuyan pang pinoproseso ang huling request mo.";
+  }
+
+  const map = {
+    "auth/email-already-in-use": "May account na gamit itong email.",
+    "auth/invalid-email": "Hindi valid ang email address.",
+    "auth/weak-password": "Dapat 6 characters pataas ang password.",
+    "auth/missing-password": "Kailangan ng password.",
+    "auth/user-not-found": "Mali ang email o password.",
+    "auth/wrong-password": "Mali ang email o password.",
+    "auth/invalid-credential": "Mali ang email o password.",
+    "auth/too-many-requests": "Sobrang dami ng attempts. Subukan ulit mamaya.",
+    "auth/popup-closed-by-user": "Na-cancel ang Google sign-in.",
+    "auth/network-request-failed": "Walang connection. Subukan ulit.",
+  };
+  return map[code] || "May problema. Subukan ulit.";
+}
+
+window.TipidAuth = {
+  async signUp(name, email, password) {
+    const normEmail = normalizeEmail(email);
+    checkRateLimit("signUp", normEmail);
+    if (isCommonPassword(password)) {
+      const err = new Error("common-password");
+      err.code = "app/common-password";
+      throw err;
+    }
+    const claim = claimInFlight("signUp", normEmail);
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, normEmail, password);
+      if (name) await updateProfile(cred.user, { displayName: name.trim() });
+      recordSuccess("signUp", normEmail);
+      return cred.user;
+    } catch (err) {
+      recordFailure("signUp", normEmail);
+      throw err;
+    } finally {
+      releaseInFlight(claim);
+    }
+  },
+
+  async logIn(email, password) {
+    const normEmail = normalizeEmail(email);
+    checkRateLimit("login", normEmail);
+    const claim = claimInFlight("login", normEmail);
+    try {
+      const cred = await signInWithEmailAndPassword(auth, normEmail, password);
+      recordSuccess("login", normEmail);
+      return cred.user;
+    } catch (err) {
+      recordFailure("login", normEmail);
+      throw err;
+    } finally {
+      releaseInFlight(claim);
+    }
+  },
+
+  async loginWithGoogle() {
+    const claim = claimInFlight("google", "popup");
+    try {
+      const cred = await signInWithPopup(auth, googleProvider);
+      return cred.user;
+    } finally {
+      releaseInFlight(claim);
+    }
+  },
+
+  async resetPassword(email) {
+    const normEmail = normalizeEmail(email);
+    checkRateLimit("resetPassword", normEmail);
+    const claim = claimInFlight("resetPassword", normEmail);
+    try {
+      await sendPasswordResetEmail(auth, normEmail);
+    } catch (err) {
+      if (err.code !== "auth/user-not-found") {
+        recordFailure("resetPassword", normEmail);
+        throw err;
+      }
+      // Unregistered email: stay silent here too, so this endpoint can't be
+      // used to figure out which addresses have accounts.
+    } finally {
+      releaseInFlight(claim);
+    }
+    recordSuccess("resetPassword", normEmail);
+  },
+
+  async logOut() {
+    await signOut(auth);
+  },
+
+  // Returns an unsubscribe function. cb receives the Firebase user or null.
+  onChange(cb) {
+    return onAuthStateChanged(auth, cb);
+  },
+
+  friendlyError,
+};
+
+window.dispatchEvent(new Event("tipid-auth-ready"));
