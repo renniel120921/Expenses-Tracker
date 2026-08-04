@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard — Tipid</title>
-    <meta name="theme-color" content="#15231C">
+    <meta name="theme-color" content="#1F6F54">
     <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -59,10 +59,12 @@
 <body class="bg-paper text-ink antialiased font-body min-h-screen">
     <div id="root"></div>
 
+    <!-- 1. Global Utilities & Constants -->
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
-
-        /* ---------- Icons ---------- */
+        // Expose React hooks globally so external components can use them seamlessly
+        window.useState = React.useState;
+        window.useEffect = React.useEffect;
+        window.useMemo = React.useMemo;
 
         function Icon({ path, size = 20, className = "", strokeWidth = 2 }) {
             return (
@@ -72,7 +74,8 @@
                 </svg>
             );
         }
-        const Icons = {
+
+        window.Icons = {
             Plus: (p) => <Icon {...p} path={<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>} />,
             Trash: (p) => <Icon {...p} path={<><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></>} />,
             Loader: (p) => <Icon {...p} path={<><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></>} />,
@@ -82,10 +85,15 @@
             TrendUp: (p) => <Icon {...p} path={<><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>} />,
             TrendDown: (p) => <Icon {...p} path={<><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></>} />,
             Wallet: (p) => <Icon {...p} path={<><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></>} />,
+            Home: (p) => <Icon {...p} path={<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>} />,
+            Chart: (p) => <Icon {...p} path={<><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></>} />,
+            List: (p) => <Icon {...p} path={<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>} />,
+            Category: (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
+            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />
         };
 
-        function Logo({ size = 30 }) {
-            const [broken, setBroken] = useState(false);
+        window.Logo = function Logo({ size = 30 }) {
+            const [broken, setBroken] = React.useState(false);
             if (!broken) {
                 return <img src="/assets/logo.svg" alt="Tipid logo" width={size} height={size}
                             onError={() => setBroken(true)} style={{ width: size, height: size }} className="rounded-md" />;
@@ -93,27 +101,27 @@
             return <span style={{ width: size, height: size }} className="rounded-md bg-ink text-paper flex items-center justify-center font-display font-semibold">₱</span>;
         }
 
-        function peso(n) {
+        window.peso = function peso(n) {
             return (n || 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        const CATEGORIES = ["Pagkain", "Pamasahe", "Bills", "Load", "Ipon", "Iba pa"];
-        const CATEGORY_COLOR = {
+        window.CATEGORIES = ["Pagkain", "Pamasahe", "Bills", "Load", "Ipon", "Project Components", "Iba pa"];
+        window.CATEGORY_COLOR = {
             Pagkain: "bg-peso", Pamasahe: "bg-ink2", Bills: "bg-gold",
-            Load: "bg-pesoDeep", Ipon: "bg-pesoLight", "Iba pa": "bg-expense",
+            Load: "bg-pesoDeep", Ipon: "bg-pesoLight", "Project Components": "bg-ink", "Iba pa": "bg-expense",
         };
-        const METHODS = ["Cash", "GCash", "Maya", "Bank"];
+        window.METHODS = ["Cash", "GCash", "Maya", "Bank"];
 
-        function startOfMonth() {
+        window.startOfMonth = function startOfMonth() {
             const d = new Date();
             d.setDate(1);
             d.setHours(0, 0, 0, 0);
             return d;
         }
 
-        function useAuthReady() {
-            const [ready, setReady] = useState(!!window.TipidAuth);
-            useEffect(() => {
+        window.useAuthReady = function useAuthReady() {
+            const [ready, setReady] = React.useState(!!window.TipidAuth);
+            React.useEffect(() => {
                 if (window.TipidAuth) { setReady(true); return; }
                 const h = () => setReady(true);
                 window.addEventListener("tipid-auth-ready", h, { once: true });
@@ -121,9 +129,10 @@
             }, []);
             return ready;
         }
-        function useDataReady() {
-            const [ready, setReady] = useState(!!window.TipidData);
-            useEffect(() => {
+
+        window.useDataReady = function useDataReady() {
+            const [ready, setReady] = React.useState(!!window.TipidData);
+            React.useEffect(() => {
                 if (window.TipidData) { setReady(true); return; }
                 const h = () => setReady(true);
                 window.addEventListener("tipid-data-ready", h, { once: true });
@@ -131,300 +140,38 @@
             }, []);
             return ready;
         }
+    </script>
 
-        /* ---------- Editable monthly budget ---------- */
+    <!-- 2. Import External Components -->
+    <script type="text/babel" src="./components/Navbar.js"></script>
+    <script type="text/babel" src="./components/DashboardSummary.js"></script>
+    <script type="text/babel" src="./components/ExpenseChart.js"></script>
+    <script type="text/babel" src="./components/ExpenseForm.js"></script>
+    <script type="text/babel" src="./components/ExpenseItem.js"></script>
+    <script type="text/babel" src="./components/ExpenseList.js"></script>
 
-        function BudgetEditor({ uid, budget }) {
-            const [editing, setEditing] = useState(false);
-            const [value, setValue] = useState(budget ?? "");
-            const [saving, setSaving] = useState(false);
-
-            useEffect(() => { setValue(budget ?? ""); }, [budget]);
-
-            const save = async (e) => {
-                e.preventDefault();
-                const amt = parseFloat(value);
-                if (!amt || amt <= 0) return;
-                setSaving(true);
-                try {
-                    await window.TipidData.setBudget(uid, amt);
-                    setEditing(false);
-                } finally {
-                    setSaving(false);
-                }
-            };
-
-            if (!editing) {
-                return (
-                    <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1.5 text-xs font-semibold text-peso hover:underline">
-                        <Icons.Pencil size={12} />
-                        {budget ? "Baguhin ang budget" : "Magtakda ng buwanang budget"}
-                    </button>
-                );
-            }
-            return (
-                <form onSubmit={save} className="inline-flex items-center gap-2">
-                    <input
-                        type="number" inputMode="decimal" autoFocus value={value}
-                        onChange={e => setValue(e.target.value)}
-                        placeholder="₱0.00"
-                        className="w-28 bg-white border border-line rounded-lg px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-peso/40"
-                    />
-                    <button type="submit" disabled={saving} className="text-xs font-semibold text-peso disabled:opacity-50">
-                        {saving ? "..." : "Save"}
-                    </button>
-                    <button type="button" onClick={() => setEditing(false)} className="text-xs text-ink2/50">Cancel</button>
-                </form>
-            );
-        }
-
-        /* ---------- Smart summary: income / expenses / remaining ---------- */
-
-        function SmartSummary({ uid, entries, budget }) {
-            const monthStart = useMemo(() => startOfMonth(), []);
-            const thisMonth = useMemo(
-                () => entries.filter(e => !e.createdAt || e.createdAt.toDate() >= monthStart),
-                [entries, monthStart]
-            );
-            const income = thisMonth.filter(e => e.type === "income").reduce((s, e) => s + (e.amount || 0), 0);
-            const spent = thisMonth.filter(e => e.type !== "income").reduce((s, e) => s + (e.amount || 0), 0);
-            const remaining = budget != null ? budget - spent : income - spent;
-            const remainingLabel = budget != null ? "Natitirang Budget" : "Natitira (Kita − Gastos)";
-            const overBudget = budget != null && remaining < 0;
-
-            const byCategory = useMemo(() => {
-                const totals = {};
-                thisMonth.filter(e => e.type !== "income").forEach(e => {
-                    totals[e.category] = (totals[e.category] || 0) + (e.amount || 0);
-                });
-                return CATEGORIES
-                    .map(c => ({ label: c, amount: totals[c] || 0 }))
-                    .filter(c => c.amount > 0)
-                    .sort((a, b) => b.amount - a.amount);
-            }, [thisMonth]);
-
-            return (
-                <div className="space-y-6">
-                    <div className="grid sm:grid-cols-3 gap-4">
-                        <div className="bg-white rounded-2xl border border-line shadow-sm p-6">
-                            <p className="text-xs font-mono tracking-[0.15em] uppercase text-peso mb-2 flex items-center gap-1.5">
-                                <Icons.TrendUp size={13} /> Kita ngayong buwan
-                            </p>
-                            <p className="font-mono text-2xl font-semibold text-ink">₱{peso(income)}</p>
-                        </div>
-                        <div className="bg-white rounded-2xl border border-line shadow-sm p-6">
-                            <p className="text-xs font-mono tracking-[0.15em] uppercase text-expense mb-2 flex items-center gap-1.5">
-                                <Icons.TrendDown size={13} /> Gastos ngayong buwan
-                            </p>
-                            <p className="font-mono text-2xl font-semibold text-ink">₱{peso(spent)}</p>
-                        </div>
-                        <div className={`rounded-2xl border shadow-sm p-6 ${overBudget ? "bg-expense/10 border-expense/30" : "bg-white border-line"}`}>
-                            <p className={`text-xs font-mono tracking-[0.15em] uppercase mb-2 flex items-center gap-1.5 ${overBudget ? "text-expense" : "text-peso"}`}>
-                                <Icons.Wallet size={13} /> {remainingLabel}
-                            </p>
-                            <p className={`font-mono text-2xl font-semibold ${overBudget ? "text-expense" : "text-ink"}`}>₱{peso(remaining)}</p>
-                            <div className="mt-2">
-                                <BudgetEditor uid={uid} budget={budget} />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-2xl border border-line shadow-sm p-7">
-                        <p className="text-xs font-mono tracking-[0.2em] uppercase text-peso mb-4">Breakdown ng Gastos</p>
-                        {byCategory.length === 0 ? (
-                            <p className="text-sm text-ink2/60 italic">Wala pang gastos ngayong buwan.</p>
-                        ) : (
-                            <div className="space-y-3.5">
-                                {byCategory.map(c => (
-                                    <div key={c.label}>
-                                        <div className="flex justify-between text-sm mb-1.5">
-                                            <span className="font-medium text-ink">{c.label}</span>
-                                            <span className="font-mono text-ink2">₱{peso(c.amount)}</span>
-                                        </div>
-                                        <div className="h-2 bg-paperDim rounded-full overflow-hidden">
-                                            <div className={`bar-fill h-full rounded-full ${CATEGORY_COLOR[c.label] || "bg-peso"}`}
-                                                 style={{ width: spent ? `${(c.amount / spent) * 100}%` : "0%" }}></div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            );
-        }
-
-        /* ---------- Add entry form (expense or income) ---------- */
-
-        function AddEntryForm({ uid, onAdded }) {
-            const [type, setType] = useState("expense");
-            const [desc, setDesc] = useState("");
-            const [amount, setAmount] = useState("");
-            const [category, setCategory] = useState(CATEGORIES[0]);
-            const [method, setMethod] = useState(METHODS[0]);
-            const [saving, setSaving] = useState(false);
-            const [error, setError] = useState("");
-
-            const submit = async (e) => {
-                e.preventDefault();
-                const amt = parseFloat(amount);
-                if (!desc.trim()) return setError("Ilagay kung ano ito.");
-                if (!amt || amt <= 0) return setError("Ilagay ang halaga.");
-                setError("");
-                setSaving(true);
-                try {
-                    if (type === "income") {
-                        await window.TipidData.addIncome(uid, { desc: desc.trim(), amount: amt, method });
-                    } else {
-                        await window.TipidData.addExpense(uid, { desc: desc.trim(), amount: amt, category, method });
-                    }
-                    setDesc("");
-                    setAmount("");
-                    onAdded && onAdded();
-                } catch (err) {
-                    setError("Hindi na-save. Subukan ulit.");
-                } finally {
-                    setSaving(false);
-                }
-            };
-
-            return (
-                <div className="bg-white rounded-2xl border border-line shadow-sm p-6 sm:p-7">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="font-display text-xl font-semibold text-ink">Magdagdag ng Entry</h2>
-                        <div className="inline-flex bg-paperDim rounded-full p-1 text-xs font-semibold">
-                            <button type="button" onClick={() => setType("expense")}
-                                className={`px-3.5 py-1.5 rounded-full transition-colors ${type === "expense" ? "bg-ink text-paper" : "text-ink2"}`}>
-                                Gastos
-                            </button>
-                            <button type="button" onClick={() => setType("income")}
-                                className={`px-3.5 py-1.5 rounded-full transition-colors ${type === "income" ? "bg-peso text-paper" : "text-ink2"}`}>
-                                Kita
-                            </button>
-                        </div>
-                    </div>
-
-                    {error && (
-                        <div className="mb-4 flex items-start gap-2 bg-expense/10 text-expense text-sm rounded-xl px-3.5 py-2.5">
-                            <Icons.AlertCircle size={15} className="shrink-0 mt-0.5" /><span>{error}</span>
-                        </div>
-                    )}
-
-                    <form onSubmit={submit} className="flex flex-col sm:flex-row gap-3">
-                        <input
-                            type="text" value={desc} onChange={e => setDesc(e.target.value)}
-                            placeholder={type === "income" ? "e.g., Sahod" : "e.g., Tricycle papuntang trabaho"}
-                            className="flex-1 min-w-0 bg-paperDim/60 border border-line rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-peso/40"
-                        />
-                        <input
-                            type="number" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)}
-                            placeholder="₱0.00"
-                            className="sm:w-28 bg-paperDim/60 border border-line rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-peso/40"
-                        />
-                        {type === "expense" && (
-                            <select value={category} onChange={e => setCategory(e.target.value)}
-                                className="sm:w-36 bg-paperDim/60 border border-line rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-peso/40">
-                                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                            </select>
-                        )}
-                        <select value={method} onChange={e => setMethod(e.target.value)}
-                            className="sm:w-28 bg-paperDim/60 border border-line rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-peso/40">
-                            {METHODS.map(m => <option key={m} value={m}>{m}</option>)}
-                        </select>
-                        <button type="submit" disabled={saving}
-                            className={`font-semibold rounded-xl px-6 py-3 text-sm flex items-center justify-center gap-2 transition-colors shrink-0 text-paper disabled:opacity-60 ${type === "income" ? "bg-peso hover:bg-pesoLight" : "bg-ink hover:bg-pesoDeep"}`}>
-                            {saving ? <Icons.Loader size={16} className="spin" /> : <Icons.Plus size={16} />}
-                            {saving ? "Sinasave..." : "Idagdag"}
-                        </button>
-                    </form>
-                </div>
-            );
-        }
-
-        /* ---------- Entry list ---------- */
-
-        function EntryList({ uid, entries, loading }) {
-            const [deletingId, setDeletingId] = useState(null);
-
-            const remove = async (id) => {
-                setDeletingId(id);
-                try { await window.TipidData.deleteEntry(uid, id); }
-                catch (err) { /* onSnapshot keeps the item visible if delete failed */ }
-                finally { setDeletingId(null); }
-            };
-
-            const formatDate = (ts) => {
-                if (!ts) return "Ngayon lang";
-                return ts.toDate().toLocaleDateString("en-PH", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
-            };
-
-            return (
-                <div className="bg-white rounded-2xl border border-line shadow-sm overflow-hidden">
-                    <div className="px-6 sm:px-7 py-5 border-b border-line flex items-center justify-between">
-                        <h2 className="font-display text-xl font-semibold text-ink">Kasaysayan</h2>
-                        <span className="font-mono text-xs text-ink2/60">{entries.length} total</span>
-                    </div>
-
-                    {loading ? (
-                        <div className="py-16 flex justify-center"><Icons.Loader size={20} className="spin text-peso" /></div>
-                    ) : entries.length === 0 ? (
-                        <div className="py-16 flex flex-col items-center gap-3 text-ink2/50">
-                            <Icons.Inbox size={26} />
-                            <p className="text-sm">Wala pang naka-log. Simulan sa itaas.</p>
-                        </div>
-                    ) : (
-                        <ul className="divide-y divide-line max-h-[28rem] overflow-y-auto">
-                            {entries.map(e => (
-                                <li key={e.id} className="row-in flex items-center justify-between gap-3 px-6 sm:px-7 py-4 group">
-                                    <div className="min-w-0">
-                                        <p className="font-medium text-ink truncate">{e.desc}</p>
-                                        <p className="font-mono text-[11px] text-ink2/60 mt-0.5">
-                                            {e.type === "income" ? "Kita" : e.category} · {e.method || "Cash"} · {formatDate(e.createdAt)}
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center gap-3 shrink-0">
-                                        <span className={`font-mono ${e.type === "income" ? "text-peso" : "text-expense"}`}>
-                                            {e.type === "income" ? "+" : "-"}₱{peso(e.amount)}
-                                        </span>
-                                        <button
-                                            onClick={() => remove(e.id)}
-                                            disabled={deletingId === e.id}
-                                            aria-label="Delete entry"
-                                            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity text-ink2/40 hover:text-expense disabled:opacity-100"
-                                        >
-                                            {deletingId === e.id ? <Icons.Loader size={15} className="spin" /> : <Icons.Trash size={15} />}
-                                        </button>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-            );
-        }
-
-        /* ---------- Dashboard ---------- */
-
+    <!-- 3. Main Dashboard Assembly -->
+    <script type="text/babel">
         function Dashboard() {
-            const authReady = useAuthReady();
-            const dataReady = useDataReady();
-            const [user, setUser] = useState(undefined);
-            const [entries, setEntries] = useState([]);
-            const [budget, setBudgetState] = useState(null);
-            const [loadingEntries, setLoadingEntries] = useState(true);
-            const [dataError, setDataError] = useState("");
+            const authReady = window.useAuthReady();
+            const dataReady = window.useDataReady();
+            const [user, setUser] = React.useState(undefined);
+            const [entries, setEntries] = React.useState([]);
+            const [budget, setBudgetState] = React.useState(null);
+            const [loadingEntries, setLoadingEntries] = React.useState(true);
+            const [dataError, setDataError] = React.useState("");
 
-            useEffect(() => {
+            React.useEffect(() => {
                 if (!authReady) return;
                 const unsub = window.TipidAuth.onChange((u) => setUser(u || null));
                 return unsub;
             }, [authReady]);
 
-            useEffect(() => {
+            React.useEffect(() => {
                 if (user === null) window.location.href = "login.html";
             }, [user]);
 
-            useEffect(() => {
+            React.useEffect(() => {
                 if (!dataReady || !user) return;
                 setLoadingEntries(true);
                 const unsub = window.TipidData.subscribeEntries(
@@ -435,7 +182,7 @@
                 return unsub;
             }, [dataReady, user]);
 
-            useEffect(() => {
+            React.useEffect(() => {
                 if (!dataReady || !user) return;
                 const unsub = window.TipidData.subscribeBudget(user.uid, setBudgetState, () => {});
                 return unsub;
@@ -451,21 +198,10 @@
             };
 
             return (
-                <div className="min-h-screen">
-                    <nav className="border-b border-line px-6 py-4 flex justify-between items-center bg-white/70 backdrop-blur-sm sticky top-0 z-10">
-                        <a href="index.html" className="flex items-center gap-2.5">
-                            <Logo size={28} />
-                            <span className="font-display font-semibold text-lg text-ink">Tipid</span>
-                        </a>
-                        <div className="flex items-center gap-4">
-                            <span className="text-sm text-ink2 hidden sm:inline">
-                                {user.displayName ? user.displayName.split(" ")[0] : user.email}
-                            </span>
-                            <button onClick={logout} className="text-sm font-semibold text-ink2 hover:text-expense transition-colors">Mag-log out</button>
-                        </div>
-                    </nav>
+                <div className="min-h-screen relative">
+                    <Navbar user={user} onLogout={logout} />
 
-                    <main className="max-w-4xl mx-auto px-6 py-10 space-y-6">
+                    <main className="max-w-4xl mx-auto px-6 pt-24 md:pt-10 pb-28 md:pb-10 space-y-6">
                         <div>
                             <p className="text-xs font-mono tracking-[0.2em] uppercase text-peso mb-2">Naka-log in</p>
                             <h1 className="font-display text-3xl font-semibold text-ink">
@@ -480,7 +216,11 @@
                         )}
 
                         <SmartSummary uid={user.uid} entries={entries} budget={budget} />
+
+                        <ExpenseChart entries={entries} />
+
                         <AddEntryForm uid={user.uid} />
+
                         <EntryList uid={user.uid} entries={entries} loading={loadingEntries} />
                     </main>
                 </div>

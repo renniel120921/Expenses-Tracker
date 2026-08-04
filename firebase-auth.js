@@ -1,7 +1,7 @@
 // firebase-auth.js
 // Wraps Firebase Authentication and exposes it as window.TipidAuth so the
 // non-module React pages (signup.html, login.html, dashboard.html) can call it directly.
-import { app } from "./firebase-config.js";
+import { app } from "./firebase.js";
 import {
   getAuth,
   createUserWithEmailAndPassword,

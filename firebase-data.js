@@ -9,11 +9,12 @@ import {
   query,
   orderBy,
   serverTimestamp,
-} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"; // <-- Updated to 10.13.0
 
 function entriesRef(uid) {
   return collection(db, "users", uid, "expenses");
 }
+
 function userDocRef(uid) {
   return doc(db, "users", uid);
 }
