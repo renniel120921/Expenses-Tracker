@@ -77,9 +77,9 @@ function ExpenseChart({ entries }) {
                 type: 'doughnut',
                 data: {
                     labels: analytics.catLabels,
-                    datasets: [{ data: analytics.categories, backgroundColor: analytics.catColors, borderWidth: 0, hoverOffset: 4 }]
+                    datasets: [{ data: analytics.categories, backgroundColor: analytics.catColors, borderWidth: 0, hoverOffset: 6, borderRadius: 4 }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Inter' } } } }, cutout: '75%' }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Inter' }, boxWidth: 10, padding: 14 } } }, cutout: '75%' }
             };
         } else {
             config = {
@@ -87,7 +87,7 @@ function ExpenseChart({ entries }) {
                 data: {
                     labels: ['Income', 'Expense'],
                     datasets: [{
-                        label: 'Amount', data: [analytics.totalIncome, analytics.totalExpense], backgroundColor: ['#2F8E6C', '#B5483B'], borderRadius: 6, barPercentage: 0.6
+                        label: 'Amount', data: [analytics.totalIncome, analytics.totalExpense], backgroundColor: ['#2F8E6C', '#B5483B'], borderRadius: 8, barPercentage: 0.55
                     }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#E9EDE6' } }, x: { grid: { display: false } } } }
@@ -101,16 +101,27 @@ function ExpenseChart({ entries }) {
 
     if (entries.length === 0) return null;
 
+    const filterLabel = { thisMonth: "ngayong buwan", lastMonth: "nakaraang buwan", all: "lahat ng oras" }[dateFilter];
+
     return (
-        <div className="bg-white/80 dark:bg-ink2/20 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm p-6 sm:p-7 mb-6 fade-up">
+        <div className="relative overflow-hidden bg-white/80 dark:bg-ink2/20 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm p-6 sm:p-7 mb-6 fade-up">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold to-peso" />
 
             {/* Header with Date Filter */}
-            <div className="flex items-center justify-between mb-5">
-                <h2 className="font-semibold text-lg text-ink dark:text-paper tracking-tight">Analytics</h2>
+            <div className="flex items-start justify-between gap-3 mb-5">
+                <div className="flex items-center gap-2.5">
+                    <span className="w-8 h-8 rounded-xl bg-gold/10 dark:bg-gold/20 text-gold flex items-center justify-center shrink-0">
+                        <Icons.Chart size={14} />
+                    </span>
+                    <div>
+                        <h2 className="font-semibold text-lg text-ink dark:text-paper tracking-tight leading-tight">Analytics</h2>
+                        <p className="text-[11px] text-ink2/50 dark:text-paper/40">Batay sa {filterLabel}</p>
+                    </div>
+                </div>
                 <select
                     value={dateFilter}
                     onChange={(e) => setDateFilter(e.target.value)}
-                    className="text-xs font-medium text-ink2 dark:text-paper bg-paperDim dark:bg-ink2/50 px-2.5 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-peso cursor-pointer"
+                    className="text-xs font-medium text-ink2 dark:text-paper bg-paperDim dark:bg-ink2/50 px-2.5 py-1.5 rounded-lg border border-transparent focus:outline-none focus:ring-1 focus:ring-peso cursor-pointer"
                 >
                     <option value="thisMonth">This Month</option>
                     <option value="lastMonth">Last Month</option>
@@ -118,19 +129,53 @@ function ExpenseChart({ entries }) {
                 </select>
             </div>
 
+            {/* Quick income/expense stat chips — useful at a glance, especially in Cash Flow view where the chart legend is hidden */}
+            <div className="flex items-center gap-4 mb-5 flex-wrap">
+                <span className="inline-flex items-center gap-1.5 text-xs">
+                    <span className="w-2 h-2 rounded-full bg-pesoLight"></span>
+                    <span className="text-ink2/60 dark:text-paper/50">Kita</span>
+                    <span className="font-mono font-semibold text-ink dark:text-paper">₱{peso(analytics.totalIncome)}</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-xs">
+                    <span className="w-2 h-2 rounded-full bg-expense"></span>
+                    <span className="text-ink2/60 dark:text-paper/50">Gastos</span>
+                    <span className="font-mono font-semibold text-ink dark:text-paper">₱{peso(analytics.totalExpense)}</span>
+                </span>
+            </div>
+
             {/* View Toggles */}
             <div className="flex items-center bg-paperDim dark:bg-ink2/40 p-1 rounded-xl mb-6">
-                <button onClick={() => setView("category")} className={`flex-1 text-[11px] font-semibold uppercase py-2 rounded-lg transition-all ${view === "category" ? 'bg-white dark:bg-ink text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink2/80'}`}>Categories</button>
-                <button onClick={() => setView("flow")} className={`flex-1 text-[11px] font-semibold uppercase py-2 rounded-lg transition-all ${view === "flow" ? 'bg-white dark:bg-ink text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink2/80'}`}>Cash Flow</button>
+                <button onClick={() => setView("category")} className={`flex-1 inline-flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase py-2 rounded-lg transition-all ${view === "category" ? 'bg-white dark:bg-ink text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink2/80'}`}>
+                    <Icons.Category size={12} /> Categories
+                </button>
+                <button onClick={() => setView("flow")} className={`flex-1 inline-flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase py-2 rounded-lg transition-all ${view === "flow" ? 'bg-white dark:bg-ink text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink2/80'}`}>
+                    <Icons.Chart size={12} /> Cash Flow
+                </button>
             </div>
 
             {/* Chart Canvas */}
             <div className="relative h-64 w-full flex items-center justify-center">
-                {!chartLoaded && <p className="text-xs text-expense font-medium text-center">Chart library failed to load. Please refresh the page.</p>}
+                {!chartLoaded && (
+                    <div className="flex flex-col items-center gap-2 text-center">
+                        <Icons.AlertCircle size={18} className="text-expense" />
+                        <p className="text-xs text-expense font-medium">Chart library failed to load. Please refresh the page.</p>
+                    </div>
+                )}
                 {filteredEntries.length === 0 && chartLoaded ? (
-                    <p className="text-sm text-ink2/50">Walang data sa panahong ito.</p>
+                    <div className="flex flex-col items-center gap-2 text-center">
+                        <Icons.Inbox size={20} className="text-ink2/30 dark:text-paper/25" />
+                        <p className="text-sm text-ink2/50 dark:text-paper/40">Walang data sa panahong ito.</p>
+                    </div>
                 ) : (
-                    <canvas ref={chartRef} className={!chartLoaded ? "hidden" : ""}></canvas>
+                    <React.Fragment>
+                        <canvas ref={chartRef} className={!chartLoaded ? "hidden" : ""}></canvas>
+                        {view === "category" && chartLoaded && filteredEntries.length > 0 && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-8">
+                                <span className="text-[10px] font-mono uppercase tracking-wide text-ink2/50 dark:text-paper/40">Kabuuang Gastos</span>
+                                <span className="font-mono text-lg font-semibold text-ink dark:text-paper">₱{peso(analytics.totalExpense)}</span>
+                            </div>
+                        )}
+                    </React.Fragment>
                 )}
             </div>
         </div>

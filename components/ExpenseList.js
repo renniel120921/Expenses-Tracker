@@ -31,6 +31,14 @@ function EntryListStyles() {
             @keyframes listIn { from { opacity: 0; } to { opacity: 1; } }
             .list-in { animation: listIn 0.35s ease-out both; }
 
+            /* Slim, brand-tinted scrollbar for the entry list */
+            .ledger-scroll::-webkit-scrollbar { width: 6px; }
+            .ledger-scroll::-webkit-scrollbar-track { background: transparent; }
+            .ledger-scroll::-webkit-scrollbar-thumb { background-color: rgba(31,111,84,0.25); border-radius: 999px; }
+            .ledger-scroll::-webkit-scrollbar-thumb:hover { background-color: rgba(31,111,84,0.45); }
+            .ledger-scroll { scrollbar-width: thin; scrollbar-color: rgba(31,111,84,0.3) transparent; }
+            html.dark .ledger-scroll::-webkit-scrollbar-thumb { background-color: rgba(47,142,108,0.35); }
+
             @media (prefers-reduced-motion: reduce) {
                 .skeleton-shimmer, .count-pop, .empty-bounce, .list-in {
                     animation: none !important;
@@ -69,12 +77,23 @@ function EntryList({ uid, entries, loading }) {
     };
 
     return (
-        <div className="bg-white/80 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm overflow-hidden mb-16 md:mb-0">
+        <div className="relative overflow-hidden bg-white/80 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm mb-16 md:mb-0">
             <EntryListStyles />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-peso to-pesoDeep" />
 
-            <div className="px-6 sm:px-7 py-5 border-b border-line/40 dark:border-line/10 flex items-center justify-between">
-                <h2 className="font-display text-xl font-semibold text-ink dark:text-paper">Kasaysayan</h2>
-                <span key={entries.length} className="count-pop font-mono text-xs text-ink2/60 dark:text-paper/60">{entries.length} total</span>
+            <div className="px-6 sm:px-7 py-5 border-b border-line/40 dark:border-line/10 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="w-8 h-8 rounded-xl bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center shrink-0">
+                        <Icons.List size={14} />
+                    </span>
+                    <div className="min-w-0">
+                        <h2 className="font-display text-xl font-semibold text-ink dark:text-paper leading-tight">Kasaysayan</h2>
+                        <p className="text-[11px] text-ink2/50 dark:text-paper/40 truncate">Pinakabagong mga transaksyon</p>
+                    </div>
+                </div>
+                <span key={entries.length} className="count-pop shrink-0 font-mono text-xs font-semibold text-peso dark:text-pesoLight bg-peso/10 dark:bg-pesoLight/15 rounded-full px-2.5 py-1">
+                    {entries.length} total
+                </span>
             </div>
 
             {loading ? (
@@ -86,11 +105,13 @@ function EntryList({ uid, entries, loading }) {
                 </div>
             ) : entries.length === 0 ? (
                 <div className="empty-bounce py-16 flex flex-col items-center gap-3 text-ink2/50 dark:text-paper/40">
-                    <Icons.Inbox size={26} />
+                    <span className="w-12 h-12 rounded-full bg-paperDim dark:bg-ink2/40 flex items-center justify-center">
+                        <Icons.Inbox size={22} />
+                    </span>
                     <p className="text-sm">Wala pang naka-log. Simulan sa itaas.</p>
                 </div>
             ) : (
-                <ul className="list-in max-h-[28rem] overflow-y-auto">
+                <ul className="ledger-scroll list-in max-h-[28rem] overflow-y-auto">
                     {entries.map((e, i) => (
                         <ExpenseItem
                             key={e.id}

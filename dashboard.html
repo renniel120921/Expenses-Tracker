@@ -68,6 +68,9 @@
 
         .bar-fill { transition: width 0.9s cubic-bezier(.22,.61,.36,1); }
 
+        .ledger-rule { background-image: repeating-linear-gradient(to right, #D3DAD0 0, #D3DAD0 6px, transparent 6px, transparent 14px); height: 1px; }
+        html.dark .ledger-rule { background-image: repeating-linear-gradient(to right, #2F8E6C55 0, #2F8E6C55 6px, transparent 6px, transparent 14px); }
+
         /* --- Premium page-entrance motion --- */
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(14px); }
@@ -94,8 +97,15 @@
         }
         .halo-pulse { animation: haloPulse 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
 
+        /* --- Hero card ambience --- */
+        @keyframes heroFloat {
+            0%, 100% { transform: translate(0, 0); }
+            50%      { transform: translate(0, -8px); }
+        }
+        .hero-float { animation: heroFloat 5s ease-in-out infinite; }
+
         @media (prefers-reduced-motion: reduce) {
-            .spin, .row-in, .bar-fill, .fade-up, .banner-in, .logo-breathe, .halo-pulse {
+            .spin, .row-in, .bar-fill, .fade-up, .banner-in, .logo-breathe, .halo-pulse, .hero-float {
                 animation: none !important;
                 transition: none !important;
             }
@@ -196,6 +206,68 @@
     <script type="text/babel" src="./components/ExpenseList.js"></script>
 
     <script type="text/babel">
+        // Purely decorative ambient background — same visual language as the
+        // brand/marketing pages, kept fixed so it never affects scroll or layout.
+        function AmbientBackground() {
+            return (
+                <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
+                    <div className="absolute -top-24 -right-20 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-3xl" />
+                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-gold/10 dark:bg-gold/5 rounded-full blur-3xl" />
+                </div>
+            );
+        }
+
+        // Section label used above each dashboard block, ties the page back to
+        // the ledger/paper motif used across the rest of the app.
+        function SectionEyebrow({ children }) {
+            return (
+                <p className="text-[11px] font-mono tracking-[0.2em] uppercase text-ink2/50 dark:text-paper/40 mb-3">
+                    {children}
+                </p>
+            );
+        }
+
+        function SectionDivider() {
+            return <div className="ledger-rule my-2" />;
+        }
+
+        function timeGreeting() {
+            const h = new Date().getHours();
+            if (h < 12) return "Magandang umaga";
+            if (h < 18) return "Magandang hapon";
+            return "Magandang gabi";
+        }
+
+        function HeroCard({ firstName }) {
+            const scrollToAdd = () => {
+                const el = document.getElementById("add-entry");
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+            };
+            return (
+                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-peso via-pesoLight to-pesoDeep text-paper px-6 py-7 md:px-9 md:py-9 shadow-[0_20px_45px_-14px_rgba(18,61,46,0.55)]">
+                    <div className="absolute -top-16 -right-10 w-52 h-52 bg-paper/10 rounded-full blur-2xl hero-float" />
+                    <div className="absolute -bottom-20 -left-10 w-56 h-56 bg-gold/15 rounded-full blur-3xl" />
+
+                    <div className="relative flex items-start justify-between gap-4">
+                        <div>
+                            <p className="text-xs font-mono tracking-[0.2em] uppercase text-paper/70 mb-2">Naka-log in</p>
+                            <h1 className="font-display text-2xl md:text-3xl font-semibold leading-tight">
+                                {timeGreeting()}, {firstName}!
+                            </h1>
+                            <p className="text-paper/75 text-sm mt-2 max-w-xs">Handa ka na bang mag-ipon ngayon?</p>
+                        </div>
+                        <button
+                            onClick={scrollToAdd}
+                            aria-label="Magdagdag ng gastos"
+                            className="shrink-0 w-11 h-11 rounded-full bg-paper/15 hover:bg-paper/25 border border-paper/25 flex items-center justify-center transition-colors duration-200 active:scale-90"
+                        >
+                            <Icons.Plus size={20} className="text-paper" />
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
         function Dashboard() {
             const authReady = window.useAuthReady();
             const dataReady = window.useDataReady();
@@ -255,16 +327,16 @@
                 window.location.href = "login.html";
             };
 
+            const firstName = user.displayName ? user.displayName.split(" ")[0] : user.email.split("@")[0];
+
             return (
                 <div className="min-h-screen relative pb-[100px] md:pb-0">
+                    <AmbientBackground />
                     <Navbar user={user} onLogout={logout} activeTab="dashboard" />
 
-                    <main className="max-w-4xl mx-auto px-6 pt-24 md:pt-10 pb-28 md:pb-10 space-y-6">
+                    <main className="max-w-4xl mx-auto px-6 pt-24 md:pt-10 pb-28 md:pb-10 space-y-7">
                         <div className="fade-up" style={{ animationDelay: "0ms" }}>
-                            <p className="text-xs font-mono tracking-[0.2em] uppercase text-peso mb-2">Logged in</p>
-                            <h1 className="font-display text-3xl font-semibold text-ink dark:text-paper">
-                                Hello, {user.displayName ? user.displayName.split(" ")[0] : user.email.split("@")[0]}!
-                            </h1>
+                            <HeroCard firstName={firstName} />
                         </div>
 
                         {dataError && (
@@ -274,18 +346,28 @@
                         )}
 
                         <div className="fade-up" style={{ animationDelay: "70ms" }}>
+                            <SectionEyebrow>Buod ng Buwan</SectionEyebrow>
                             <SmartSummary uid={user.uid} entries={entries} budget={budget} />
                         </div>
 
+                        <SectionDivider />
+
                         <div className="fade-up" style={{ animationDelay: "140ms" }}>
+                            <SectionEyebrow>Uso ng Paggastos</SectionEyebrow>
                             <ExpenseChart entries={entries} />
                         </div>
 
-                        <div className="fade-up" style={{ animationDelay: "210ms" }}>
+                        <SectionDivider />
+
+                        <div id="add-entry" className="fade-up scroll-mt-24" style={{ animationDelay: "210ms" }}>
+                            <SectionEyebrow>Magdagdag ng Bagong Gastos</SectionEyebrow>
                             <AddEntryForm uid={user.uid} />
                         </div>
 
+                        <SectionDivider />
+
                         <div className="fade-up" style={{ animationDelay: "280ms" }}>
+                            <SectionEyebrow>Kasaysayan ng Gastos</SectionEyebrow>
                             <EntryList uid={user.uid} entries={entries} loading={loadingEntries} />
                         </div>
                     </main>

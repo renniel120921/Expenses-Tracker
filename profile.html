@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile — Tipid</title>
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#1F6F54">
     <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,15 +52,16 @@
 
     <style>
         /* Base Dark Mode overrides */
-        html { background: #F9FAFB; transition: background-color 0.3s; }
+        html { background: #F1F4EF; transition: background-color 0.3s; }
         html.dark { background: #111A15; color: #F1F4EF; }
 
         body { font-feature-settings: "tnum" 1, "lnum" 1; }
         ::selection { background: #C9932E33; color: #15231C; }
+        :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.8s linear infinite; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-up { animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-up { animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
         @keyframes logoBreathe {
             0%, 100% { transform: scale(1); opacity: 1; }
@@ -86,9 +87,13 @@
         }
 
         .swal2-popup.tipid-swal { border-radius: 20px !important; font-family: 'Inter', sans-serif; }
+        .tipid-swal .swal2-title { font-family: 'Fraunces', serif; color: #15231C; }
+        .tipid-swal .swal2-html-container { color: #33443A; }
+        .tipid-swal .swal2-confirm { border-radius: 999px !important; padding: 0.65em 1.6em !important; font-weight: 600 !important; box-shadow: none !important; }
+        .tipid-swal .swal2-cancel { border-radius: 999px !important; padding: 0.65em 1.6em !important; font-weight: 600 !important; }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
+<body class="bg-paper dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
     <div id="root"></div>
 
     <script type="text/babel">
@@ -160,6 +165,15 @@
     <script type="text/babel" src="./components/Navbar.js"></script>
 
     <script type="text/babel">
+        function AmbientBackground() {
+            return (
+                <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
+                    <div className="absolute -top-24 -right-20 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-3xl" />
+                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-gold/10 dark:bg-gold/5 rounded-full blur-3xl" />
+                </div>
+            );
+        }
+
         function ProfileApp() {
             const authReady = window.useAuthReady();
             const dataReady = window.useDataReady();
@@ -212,7 +226,7 @@
 
             if (user === undefined || user === null) {
                 return (
-                    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-ink">
+                    <div className="min-h-screen flex items-center justify-center bg-paper dark:bg-ink">
                         <div className="flex flex-col items-center gap-4">
                             <div className="relative flex items-center justify-center">
                                 <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/20 halo-pulse" />
@@ -264,6 +278,7 @@
 
             return (
                 <div className="min-h-screen relative pb-[100px] md:pb-0">
+                    <AmbientBackground />
                     <Navbar user={user} onLogout={handleLogout} activeTab="profile" />
 
                     <main className="max-w-xl mx-auto px-6 pt-24 md:pt-12 pb-28 md:pb-10 space-y-8">
@@ -278,7 +293,7 @@
                         </div>
 
                         {/* Appearance Card */}
-                        <div className="fade-up" style={{ animationDelay: '80ms' }}>
+                        <div className="fade-up" style={{ animationDelay: '90ms' }}>
                             <h2 className="text-xs font-mono tracking-[0.1em] uppercase text-ink2/50 dark:text-paper/50 mb-3 px-2">Appearance</h2>
                             <div className="bg-white/80 dark:bg-ink2/20 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm overflow-hidden p-5 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -299,7 +314,7 @@
                         </div>
 
                         {/* Financial Goals & Settings Card */}
-                        <div className="fade-up" style={{ animationDelay: '160ms' }}>
+                        <div className="fade-up" style={{ animationDelay: '180ms' }}>
                             <h2 className="text-xs font-mono tracking-[0.1em] uppercase text-ink2/50 dark:text-paper/50 mb-3 px-2">Financial Settings</h2>
                             <div className="bg-white/80 dark:bg-ink2/20 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm overflow-hidden">
                                 <form onSubmit={handleUpdatePreferences} className="p-5 flex flex-col gap-5">

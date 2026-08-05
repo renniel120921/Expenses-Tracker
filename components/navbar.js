@@ -10,7 +10,6 @@ function Navbar({ user, onLogout, activeTab = "dashboard" }) {
         { id: "history", href: "history.html", label: "History", icon: HistoryIcon },
         { id: "profile", href: "profile.html", label: "Profile", icon: ProfileIcon },
     ];
-    const activeIndex = Math.max(0, tabs.findIndex((t) => t.id === activeTab));
 
     // --- Desktop: measure the active link so the pill can glide to it ---
     const linkRefs = React.useRef({});
@@ -37,19 +36,30 @@ function Navbar({ user, onLogout, activeTab = "dashboard" }) {
 
     return (
         <React.Fragment>
-            {/* Local keyframes for the iOS-style icon pop. Scoped by class name, safe to inline. */}
+            {/* Local keyframes, scoped by class name, safe to inline. */}
             <style>{`
                 @keyframes navIconPop {
-                    0%   { transform: scale(1); }
-                    40%  { transform: scale(1.26); }
-                    65%  { transform: scale(0.94); }
-                    100% { transform: scale(1); }
+                    0%   { transform: translateY(-1rem) scale(1); }
+                    40%  { transform: translateY(-1rem) scale(1.24); }
+                    65%  { transform: translateY(-1rem) scale(0.95); }
+                    100% { transform: translateY(-1rem) scale(1); }
                 }
                 .nav-icon-pop { animation: navIconPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+                @keyframes navHaloPulse {
+                    0%   { transform: scale(0.85); opacity: 0.45; }
+                    70%  { opacity: 0; }
+                    100% { transform: scale(1.55); opacity: 0; }
+                }
+                .nav-halo-pulse { animation: navHaloPulse 1.9s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+
+                @media (prefers-reduced-motion: reduce) {
+                    .nav-icon-pop, .nav-halo-pulse { animation: none !important; }
+                }
             `}</style>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex bg-white/80 backdrop-blur-md text-ink px-8 py-5 justify-between items-center w-full sticky top-0 z-50 border-b border-line/40">
+            <nav className="hidden md:flex bg-white/80 dark:bg-ink2/70 backdrop-blur-md text-ink dark:text-paper px-8 py-5 justify-between items-center w-full sticky top-0 z-50 border-b border-line/40 dark:border-white/10">
                 <a href="dashboard.html" className="flex items-center gap-3 w-48">
                     <window.Logo size={28} />
                     <span className="font-display font-semibold text-xl tracking-tight">Tipid</span>
@@ -58,7 +68,7 @@ function Navbar({ user, onLogout, activeTab = "dashboard" }) {
                 <div className="relative flex items-center gap-2">
                     {/* Sliding pill indicator, glides under whichever tab is active */}
                     <div
-                        className="absolute top-1/2 h-9 rounded-full bg-peso/10 pointer-events-none"
+                        className="absolute top-1/2 h-9 rounded-full bg-peso/10 dark:bg-pesoLight/15 shadow-inner pointer-events-none"
                         style={{
                             left: pillStyle.left,
                             width: pillStyle.width,
@@ -81,47 +91,37 @@ function Navbar({ user, onLogout, activeTab = "dashboard" }) {
 
                 <div className="flex items-center justify-end gap-6 w-48">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-paperDim border border-line flex items-center justify-center text-ink font-semibold text-sm">
+                        <div className="w-8 h-8 rounded-full bg-paperDim dark:bg-white/10 border border-line dark:border-white/10 flex items-center justify-center text-ink dark:text-paper font-semibold text-sm">
                             {initial}
                         </div>
-                        <span className="text-sm font-medium text-ink2">{userName}</span>
+                        <span className="text-sm font-medium text-ink2 dark:text-paper/70">{userName}</span>
                     </div>
-                    <button onClick={onLogout} className="text-sm font-semibold text-ink2 hover:text-expense transition-colors duration-300">
+                    <button onClick={onLogout} className="text-sm font-semibold text-ink2 dark:text-paper/60 hover:text-expense transition-colors duration-300">
                         Log out
                     </button>
                 </div>
             </nav>
 
             {/* Mobile Top Header */}
-            <header className="md:hidden bg-white/70 backdrop-blur-xl px-6 py-4 flex justify-between items-center fixed top-0 w-full z-50 border-b border-line/30">
+            <header className="md:hidden bg-white/70 dark:bg-ink2/70 backdrop-blur-xl px-6 py-4 flex justify-between items-center fixed top-0 w-full z-50 border-b border-line/30 dark:border-white/10">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-paperDim border border-white flex items-center justify-center text-ink font-semibold text-base shadow-sm">
+                    <div className="w-10 h-10 rounded-full bg-paperDim dark:bg-white/10 border border-white dark:border-white/10 flex items-center justify-center text-ink dark:text-paper font-semibold text-base shadow-sm">
                         {initial}
                     </div>
                     <div className="flex flex-col">
-                        <span className="font-semibold text-ink text-sm">Hello, {userName}!</span>
-                        <span className="text-[10px] text-ink2/60">Ready to save today?</span>
+                        <span className="font-semibold text-ink dark:text-paper text-sm">Hello, {userName}!</span>
+                        <span className="text-[10px] text-ink2/60 dark:text-paper/45">Ready to save today?</span>
                     </div>
                 </div>
 
-                <button onClick={onLogout} className="text-ink2/60 hover:text-expense active:scale-90 transition-all duration-300 focus:outline-none">
+                <button onClick={onLogout} className="text-ink2/60 dark:text-paper/45 hover:text-expense active:scale-90 transition-all duration-300 focus:outline-none">
                     <LogOutIcon />
                 </button>
             </header>
 
-            {/* Mobile Bottom Navigation (Floating iOS Pill) */}
+            {/* Mobile Bottom Navigation (Floating pill, active tab rises into a glowing bubble) */}
             <nav className="md:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-[92%] max-w-sm">
-                <div className="relative flex justify-around items-center px-2 py-3 bg-white/80 backdrop-blur-2xl border border-white/60 shadow-[0_12px_40px_rgb(0,0,0,0.12)] rounded-[2rem]">
-                    {/* Sliding active blob, sits exactly behind whichever tab is active */}
-                    <div
-                        className="absolute top-1/2 h-12 rounded-full bg-peso/10 pointer-events-none"
-                        style={{
-                            left: `${activeIndex * 25}%`,
-                            width: "25%",
-                            transform: "translateY(-50%)",
-                            transition: "left 0.5s cubic-bezier(0.34, 1.2, 0.4, 1)",
-                        }}
-                    />
+                <div className="relative flex justify-around items-end px-2 pt-3 pb-2.5 bg-white/85 dark:bg-ink2/85 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] rounded-[2rem]">
                     {tabs.map((tab) => (
                         <BottomNavBtn
                             key={tab.id}
@@ -142,20 +142,37 @@ const DesktopNavLink = ({ href, label, active, innerRef }) => (
     <a
         ref={innerRef}
         href={href}
-        className={`relative z-10 text-sm transition-colors duration-300 px-4 py-2 rounded-full ${active ? 'font-semibold text-peso' : 'font-medium text-ink2/60 hover:text-ink'}`}
+        className={`relative z-10 text-sm transition-colors duration-300 px-4 py-2 rounded-full ${active ? 'font-semibold text-peso dark:text-pesoLight' : 'font-medium text-ink2/60 dark:text-paper/45 hover:text-ink dark:hover:text-paper'}`}
     >
         {label}
     </a>
 );
 
 const BottomNavBtn = ({ href, icon, label, active, bounce }) => (
-    <a href={href} className="relative z-10 flex flex-col items-center gap-1 focus:outline-none w-[4.5rem] active:scale-90 transition-transform duration-200 ease-out">
-        <div key={bounce} className={`transition-colors duration-300 ${active ? 'text-peso drop-shadow-sm nav-icon-pop' : 'text-ink2/40'}`}>
-            {icon}
-        </div>
-        <span className={`text-[10px] tracking-tight transition-all duration-300 ${active ? 'font-semibold text-peso scale-105' : 'font-medium text-ink2/40'}`}>
-            {label}
+    <a
+        href={href}
+        className="relative z-10 flex flex-col items-center justify-end gap-1.5 h-14 w-[4.5rem] focus:outline-none active:scale-95 transition-transform duration-200 ease-out"
+    >
+        <span className="relative flex items-center justify-center">
+            {active && (
+                <span className="absolute w-12 h-12 -translate-y-4 rounded-full bg-peso/25 dark:bg-pesoLight/25 nav-halo-pulse pointer-events-none" />
+            )}
+            <span
+                key={bounce}
+                className={
+                    active
+                        ? "relative flex items-center justify-center w-[3.15rem] h-[3.15rem] -translate-y-4 rounded-full bg-gradient-to-br from-pesoLight to-pesoDeep text-white ring-4 ring-white/90 dark:ring-ink2/90 shadow-[0_10px_22px_-6px_rgba(18,61,46,0.6)] nav-icon-pop"
+                        : "relative flex items-center justify-center w-11 h-11 rounded-full text-ink2/40 dark:text-paper/35 transition-colors duration-300"
+                }
+            >
+                {icon}
+            </span>
         </span>
+        {!active && (
+            <span className="text-[10px] font-medium tracking-tight text-ink2/40 dark:text-paper/35">
+                {label}
+            </span>
+        )}
     </a>
 );
 

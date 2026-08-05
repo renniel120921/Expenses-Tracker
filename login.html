@@ -75,7 +75,7 @@
         }
         .shake { animation: shake 0.5s; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-up { animation: fadeUp 0.5s ease-out both; }
+        .fade-up { animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
         .panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s ease; }
         .panel.open { grid-template-rows: 1fr; }
         .panel > div { overflow: hidden; }
@@ -483,19 +483,15 @@
                         <div className="perf-edge-v absolute top-0 right-0 h-full w-2.5 bg-paper"></div>
                     </div>
 
-                    <div className="lg:hidden">
-                        <BrandPanel />
-                    </div>
-
-                    <div className="flex items-center justify-center px-6 py-12 lg:py-10 relative">
+                    <div className="flex items-center justify-center px-6 py-6 lg:py-10 relative">
                         <div className="w-full max-w-sm fade-up">
-                            <a href="index.html" className="lg:hidden flex items-center justify-center gap-2.5 mb-8">
+                            <a href="index.html" className="lg:hidden flex items-center justify-center gap-2.5 mb-5">
                                 <Logo size={30} />
                                 <span className="text-xl font-display font-semibold tracking-tight text-ink">Tipid</span>
                             </a>
 
                             <div className={shake ? "shake" : ""}>
-                                <div className="mb-6">
+                                <div className="mb-5 text-center lg:text-left">
                                     <p className="text-xs font-mono tracking-[0.2em] uppercase text-peso mb-2">Balik-tanaw sa gastos</p>
                                     <h1 className="font-display text-3xl font-semibold text-ink tracking-tight">Mag-log in</h1>
                                     <p className="text-ink2 text-sm mt-2">Masaya kaming makita kang muli.</p>
@@ -513,7 +509,7 @@
                                     <GoogleIcon size={18} /> Mag-log in gamit ang Google
                                 </button>
 
-                                <div className="flex items-center gap-3 my-6">
+                                <div className="flex items-center gap-3 my-4">
                                     <div className="ledger-rule flex-1"></div>
                                     <span className="text-xs font-mono text-ink2/50 uppercase">o</span>
                                     <div className="ledger-rule flex-1"></div>

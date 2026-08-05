@@ -31,6 +31,16 @@ function ExpenseFormStyles() {
     );
 }
 
+/* ---------- Icon-led field shell, same visual language as the login/signup pages ---------- */
+function FieldWrap({ icon, children, className = "" }) {
+    return (
+        <div className={`flex items-center gap-2.5 bg-paperDim/60 dark:bg-ink2/40 border border-line dark:border-line/20 rounded-xl px-3.5 focus-within:ring-2 focus-within:ring-peso/40 transition-shadow duration-200 ${className}`}>
+            {icon}
+            {children}
+        </div>
+    );
+}
+
 function AddEntryForm({ uid, onAdded }) {
     const { useState, useRef, useLayoutEffect, useCallback } = React;
 
@@ -91,14 +101,24 @@ function AddEntryForm({ uid, onAdded }) {
     };
 
     return (
-        <div className="bg-white/80 dark:bg-ink2/20 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm p-6 sm:p-7 mb-6 fade-up">
+        <div className="relative overflow-hidden bg-white/80 dark:bg-ink2/20 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm p-6 sm:p-7 mb-6 fade-up">
             <ExpenseFormStyles />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-pesoDeep to-peso" />
 
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="font-display text-xl font-semibold text-ink dark:text-paper">Magdagdag ng Entry</h2>
-                <div className="relative inline-flex bg-paperDim dark:bg-ink2/50 rounded-full p-1 text-xs font-semibold">
+            <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
+                <div className="flex items-center gap-2.5">
+                    <span className="w-8 h-8 rounded-xl bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center shrink-0">
+                        <Icons.Plus size={15} />
+                    </span>
+                    <div>
+                        <h2 className="font-display text-xl font-semibold text-ink dark:text-paper leading-tight">Magdagdag ng Entry</h2>
+                        <p className="text-[11px] text-ink2/50 dark:text-paper/40">Itala ang bawat sentimo</p>
+                    </div>
+                </div>
+
+                <div className="relative inline-flex bg-paperDim dark:bg-ink2/50 rounded-full p-1 text-xs font-semibold shadow-inner">
                     <div
-                        className="segment-pill absolute top-1 bottom-1 rounded-full bg-ink dark:bg-paper"
+                        className="segment-pill absolute top-1 bottom-1 rounded-full bg-ink dark:bg-paper shadow-sm"
                         style={{
                             left: pillStyle.left,
                             width: pillStyle.width,
@@ -106,7 +126,7 @@ function AddEntryForm({ uid, onAdded }) {
                         }}
                     />
                     <div
-                        className="segment-pill absolute top-1 bottom-1 rounded-full bg-peso"
+                        className="segment-pill absolute top-1 bottom-1 rounded-full bg-peso shadow-sm"
                         style={{
                             left: pillStyle.left,
                             width: pillStyle.width,
@@ -137,28 +157,52 @@ function AddEntryForm({ uid, onAdded }) {
             )}
 
             <form onSubmit={submit} className="flex flex-col sm:flex-row gap-3">
-                <input
-                    type="text" value={desc} onChange={e => setDesc(e.target.value)}
-                    placeholder={type === "income" ? "e.g., Allowance" : "e.g., Breadboard, Pamasahe sa CCSFP"}
-                    className="flex-1 min-w-0 bg-paperDim/60 dark:bg-ink2/40 border border-line dark:border-line/20 rounded-xl px-4 py-3 text-sm text-ink dark:text-paper placeholder:text-ink2/40 dark:placeholder:text-paper/40 focus:outline-none focus:ring-2 focus:ring-peso/40 transition-shadow duration-200"
-                />
-                <input
-                    type="number" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)}
-                    placeholder="₱0.00"
-                    className="sm:w-28 bg-paperDim/60 dark:bg-ink2/40 border border-line dark:border-line/20 rounded-xl px-4 py-3 text-sm font-mono text-ink dark:text-paper placeholder:text-ink2/40 dark:placeholder:text-paper/40 focus:outline-none focus:ring-2 focus:ring-peso/40 transition-shadow duration-200"
-                />
+                <FieldWrap
+                    className="flex-1 min-w-0"
+                    icon={<Icons.Pencil size={15} className="text-ink2/40 dark:text-paper/35 shrink-0" />}
+                >
+                    <input
+                        type="text" value={desc} onChange={e => setDesc(e.target.value)}
+                        placeholder={type === "income" ? "e.g., Allowance" : "e.g., Breadboard, Pamasahe sa CCSFP"}
+                        className="w-full min-w-0 bg-transparent py-3 text-sm text-ink dark:text-paper placeholder:text-ink2/40 dark:placeholder:text-paper/40 focus:outline-none"
+                    />
+                </FieldWrap>
+
+                <FieldWrap
+                    className="sm:w-32"
+                    icon={<span className="text-ink2/40 dark:text-paper/35 font-mono text-sm shrink-0">₱</span>}
+                >
+                    <input
+                        type="number" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)}
+                        placeholder="0.00"
+                        className="w-full min-w-0 bg-transparent py-3 text-sm font-mono text-ink dark:text-paper placeholder:text-ink2/40 dark:placeholder:text-paper/40 focus:outline-none"
+                    />
+                </FieldWrap>
+
                 {type === "expense" && (
-                    <select value={category} onChange={e => setCategory(e.target.value)}
-                        className="field-pop sm:w-36 bg-paperDim/60 dark:bg-ink2/40 border border-line dark:border-line/20 rounded-xl px-4 py-3 text-sm text-ink dark:text-paper focus:outline-none focus:ring-2 focus:ring-peso/40 transition-shadow duration-200">
-                        {CATEGORIES.map(c => <option key={c} value={c} className="dark:bg-ink dark:text-paper">{c}</option>)}
-                    </select>
+                    <FieldWrap
+                        className="field-pop sm:w-40"
+                        icon={<Icons.Category size={14} className="text-ink2/40 dark:text-paper/35 shrink-0" />}
+                    >
+                        <select value={category} onChange={e => setCategory(e.target.value)}
+                            className="w-full min-w-0 bg-transparent py-3 text-sm text-ink dark:text-paper focus:outline-none">
+                            {CATEGORIES.map(c => <option key={c} value={c} className="dark:bg-ink dark:text-paper">{c}</option>)}
+                        </select>
+                    </FieldWrap>
                 )}
-                <select value={method} onChange={e => setMethod(e.target.value)}
-                    className="sm:w-28 bg-paperDim/60 dark:bg-ink2/40 border border-line dark:border-line/20 rounded-xl px-4 py-3 text-sm text-ink dark:text-paper focus:outline-none focus:ring-2 focus:ring-peso/40 transition-shadow duration-200">
-                    {METHODS.map(m => <option key={m} value={m} className="dark:bg-ink dark:text-paper">{m}</option>)}
-                </select>
+
+                <FieldWrap
+                    className="sm:w-32"
+                    icon={<Icons.Wallet size={14} className="text-ink2/40 dark:text-paper/35 shrink-0" />}
+                >
+                    <select value={method} onChange={e => setMethod(e.target.value)}
+                        className="w-full min-w-0 bg-transparent py-3 text-sm text-ink dark:text-paper focus:outline-none">
+                        {METHODS.map(m => <option key={m} value={m} className="dark:bg-ink dark:text-paper">{m}</option>)}
+                    </select>
+                </FieldWrap>
+
                 <button type="submit" disabled={saving}
-                    className={`font-semibold rounded-xl px-6 py-3 text-sm flex items-center justify-center gap-2 transition-colors shrink-0 text-paper disabled:opacity-60 active:scale-95 duration-200 ${type === "income" ? "bg-peso hover:bg-pesoLight" : "bg-ink dark:bg-peso hover:bg-pesoDeep"}`}>
+                    className={`font-semibold rounded-xl px-6 py-3 text-sm flex items-center justify-center gap-2 transition-colors shrink-0 text-paper disabled:opacity-60 active:scale-95 duration-200 shadow-sm ${type === "income" ? "bg-peso hover:bg-pesoLight" : "bg-ink dark:bg-peso hover:bg-pesoDeep"}`}>
                     <span key={saving ? "saving" : justAdded ? "added" : "idle"} className={justAdded ? "success-pop inline-flex" : "inline-flex"}>
                         {saving ? <Icons.Loader size={16} className="spin" /> : justAdded ? <Icons.Plus size={16} /> : <Icons.Plus size={16} />}
                     </span>

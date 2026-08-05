@@ -249,7 +249,7 @@
             ];
             if (!password) return null;
             return (
-                <div className="pt-1 pb-0.5">
+                <div className="pt-1">
                     <div className="flex gap-1.5">
                         {[0, 1, 2, 3].map(i => (
                             <div key={i} className="h-1.5 flex-1 rounded-full bg-line/70 overflow-hidden">
@@ -257,11 +257,11 @@
                             </div>
                         ))}
                     </div>
-                    <div className="flex items-center justify-between mt-1.5">
+                    <div className="flex items-center justify-between mt-1">
                         <span className={`text-xs font-semibold ${meta.text}`}>{meta.label}</span>
                         <span className="text-xs text-ink2/50 font-mono">{password.length} char</span>
                     </div>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
                         {checks.map((c, i) => (
                             <span key={i} className={`inline-flex items-center gap-1 text-[11px] ${c.ok ? "text-peso" : "text-ink2/40"}`}>
                                 <span key={c.ok ? "on" : "off"} className={c.ok ? "check-pop inline-flex" : "inline-flex"}>
@@ -504,19 +504,15 @@
                         <div className="perf-edge-v absolute top-0 right-0 h-full w-2.5 bg-paper"></div>
                     </div>
 
-                    <div className="lg:hidden">
-                        <BrandPanel />
-                    </div>
-
-                    <div className="flex items-center justify-center px-6 py-12 lg:py-10 relative">
+                    <div className="flex items-center justify-center px-6 py-6 lg:py-10 relative">
                         <div className="w-full max-w-sm fade-up">
-                            <a href="index.html" className="lg:hidden flex items-center justify-center gap-2.5 mb-8">
+                            <a href="index.html" className="lg:hidden flex items-center justify-center gap-2.5 mb-5">
                                 <Logo size={30} />
                                 <span className="text-xl font-display font-semibold tracking-tight text-ink">Tipid</span>
                             </a>
 
                             <div className={shake ? "shake" : ""}>
-                                <div className="mb-6">
+                                <div className="mb-5 text-center lg:text-left">
                                     <p className="text-xs font-mono tracking-[0.2em] uppercase text-peso mb-2">Simulan ang tipid</p>
                                     <h1 className="font-display text-3xl font-semibold text-ink tracking-tight">Gumawa ng account</h1>
                                     <p className="text-ink2 text-sm mt-2">Libre, at tumatagal lang ng ilang segundo.</p>
@@ -534,7 +530,7 @@
                                     <GoogleIcon size={18} /> Mag-sign up gamit ang Google
                                 </button>
 
-                                <div className="flex items-center gap-3 my-6">
+                                <div className="flex items-center gap-3 my-4">
                                     <div className="ledger-rule flex-1"></div>
                                     <span className="text-xs font-mono text-ink2/50 uppercase">o</span>
                                     <div className="ledger-rule flex-1"></div>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>History — Tipid</title>
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#1F6F54">
     <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -53,11 +53,12 @@
     <script type="module" src="./firebase-data.js"></script>
 
     <style>
-        html { background: #F9FAFB; transition: background-color 0.3s; }
+        html { background: #F1F4EF; transition: background-color 0.3s; }
         html.dark { background: #111A15; color: #F1F4EF; }
 
         body { font-feature-settings: "tnum" 1, "lnum" 1; }
         ::selection { background: #C9932E33; color: #15231C; }
+        :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.8s linear infinite; }
@@ -65,8 +66,8 @@
         @keyframes rowIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
         .row-in { animation: rowIn 0.3s ease-out both; }
 
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-up { animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-up { animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
         @keyframes bannerIn {
             from { opacity: 0; transform: translateY(-8px) scale(0.98); }
@@ -102,7 +103,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
+<body class="bg-paper dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
     <div id="root"></div>
 
     <!-- 1. Global Utilities & Constants -->
@@ -194,6 +195,15 @@
 
     <!-- 3. Main History Assembly -->
     <script type="text/babel">
+        function AmbientBackground() {
+            return (
+                <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
+                    <div className="absolute -top-24 -right-20 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-3xl" />
+                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-gold/10 dark:bg-gold/5 rounded-full blur-3xl" />
+                </div>
+            );
+        }
+
         function HistoryApp() {
             const authReady = window.useAuthReady();
             const dataReady = window.useDataReady();
@@ -227,7 +237,7 @@
 
             if (user === undefined || user === null) {
                 return (
-                    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-ink">
+                    <div className="min-h-screen flex items-center justify-center bg-paper dark:bg-ink">
                         <div className="flex flex-col items-center gap-4">
                             <div className="relative flex items-center justify-center">
                                 <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/20 halo-pulse" />
@@ -250,16 +260,22 @@
 
             return (
                 <div className="min-h-screen relative pb-[100px] md:pb-0">
+                    <AmbientBackground />
                     <Navbar user={user} onLogout={logout} activeTab="history" />
 
                     <main className="max-w-4xl mx-auto px-6 pt-24 md:pt-10 pb-28 md:pb-10 space-y-6">
-                        <div className="fade-up" style={{ animationDelay: "0ms" }}>
-                            <h1 className="font-display text-3xl font-semibold text-ink dark:text-paper">Transaction History</h1>
-                            <p className="text-ink2/60 dark:text-paper/60 mt-1">Review your past expenses and income.</p>
+                        <div className="fade-up flex items-center gap-3" style={{ animationDelay: "0ms" }}>
+                            <span className="w-10 h-10 rounded-xl bg-peso/10 dark:bg-pesoLight/20 text-peso dark:text-pesoLight flex items-center justify-center shrink-0">
+                                <Icons.List size={17} />
+                            </span>
+                            <div>
+                                <h1 className="font-display text-2xl md:text-3xl font-semibold text-ink dark:text-paper leading-tight">Transaction History</h1>
+                                <p className="text-ink2/60 dark:text-paper/50 text-sm mt-0.5">Review your past expenses and income.</p>
+                            </div>
                         </div>
 
                         {dataError && (
-                            <div className="banner-in flex items-start gap-2 bg-expense/10 text-expense text-sm rounded-xl px-4 py-3">
+                            <div className="fade-up banner-in flex items-start gap-2 bg-expense/10 text-expense text-sm rounded-xl px-4 py-3" style={{ animationDelay: "45ms" }}>
                                 <Icons.AlertCircle size={16} className="shrink-0 mt-0.5" /><span>{dataError}</span>
                             </div>
                         )}

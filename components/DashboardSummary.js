@@ -78,6 +78,20 @@ function AnimatedAmount({ value, className }) {
     return <span className={className}>₱{peso(display)}</span>;
 }
 
+/* ---------- Small reusable icon chip used in each summary card header ---------- */
+function IconChip({ icon, tone }) {
+    const tones = {
+        peso: "bg-peso/10 text-peso dark:bg-pesoLight/15 dark:text-pesoLight",
+        expense: "bg-expense/10 text-expense dark:bg-expense/20 dark:text-expense",
+        gold: "bg-gold/10 text-gold dark:bg-gold/20 dark:text-gold",
+    };
+    return (
+        <span className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${tones[tone] || tones.peso}`}>
+            {icon}
+        </span>
+    );
+}
+
 /* ---------- Editable monthly budget ---------- */
 function BudgetEditor({ uid, budget }) {
     const { useState, useEffect } = React;
@@ -102,7 +116,7 @@ function BudgetEditor({ uid, budget }) {
 
     if (!editing) {
         return (
-            <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1.5 text-xs font-semibold text-peso hover:underline transition-colors duration-200">
+            <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1.5 text-xs font-semibold text-peso dark:text-pesoLight hover:underline transition-colors duration-200">
                 <Icons.Pencil size={12} />
                 {budget ? "Baguhin ang budget" : "Magtakda ng buwanang budget"}
             </button>
@@ -116,7 +130,7 @@ function BudgetEditor({ uid, budget }) {
                 placeholder="₱0.00"
                 className="w-28 bg-paper dark:bg-ink2/50 border border-line dark:border-line/20 rounded-lg px-2.5 py-1.5 text-xs font-mono text-ink dark:text-paper focus:outline-none focus:ring-2 focus:ring-peso/40 transition-shadow duration-200"
             />
-            <button type="submit" disabled={saving} className="text-xs font-semibold text-peso disabled:opacity-50 active:scale-95 transition-transform duration-150">
+            <button type="submit" disabled={saving} className="text-xs font-semibold text-peso dark:text-pesoLight disabled:opacity-50 active:scale-95 transition-transform duration-150">
                 {saving ? "..." : "Save"}
             </button>
             <button type="button" onClick={() => setEditing(false)} className="text-xs text-ink2/50 dark:text-paper/40 hover:text-ink2/80 dark:hover:text-paper/70 transition-colors duration-200">Cancel</button>
@@ -147,6 +161,7 @@ function SmartSummary({ uid, entries, budget }) {
     const remaining = budget != null ? budget - spent : income - spent;
     const remainingLabel = budget != null ? "Natitirang Budget" : "Natitira (Kita − Gastos)";
     const overBudget = budget != null && remaining < 0;
+    const budgetPct = budget ? Math.min(100, Math.round((spent / budget) * 100)) : null;
 
     const byCategory = useMemo(() => {
         const totals = {};
@@ -164,47 +179,81 @@ function SmartSummary({ uid, entries, budget }) {
             <DashboardSummaryStyles />
 
             <div className="grid sm:grid-cols-3 gap-4">
-                <div className="summary-card bg-white/80 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm p-6">
-                    <p className="text-xs font-mono tracking-[0.15em] uppercase text-peso mb-2 flex items-center gap-1.5">
-                        <Icons.TrendUp size={13} /> Kita ngayong buwan
-                    </p>
+                <div className="relative overflow-hidden summary-row-in summary-card bg-white/80 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm p-6" style={{ animationDelay: "0ms" }}>
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-peso to-pesoLight" />
+                    <div className="flex items-center gap-2.5 mb-4">
+                        <IconChip tone="peso" icon={<Icons.TrendUp size={14} />} />
+                        <p className="text-xs font-mono tracking-[0.15em] uppercase text-ink2/60 dark:text-paper/50">Kita ngayong buwan</p>
+                    </div>
                     <AnimatedAmount value={income} className="font-mono text-2xl font-semibold text-ink dark:text-paper" />
                 </div>
-                <div className="summary-card bg-white/80 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm p-6">
-                    <p className="text-xs font-mono tracking-[0.15em] uppercase text-expense mb-2 flex items-center gap-1.5">
-                        <Icons.TrendDown size={13} /> Gastos ngayong buwan
-                    </p>
+
+                <div className="relative overflow-hidden summary-row-in summary-card bg-white/80 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm p-6" style={{ animationDelay: "60ms" }}>
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-expense to-expense/60" />
+                    <div className="flex items-center gap-2.5 mb-4">
+                        <IconChip tone="expense" icon={<Icons.TrendDown size={14} />} />
+                        <p className="text-xs font-mono tracking-[0.15em] uppercase text-ink2/60 dark:text-paper/50">Gastos ngayong buwan</p>
+                    </div>
                     <AnimatedAmount value={spent} className="font-mono text-2xl font-semibold text-ink dark:text-paper" />
                 </div>
-                <div className={`summary-card rounded-[1.5rem] border shadow-sm p-6 backdrop-blur-xl ${overBudget ? "bg-expense/10 border-expense/30 budget-glow" : "bg-white/80 dark:bg-ink2/25 border-line/40 dark:border-line/10"}`}>
-                    <p className={`text-xs font-mono tracking-[0.15em] uppercase mb-2 flex items-center gap-1.5 ${overBudget ? "text-expense" : "text-peso"}`}>
-                        <Icons.Wallet size={13} /> {remainingLabel}
-                    </p>
+
+                <div className={`relative overflow-hidden summary-row-in summary-card rounded-[1.5rem] border shadow-sm p-6 backdrop-blur-xl ${overBudget ? "bg-expense/10 border-expense/30 budget-glow" : "bg-white/80 dark:bg-ink2/25 border-line/40 dark:border-line/10"}`} style={{ animationDelay: "120ms" }}>
+                    <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${overBudget ? "from-expense to-expense/60" : "from-gold to-peso"}`} />
+                    <div className="flex items-center gap-2.5 mb-4">
+                        <IconChip tone={overBudget ? "expense" : "gold"} icon={<Icons.Wallet size={14} />} />
+                        <p className={`text-xs font-mono tracking-[0.15em] uppercase ${overBudget ? "text-expense" : "text-ink2/60 dark:text-paper/50"}`}>
+                            {remainingLabel}
+                        </p>
+                    </div>
                     <AnimatedAmount value={remaining} className={`font-mono text-2xl font-semibold ${overBudget ? "text-expense" : "text-ink dark:text-paper"}`} />
-                    <div className="mt-2">
+
+                    {budgetPct != null && (
+                        <div className="mt-3.5">
+                            <div className="h-1.5 bg-paperDim dark:bg-ink2/50 rounded-full overflow-hidden">
+                                <div className={`bar-fill h-full rounded-full ${overBudget ? "bg-expense" : "bg-peso"}`} style={{ width: `${budgetPct}%` }} />
+                            </div>
+                            <p className="text-[11px] text-ink2/50 dark:text-paper/40 mt-1.5 font-mono">{budgetPct}% ng budget nagastos na</p>
+                        </div>
+                    )}
+
+                    <div className="mt-3">
                         <BudgetEditor uid={uid} budget={budget} />
                     </div>
                 </div>
             </div>
 
             <div className="summary-card bg-white/80 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm p-7">
-                <p className="text-xs font-mono tracking-[0.2em] uppercase text-peso mb-4">Breakdown ng Gastos</p>
+                <p className="text-xs font-mono tracking-[0.2em] uppercase text-peso dark:text-pesoLight mb-4">Breakdown ng Gastos</p>
                 {byCategory.length === 0 ? (
                     <p className="text-sm text-ink2/60 dark:text-paper/50 italic">Wala pang gastos ngayong buwan.</p>
                 ) : (
                     <div className="space-y-3.5">
-                        {byCategory.map((c, i) => (
-                            <div key={c.label} className="summary-row-in" style={{ animationDelay: `${i * 60}ms` }}>
-                                <div className="flex justify-between text-sm mb-1.5">
-                                    <span className="font-medium text-ink dark:text-paper">{c.label}</span>
-                                    <span className="font-mono text-ink2 dark:text-paper/80">₱{peso(c.amount)}</span>
+                        {byCategory.map((c, i) => {
+                            const pct = spent ? Math.round((c.amount / spent) * 100) : 0;
+                            return (
+                                <div key={c.label} className="summary-row-in" style={{ animationDelay: `${i * 60}ms` }}>
+                                    <div className="flex justify-between items-baseline text-sm mb-1.5">
+                                        <span className="font-medium text-ink dark:text-paper flex items-center gap-2">
+                                            {c.label}
+                                            {i === 0 && (
+                                                <span className="text-[9px] font-mono font-semibold tracking-wide uppercase text-gold bg-gold/10 rounded-full px-1.5 py-0.5">
+                                                    Pinakamalaki
+                                                </span>
+                                            )}
+                                        </span>
+                                        <span className="font-mono text-ink2 dark:text-paper/80">
+                                            ₱{peso(c.amount)} <span className="text-ink2/40 dark:text-paper/35">· {pct}%</span>
+                                        </span>
+                                    </div>
+                                    <div className="h-2 bg-paperDim dark:bg-ink2/50 rounded-full overflow-hidden">
+                                        <div
+                                            className="bar-fill h-full rounded-full"
+                                            style={{ width: `${pct}%`, backgroundColor: CATEGORY_COLOR[c.label] || "#1F6F54" }}
+                                        ></div>
+                                    </div>
                                 </div>
-                                <div className="h-2 bg-paperDim dark:bg-ink2/50 rounded-full overflow-hidden">
-                                    <div className={`bar-fill h-full rounded-full ${CATEGORY_COLOR[c.label] || "bg-peso"}`}
-                                         style={{ width: spent ? `${(c.amount / spent) * 100}%` : "0%" }}></div>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>

@@ -3,7 +3,7 @@
   "short_name": "Tipid",
   "description": "Simple, tapat, at laging malinaw na paraan para subaybayan ang gastos mo.",
   "id": "/",
-  "start_url": "/index.html",
+  "start_url": "/login.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
