@@ -352,5 +352,38 @@
 
         ReactDOM.createRoot(document.getElementById("root")).render(<ProfileApp />);
     </script>
+    <!-- PWA Service Worker Registration & Auto-Update Alert -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+
+                    // Makikinig ang app kung may dina-download na bagong update (bagong CACHE_VERSION)
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            // Kapag tapos na i-download ang bagong update
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // Premium UX: Magpapakita ng magandang prompt imbes na biglang i-refresh ang screen
+                                Swal.fire({
+                                    title: "May Bagong Update! 🎉",
+                                    text: "May in-add kaming bagong features sa Tipid. I-refresh ang app para magamit ito.",
+                                    icon: "info",
+                                    confirmButtonText: "I-update Ngayon",
+                                    confirmButtonColor: "#1F6F54",
+                                    allowOutsideClick: false,
+                                    customClass: { popup: "tipid-swal" }
+                                }).then(() => {
+                                    // Ire-reload ang app at makikita na ang bagong features
+                                    window.location.reload();
+                                });
+                            }
+                        });
+                    });
+
+                }).catch(err => console.error("Service Worker registration failed:", err));
+            });
+        }
+    </script>
 </body>
 </html>

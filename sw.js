@@ -2,16 +2,15 @@
 //
 // Two caches:
 //   CACHE_NAME    — the app shell (this site's own HTML/JS/icons), kept
-//                    fresh with a network-first strategy.
+//                   fresh with a network-first strategy.
 //   RUNTIME_CACHE — third-party CDN scripts the app depends on to render
-//                    (React, Babel, Tailwind, fonts, the Firebase SDK),
-//                    kept with stale-while-revalidate so the app can still
-//                    boot when offline.
+//                   (React, Babel, Tailwind, fonts, the Firebase SDK),
+//                   kept with stale-while-revalidate so the app can still
+//                   boot when offline.
 //
 // Bump BOTH version numbers below whenever you change the file list or want
-// old clients to drop their cached copies — without a version bump, a
-// returning visitor can keep serving last month's build forever.
-const CACHE_VERSION = 'v2';
+// old clients to drop their cached copies.
+const CACHE_VERSION = 'v3'; // Bumped to v3 to force cache refresh
 const CACHE_NAME = `tipid-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `tipid-runtime-${CACHE_VERSION}`;
 
@@ -21,27 +20,36 @@ const APP_SHELL = [
   '/login.html',
   '/signup.html',
   '/dashboard.html',
+  '/chart.html',
+  '/history.html',
+  '/profile.html',
+  '/firebase.js',
+  '/firebase-auth.js',
+  '/firebase-data.js',
+  '/components/navbar.js',
+  '/components/DashboardSummary.js',
+  '/components/ExpenseChart.js',
+  '/components/ExpenseForm.js',
+  '/components/ExpenseItem.js',
+  '/components/ExpenseList.js',
   '/manifest.json',
   '/assets/logo.svg',
   '/assets/logo-512.png',
   '/assets/favicon-32.png',
 ];
 
-// Cross-origin hosts we're willing to cache. Deliberately narrow — this is
-// the CDN scripts/fonts the pages need to render, nothing else. Firebase's
-// actual auth calls (identitytoolkit/securetoken.googleapis.com) are NOT on
-// this list on purpose, so sign-in/sign-up requests are never touched by
-// the cache and always hit the network fresh.
+// Cross-origin hosts we're willing to cache.
 const RUNTIME_HOSTS = [
   'fonts.googleapis.com',
   'fonts.gstatic.com',
   'cdn.tailwindcss.com',
   'unpkg.com',
+  'cdn.jsdelivr.net', // Added for Chart.js and SweetAlert2
 ];
 
 function isRuntimeCacheable(url) {
   if (RUNTIME_HOSTS.includes(url.hostname)) return true;
-  // Firebase's SDK bundles (not its API calls) live under gstatic/firebasejs/.
+  // Firebase's SDK bundles live under gstatic/firebasejs/.
   if (url.hostname === 'www.gstatic.com' && url.pathname.startsWith('/firebasejs/')) return true;
   return false;
 }
@@ -73,8 +81,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Lets a page force an update immediately (e.g. from a "new version
-// available" banner) instead of waiting for all tabs to close.
+// Lets a page force an update immediately
 self.addEventListener('message', event => {
   if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });
@@ -83,9 +90,6 @@ self.addEventListener('message', event => {
 self.addEventListener('fetch', event => {
   const { request } = event;
 
-  // Never intercept anything but plain GETs — POSTs (auth calls, form
-  // submits, etc.) go straight to the network untouched, so nothing
-  // sensitive ever ends up in Cache Storage.
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
@@ -99,14 +103,9 @@ self.addEventListener('fetch', event => {
     event.respondWith(staleWhileRevalidate(request));
     return;
   }
-
-  // Everything else (Firebase auth endpoints, analytics, etc.) — leave
-  // completely alone.
 });
 
-// Same-origin app shell: prefer the network so signed-in users always get
-// the latest code; fall back to cache when offline, and to the cached
-// index page for a full-page navigation with nothing cached at all.
+// Same-origin app shell: prefer the network so signed-in users always get the latest code.
 async function networkFirst(request) {
   const cache = await caches.open(CACHE_NAME);
   try {
@@ -124,15 +123,12 @@ async function networkFirst(request) {
   }
 }
 
-// Third-party CDN assets: serve the cached copy instantly if we have one
-// (these rarely change), and refresh it in the background for next time.
+// Third-party CDN assets: serve the cached copy instantly if we have one.
 async function staleWhileRevalidate(request) {
   const cache = await caches.open(RUNTIME_CACHE);
   const cached = await cache.match(request);
   const networkFetch = fetch(request)
     .then(response => {
-      // Cross-origin responses without CORS headers come back "opaque" —
-      // still safe and useful to cache, we just can't inspect their status.
       if (response && (response.ok || response.type === 'opaque')) {
         cache.put(request, response.clone());
       }

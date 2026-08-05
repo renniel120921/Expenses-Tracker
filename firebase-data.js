@@ -9,7 +9,7 @@ import {
   query,
   orderBy,
   serverTimestamp,
-} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"; // <-- Updated to 10.13.0
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 function entriesRef(uid) {
   return collection(db, "users", uid, "expenses");
@@ -49,12 +49,23 @@ window.TipidData = {
   },
 
   // cb receives an array of entries (expenses + income), newest first.
-  // Older docs saved before `type` existed are treated as "expense".
   subscribeEntries(uid, cb, onError) {
     const q = query(entriesRef(uid), orderBy("createdAt", "desc"));
+
+    // IMPORTANT: includeMetadataChanges allows the UI to react to local offline writes instantly.
     return onSnapshot(
       q,
-      (snap) => cb(snap.docs.map((d) => ({ id: d.id, type: "expense", ...d.data() }))),
+      { includeMetadataChanges: true },
+      (snap) => {
+        cb(
+          snap.docs.map((d) => ({
+            id: d.id,
+            type: "expense", // Default fallback for older records
+            // { serverTimestamps: "estimate" } prevents 'null' errors when adding items offline
+            ...d.data({ serverTimestamps: "estimate" }),
+          }))
+        );
+      },
       onError
     );
   },
@@ -69,6 +80,7 @@ window.TipidData = {
   subscribeBudget(uid, cb, onError) {
     return onSnapshot(
       userDocRef(uid),
+      { includeMetadataChanges: true },
       (snap) => cb(snap.exists() ? snap.data().monthlyBudget ?? null : null),
       onError
     );
