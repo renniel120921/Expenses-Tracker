@@ -22,16 +22,13 @@ function ExpenseFormStyles() {
             }
             .success-pop { animation: successPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 
-            .segment-pill { transition: left 0.3s cubic-bezier(0.34, 1.3, 0.4, 1), width 0.3s cubic-bezier(0.34, 1.3, 0.4, 1); }
-
             @media (prefers-reduced-motion: reduce) {
-                .form-banner-in, .field-pop, .success-pop, .segment-pill { animation: none !important; transition: none !important; }
+                .form-banner-in, .field-pop, .success-pop { animation: none !important; transition: none !important; }
             }
         `}</style>
     );
 }
 
-/* ---------- Icon-led field shell, same visual language as the login/signup pages ---------- */
 function FieldWrap({ icon, children, className = "" }) {
     return (
         <div className={`flex items-center gap-2.5 bg-paperDim/60 dark:bg-ink2/40 border border-line dark:border-line/20 rounded-xl px-3.5 focus-within:ring-2 focus-within:ring-peso/40 transition-shadow duration-200 ${className}`}>
@@ -41,8 +38,9 @@ function FieldWrap({ icon, children, className = "" }) {
     );
 }
 
-function AddEntryForm({ uid, onAdded }) {
-    const { useState, useRef, useLayoutEffect, useCallback } = React;
+// Tinatanggap na natin ang "entries" para mabilang ang balanse
+function AddEntryForm({ uid, onAdded, entries = [] }) {
+    const { useState } = React;
 
     const [type, setType] = useState("expense");
     const [desc, setDesc] = useState("");
@@ -50,32 +48,37 @@ function AddEntryForm({ uid, onAdded }) {
     const [category, setCategory] = useState(CATEGORIES[0]);
     const [method, setMethod] = useState(METHODS[0]);
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState("");
     const [justAdded, setJustAdded] = useState(false);
-
-    // --- Sliding pill behind the active segment (Gastos / Kita) ---
-    const segmentRefs = useRef({});
-    const [pillStyle, setPillStyle] = useState({ left: 0, width: 0 });
-
-    const measurePill = useCallback(() => {
-        const el = segmentRefs.current[type];
-        if (el) setPillStyle({ left: el.offsetLeft, width: el.offsetWidth });
-    }, [type]);
-
-    useLayoutEffect(() => {
-        measurePill();
-        window.addEventListener("resize", measurePill);
-        return () => window.removeEventListener("resize", measurePill);
-    }, [measurePill]);
 
     const submit = async (e) => {
         e.preventDefault();
         const amt = parseFloat(amount);
 
-        if (!desc.trim()) return setError("Ilagay kung ano ito.");
-        if (!amt || amt <= 0) return setError("Ilagay ang halaga.");
+        // SweetAlert para sa empty inputs
+        if (!desc.trim()) {
+            return Swal.fire({ icon: 'warning', title: 'Teka muna!', text: 'Pakilagay kung ano ang binili o kinita mo.', confirmButtonColor: '#1F6F54', customClass: { popup: 'tipid-swal' }});
+        }
+        if (!amt || amt <= 0) {
+            return Swal.fire({ icon: 'warning', title: 'Teka muna!', text: 'Pakilagay ang tamang halaga.', confirmButtonColor: '#1F6F54', customClass: { popup: 'tipid-swal' }});
+        }
 
-        setError("");
+        // LOGIC: I-block kung mas malaki ang Gastos kaysa sa Kita
+        if (type === "expense") {
+            const totalIncome = entries.filter(e => e.type === "income").reduce((sum, curr) => sum + curr.amount, 0);
+            const totalExpense = entries.filter(e => e.type === "expense").reduce((sum, curr) => sum + curr.amount, 0);
+            const currentBalance = totalIncome - totalExpense;
+
+            if (amt > currentBalance) {
+                return Swal.fire({
+                    icon: 'error',
+                    title: 'Balanse ay Hindi Sapat',
+                    text: `Hindi mo pwedeng ilagay ang gastos na ₱${window.peso(amt)} dahil ₱${window.peso(currentBalance)} na lamang ang natitira mong pera. Mag-log muna ng kita.`,
+                    confirmButtonColor: '#B5483B',
+                    customClass: { popup: 'tipid-swal' }
+                });
+            }
+        }
+
         setSaving(true);
 
         try {
@@ -85,16 +88,26 @@ function AddEntryForm({ uid, onAdded }) {
                 await window.TipidData.addExpense(uid, { desc: desc.trim(), amount: amt, category, method });
             }
 
-            // Reset form on success
             setDesc("");
             setAmount("");
             if (onAdded) onAdded();
 
-            // Brief success flash on the submit button, purely cosmetic
             setJustAdded(true);
             setTimeout(() => setJustAdded(false), 900);
+
+            // SweetAlert para sa Success Addition
+            Swal.fire({
+                icon: 'success',
+                title: type === 'income' ? 'Kita Naitala! 🎉' : 'Gastos Naitala! 💸',
+                text: `Matagumpay na naidagdag ang ₱${window.peso(amt)} bilang ${type === 'income' ? 'kita' : 'gastos'}.`,
+                confirmButtonColor: '#1F6F54',
+                timer: 2000,
+                showConfirmButton: false,
+                customClass: { popup: 'tipid-swal' }
+            });
+
         } catch (err) {
-            setError("Hindi na-save. Subukan ulit.");
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Hindi nai-save ang data sa server. Subukan ulit.', confirmButtonColor: '#B5483B', customClass: { popup: 'tipid-swal' }});
         } finally {
             setSaving(false);
         }
@@ -116,62 +129,44 @@ function AddEntryForm({ uid, onAdded }) {
                     </div>
                 </div>
 
-                <div className="relative inline-flex bg-paperDim dark:bg-ink2/50 rounded-full p-1 text-xs font-semibold shadow-inner">
+                {/* Pure CSS Grid toggle switch */}
+                <div className="relative grid grid-cols-2 bg-paperDim dark:bg-ink2/50 rounded-full p-1 text-xs font-semibold shadow-inner w-[140px]">
                     <div
-                        className="segment-pill absolute top-1 bottom-1 rounded-full bg-ink dark:bg-paper shadow-sm"
-                        style={{
-                            left: pillStyle.left,
-                            width: pillStyle.width,
-                            opacity: type === "income" ? 0 : 1,
-                        }}
-                    />
-                    <div
-                        className="segment-pill absolute top-1 bottom-1 rounded-full bg-peso shadow-sm"
-                        style={{
-                            left: pillStyle.left,
-                            width: pillStyle.width,
-                            opacity: type === "income" ? 1 : 0,
-                        }}
+                        className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full shadow-sm transition-all duration-300 ease-out ${
+                            type === "income" ? "translate-x-full bg-peso" : "translate-x-0 bg-ink dark:bg-paper"
+                        }`}
                     />
                     <button
                         type="button"
-                        ref={(el) => (segmentRefs.current.expense = el)}
                         onClick={() => setType("expense")}
-                        className={`relative z-10 px-3.5 py-1.5 rounded-full transition-colors duration-200 ${type === "expense" ? "text-paper dark:text-ink" : "text-ink2 dark:text-paper/60"}`}>
+                        className={`relative z-10 py-1.5 transition-colors duration-200 ${
+                            type === "expense" ? "text-paper dark:text-ink" : "text-ink2 dark:text-paper/60 hover:text-ink dark:hover:text-paper"
+                        }`}
+                    >
                         Gastos
                     </button>
                     <button
                         type="button"
-                        ref={(el) => (segmentRefs.current.income = el)}
                         onClick={() => setType("income")}
-                        className={`relative z-10 px-3.5 py-1.5 rounded-full transition-colors duration-200 ${type === "income" ? "text-paper" : "text-ink2 dark:text-paper/60"}`}>
+                        className={`relative z-10 py-1.5 transition-colors duration-200 ${
+                            type === "income" ? "text-paper" : "text-ink2 dark:text-paper/60 hover:text-ink dark:hover:text-paper"
+                        }`}
+                    >
                         Kita
                     </button>
                 </div>
             </div>
 
-            {error && (
-                <div className="form-banner-in mb-4 flex items-start gap-2 bg-expense/10 text-expense text-sm rounded-xl px-3.5 py-2.5">
-                    <Icons.AlertCircle size={15} className="shrink-0 mt-0.5" /><span>{error}</span>
-                </div>
-            )}
-
             <form onSubmit={submit} className="flex flex-col sm:flex-row gap-3">
-                <FieldWrap
-                    className="flex-1 min-w-0"
-                    icon={<Icons.Pencil size={15} className="text-ink2/40 dark:text-paper/35 shrink-0" />}
-                >
+                <FieldWrap className="flex-1 min-w-0" icon={<Icons.Pencil size={15} className="text-ink2/40 dark:text-paper/35 shrink-0" />}>
                     <input
                         type="text" value={desc} onChange={e => setDesc(e.target.value)}
-                        placeholder={type === "income" ? "e.g., Allowance" : "e.g., Breadboard, Pamasahe sa CCSFP"}
+                        placeholder={type === "income" ? "e.g., Allowance" : "e.g., Pamasahe sa Jeep"}
                         className="w-full min-w-0 bg-transparent py-3 text-sm text-ink dark:text-paper placeholder:text-ink2/40 dark:placeholder:text-paper/40 focus:outline-none"
                     />
                 </FieldWrap>
 
-                <FieldWrap
-                    className="sm:w-32"
-                    icon={<span className="text-ink2/40 dark:text-paper/35 font-mono text-sm shrink-0">₱</span>}
-                >
+                <FieldWrap className="sm:w-32" icon={<span className="text-ink2/40 dark:text-paper/35 font-mono text-sm shrink-0">₱</span>}>
                     <input
                         type="number" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)}
                         placeholder="0.00"
@@ -180,23 +175,15 @@ function AddEntryForm({ uid, onAdded }) {
                 </FieldWrap>
 
                 {type === "expense" && (
-                    <FieldWrap
-                        className="field-pop sm:w-40"
-                        icon={<Icons.Category size={14} className="text-ink2/40 dark:text-paper/35 shrink-0" />}
-                    >
-                        <select value={category} onChange={e => setCategory(e.target.value)}
-                            className="w-full min-w-0 bg-transparent py-3 text-sm text-ink dark:text-paper focus:outline-none">
+                    <FieldWrap className="field-pop sm:w-40" icon={<Icons.Category size={14} className="text-ink2/40 dark:text-paper/35 shrink-0" />}>
+                        <select value={category} onChange={e => setCategory(e.target.value)} className="w-full min-w-0 bg-transparent py-3 text-sm text-ink dark:text-paper focus:outline-none">
                             {CATEGORIES.map(c => <option key={c} value={c} className="dark:bg-ink dark:text-paper">{c}</option>)}
                         </select>
                     </FieldWrap>
                 )}
 
-                <FieldWrap
-                    className="sm:w-32"
-                    icon={<Icons.Wallet size={14} className="text-ink2/40 dark:text-paper/35 shrink-0" />}
-                >
-                    <select value={method} onChange={e => setMethod(e.target.value)}
-                        className="w-full min-w-0 bg-transparent py-3 text-sm text-ink dark:text-paper focus:outline-none">
+                <FieldWrap className="sm:w-32" icon={<Icons.Wallet size={14} className="text-ink2/40 dark:text-paper/35 shrink-0" />}>
+                    <select value={method} onChange={e => setMethod(e.target.value)} className="w-full min-w-0 bg-transparent py-3 text-sm text-ink dark:text-paper focus:outline-none">
                         {METHODS.map(m => <option key={m} value={m} className="dark:bg-ink dark:text-paper">{m}</option>)}
                     </select>
                 </FieldWrap>

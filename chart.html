@@ -48,6 +48,9 @@
     <!-- Chart.js UMD Integration -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.js"></script>
 
+    <!-- SweetAlert2 (Added to make the Auto-Update script work) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script type="module" src="./firebase.js"></script>
     <script type="module" src="./firebase-auth.js"></script>
     <script type="module" src="./firebase-data.js"></script>
@@ -108,8 +111,6 @@
             );
         }
 
-        // Same icon set as dashboard.html — ExpenseChart.js references these globally,
-        // so this page needs its own copy to render the chart card correctly.
         window.Icons = {
             Plus: (p) => <Icon {...p} path={<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>} />,
             Trash: (p) => <Icon {...p} path={<><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></>} />,
@@ -177,7 +178,7 @@
     </script>
 
     <!-- Components -->
-    <script type="text/babel" src="./components/navbar.js"></script>
+    <script type="text/babel" src="./components/Navbar.js"></script>
     <script type="text/babel" src="./components/ExpenseChart.js"></script>
 
     <!-- Chart Page Application -->
@@ -239,18 +240,23 @@
             };
 
             return (
-                <div className="min-h-screen relative pb-[100px] md:pb-0">
+                <div className="min-h-screen relative">
                     <AmbientBackground />
                     <Navbar user={user} onLogout={logout} activeTab="chart" />
 
-                    <main className="max-w-4xl mx-auto px-6 pt-24 md:pt-10 space-y-6">
-                        <div className="fade-up flex items-center gap-3" style={{ animationDelay: "0ms" }}>
-                            <span className="w-10 h-10 rounded-xl bg-gold/10 dark:bg-gold/20 text-gold flex items-center justify-center shrink-0">
-                                <Icons.Chart size={17} />
-                            </span>
-                            <div>
-                                <h1 className="font-display text-2xl md:text-3xl font-semibold text-ink dark:text-paper leading-tight">Analytics</h1>
-                                <p className="text-ink2/60 dark:text-paper/50 text-sm mt-0.5">Tingnan ang paghahati ng iyong paggastos.</p>
+                    {/* Adjusted layout classes to fix overlap: max-w-5xl, pt-32, pb-40 */}
+                    <main className="max-w-5xl mx-auto px-5 sm:px-6 pt-32 md:pt-12 pb-40 md:pb-16 space-y-8 md:space-y-12">
+
+                        {/* Premium SaaS Header */}
+                        <div className="fade-up mb-8" style={{ animationDelay: "0ms" }}>
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-gold/20 to-gold/5 dark:from-gold/30 dark:to-gold/10 border border-gold/20 flex items-center justify-center shrink-0 shadow-sm">
+                                    <Icons.Chart size={24} className="text-gold dark:text-gold" />
+                                </div>
+                                <div>
+                                    <h1 className="font-display text-3xl md:text-4xl font-semibold text-ink dark:text-paper leading-tight mb-1">Analytics</h1>
+                                    <p className="text-ink2/70 dark:text-paper/60 text-sm md:text-base">Tingnan ang paghahati ng iyong paggastos.</p>
+                                </div>
                             </div>
                         </div>
 
@@ -264,19 +270,16 @@
 
         ReactDOM.createRoot(document.getElementById("root")).render(<ChartApp />);
     </script>
+
     <!-- PWA Service Worker Registration & Auto-Update Alert -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').then(registration => {
-
-                    // Makikinig ang app kung may dina-download na bagong update (bagong CACHE_VERSION)
                     registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing;
                         newWorker.addEventListener('statechange', () => {
-                            // Kapag tapos na i-download ang bagong update
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                // Premium UX: Magpapakita ng magandang prompt imbes na biglang i-refresh ang screen
                                 Swal.fire({
                                     title: "May Bagong Update! 🎉",
                                     text: "May in-add kaming bagong features sa Tipid. I-refresh ang app para magamit ito.",
@@ -286,13 +289,11 @@
                                     allowOutsideClick: false,
                                     customClass: { popup: "tipid-swal" }
                                 }).then(() => {
-                                    // Ire-reload ang app at makikita na ang bagong features
                                     window.location.reload();
                                 });
                             }
                         });
                     });
-
                 }).catch(err => console.error("Service Worker registration failed:", err));
             });
         }

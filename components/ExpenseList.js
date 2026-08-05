@@ -62,19 +62,8 @@ function SkeletonRow() {
 }
 
 function EntryList({ uid, entries, loading }) {
-    const { useState } = React;
-    const [deletingId, setDeletingId] = useState(null);
-
-    const remove = async (id) => {
-        setDeletingId(id);
-        try {
-            await window.TipidData.deleteEntry(uid, id);
-        } catch (err) {
-            console.error("Failed to delete entry:", err);
-        } finally {
-            setDeletingId(null);
-        }
-    };
+    // Inalis na natin yung "remove" function dito dahil ang
+    // mismong ExpenseItem.js na ang nagha-handle ng SweetAlert at Deletion.
 
     return (
         <div className="relative overflow-hidden bg-white/80 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm mb-16 md:mb-0">
@@ -91,8 +80,8 @@ function EntryList({ uid, entries, loading }) {
                         <p className="text-[11px] text-ink2/50 dark:text-paper/40 truncate">Pinakabagong mga transaksyon</p>
                     </div>
                 </div>
-                <span key={entries.length} className="count-pop shrink-0 font-mono text-xs font-semibold text-peso dark:text-pesoLight bg-peso/10 dark:bg-pesoLight/15 rounded-full px-2.5 py-1">
-                    {entries.length} total
+                <span key={entries ? entries.length : 0} className="count-pop shrink-0 font-mono text-xs font-semibold text-peso dark:text-pesoLight bg-peso/10 dark:bg-pesoLight/15 rounded-full px-2.5 py-1">
+                    {entries ? entries.length : 0} total
                 </span>
             </div>
 
@@ -103,7 +92,7 @@ function EntryList({ uid, entries, loading }) {
                     <SkeletonRow />
                     <SkeletonRow />
                 </div>
-            ) : entries.length === 0 ? (
+            ) : (!entries || entries.length === 0) ? (
                 <div className="empty-bounce py-16 flex flex-col items-center gap-3 text-ink2/50 dark:text-paper/40">
                     <span className="w-12 h-12 rounded-full bg-paperDim dark:bg-ink2/40 flex items-center justify-center">
                         <Icons.Inbox size={22} />
@@ -112,13 +101,11 @@ function EntryList({ uid, entries, loading }) {
                 </div>
             ) : (
                 <ul className="ledger-scroll list-in max-h-[28rem] overflow-y-auto">
-                    {entries.map((e, i) => (
+                    {entries.map((e) => (
                         <ExpenseItem
                             key={e.id}
-                            entry={e}
-                            index={i}
-                            onRemove={remove}
-                            isDeleting={deletingId === e.id}
+                            item={e}        // Eksaktong pangalan na hinahanap ng ExpenseItem
+                            uid={uid}       // Pinapasa natin para malaman ng Firebase kung kanino buburahin
                         />
                     ))}
                 </ul>

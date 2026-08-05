@@ -1,87 +1,100 @@
 // components/ExpenseItem.js
 
-function ExpenseItemStyles() {
-    return (
-        <style>{`
-            @keyframes deleteIconSwap {
-                from { opacity: 0; transform: scale(0.7) rotate(-8deg); }
-                to   { opacity: 1; transform: scale(1) rotate(0deg); }
-            }
-            .delete-icon-swap { animation: deleteIconSwap 0.2s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+// Dinagdag natin ang 'entry' sa tinatanggap na properties
+function ExpenseItem({ item, entry, uid }) {
+    // Babasahin niya ang data kung 'item' man o 'entry' ang ginamit ng parent component
+    const data = item || entry;
 
-            .row-leaving { transition: opacity 0.3s ease, transform 0.3s ease; }
+    // Safety check. Kung parehong walang naipasa, wag i-render para hindi mag-crash.
+    if (!data) return null;
 
-            @media (prefers-reduced-motion: reduce) {
-                .delete-icon-swap { animation: none !important; }
-                .row-leaving { transition: none !important; }
-            }
-        `}</style>
-    );
-}
+    const isIncome = data.type === "income";
 
-function ExpenseItem({ entry, onRemove, isDeleting, index }) {
-    // Format the timestamp safely (supports Firestore Timestamp, strings, or numbers)
-    const formatDate = (ts) => {
-        if (!ts) return "Ngayon lang";
-        try {
-            let dateObj = ts;
-            if (typeof ts.toDate === "function") {
-                dateObj = ts.toDate();
-            } else if (typeof ts === "string" || typeof ts === "number") {
-                dateObj = new Date(ts);
-            }
-            return dateObj.toLocaleDateString("en-PH", {
-                month: "short",
-                day: "numeric",
-                hour: "numeric",
-                minute: "2-digit"
+    const dateStr = data.createdAt && data.createdAt.toDate
+        ? data.createdAt.toDate().toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })
+        : "Kamakailan";
+
+    const handleDelete = () => {
+        // Safety Guard: Pigilan ang error bago pa tumawag sa Firebase
+        if (!uid || !data.id) {
+            console.error("Missing Data:", { uid, entryId: data?.id });
+            return Swal.fire({
+                icon: 'error',
+                title: 'System Error',
+                text: 'Hindi mahanap ang User ID. Paki-refresh ang pahina.',
+                confirmButtonColor: '#B5483B',
+                customClass: { popup: 'tipid-swal' }
             });
-        } catch (e) {
-            return "Ngayon lang";
         }
+
+        Swal.fire({
+            title: 'Sigurado ka ba?',
+            text: `Buburahin mo ang record para sa "${data.desc}" (₱${window.peso(data.amount)}). Hindi na ito maibabalik.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#B5483B',
+            cancelButtonColor: '#33443A',
+            confirmButtonText: 'Oo, burahin',
+            cancelButtonText: 'Kanselahin',
+            customClass: { popup: 'tipid-swal' },
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.TipidData.deleteEntry(uid, data.id)
+                    .then(() => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Nabura na!',
+                            text: 'Ang record ay matagumpay na tinanggal sa iyong history.',
+                            confirmButtonColor: '#1F6F54',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            customClass: { popup: 'tipid-swal' }
+                        });
+                    })
+                    .catch((err) => {
+                        console.error("Delete Error:", err);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops!',
+                            text: 'Hindi mabura ang record. May error sa server.',
+                            confirmButtonColor: '#B5483B',
+                            customClass: { popup: 'tipid-swal' }
+                        });
+                    });
+            }
+        });
     };
 
-    // Stagger only the first handful of rows on mount so long lists don't crawl in one by one
-    const staggerDelay = typeof index === "number" ? Math.min(index, 8) * 45 : 0;
-
-    // Category-tinted icon chip — reuses the same CATEGORY_COLOR map as the summary/chart cards
-    const accentColor = entry.type === "income" ? "#2F8E6C" : (CATEGORY_COLOR[entry.category] || "#33443A");
-
     return (
-        <li
-            className={`row-in row-leaving flex items-center justify-between gap-3 px-6 sm:px-7 py-4 group hover:bg-paperDim/30 dark:hover:bg-ink2/30 transition-colors border-b border-line/30 dark:border-line/10 last:border-none ${isDeleting ? "opacity-40 scale-[0.98]" : ""}`}
-            style={{ animationDelay: `${staggerDelay}ms` }}
-        >
-            <ExpenseItemStyles />
-            <div className="flex items-center gap-3.5 min-w-0">
-                <span
-                    className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: accentColor + "1A", color: accentColor }}
-                >
-                    {entry.type === "income" ? <Icons.TrendUp size={15} /> : <Icons.Category size={13} />}
-                </span>
-                <div className="min-w-0">
-                    <p className="font-medium text-ink dark:text-paper truncate">{entry.desc}</p>
-                    <p className="font-mono text-[11px] text-ink2/60 dark:text-paper/50 mt-0.5">
-                        {entry.type === "income" ? "Kita" : entry.category} · {entry.method || "Cash"} · {formatDate(entry.createdAt || entry.timestamp)}
-                    </p>
+        <div className="flex items-center justify-between p-4 bg-white dark:bg-ink2/30 rounded-2xl border border-line dark:border-white/10 shadow-sm transition-all hover:shadow-md group row-in">
+            <div className="flex items-center gap-4">
+                <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${isIncome ? 'bg-peso/10 text-peso dark:bg-pesoLight/20 dark:text-pesoLight' : 'bg-expense/10 text-expense dark:bg-expense/20'}`}>
+                    {isIncome ? <Icons.TrendUp size={18} /> : <Icons.TrendDown size={18} />}
+                </div>
+                <div>
+                    <p className="font-semibold text-ink dark:text-paper text-sm md:text-base">{data.desc}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] font-mono font-medium tracking-wide px-2 py-0.5 rounded-md bg-paperDim dark:bg-ink2/50 text-ink2/70 dark:text-paper/60 uppercase">
+                            {data.category}
+                        </span>
+                        <span className="text-[11px] text-ink2/50 dark:text-paper/40">{dateStr}</span>
+                    </div>
                 </div>
             </div>
-            <div className="flex items-center gap-3 shrink-0">
-                <span className={`font-mono font-semibold tabular-nums ${entry.type === "income" ? "text-pesoLight" : "text-expense"}`}>
-                    {entry.type === "income" ? "+" : "-"}₱{peso(entry.amount)}
+            <div className="flex items-center gap-3">
+                <span className={`font-mono font-semibold text-sm md:text-base ${isIncome ? 'text-peso dark:text-pesoLight' : 'text-ink dark:text-paper'}`}>
+                    {isIncome ? '+' : '-'}₱{window.peso(data.amount)}
                 </span>
+
                 <button
-                    onClick={() => onRemove(entry.id)}
-                    disabled={isDeleting}
-                    aria-label="Delete entry"
-                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity text-ink2/40 hover:text-expense dark:text-paper/40 dark:hover:text-expense disabled:opacity-100 p-1"
+                    onClick={handleDelete}
+                    aria-label="Burahin ang entry"
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity p-2 text-ink2/40 hover:text-expense dark:text-paper/40 dark:hover:text-expense active:scale-90"
                 >
-                    <span key={isDeleting ? "loading" : "trash"} className="delete-icon-swap inline-flex">
-                        {isDeleting ? <Icons.Loader size={15} className="spin" /> : <Icons.Trash size={15} />}
-                    </span>
+                    <Icons.Trash size={18} />
                 </button>
             </div>
-        </li>
+        </div>
     );
 }

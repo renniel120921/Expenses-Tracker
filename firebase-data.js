@@ -1,3 +1,5 @@
+// firebase-data.js
+
 import { db } from "./firebase.js";
 import {
   collection,
@@ -23,29 +25,46 @@ window.TipidData = {
   // --- entries (expenses + income) ---------------------------------------
 
   async addExpense(uid, { desc, amount, category, method }) {
-    return addDoc(entriesRef(uid), {
-      type: "expense",
-      desc,
-      amount,
-      category,
-      method: method || "Cash",
-      createdAt: serverTimestamp(),
-    });
+    try {
+      return await addDoc(entriesRef(uid), {
+        type: "expense",
+        desc,
+        amount,
+        category,
+        method: method || "Cash",
+        createdAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error adding expense:", error);
+      throw error;
+    }
   },
 
   async addIncome(uid, { desc, amount, method }) {
-    return addDoc(entriesRef(uid), {
-      type: "income",
-      desc,
-      amount,
-      category: "Kita",
-      method: method || "Cash",
-      createdAt: serverTimestamp(),
-    });
+    try {
+      return await addDoc(entriesRef(uid), {
+        type: "income",
+        desc,
+        amount,
+        category: "Kita",
+        method: method || "Cash",
+        createdAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error adding income:", error);
+      throw error;
+    }
   },
 
   async deleteEntry(uid, entryId) {
-    return deleteDoc(doc(db, "users", uid, "expenses", entryId));
+    try {
+      const entryRef = doc(db, "users", uid, "expenses", entryId);
+      return await deleteDoc(entryRef);
+    } catch (error) {
+      // Dito natin mahuhuli kung Firebase Rules ang nagba-block sa pagbura
+      console.error("Error deleting entry:", error);
+      throw error;
+    }
   },
 
   // cb receives an array of entries (expenses + income), newest first.
@@ -66,14 +85,22 @@ window.TipidData = {
           }))
         );
       },
-      onError
+      (error) => {
+        console.error("Error subscribing to entries:", error);
+        if (onError) onError(error);
+      }
     );
   },
 
   // --- budget --------------------------------------------------------------
 
   async setBudget(uid, monthlyBudget) {
-    return setDoc(userDocRef(uid), { monthlyBudget }, { merge: true });
+    try {
+      return await setDoc(userDocRef(uid), { monthlyBudget }, { merge: true });
+    } catch (error) {
+      console.error("Error setting budget:", error);
+      throw error;
+    }
   },
 
   // cb receives the current monthlyBudget (number, or null if unset).
@@ -82,7 +109,10 @@ window.TipidData = {
       userDocRef(uid),
       { includeMetadataChanges: true },
       (snap) => cb(snap.exists() ? snap.data().monthlyBudget ?? null : null),
-      onError
+      (error) => {
+        console.error("Error subscribing to budget:", error);
+        if (onError) onError(error);
+      }
     );
   },
 

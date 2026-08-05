@@ -13,17 +13,31 @@ function Navbar({ user, onLogout, activeTab = "dashboard" }) {
 
     // --- Desktop: measure the active link so the pill can glide to it ---
     const linkRefs = React.useRef({});
-    const [pillStyle, setPillStyle] = React.useState({ left: 0, width: 0, opacity: 0 });
+    // Nag-add tayo ng isInitial para i-disable ang slide animation sa first page load
+    const [pillStyle, setPillStyle] = React.useState({ left: 0, width: 0, opacity: 0, isInitial: true });
 
     const measurePill = React.useCallback(() => {
         const el = linkRefs.current[activeTab];
         if (el) {
-            setPillStyle({ left: el.offsetLeft, width: el.offsetWidth, opacity: 1 });
+            setPillStyle(prev => ({
+                left: el.offsetLeft,
+                width: el.offsetWidth,
+                opacity: 1,
+                isInitial: false
+            }));
         }
     }, [activeTab]);
 
     React.useLayoutEffect(() => {
+        // Initial measurement
         measurePill();
+
+        // FIX: Hintaying mag-load ang custom fonts (Inter/Fraunces) bago sukatin ulit
+        // Ito ang mag-aayos sa isyu kung saan nagiging maliit ang pill
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(measurePill);
+        }
+
         window.addEventListener("resize", measurePill);
         return () => window.removeEventListener("resize", measurePill);
     }, [measurePill]);
@@ -36,7 +50,6 @@ function Navbar({ user, onLogout, activeTab = "dashboard" }) {
 
     return (
         <React.Fragment>
-            {/* Local keyframes, scoped by class name, safe to inline. */}
             <style>{`
                 @keyframes navIconPop {
                     0%   { transform: translateY(-1rem) scale(1); }
@@ -59,46 +72,56 @@ function Navbar({ user, onLogout, activeTab = "dashboard" }) {
             `}</style>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex bg-white/80 dark:bg-ink2/70 backdrop-blur-md text-ink dark:text-paper px-8 py-5 justify-between items-center w-full sticky top-0 z-50 border-b border-line/40 dark:border-white/10">
-                <a href="dashboard.html" className="flex items-center gap-3 w-48">
-                    <window.Logo size={28} />
-                    <span className="font-display font-semibold text-xl tracking-tight">Tipid</span>
-                </a>
+            <nav className="hidden md:flex justify-center bg-white/80 dark:bg-ink2/70 backdrop-blur-md text-ink dark:text-paper w-full sticky top-0 z-50 border-b border-line/40 dark:border-white/10">
+                <div className="w-full max-w-6xl px-6 py-4 flex justify-between items-center">
 
-                <div className="relative flex items-center gap-2">
-                    {/* Sliding pill indicator, glides under whichever tab is active */}
-                    <div
-                        className="absolute top-1/2 h-9 rounded-full bg-peso/10 dark:bg-pesoLight/15 shadow-inner pointer-events-none"
-                        style={{
-                            left: pillStyle.left,
-                            width: pillStyle.width,
-                            opacity: pillStyle.opacity,
-                            transform: "translateY(-50%)",
-                            transition:
-                                "left 0.45s cubic-bezier(0.34, 1.2, 0.4, 1), width 0.45s cubic-bezier(0.34, 1.2, 0.4, 1), opacity 0.3s ease",
-                        }}
-                    />
-                    {tabs.map((tab) => (
-                        <DesktopNavLink
-                            key={tab.id}
-                            innerRef={(el) => (linkRefs.current[tab.id] = el)}
-                            href={tab.href}
-                            label={tab.label}
-                            active={activeTab === tab.id}
-                        />
-                    ))}
-                </div>
-
-                <div className="flex items-center justify-end gap-6 w-48">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-paperDim dark:bg-white/10 border border-line dark:border-white/10 flex items-center justify-center text-ink dark:text-paper font-semibold text-sm">
-                            {initial}
-                        </div>
-                        <span className="text-sm font-medium text-ink2 dark:text-paper/70">{userName}</span>
+                    <div className="flex-1 flex justify-start">
+                        <a href="dashboard.html" className="flex items-center gap-3">
+                            <window.Logo size={28} />
+                            <span className="font-display font-semibold text-xl tracking-tight">Tipid</span>
+                        </a>
                     </div>
-                    <button onClick={onLogout} className="text-sm font-semibold text-ink2 dark:text-paper/60 hover:text-expense transition-colors duration-300">
-                        Log out
-                    </button>
+
+                    <div className="relative flex items-center gap-1 lg:gap-2 shrink-0">
+                        {/* Sliding pill indicator */}
+                        <div
+                            className="absolute top-1/2 h-9 rounded-full bg-peso/10 dark:bg-pesoLight/15 shadow-inner pointer-events-none"
+                            style={{
+                                left: pillStyle.left,
+                                width: pillStyle.width,
+                                opacity: pillStyle.opacity,
+                                transform: "translateY(-50%)",
+                                // FIX: Naka-disable ang transition sa initial load para hindi mag-slide-in from left
+                                transition: pillStyle.isInitial
+                                    ? "none"
+                                    : "left 0.45s cubic-bezier(0.34, 1.2, 0.4, 1), width 0.45s cubic-bezier(0.34, 1.2, 0.4, 1), opacity 0.3s ease",
+                            }}
+                        />
+                        {tabs.map((tab) => (
+                            <DesktopNavLink
+                                key={tab.id}
+                                innerRef={(el) => (linkRefs.current[tab.id] = el)}
+                                href={tab.href}
+                                label={tab.label}
+                                active={activeTab === tab.id}
+                            />
+                        ))}
+                    </div>
+
+                    <div className="flex-1 flex items-center justify-end gap-4 lg:gap-6">
+                        <div className="flex items-center gap-2.5 shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-paperDim dark:bg-white/10 border border-line dark:border-white/10 flex items-center justify-center text-ink dark:text-paper font-semibold text-sm">
+                                {initial}
+                            </div>
+                            <span className="hidden lg:block text-sm font-medium text-ink2 dark:text-paper/70 truncate max-w-[120px]">
+                                {userName}
+                            </span>
+                        </div>
+                        <button onClick={onLogout} className="text-sm font-semibold text-ink2 dark:text-paper/60 hover:text-expense transition-colors duration-300 shrink-0">
+                            Log out
+                        </button>
+                    </div>
+
                 </div>
             </nav>
 
@@ -119,7 +142,7 @@ function Navbar({ user, onLogout, activeTab = "dashboard" }) {
                 </button>
             </header>
 
-            {/* Mobile Bottom Navigation (Floating pill, active tab rises into a glowing bubble) */}
+            {/* Mobile Bottom Navigation */}
             <nav className="md:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-[92%] max-w-sm">
                 <div className="relative flex justify-around items-end px-2 pt-3 pb-2.5 bg-white/85 dark:bg-ink2/85 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] rounded-[2rem]">
                     {tabs.map((tab) => (

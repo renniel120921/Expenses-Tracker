@@ -44,6 +44,7 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
 
     <!-- SweetAlert2 for Delete Confirmations -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -189,7 +190,7 @@
     </script>
 
     <!-- 2. Import External Components -->
-    <script type="text/babel" src="./components/navbar.js"></script>
+    <script type="text/babel" src="./components/Navbar.js"></script>
     <script type="text/babel" src="./components/ExpenseItem.js"></script>
     <script type="text/babel" src="./components/ExpenseList.js"></script>
 
@@ -259,24 +260,29 @@
             };
 
             return (
-                <div className="min-h-screen relative pb-[100px] md:pb-0">
+                <div className="min-h-screen relative">
                     <AmbientBackground />
                     <Navbar user={user} onLogout={logout} activeTab="history" />
 
-                    <main className="max-w-4xl mx-auto px-6 pt-24 md:pt-10 pb-28 md:pb-10 space-y-6">
-                        <div className="fade-up flex items-center gap-3" style={{ animationDelay: "0ms" }}>
-                            <span className="w-10 h-10 rounded-xl bg-peso/10 dark:bg-pesoLight/20 text-peso dark:text-pesoLight flex items-center justify-center shrink-0">
-                                <Icons.List size={17} />
-                            </span>
-                            <div>
-                                <h1 className="font-display text-2xl md:text-3xl font-semibold text-ink dark:text-paper leading-tight">Transaction History</h1>
-                                <p className="text-ink2/60 dark:text-paper/50 text-sm mt-0.5">Review your past expenses and income.</p>
+                    {/* Na-adjust na padding: max-w-5xl, pt-32, pb-40 */}
+                    <main className="max-w-5xl mx-auto px-5 sm:px-6 pt-32 md:pt-12 pb-40 md:pb-16 space-y-8 md:space-y-12">
+
+                        {/* Premium SaaS Header */}
+                        <div className="fade-up mb-8" style={{ animationDelay: "0ms" }}>
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-peso/20 to-peso/5 dark:from-pesoLight/30 dark:to-pesoLight/10 border border-peso/20 flex items-center justify-center shrink-0 shadow-sm">
+                                    <Icons.List size={24} className="text-peso dark:text-pesoLight" />
+                                </div>
+                                <div>
+                                    <h1 className="font-display text-3xl md:text-4xl font-semibold text-ink dark:text-paper leading-tight mb-1">Transaction History</h1>
+                                    <p className="text-ink2/70 dark:text-paper/60 text-sm md:text-base">Review your past expenses and income.</p>
+                                </div>
                             </div>
                         </div>
 
                         {dataError && (
-                            <div className="fade-up banner-in flex items-start gap-2 bg-expense/10 text-expense text-sm rounded-xl px-4 py-3" style={{ animationDelay: "45ms" }}>
-                                <Icons.AlertCircle size={16} className="shrink-0 mt-0.5" /><span>{dataError}</span>
+                            <div className="fade-up banner-in flex items-start gap-3 bg-expense/10 text-expense text-sm font-medium border border-expense/20 rounded-2xl px-5 py-4 shadow-sm" style={{ animationDelay: "45ms" }}>
+                                <Icons.AlertCircle size={18} className="shrink-0 mt-0.5" /><span>{dataError}</span>
                             </div>
                         )}
 
@@ -290,19 +296,16 @@
 
         ReactDOM.createRoot(document.getElementById("root")).render(<HistoryApp />);
     </script>
+
     <!-- PWA Service Worker Registration & Auto-Update Alert -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').then(registration => {
-
-                    // Makikinig ang app kung may dina-download na bagong update (bagong CACHE_VERSION)
                     registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing;
                         newWorker.addEventListener('statechange', () => {
-                            // Kapag tapos na i-download ang bagong update
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                // Premium UX: Magpapakita ng magandang prompt imbes na biglang i-refresh ang screen
                                 Swal.fire({
                                     title: "May Bagong Update! 🎉",
                                     text: "May in-add kaming bagong features sa Tipid. I-refresh ang app para magamit ito.",
@@ -312,13 +315,11 @@
                                     allowOutsideClick: false,
                                     customClass: { popup: "tipid-swal" }
                                 }).then(() => {
-                                    // Ire-reload ang app at makikita na ang bagong features
                                     window.location.reload();
                                 });
                             }
                         });
                     });
-
                 }).catch(err => console.error("Service Worker registration failed:", err));
             });
         }
