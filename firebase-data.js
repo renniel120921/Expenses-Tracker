@@ -5,6 +5,7 @@ import {
   collection,
   addDoc,
   deleteDoc,
+  updateDoc,
   doc,
   setDoc,
   onSnapshot,
@@ -19,6 +20,10 @@ function entriesRef(uid) {
 
 function userDocRef(uid) {
   return doc(db, "users", uid);
+}
+
+function billsRef(uid) {
+  return collection(db, "users", uid, "bills");
 }
 
 window.TipidData = {
@@ -111,6 +116,70 @@ window.TipidData = {
       (snap) => cb(snap.exists() ? snap.data().monthlyBudget ?? null : null),
       (error) => {
         console.error("Error subscribing to budget:", error);
+        if (onError) onError(error);
+      }
+    );
+  },
+
+  // --- bills center --------------------------------------------------------
+
+  async addBill(uid, { title, amount, dueDate, category, notes }) {
+    try {
+      return await addDoc(billsRef(uid), {
+        title,
+        amount: parseFloat(amount),
+        dueDate, // Format: "YYYY-MM-DD"
+        category: category || "Bills",
+        notes: notes || "",
+        status: "Unpaid", // Default status
+        createdAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error adding bill:", error);
+      throw error;
+    }
+  },
+
+  async updateBillStatus(uid, billId, status) {
+    try {
+      const billDocRef = doc(db, "users", uid, "bills", billId);
+      return await updateDoc(billDocRef, { status });
+    } catch (error) {
+      console.error("Error updating bill status:", error);
+      throw error;
+    }
+  },
+
+  async deleteBill(uid, billId) {
+    try {
+      const billDocRef = doc(db, "users", uid, "bills", billId);
+      return await deleteDoc(billDocRef);
+    } catch (error) {
+      console.error("Error deleting bill:", error);
+      throw error;
+    }
+  },
+
+  subscribeBills(uid, cb, onError) {
+    const q = query(billsRef(uid), orderBy("dueDate", "asc"));
+
+    return onSnapshot(
+      q,
+      { includeMetadataChanges: true },
+      (snap) => {
+        const today = new Date().toISOString().split("T")[0];
+        const list = snap.docs.map((d) => {
+          const data = d.data({ serverTimestamps: "estimate" });
+          let status = data.status || "Unpaid";
+          if (status === "Unpaid" && data.dueDate && data.dueDate < today) {
+            status = "Overdue";
+          }
+          return { id: d.id, ...data, status };
+        });
+        cb(list);
+      },
+      (error) => {
+        console.error("Error subscribing to bills:", error);
         if (onError) onError(error);
       }
     );

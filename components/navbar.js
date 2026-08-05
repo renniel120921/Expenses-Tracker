@@ -6,6 +6,7 @@ function Navbar({ user, onLogout, activeTab = "dashboard" }) {
 
     const tabs = [
         { id: "dashboard", href: "dashboard.html", label: "Dashboard", icon: DashboardIcon },
+        { id: "bills", href: "bills.html", label: "Bills", icon: BillsIcon },
         { id: "chart", href: "chart.html", label: "Chart", icon: ChartIcon },
         { id: "history", href: "history.html", label: "History", icon: HistoryIcon },
         { id: "profile", href: "profile.html", label: "Profile", icon: ProfileIcon },
@@ -143,8 +144,8 @@ function Navbar({ user, onLogout, activeTab = "dashboard" }) {
             </header>
 
             {/* Mobile Bottom Navigation */}
-            <nav className="md:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-[92%] max-w-sm">
-                <div className="relative flex justify-around items-end px-2 pt-3 pb-2.5 bg-white/85 dark:bg-ink2/85 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] rounded-[2rem]">
+            <nav className="md:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-[94%] max-w-md">
+                <div className="relative flex justify-around items-end px-1 pt-3 pb-2.5 bg-white/85 dark:bg-ink2/85 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] rounded-[2rem]">
                     {tabs.map((tab) => (
                         <BottomNavBtn
                             key={tab.id}
@@ -165,7 +166,7 @@ const DesktopNavLink = ({ href, label, active, innerRef }) => (
     <a
         ref={innerRef}
         href={href}
-        className={`relative z-10 text-sm transition-colors duration-300 px-4 py-2 rounded-full ${active ? 'font-semibold text-peso dark:text-pesoLight' : 'font-medium text-ink2/60 dark:text-paper/45 hover:text-ink dark:hover:text-paper'}`}
+        className={`relative z-10 text-sm transition-colors duration-300 px-3.5 py-2 rounded-full ${active ? 'font-semibold text-peso dark:text-pesoLight' : 'font-medium text-ink2/60 dark:text-paper/45 hover:text-ink dark:hover:text-paper'}`}
     >
         {label}
     </a>
@@ -174,7 +175,7 @@ const DesktopNavLink = ({ href, label, active, innerRef }) => (
 const BottomNavBtn = ({ href, icon, label, active, bounce }) => (
     <a
         href={href}
-        className="relative z-10 flex flex-col items-center justify-end gap-1.5 h-14 w-[4.5rem] focus:outline-none active:scale-95 transition-transform duration-200 ease-out"
+        className="relative z-10 flex flex-col items-center justify-end gap-1.5 h-14 w-[3.8rem] focus:outline-none active:scale-95 transition-transform duration-200 ease-out"
     >
         <span className="relative flex items-center justify-center">
             {active && (
@@ -206,6 +207,15 @@ const DashboardIcon = ({ active }) => (
         <rect x="14" y="3" width="7" height="5" rx="1.5" />
         <rect x="14" y="12" width="7" height="9" rx="1.5" />
         <rect x="3" y="16" width="7" height="5" rx="1.5" />
+    </svg>
+);
+const BillsIcon = ({ active }) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={active ? "0" : "1.5"} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" strokeWidth={active ? "0" : "1.5"} stroke={active ? "white" : "currentColor"} />
+        <line x1="16" y1="17" x2="8" y2="17" strokeWidth={active ? "0" : "1.5"} stroke={active ? "white" : "currentColor"} />
+        <polyline points="10 9 9 9 8 9" />
     </svg>
 );
 const ChartIcon = ({ active }) => (

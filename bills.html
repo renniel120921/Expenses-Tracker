@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bills Center — Tipid</title>
+
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        ink: '#15231C',
+                        ink2: '#2F4037',
+                        paper: '#F1F4EF',
+                        paperDim: '#E2E8DE',
+                        peso: '#1F6F54',
+                        pesoDeep: '#134735',
+                        pesoLight: '#2F8E6C',
+                        expense: '#B5483B',
+                        line: '#D2DDD4',
+                    },
+                    fontFamily: {
+                        display: ['Fraunces', 'serif'],
+                        body: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- React & Babel -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Firebase Scripts -->
+    <script type="module" src="./firebase.js"></script>
+    <script type="module" src="./firebase-auth.js"></script>
+    <script type="module" src="./firebase-data.js"></script>
+
+    <!-- Components -->
+    <script type="text/babel" src="./components/navbar.js"></script>
+    <script type="text/babel" src="./components/BillsCenter.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-up { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* Custom SweetAlert styling to match Tipid theme */
+        .tipid-swal {
+            border-radius: 1.5rem !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+    </style>
+</head>
+<body class="bg-paper dark:bg-ink text-ink dark:text-paper min-h-screen flex flex-col transition-colors duration-300">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- GLOBAL COMPONENTS SETUP ---
+        // I-attach natin sa "window" para mabasa ng Navbar.js at BillsCenter.js
+        window.Icons = {
+            Sun: ({ size = 24 }) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            ),
+            Moon: ({ size = 24 }) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            ),
+            Trash: ({ size = 24 }) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            )
+        };
+        const Icons = window.Icons; // Alias para magamit din natin sa file na ito
+
+        window.Logo = window.Logo || (({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-peso">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+        ));
+        // --------------------------------
+
+        // Helper formatter for currency
+        window.peso = (num) => {
+            if (isNaN(num)) return "0.00";
+            return Number(num).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+
+        function BillsPage() {
+            const { useState, useEffect } = React;
+            const [user, setUser] = useState(null);
+            const [bills, setBills] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [authChecking, setAuthChecking] = useState(true);
+
+            // Dark Mode state management
+            const [darkMode, setDarkMode] = useState(() => {
+                return localStorage.getItem("tipid_theme") === "dark" ||
+                    (!localStorage.getItem("tipid_theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+            });
+
+            useEffect(() => {
+                if (darkMode) {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem("tipid_theme", "dark");
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem("tipid_theme", "light");
+                }
+            }, [darkMode]);
+
+            const toggleDarkMode = () => setDarkMode(!darkMode);
+
+            // Wait for TipidAuth to be attached to window before calling onChange
+            useEffect(() => {
+                let unsub = null;
+                let isMounted = true;
+
+                const checkAuth = () => {
+                    if (window.TipidAuth) {
+                        unsub = window.TipidAuth.onChange((currentUser) => {
+                            if (!isMounted) return;
+                            if (!currentUser) {
+                                window.location.href = "./login.html";
+                            } else {
+                                setUser(currentUser);
+                                setAuthChecking(false);
+                            }
+                        });
+                    } else {
+                        setTimeout(checkAuth, 50); // Mabilisang paghintay kung naglo-load pa ang module script
+                    }
+                };
+
+                checkAuth();
+
+                return () => {
+                    isMounted = false;
+                    if (typeof unsub === "function") unsub();
+                };
+            }, []);
+
+            // Handle Logout action para sa Navbar
+            const handleLogout = async () => {
+                try {
+                    await window.TipidAuth.logOut();
+                    window.location.href = "./login.html";
+                } catch (err) {
+                    console.error("Logout error:", err);
+                }
+            };
+
+            // Wait for TipidData to be attached, then subscribe to Bills
+            useEffect(() => {
+                if (!user) return;
+
+                let unsubBills = null;
+
+                const loadBills = () => {
+                    if (window.TipidData) {
+                        unsubBills = window.TipidData.subscribeBills(
+                            user.uid,
+                            (data) => {
+                                setBills(data);
+                                setLoading(false);
+                            },
+                            (err) => {
+                                console.error("Error fetching bills:", err);
+                                setLoading(false);
+                            }
+                        );
+                    } else {
+                        setTimeout(loadBills, 50);
+                    }
+                };
+
+                loadBills();
+
+                return () => {
+                    if (typeof unsubBills === "function") unsubBills();
+                };
+            }, [user]);
+
+            if (authChecking) {
+                return (
+                    <div className="min-h-screen flex items-center justify-center bg-paper dark:bg-ink">
+                        <div className="flex flex-col items-center gap-3">
+                            <span className="w-8 h-8 rounded-full border-2 border-peso border-t-transparent spin" />
+                            <p className="text-xs font-mono text-ink2/60 dark:text-paper/60">Nagpapatunay...</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen flex flex-col pb-24 md:pb-12">
+                    {/* Top Header */}
+                    <header className="w-full max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-peso/10 dark:bg-pesoLight/20 text-peso dark:text-pesoLight flex items-center justify-center font-display font-bold text-xl shadow-inner">
+                                T
+                            </div>
+                            <div>
+                                <h1 className="font-display text-xl font-bold tracking-tight text-ink dark:text-paper">Bills Center</h1>
+                                <p className="text-xs text-ink2/60 dark:text-paper/50">Subaybayan ang mga bayarin at due dates</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={toggleDarkMode}
+                                aria-label="Toggle Dark Mode"
+                                className="w-10 h-10 rounded-full bg-white dark:bg-ink2/50 border border-line dark:border-white/10 flex items-center justify-center text-ink dark:text-paper shadow-sm transition-transform active:scale-95"
+                            >
+                                {darkMode ? <Icons.Sun size={17} /> : <Icons.Moon size={17} />}
+                            </button>
+                        </div>
+                    </header>
+
+                    {/* Main Content Area */}
+                    <main className="w-full max-w-4xl mx-auto px-4 sm:px-6 flex-1 mt-2">
+                        {/* Gamit ang React components na naka-load galing sa ibang file */}
+                        {window.BillsCenter ? (
+                            <window.BillsCenter uid={user.uid} bills={bills} loading={loading} />
+                        ) : (
+                            <BillsCenter uid={user.uid} bills={bills} loading={loading} />
+                        )}
+                    </main>
+
+                    {/* Bottom Floating Navigation / Navbar */}
+                    {window.Navbar ? (
+                        <window.Navbar user={user} onLogout={handleLogout} activeTab="bills" />
+                    ) : (
+                        <Navbar user={user} onLogout={handleLogout} activeTab="bills" />
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById("root")).render(<BillsPage />);
+    </script>
+</body>
+</html>
