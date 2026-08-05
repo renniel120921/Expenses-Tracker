@@ -10,7 +10,7 @@
 //
 // Bump BOTH version numbers below whenever you change the file list or want
 // old clients to drop their cached copies.
-const CACHE_VERSION = 'v3'; // Bumped to v3 to force cache refresh
+const CACHE_VERSION = 'v4'; // Bumped to v4 to force full shell caching
 const CACHE_NAME = `tipid-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `tipid-runtime-${CACHE_VERSION}`;
 
@@ -58,10 +58,16 @@ function isRuntimeCacheable(url) {
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache =>
-        // allSettled so one missing/renamed file doesn't fail the whole install
-        Promise.allSettled(APP_SHELL.map(url => cache.add(url)))
-      )
+      .then(cache => {
+        // Tinitiyak natin na mai-save ang bawat asset kasama ang index.html
+        return Promise.all(
+          APP_SHELL.map(url => {
+            return cache.add(url).catch(err => {
+              console.warn(`Failed to cache: ${url}`, err);
+            });
+          })
+        );
+      })
       .then(() => self.skipWaiting())
   );
 });
