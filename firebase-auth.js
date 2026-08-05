@@ -17,6 +17,12 @@ import {
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
+// Dev aid only — Firebase Auth itself still enforces its own domain/HTTPS
+// rules server-side, this just warns early in the console during local work.
+if (location.protocol !== "https:" && !["localhost", "127.0.0.1"].includes(location.hostname)) {
+  console.warn("[TipidAuth] Running over a non-HTTPS, non-local origin — Firebase Auth may reject requests from here.");
+}
+
 // ---------------------------------------------------------------------------
 // Rate limiting
 // ---------------------------------------------------------------------------
@@ -44,8 +50,20 @@ class RateLimitError extends Error {
   }
 }
 
+// Small non-cryptographic string hash (DJB2). Not for security-critical use —
+// only so raw email addresses aren't sitting in plaintext in localStorage,
+// where any script or browser extension on the page could otherwise read
+// them straight out of devtools.
+function hashIdent(str) {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 33) ^ str.charCodeAt(i);
+  }
+  return (hash >>> 0).toString(36);
+}
+
 function rlKey(action, ident) {
-  return `tipid_rl_${action}_${ident}`;
+  return `tipid_rl_${action}_${hashIdent(ident)}`;
 }
 
 function readRecord(key) {
@@ -145,6 +163,10 @@ function isCommonPassword(password) {
   return COMMON_PASSWORDS.has((password || "").toLowerCase());
 }
 
+// Same pattern used client-side by signup.html/login.html — kept here too so
+// resetPassword never even reaches the network with a malformed address.
+const EMAIL_RE = /^\S+@\S+\.\S+$/;
+
 function normalizeEmail(email) {
   return (email || "").trim().toLowerCase();
 }
@@ -152,6 +174,18 @@ function normalizeEmail(email) {
 function formatWait(seconds) {
   if (seconds < 60) return `${seconds} segundo`;
   return `${Math.ceil(seconds / 60)} minuto`;
+}
+
+// Pads out a promise to a minimum duration. Used on resetPassword so that a
+// registered vs. unregistered email can't be told apart by response time —
+// the "silent" branch below would otherwise resolve noticeably faster than
+// a real network round-trip to Firebase.
+function withMinDuration(promise, ms) {
+  const floor = new Promise(resolve => setTimeout(resolve, ms));
+  return Promise.allSettled([promise, floor]).then(([result]) => {
+    if (result.status === "rejected") throw result.reason;
+    return result.value;
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -246,17 +280,32 @@ window.TipidAuth = {
 
   async resetPassword(email) {
     const normEmail = normalizeEmail(email);
+    if (!EMAIL_RE.test(normEmail)) {
+      const err = new Error("invalid-email");
+      err.code = "auth/invalid-email";
+      throw err;
+    }
     checkRateLimit("resetPassword", normEmail);
     const claim = claimInFlight("resetPassword", normEmail);
     try {
-      await sendPasswordResetEmail(auth, normEmail);
+      await withMinDuration(
+        sendPasswordResetEmail(auth, normEmail, {
+          // Sends the user back to your own login page (instead of the bare
+          // firebaseapp.com action handler) once they've reset their password.
+          url: `${window.location.origin}/login.html`,
+          handleCodeInApp: false,
+        }),
+        700
+      );
     } catch (err) {
       if (err.code !== "auth/user-not-found") {
         recordFailure("resetPassword", normEmail);
         throw err;
       }
       // Unregistered email: stay silent here too, so this endpoint can't be
-      // used to figure out which addresses have accounts.
+      // used to figure out which addresses have accounts. Timing is
+      // normalized by withMinDuration above so this branch can't be
+      // distinguished from a real send by response speed either.
     } finally {
       releaseInFlight(claim);
     }

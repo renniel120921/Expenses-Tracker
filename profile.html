@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile — Tipid</title>
+    <meta name="theme-color" content="#ffffff">
+    <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Global Dark Mode Script Initializer -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Enables dark mode toggling
+            theme: {
+                extend: {
+                    colors: {
+                        paper: '#F1F4EF', paperDim: '#E9EDE6', ink: '#15231C', ink2: '#33443A',
+                        peso: '#1F6F54', pesoLight: '#2F8E6C', pesoDeep: '#123D2E',
+                        gold: '#C9932E', expense: '#B5483B', line: '#D3DAD0',
+                    },
+                    fontFamily: {
+                        display: ['"Fraunces"', 'serif'],
+                        body: ['"Inter"', 'sans-serif'],
+                        mono: ['"IBM Plex Mono"', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script type="module" src="./firebase.js"></script>
+    <script type="module" src="./firebase-auth.js"></script>
+    <script type="module" src="./firebase-data.js"></script>
+
+    <style>
+        /* Base Dark Mode overrides */
+        html { background: #F9FAFB; transition: background-color 0.3s; }
+        html.dark { background: #111A15; color: #F1F4EF; }
+
+        body { font-feature-settings: "tnum" 1, "lnum" 1; }
+        ::selection { background: #C9932E33; color: #15231C; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin { animation: spin 0.8s linear infinite; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-up { animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+        @keyframes logoBreathe {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50%      { transform: scale(1.08); opacity: 0.85; }
+        }
+        .logo-breathe { animation: logoBreathe 1.6s ease-in-out infinite; }
+
+        @keyframes haloPulse {
+            0%   { transform: scale(0.9); opacity: 0.35; }
+            70%  { opacity: 0; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+        .halo-pulse { animation: haloPulse 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+
+        /* iOS-style spring for the dark mode toggle knob */
+        .ios-toggle-knob { transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+        @media (prefers-reduced-motion: reduce) {
+            .spin, .fade-up, .logo-breathe, .halo-pulse, .ios-toggle-knob {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+        .swal2-popup.tipid-swal { border-radius: 20px !important; font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        window.useState = React.useState;
+        window.useEffect = React.useEffect;
+        window.useMemo = React.useMemo;
+
+        function Icon({ path, size = 20, className = "", strokeWidth = 2 }) {
+            return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>{path}</svg>;
+        }
+
+        // FIXED: Complete Icons object so Navbar and other components won't crash
+        window.Icons = {
+            Plus: (p) => <Icon {...p} path={<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>} />,
+            Trash: (p) => <Icon {...p} path={<><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></>} />,
+            Loader: (p) => <Icon {...p} path={<><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></>} />,
+            AlertCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />,
+            Inbox: (p) => <Icon {...p} path={<><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></>} />,
+            Pencil: (p) => <Icon {...p} path={<><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></>} />,
+            TrendUp: (p) => <Icon {...p} path={<><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>} />,
+            TrendDown: (p) => <Icon {...p} path={<><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></>} />,
+            Wallet: (p) => <Icon {...p} path={<><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></>} />,
+            Home: (p) => <Icon {...p} path={<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>} />,
+            Chart: (p) => <Icon {...p} path={<><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></>} />,
+            List: (p) => <Icon {...p} path={<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>} />,
+            Category: (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
+            User: (p) => <Icon {...p} path={<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>} />,
+            Target: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></>} />,
+            Moon: (p) => <Icon {...p} path={<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>} />,
+            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />
+        };
+
+        // FIXED: Added window.Logo back
+        window.Logo = function Logo({ size = 30 }) {
+            const [broken, setBroken] = React.useState(false);
+            if (!broken) {
+                return <img src="/assets/logo.svg" alt="Tipid logo" width={size} height={size}
+                            onError={() => setBroken(true)} style={{ width: size, height: size }} className="rounded-md" />;
+            }
+            return <span style={{ width: size, height: size }} className="rounded-md bg-ink text-paper flex items-center justify-center font-display font-semibold">₱</span>;
+        }
+
+        window.useAuthReady = function() {
+            const [ready, setReady] = React.useState(!!window.TipidAuth);
+            React.useEffect(() => {
+                if (window.TipidAuth) { setReady(true); return; }
+                const h = () => setReady(true);
+                window.addEventListener("tipid-auth-ready", h, { once: true });
+                return () => window.removeEventListener("tipid-auth-ready", h);
+            }, []);
+            return ready;
+        }
+
+        window.useDataReady = function() {
+            const [ready, setReady] = React.useState(!!window.TipidData);
+            React.useEffect(() => {
+                if (window.TipidData) { setReady(true); return; }
+                const h = () => setReady(true);
+                window.addEventListener("tipid-data-ready", h, { once: true });
+                return () => window.removeEventListener("tipid-data-ready", h);
+            }, []);
+            return ready;
+        }
+
+        function swalSuccess(title, text) { return Swal.fire({ icon: "success", title, text, confirmButtonText: "Sige", confirmButtonColor: "#1F6F54", customClass: { popup: "tipid-swal" }}); }
+        function swalError(text) { return Swal.fire({ icon: "error", title: "Error", text, confirmButtonText: "Sige", confirmButtonColor: "#B5483B", customClass: { popup: "tipid-swal" }}); }
+    </script>
+
+    <script type="text/babel" src="./components/Navbar.js"></script>
+
+    <script type="text/babel">
+        function ProfileApp() {
+            const authReady = window.useAuthReady();
+            const dataReady = window.useDataReady();
+
+            const [user, setUser] = React.useState(undefined);
+            const [displayName, setDisplayName] = React.useState("");
+            const [budgetInput, setBudgetInput] = React.useState("");
+            const [goalInput, setGoalInput] = React.useState("");
+
+            const [isDark, setIsDark] = React.useState(() => document.documentElement.classList.contains('dark'));
+
+            // Toggle Dark Mode Function
+            const toggleDarkMode = () => {
+                if (isDark) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                    setIsDark(false);
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                    setIsDark(true);
+                }
+            };
+
+            React.useEffect(() => {
+                if (!authReady) return;
+                return window.TipidAuth.onChange((u) => {
+                    setUser(u || null);
+                    if (u) setDisplayName(u.displayName || "");
+                });
+            }, [authReady]);
+
+            React.useEffect(() => {
+                if (user === null) window.location.href = "login.html";
+            }, [user]);
+
+            React.useEffect(() => {
+                if (!dataReady || !user) return;
+                return window.TipidData.subscribeBudget(
+                    user.uid,
+                    (b) => setBudgetInput(b ? b.toString() : ""),
+                    (err) => console.error(err)
+                );
+            }, [dataReady, user]);
+
+            React.useEffect(() => {
+                const savedGoal = localStorage.getItem('tipid_goal');
+                if (savedGoal) setGoalInput(savedGoal);
+            }, []);
+
+            if (user === undefined || user === null) {
+                return (
+                    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-ink">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="relative flex items-center justify-center">
+                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/20 halo-pulse" />
+                                <div className="relative logo-breathe">
+                                    <window.Logo size={40} />
+                                </div>
+                            </div>
+                            <p className="text-xs font-mono tracking-[0.2em] uppercase text-ink2 dark:text-paper/50">
+                                Loading your profile
+                            </p>
+                        </div>
+                    </div>
+                );
+            }
+
+            const handleUpdateProfile = async (e) => {
+                e.preventDefault();
+                if (!displayName.trim()) return swalError("Paki-lagay ang iyong pangalan.");
+                try {
+                    const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js");
+                    await updateProfile(user, { displayName: displayName.trim() });
+                    setUser({ ...user, displayName: displayName.trim() });
+                    swalSuccess("Tagumpay", "Na-update na ang iyong pangalan.");
+                } catch (err) { swalError("Hindi ma-update ang profile. Subukan ulit."); }
+            };
+
+            const handleUpdatePreferences = async (e) => {
+                e.preventDefault();
+                const amt = parseFloat(budgetInput);
+                const target = parseFloat(goalInput);
+
+                if (isNaN(amt) || amt <= 0) return swalError("Maglagay ng tamang halaga para sa budget.");
+
+                try {
+                    await window.TipidData.setBudget(user.uid, amt);
+                    if (!isNaN(target) && target > 0) {
+                        localStorage.setItem('tipid_goal', target.toString());
+                    }
+                    swalSuccess("Tagumpay", "Na-update na ang iyong Preferences at Goal.");
+                } catch (err) { swalError("Hindi ma-save. Subukan ulit."); }
+            };
+
+            const handleLogout = async () => {
+                await window.TipidAuth.logOut();
+                window.location.href = "login.html";
+            };
+
+            const initial = displayName ? displayName.charAt(0).toUpperCase() : (user.email.charAt(0).toUpperCase());
+
+            return (
+                <div className="min-h-screen relative pb-[100px] md:pb-0">
+                    <Navbar user={user} onLogout={handleLogout} activeTab="profile" />
+
+                    <main className="max-w-xl mx-auto px-6 pt-24 md:pt-12 pb-28 md:pb-10 space-y-8">
+
+                        {/* Header Area */}
+                        <div className="fade-up text-center mb-8 flex flex-col items-center" style={{ animationDelay: '0ms' }}>
+                            <div className="w-24 h-24 rounded-full bg-paperDim dark:bg-ink2/30 border-2 border-line dark:border-ink2 flex items-center justify-center text-ink dark:text-paper font-semibold text-4xl shadow-sm mb-4">
+                                {initial}
+                            </div>
+                            <h1 className="font-display text-2xl font-semibold">{displayName || "User"}</h1>
+                            <p className="text-ink2/60 dark:text-paper/60 text-sm mt-0.5">{user.email}</p>
+                        </div>
+
+                        {/* Appearance Card */}
+                        <div className="fade-up" style={{ animationDelay: '80ms' }}>
+                            <h2 className="text-xs font-mono tracking-[0.1em] uppercase text-ink2/50 dark:text-paper/50 mb-3 px-2">Appearance</h2>
+                            <div className="bg-white/80 dark:bg-ink2/20 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm overflow-hidden p-5 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-ink dark:bg-paper flex items-center justify-center text-paper dark:text-ink">
+                                        <Icons.Moon size={16} />
+                                    </div>
+                                    <span className="text-sm font-semibold">Dark Mode</span>
+                                </div>
+
+                                {/* iOS Toggle Switch */}
+                                <button
+                                    onClick={toggleDarkMode}
+                                    className={`w-12 h-6 rounded-full transition-colors duration-300 relative flex items-center ${isDark ? 'bg-peso' : 'bg-line'}`}
+                                >
+                                    <div className={`ios-toggle-knob w-5 h-5 bg-white rounded-full absolute shadow-sm ${isDark ? 'translate-x-6' : 'translate-x-1'}`}></div>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Financial Goals & Settings Card */}
+                        <div className="fade-up" style={{ animationDelay: '160ms' }}>
+                            <h2 className="text-xs font-mono tracking-[0.1em] uppercase text-ink2/50 dark:text-paper/50 mb-3 px-2">Financial Settings</h2>
+                            <div className="bg-white/80 dark:bg-ink2/20 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm overflow-hidden">
+                                <form onSubmit={handleUpdatePreferences} className="p-5 flex flex-col gap-5">
+
+                                    {/* Monthly Budget Input */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-[11px] font-semibold uppercase tracking-wider text-ink2/50 dark:text-paper/50">Monthly Budget (₱)</label>
+                                        <div className="flex-1 flex items-center gap-2.5 bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-xl px-3.5 py-2.5 focus-within:border-peso focus-within:ring-1 focus-within:ring-peso transition-all">
+                                            <Icons.Wallet size={16} className="text-ink2/40 dark:text-paper/40" />
+                                            <input type="number" step="0.01" value={budgetInput} onChange={e => setBudgetInput(e.target.value)} placeholder="e.g. 10000" className="w-full bg-transparent text-sm focus:outline-none font-medium" />
+                                        </div>
+                                    </div>
+
+                                    {/* Savings Goal Input */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-[11px] font-semibold uppercase tracking-wider text-ink2/50 dark:text-paper/50">Ipon Target (₱)</label>
+                                        <div className="flex-1 flex items-center gap-2.5 bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-xl px-3.5 py-2.5 focus-within:border-peso focus-within:ring-1 focus-within:ring-peso transition-all">
+                                            <Icons.Target size={16} className="text-ink2/40 dark:text-paper/40" />
+                                            <input type="number" step="0.01" value={goalInput} onChange={e => setGoalInput(e.target.value)} placeholder="e.g. 5000" className="w-full bg-transparent text-sm focus:outline-none font-medium" />
+                                        </div>
+                                        <p className="text-[10px] text-ink2/40 dark:text-paper/40 mt-1">Set a target to track your "Ipon" category progress.</p>
+                                    </div>
+
+                                    <button type="submit" className="w-full bg-peso hover:bg-pesoLight active:scale-95 text-paper py-3 rounded-xl text-sm font-semibold transition-all mt-2">
+                                        Save Settings
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                    </main>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById("root")).render(<ProfileApp />);
+    </script>
+</body>
+</html>

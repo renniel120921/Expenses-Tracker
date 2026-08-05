@@ -1,94 +1,137 @@
 // components/ExpenseChart.js
 
 function ExpenseChart({ entries }) {
-    const { useMemo } = React;
-    const monthStart = useMemo(() => startOfMonth(), []);
+    const { useState, useMemo, useEffect, useRef } = window;
+    const [view, setView] = useState("category"); // 'category', 'flow'
+    const [dateFilter, setDateFilter] = useState("thisMonth"); // 'all', 'thisMonth', 'lastMonth'
 
-    // Filter only expenses for the current month
-    const thisMonth = useMemo(
-        () => entries.filter(e => !e.createdAt || (e.createdAt.toDate() >= monthStart && e.type !== "income")),
-        [entries, monthStart]
-    );
+    const chartRef = useRef(null);
+    const chartInstance = useRef(null);
+    const [chartLoaded, setChartLoaded] = useState(true);
 
-    const spent = thisMonth.reduce((s, e) => s + (e.amount || 0), 0);
+    // 1. Improved Filter supporting both numeric timestamps and date strings
+    const filteredEntries = useMemo(() => {
+        const now = new Date();
+        const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999).getTime();
 
-    // Group by category
-    const byCategory = useMemo(() => {
-        const totals = {};
-        thisMonth.forEach(e => {
-            totals[e.category] = (totals[e.category] || 0) + (e.amount || 0);
+        return entries.filter(e => {
+            if (dateFilter === "all") return true;
+
+            // Safe date parsing (handles numbers, strings, or Firestore timestamps)
+            let entryTime = e.timestamp;
+            if (typeof entryTime === 'string' || entryTime instanceof String) {
+                entryTime = new Date(entryTime).getTime();
+            } else if (entryTime && typeof entryTime.toMillis === 'function') {
+                entryTime = entryTime.toMillis();
+            }
+
+            if (!entryTime || isNaN(entryTime)) return true; // fallback kung walang date
+
+            if (dateFilter === "thisMonth") return entryTime >= startOfThisMonth;
+            if (dateFilter === "lastMonth") return entryTime >= startOfLastMonth && entryTime <= endOfLastMonth;
+
+            return true;
         });
-        return CATEGORIES
-            .map(c => ({ label: c, amount: totals[c] || 0 }))
-            .filter(c => c.amount > 0)
-            .sort((a, b) => b.amount - a.amount);
-    }, [thisMonth]);
+    }, [entries, dateFilter]);
 
-    // Map categories to specific hex codes for SVG rendering
-    const CHART_COLORS = {
-        Pagkain: "#1F6F54",
-        Pamasahe: "#33443A",
-        Bills: "#C9932E",
-        Load: "#123D2E",
-        Ipon: "#2F8E6C",
-        "Project Components": "#15231C",
-        "Iba pa": "#B5483B",
-    };
+    // 2. Compute analytics based on FILTERED entries
+    const analytics = useMemo(() => {
+        const expenses = filteredEntries.filter(e => e.type === "expense");
+        const incomes = filteredEntries.filter(e => e.type === "income");
 
-    if (spent === 0) return null; // Hide chart if there are no expenses yet
+        const totalExpense = expenses.reduce((sum, e) => sum + e.amount, 0);
+        const totalIncome = incomes.reduce((sum, e) => sum + e.amount, 0);
 
-    let cumulativePercent = 0;
+        const catGroup = expenses.reduce((acc, e) => {
+            acc[e.category] = (acc[e.category] || 0) + e.amount;
+            return acc;
+        }, {});
+
+        const catLabels = Object.keys(catGroup);
+        const categories = catLabels.map(k => catGroup[k]);
+        const catColors = catLabels.map(cat => window.CATEGORY_COLOR[cat] || "#D3DAD0");
+
+        return { totalExpense, totalIncome, categories, catLabels, catColors };
+    }, [filteredEntries]);
+
+    // 3. Render Chart
+    useEffect(() => {
+        if (!chartRef.current || filteredEntries.length === 0) return;
+
+        if (typeof window.Chart !== 'function') {
+            console.error("Chart.js library is not loaded yet.");
+            setChartLoaded(false);
+            return;
+        }
+        setChartLoaded(true);
+
+        if (chartInstance.current) chartInstance.current.destroy();
+
+        const ctx = chartRef.current.getContext('2d');
+        let config = {};
+
+        if (view === "category") {
+            config = {
+                type: 'doughnut',
+                data: {
+                    labels: analytics.catLabels,
+                    datasets: [{ data: analytics.categories, backgroundColor: analytics.catColors, borderWidth: 0, hoverOffset: 4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Inter' } } } }, cutout: '75%' }
+            };
+        } else {
+            config = {
+                type: 'bar',
+                data: {
+                    labels: ['Income', 'Expense'],
+                    datasets: [{
+                        label: 'Amount', data: [analytics.totalIncome, analytics.totalExpense], backgroundColor: ['#2F8E6C', '#B5483B'], borderRadius: 6, barPercentage: 0.6
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#E9EDE6' } }, x: { grid: { display: false } } } }
+            };
+        }
+
+        chartInstance.current = new window.Chart(ctx, config);
+
+        return () => { if (chartInstance.current) chartInstance.current.destroy(); };
+    }, [view, analytics, filteredEntries]);
+
+    if (entries.length === 0) return null;
 
     return (
-        <div className="bg-white rounded-2xl border border-line shadow-sm p-7">
-            <p className="text-xs font-mono tracking-[0.2em] uppercase text-peso mb-6 text-center sm:text-left">
-                Pagsusuri ng Gastos
-            </p>
+        <div className="bg-white/80 dark:bg-ink2/20 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm p-6 sm:p-7 mb-6 fade-up">
 
-            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-evenly gap-8">
-                {/* SVG Donut Chart */}
-                <div className="relative w-40 h-40 sm:w-48 sm:h-48">
-                    <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90 drop-shadow-sm">
-                        {byCategory.map((c) => {
-                            const percent = (c.amount / spent) * 100;
-                            const offset = 100 - cumulativePercent;
-                            cumulativePercent += percent;
+            {/* Header with Date Filter */}
+            <div className="flex items-center justify-between mb-5">
+                <h2 className="font-semibold text-lg text-ink dark:text-paper tracking-tight">Analytics</h2>
+                <select
+                    value={dateFilter}
+                    onChange={(e) => setDateFilter(e.target.value)}
+                    className="text-xs font-medium text-ink2 dark:text-paper bg-paperDim dark:bg-ink2/50 px-2.5 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-peso cursor-pointer"
+                >
+                    <option value="thisMonth">This Month</option>
+                    <option value="lastMonth">Last Month</option>
+                    <option value="all">All Time</option>
+                </select>
+            </div>
 
-                            return (
-                                <circle
-                                    key={c.label}
-                                    cx="18" cy="18" r="15.91549430918954"
-                                    fill="transparent"
-                                    stroke={CHART_COLORS[c.label] || "#1F6F54"}
-                                    strokeWidth="4.5"
-                                    strokeDasharray={`${percent} ${100 - percent}`}
-                                    strokeDashoffset={offset}
-                                    className="transition-all duration-1000 ease-out"
-                                />
-                            );
-                        })}
-                    </svg>
+            {/* View Toggles */}
+            <div className="flex items-center bg-paperDim dark:bg-ink2/40 p-1 rounded-xl mb-6">
+                <button onClick={() => setView("category")} className={`flex-1 text-[11px] font-semibold uppercase py-2 rounded-lg transition-all ${view === "category" ? 'bg-white dark:bg-ink text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink2/80'}`}>Categories</button>
+                <button onClick={() => setView("flow")} className={`flex-1 text-[11px] font-semibold uppercase py-2 rounded-lg transition-all ${view === "flow" ? 'bg-white dark:bg-ink text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink2/80'}`}>Cash Flow</button>
+            </div>
 
-                    {/* Center Text inside Donut */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-[10px] text-ink2/70 uppercase tracking-widest font-semibold">Total</span>
-                        <span className="text-lg font-bold text-ink font-mono">₱{peso(spent)}</span>
-                    </div>
-                </div>
-
-                {/* Chart Legend */}
-                <div className="space-y-3">
-                    {byCategory.map(c => (
-                        <div key={c.label} className="flex items-center gap-3 text-sm">
-                            <span
-                                className="w-3.5 h-3.5 rounded-full shadow-sm"
-                                style={{ backgroundColor: CHART_COLORS[c.label] || "#1F6F54" }}
-                            ></span>
-                            <span className="font-medium text-ink w-28 truncate">{c.label}</span>
-                            <span className="font-mono text-ink2 font-semibold">{(c.amount / spent * 100).toFixed(0)}%</span>
-                        </div>
-                    ))}
-                </div>
+            {/* Chart Canvas */}
+            <div className="relative h-64 w-full flex items-center justify-center">
+                {!chartLoaded && <p className="text-xs text-expense font-medium text-center">Chart library failed to load. Please refresh the page.</p>}
+                {filteredEntries.length === 0 && chartLoaded ? (
+                    <p className="text-sm text-ink2/50">Walang data sa panahong ito.</p>
+                ) : (
+                    <canvas ref={chartRef} className={!chartLoaded ? "hidden" : ""}></canvas>
+                )}
             </div>
         </div>
     );

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard — Tipid</title>
-    <meta name="theme-color" content="#1F6F54">
+    <title>History — Tipid</title>
+    <meta name="theme-color" content="#ffffff">
     <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,20 +45,19 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Chart.js UMD Integration -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.js"></script>
+    <!-- SweetAlert2 for Delete Confirmations -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script type="module" src="./firebase.js"></script>
     <script type="module" src="./firebase-auth.js"></script>
     <script type="module" src="./firebase-data.js"></script>
 
     <style>
-        html { background: #F1F4EF; transition: background-color 0.3s; }
+        html { background: #F9FAFB; transition: background-color 0.3s; }
         html.dark { background: #111A15; color: #F1F4EF; }
 
         body { font-feature-settings: "tnum" 1, "lnum" 1; }
         ::selection { background: #C9932E33; color: #15231C; }
-        :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.8s linear infinite; }
@@ -66,14 +65,8 @@
         @keyframes rowIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
         .row-in { animation: rowIn 0.3s ease-out both; }
 
-        .bar-fill { transition: width 0.9s cubic-bezier(.22,.61,.36,1); }
-
-        /* --- Premium page-entrance motion --- */
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(14px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        .fade-up { animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-up { animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
         @keyframes bannerIn {
             from { opacity: 0; transform: translateY(-8px) scale(0.98); }
@@ -94,23 +87,29 @@
         }
         .halo-pulse { animation: haloPulse 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
 
+        /* SweetAlert2 brand skin */
+        .swal2-popup.tipid-swal { border-radius: 20px !important; font-family: 'Inter', sans-serif; }
+        .tipid-swal .swal2-title { font-family: 'Fraunces', serif; color: #15231C; }
+        .tipid-swal .swal2-html-container { color: #33443A; }
+        .tipid-swal .swal2-confirm { border-radius: 999px !important; padding: 0.65em 1.6em !important; font-weight: 600 !important; box-shadow: none !important; }
+        .tipid-swal .swal2-cancel { border-radius: 999px !important; padding: 0.65em 1.6em !important; font-weight: 600 !important; }
+
         @media (prefers-reduced-motion: reduce) {
-            .spin, .row-in, .bar-fill, .fade-up, .banner-in, .logo-breathe, .halo-pulse {
+            .spin, .row-in, .fade-up, .banner-in, .logo-breathe, .halo-pulse {
                 animation: none !important;
                 transition: none !important;
             }
         }
     </style>
 </head>
-<body class="bg-paper dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
+<body class="bg-gray-50 dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
     <div id="root"></div>
 
+    <!-- 1. Global Utilities & Constants -->
     <script type="text/babel">
         window.useState = React.useState;
         window.useEffect = React.useEffect;
         window.useMemo = React.useMemo;
-        window.useRef = React.useRef;
-
 
         function Icon({ path, size = 20, className = "", strokeWidth = 2 }) {
             return (
@@ -153,8 +152,8 @@
 
         window.CATEGORIES = ["Pagkain", "Pamasahe", "Bills", "Load", "Ipon", "Project Components", "Iba pa"];
         window.CATEGORY_COLOR = {
-            Pagkain: "#1F6F54", Pamasahe: "#33443A", Bills: "#C9932E",
-            Load: "#123D2E", Ipon: "#2F8E6C", "Project Components": "#15231C", "Iba pa": "#B5483B",
+            Pagkain: "bg-peso", Pamasahe: "bg-ink2", Bills: "bg-gold",
+            Load: "bg-pesoDeep", Ipon: "bg-pesoLight", "Project Components": "bg-ink", "Iba pa": "bg-expense",
         };
         window.METHODS = ["Cash", "GCash", "Maya", "Bank"];
 
@@ -188,27 +187,24 @@
         }
     </script>
 
+    <!-- 2. Import External Components -->
     <script type="text/babel" src="./components/Navbar.js"></script>
-    <script type="text/babel" src="./components/DashboardSummary.js"></script>
-    <script type="text/babel" src="./components/ExpenseChart.js"></script>
-    <script type="text/babel" src="./components/ExpenseForm.js"></script>
     <script type="text/babel" src="./components/ExpenseItem.js"></script>
     <script type="text/babel" src="./components/ExpenseList.js"></script>
 
+    <!-- 3. Main History Assembly -->
     <script type="text/babel">
-        function Dashboard() {
+        function HistoryApp() {
             const authReady = window.useAuthReady();
             const dataReady = window.useDataReady();
             const [user, setUser] = React.useState(undefined);
             const [entries, setEntries] = React.useState([]);
-            const [budget, setBudgetState] = React.useState(null);
             const [loadingEntries, setLoadingEntries] = React.useState(true);
             const [dataError, setDataError] = React.useState("");
 
             React.useEffect(() => {
                 if (!authReady) return;
-                const unsub = window.TipidAuth.onChange((u) => setUser(u || null));
-                return unsub;
+                return window.TipidAuth.onChange((u) => setUser(u || null));
             }, [authReady]);
 
             React.useEffect(() => {
@@ -218,23 +214,20 @@
             React.useEffect(() => {
                 if (!dataReady || !user) return;
                 setLoadingEntries(true);
-                const unsub = window.TipidData.subscribeEntries(
+                return window.TipidData.subscribeEntries(
                     user.uid,
                     (list) => { setEntries(list); setLoadingEntries(false); },
-                    () => { setDataError("Failed to load data. Check Firestore rules."); setLoadingEntries(false); }
+                    (err) => {
+                        console.error(err);
+                        setDataError("Failed to load data.");
+                        setLoadingEntries(false);
+                    }
                 );
-                return unsub;
-            }, [dataReady, user]);
-
-            React.useEffect(() => {
-                if (!dataReady || !user) return;
-                const unsub = window.TipidData.subscribeBudget(user.uid, setBudgetState, () => {});
-                return unsub;
             }, [dataReady, user]);
 
             if (user === undefined || user === null) {
                 return (
-                    <div className="min-h-screen flex items-center justify-center bg-paper dark:bg-ink">
+                    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-ink">
                         <div className="flex flex-col items-center gap-4">
                             <div className="relative flex items-center justify-center">
                                 <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/20 halo-pulse" />
@@ -243,7 +236,7 @@
                                 </div>
                             </div>
                             <p className="text-xs font-mono tracking-[0.2em] uppercase text-ink2 dark:text-paper/50">
-                                Loading your dashboard
+                                Loading your history
                             </p>
                         </div>
                     </div>
@@ -257,14 +250,12 @@
 
             return (
                 <div className="min-h-screen relative pb-[100px] md:pb-0">
-                    <Navbar user={user} onLogout={logout} activeTab="dashboard" />
+                    <Navbar user={user} onLogout={logout} activeTab="history" />
 
                     <main className="max-w-4xl mx-auto px-6 pt-24 md:pt-10 pb-28 md:pb-10 space-y-6">
                         <div className="fade-up" style={{ animationDelay: "0ms" }}>
-                            <p className="text-xs font-mono tracking-[0.2em] uppercase text-peso mb-2">Logged in</p>
-                            <h1 className="font-display text-3xl font-semibold text-ink dark:text-paper">
-                                Hello, {user.displayName ? user.displayName.split(" ")[0] : user.email.split("@")[0]}!
-                            </h1>
+                            <h1 className="font-display text-3xl font-semibold text-ink dark:text-paper">Transaction History</h1>
+                            <p className="text-ink2/60 dark:text-paper/60 mt-1">Review your past expenses and income.</p>
                         </div>
 
                         {dataError && (
@@ -273,19 +264,7 @@
                             </div>
                         )}
 
-                        <div className="fade-up" style={{ animationDelay: "70ms" }}>
-                            <SmartSummary uid={user.uid} entries={entries} budget={budget} />
-                        </div>
-
-                        <div className="fade-up" style={{ animationDelay: "140ms" }}>
-                            <ExpenseChart entries={entries} />
-                        </div>
-
-                        <div className="fade-up" style={{ animationDelay: "210ms" }}>
-                            <AddEntryForm uid={user.uid} />
-                        </div>
-
-                        <div className="fade-up" style={{ animationDelay: "280ms" }}>
+                        <div className="fade-up" style={{ animationDelay: "90ms" }}>
                             <EntryList uid={user.uid} entries={entries} loading={loadingEntries} />
                         </div>
                     </main>
@@ -293,7 +272,7 @@
             );
         }
 
-        ReactDOM.createRoot(document.getElementById("root")).render(<Dashboard />);
+        ReactDOM.createRoot(document.getElementById("root")).render(<HistoryApp />);
     </script>
 </body>
 </html>
