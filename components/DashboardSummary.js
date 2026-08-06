@@ -23,7 +23,7 @@ function DashboardSummaryStyles() {
             .budget-glow { animation: budgetGlow 2.2s ease-out infinite; }
 
             .summary-card { transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease; }
-            .summary-card:hover { transform: translateY(-2px); box-shadow: 0 12px 30px -12px rgba(21, 35, 28, 0.18); }
+            .summary-card:hover { transform: translateY(-3px); box-shadow: 0 16px 34px -14px rgba(21, 35, 28, 0.2); }
 
             @media (prefers-reduced-motion: reduce) {
                 .editor-pop, .summary-row-in, .budget-glow, .summary-card {
@@ -86,7 +86,7 @@ function IconChip({ icon, tone }) {
         gold: "bg-gold/10 text-gold dark:bg-gold/20 dark:text-gold",
     };
     return (
-        <span className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${tones[tone] || tones.peso}`}>
+        <span className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${tones[tone] || tones.peso}`}>
             {icon}
         </span>
     );
@@ -128,7 +128,7 @@ function BudgetEditor({ uid, budget }) {
                 type="number" inputMode="decimal" autoFocus value={value}
                 onChange={e => setValue(e.target.value)}
                 placeholder="₱0.00"
-                className="w-28 bg-paper dark:bg-ink2/50 border border-line dark:border-line/20 rounded-lg px-2.5 py-1.5 text-xs font-mono text-ink dark:text-paper focus:outline-none focus:ring-2 focus:ring-peso/40 transition-shadow duration-200"
+                className="w-28 bg-paper dark:bg-ink2/50 border border-line dark:border-line/20 rounded-xl px-2.5 py-1.5 text-xs font-mono text-ink dark:text-paper focus:outline-none focus:ring-2 focus:ring-peso/40 transition-shadow duration-200"
             />
             <button type="submit" disabled={saving} className="text-xs font-semibold text-peso dark:text-pesoLight disabled:opacity-50 active:scale-95 transition-transform duration-150">
                 {saving ? "..." : "Save"}
@@ -178,26 +178,26 @@ function SmartSummary({ uid, entries, budget }) {
         <div className="space-y-6">
             <DashboardSummaryStyles />
 
-            <div className="grid sm:grid-cols-3 gap-4">
-                <div className="relative overflow-hidden summary-row-in summary-card bg-white/80 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm p-6" style={{ animationDelay: "0ms" }}>
+            <div className="grid sm:grid-cols-3 gap-4 sm:gap-5">
+                <div className="relative overflow-hidden summary-row-in summary-card bg-white/80 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.75rem] border border-line/40 dark:border-line/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_14px_28px_-16px_rgba(21,35,28,0.18)] p-6 sm:p-7" style={{ animationDelay: "0ms" }}>
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-peso to-pesoLight" />
                     <div className="flex items-center gap-2.5 mb-4">
                         <IconChip tone="peso" icon={<Icons.TrendUp size={14} />} />
                         <p className="text-xs font-mono tracking-[0.15em] uppercase text-ink2/60 dark:text-paper/50">Kita ngayong buwan</p>
                     </div>
-                    <AnimatedAmount value={income} className="font-mono text-2xl font-semibold text-ink dark:text-paper" />
+                    <AnimatedAmount value={income} className="font-mono text-2xl sm:text-[1.7rem] font-semibold text-ink dark:text-paper" />
                 </div>
 
-                <div className="relative overflow-hidden summary-row-in summary-card bg-white/80 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm p-6" style={{ animationDelay: "60ms" }}>
+                <div className="relative overflow-hidden summary-row-in summary-card bg-white/80 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.75rem] border border-line/40 dark:border-line/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_14px_28px_-16px_rgba(21,35,28,0.18)] p-6 sm:p-7" style={{ animationDelay: "60ms" }}>
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-expense to-expense/60" />
                     <div className="flex items-center gap-2.5 mb-4">
                         <IconChip tone="expense" icon={<Icons.TrendDown size={14} />} />
                         <p className="text-xs font-mono tracking-[0.15em] uppercase text-ink2/60 dark:text-paper/50">Gastos ngayong buwan</p>
                     </div>
-                    <AnimatedAmount value={spent} className="font-mono text-2xl font-semibold text-ink dark:text-paper" />
+                    <AnimatedAmount value={spent} className="font-mono text-2xl sm:text-[1.7rem] font-semibold text-ink dark:text-paper" />
                 </div>
 
-                <div className={`relative overflow-hidden summary-row-in summary-card rounded-[1.5rem] border shadow-sm p-6 backdrop-blur-xl ${overBudget ? "bg-expense/10 border-expense/30 budget-glow" : "bg-white/80 dark:bg-ink2/25 border-line/40 dark:border-line/10"}`} style={{ animationDelay: "120ms" }}>
+                <div className={`relative overflow-hidden summary-row-in summary-card rounded-[1.75rem] border shadow-[0_1px_2px_rgba(21,35,28,0.04),0_14px_28px_-16px_rgba(21,35,28,0.18)] p-6 sm:p-7 backdrop-blur-xl ${overBudget ? "bg-expense/10 border-expense/30 budget-glow" : "bg-white/80 dark:bg-ink2/25 border-line/40 dark:border-line/10"}`} style={{ animationDelay: "120ms" }}>
                     <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${overBudget ? "from-expense to-expense/60" : "from-gold to-peso"}`} />
                     <div className="flex items-center gap-2.5 mb-4">
                         <IconChip tone={overBudget ? "expense" : "gold"} icon={<Icons.Wallet size={14} />} />
@@ -205,10 +205,10 @@ function SmartSummary({ uid, entries, budget }) {
                             {remainingLabel}
                         </p>
                     </div>
-                    <AnimatedAmount value={remaining} className={`font-mono text-2xl font-semibold ${overBudget ? "text-expense" : "text-ink dark:text-paper"}`} />
+                    <AnimatedAmount value={remaining} className={`font-mono text-2xl sm:text-[1.7rem] font-semibold ${overBudget ? "text-expense" : "text-ink dark:text-paper"}`} />
 
                     {budgetPct != null && (
-                        <div className="mt-3.5">
+                        <div className="mt-4">
                             <div className="h-1.5 bg-paperDim dark:bg-ink2/50 rounded-full overflow-hidden">
                                 <div className={`bar-fill h-full rounded-full ${overBudget ? "bg-expense" : "bg-peso"}`} style={{ width: `${budgetPct}%` }} />
                             </div>
@@ -216,18 +216,18 @@ function SmartSummary({ uid, entries, budget }) {
                         </div>
                     )}
 
-                    <div className="mt-3">
+                    <div className="mt-3.5">
                         <BudgetEditor uid={uid} budget={budget} />
                     </div>
                 </div>
             </div>
 
-            <div className="summary-card bg-white/80 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm p-7">
+            <div className="summary-card bg-white/80 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.75rem] border border-line/40 dark:border-line/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_14px_28px_-16px_rgba(21,35,28,0.18)] p-6 sm:p-8">
                 <p className="text-xs font-mono tracking-[0.2em] uppercase text-peso dark:text-pesoLight mb-4">Breakdown ng Gastos</p>
                 {byCategory.length === 0 ? (
                     <p className="text-sm text-ink2/60 dark:text-paper/50 italic">Wala pang gastos ngayong buwan.</p>
                 ) : (
-                    <div className="space-y-3.5">
+                    <div className="space-y-4">
                         {byCategory.map((c, i) => {
                             const pct = spent ? Math.round((c.amount / spent) * 100) : 0;
                             return (

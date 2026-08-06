@@ -2,14 +2,16 @@
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>History — Tipid</title>
     <meta name="theme-color" content="#1F6F54">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
     <!-- Global Dark Mode Script Initializer -->
     <script>
@@ -27,14 +29,14 @@
             theme: {
                 extend: {
                     colors: {
-                        paper: '#F1F4EF', paperDim: '#E9EDE6', ink: '#15231C', ink2: '#33443A',
-                        peso: '#1F6F54', pesoLight: '#2F8E6C', pesoDeep: '#123D2E',
-                        gold: '#C9932E', expense: '#B5483B', line: '#D3DAD0',
+                        paper: '#F1F4EF', paperDim: '#E2E8DE', ink: '#15231C', ink2: '#2F4037',
+                        peso: '#1F6F54', pesoLight: '#2F8E6C', pesoDeep: '#134735',
+                        gold: '#C9932E', expense: '#B5483B', line: '#D2DDD4',
                     },
                     fontFamily: {
                         display: ['"Fraunces"', 'serif'],
                         body: ['"Inter"', 'sans-serif'],
-                        mono: ['"IBM Plex Mono"', 'monospace'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
                     },
                 }
             }
@@ -45,7 +47,6 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-
     <!-- SweetAlert2 for Delete Confirmations -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -54,10 +55,15 @@
     <script type="module" src="./firebase-data.js"></script>
 
     <style>
+        :root {
+            --ease-ios: cubic-bezier(0.22, 1, 0.36, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
         html { background: #F1F4EF; transition: background-color 0.3s; }
         html.dark { background: #111A15; color: #F1F4EF; }
 
-        body { font-feature-settings: "tnum" 1, "lnum" 1; }
+        body { font-feature-settings: "tnum" 1, "lnum" 1; -webkit-tap-highlight-color: transparent; }
         ::selection { background: #C9932E33; color: #15231C; }
         :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
 
@@ -68,7 +74,7 @@
         .row-in { animation: rowIn 0.3s ease-out both; }
 
         @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-up { animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .fade-up { animation: fadeUp 0.6s var(--ease-ios) both; }
 
         @keyframes bannerIn {
             from { opacity: 0; transform: translateY(-8px) scale(0.98); }
@@ -87,7 +93,18 @@
             70%  { opacity: 0; }
             100% { transform: scale(1.6); opacity: 0; }
         }
-        .halo-pulse { animation: haloPulse 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+        .halo-pulse { animation: haloPulse 1.9s var(--ease-ios) infinite; }
+
+        .glass-panel {
+            background: rgba(255,255,255,0.65);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border: 1px solid rgba(255,255,255,0.55);
+        }
+        html.dark .glass-panel { background: rgba(24,38,31,0.55); border: 1px solid rgba(255,255,255,0.08); }
+
+        .tap-scale { transition: transform 0.18s var(--ease-spring); }
+        .tap-scale:active { transform: scale(0.92); }
 
         /* SweetAlert2 brand skin */
         .swal2-popup.tipid-swal { border-radius: 20px !important; font-family: 'Inter', sans-serif; }
@@ -97,7 +114,7 @@
         .tipid-swal .swal2-cancel { border-radius: 999px !important; padding: 0.65em 1.6em !important; font-weight: 600 !important; }
 
         @media (prefers-reduced-motion: reduce) {
-            .spin, .row-in, .fade-up, .banner-in, .logo-breathe, .halo-pulse {
+            .spin, .row-in, .fade-up, .banner-in, .logo-breathe, .halo-pulse, .tap-scale {
                 animation: none !important;
                 transition: none !important;
             }
@@ -136,7 +153,9 @@
             Chart: (p) => <Icon {...p} path={<><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></>} />,
             List: (p) => <Icon {...p} path={<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>} />,
             Category: (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
-            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />
+            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />,
+            Sun: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>} />,
+            Moon: (p) => <Icon {...p} path={<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>} />,
         };
 
         window.Logo = function Logo({ size = 30 }) {
@@ -199,8 +218,34 @@
         function AmbientBackground() {
             return (
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div className="absolute -top-24 -right-20 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-3xl" />
-                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-gold/10 dark:bg-gold/5 rounded-full blur-3xl" />
+                    <div className="absolute -top-24 -right-16 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
+                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-gold/10 dark:bg-gold/5 rounded-full blur-[100px]" />
+                </div>
+            );
+        }
+
+        // Same reusable header shape used on dashboard.html, bills.html, and
+        // chart.html — icon chip, bold Fraunces title, short subtitle,
+        // optional right-aligned action — so every page reads the same way.
+        function SectionHeader({ icon, title, subtitle, action }) {
+            return (
+                <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                        {icon && (
+                            <div className="w-11 h-11 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-peso/15 to-pesoLight/5 dark:from-pesoLight/25 dark:to-pesoLight/5 border border-peso/15 text-peso dark:text-pesoLight flex items-center justify-center shrink-0 shadow-sm">
+                                {icon}
+                            </div>
+                        )}
+                        <div className="min-w-0">
+                            <h1 className="font-display text-xl md:text-2xl font-bold tracking-tight text-ink dark:text-paper leading-tight">
+                                {title}
+                            </h1>
+                            {subtitle && (
+                                <p className="text-xs md:text-sm text-ink2/70 dark:text-paper/60">{subtitle}</p>
+                            )}
+                        </div>
+                    </div>
+                    {action}
                 </div>
             );
         }
@@ -212,6 +257,24 @@
             const [entries, setEntries] = React.useState([]);
             const [loadingEntries, setLoadingEntries] = React.useState(true);
             const [dataError, setDataError] = React.useState("");
+
+            // Dark Mode state management (mirrors the head initializer's "theme" key)
+            const [darkMode, setDarkMode] = React.useState(() => {
+                return localStorage.getItem("theme") === "dark" ||
+                    (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches);
+            });
+
+            React.useEffect(() => {
+                if (darkMode) {
+                    document.documentElement.classList.add("dark");
+                    localStorage.setItem("theme", "dark");
+                } else {
+                    document.documentElement.classList.remove("dark");
+                    localStorage.setItem("theme", "light");
+                }
+            }, [darkMode]);
+
+            const toggleDarkMode = () => setDarkMode((d) => !d);
 
             React.useEffect(() => {
                 if (!authReady) return;
@@ -238,15 +301,15 @@
 
             if (user === undefined || user === null) {
                 return (
-                    <div className="min-h-screen flex items-center justify-center bg-paper dark:bg-ink">
-                        <div className="flex flex-col items-center gap-4">
+                    <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
+                        <div className="glass-panel flex flex-col items-center gap-3 rounded-[28px] px-10 py-9 shadow-sm">
                             <div className="relative flex items-center justify-center">
                                 <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/20 halo-pulse" />
                                 <div className="relative logo-breathe">
                                     <window.Logo size={40} />
                                 </div>
                             </div>
-                            <p className="text-xs font-mono tracking-[0.2em] uppercase text-ink2 dark:text-paper/50">
+                            <p className="text-xs font-mono tracking-[0.2em] uppercase text-ink2/60 dark:text-paper/50">
                                 Loading your history
                             </p>
                         </div>
@@ -260,24 +323,32 @@
             };
 
             return (
-                <div className="min-h-screen relative">
+                <div className="min-h-dvh flex flex-col relative">
                     <AmbientBackground />
                     <Navbar user={user} onLogout={logout} activeTab="history" />
 
-                    {/* Na-adjust na padding: max-w-5xl, pt-32, pb-40 */}
-                    <main className="max-w-5xl mx-auto px-5 sm:px-6 pt-32 md:pt-12 pb-40 md:pb-16 space-y-8 md:space-y-12">
-
-                        {/* Premium SaaS Header */}
-                        <div className="fade-up mb-8" style={{ animationDelay: "0ms" }}>
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-peso/20 to-peso/5 dark:from-pesoLight/30 dark:to-pesoLight/10 border border-peso/20 flex items-center justify-center shrink-0 shadow-sm">
-                                    <Icons.List size={24} className="text-peso dark:text-pesoLight" />
-                                </div>
-                                <div>
-                                    <h1 className="font-display text-3xl md:text-4xl font-semibold text-ink dark:text-paper leading-tight mb-1">Transaction History</h1>
-                                    <p className="text-ink2/70 dark:text-paper/60 text-sm md:text-base">Review your past expenses and income.</p>
-                                </div>
-                            </div>
+                    <main
+                        className="w-full max-w-5xl mx-auto px-5 sm:px-6 pt-32 md:pt-12 pb-40 md:pb-16 space-y-8 md:space-y-10"
+                        style={{
+                            paddingLeft: 'max(1.25rem, calc(env(safe-area-inset-left) + 1.25rem))',
+                            paddingRight: 'max(1.25rem, calc(env(safe-area-inset-right) + 1.25rem))',
+                        }}
+                    >
+                        <div className="fade-up" style={{ animationDelay: "0ms" }}>
+                            <SectionHeader
+                                icon={<Icons.List size={20} />}
+                                title="Transaction History"
+                                subtitle="Review your past expenses and income"
+                                action={
+                                    <button
+                                        onClick={toggleDarkMode}
+                                        aria-label="Toggle Dark Mode"
+                                        className="tap-scale w-10 h-10 rounded-full bg-white/90 dark:bg-ink2/50 border border-line dark:border-white/10 flex items-center justify-center text-ink dark:text-paper shadow-sm shrink-0"
+                                    >
+                                        {darkMode ? <Icons.Sun size={17} /> : <Icons.Moon size={17} />}
+                                    </button>
+                                }
+                            />
                         </div>
 
                         {dataError && (
@@ -294,7 +365,20 @@
             );
         }
 
-        ReactDOM.createRoot(document.getElementById("root")).render(<HistoryApp />);
+        // Babel-standalone doesn't always guarantee that external
+        // type="text/babel" scripts (navbar.js, ExpenseItem.js, ExpenseList.js)
+        // finish executing before this inline script runs. Rendering too early
+        // leaves Navbar/EntryList undefined and throws React error #130.
+        // Poll until both are truly defined before mounting — same retry
+        // pattern as useAuthReady/useDataReady above.
+        function mountWhenComponentsReady() {
+            if (typeof Navbar === "function" && typeof EntryList === "function") {
+                ReactDOM.createRoot(document.getElementById("root")).render(<HistoryApp />);
+            } else {
+                setTimeout(mountWhenComponentsReady, 30);
+            }
+        }
+        mountWhenComponentsReady();
     </script>
 
     <!-- PWA Service Worker Registration & Auto-Update Alert -->

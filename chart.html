@@ -2,9 +2,11 @@
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Chart — Tipid</title>
     <meta name="theme-color" content="#1F6F54">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -56,33 +58,46 @@
     <script type="module" src="./firebase-data.js"></script>
 
     <style>
-        html { background: #F1F4EF; transition: background-color 0.3s; }
+        :root {
+            --ease-ios: cubic-bezier(0.22, 1, 0.36, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        html { background: #F1F4EF; transition: background-color 0.3s var(--ease-ios); }
         html.dark { background: #111A15; color: #F1F4EF; }
 
-        body { font-feature-settings: "tnum" 1, "lnum" 1; }
+        body { font-feature-settings: "tnum" 1, "lnum" 1; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
         ::selection { background: #C9932E33; color: #15231C; }
         :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
-        .spin { animation: spin 0.8s linear infinite; }
+        .spin { animation: spin 0.85s linear infinite; }
 
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-up { animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-up { animation: fadeUp 0.7s var(--ease-ios) both; }
 
-        .bar-fill { transition: width 0.9s cubic-bezier(.22,.61,.36,1); }
+        .bar-fill { transition: width 1s var(--ease-ios); }
 
         @keyframes logoBreathe {
             0%, 100% { transform: scale(1); opacity: 1; }
             50%      { transform: scale(1.08); opacity: 0.85; }
         }
-        .logo-breathe { animation: logoBreathe 1.6s ease-in-out infinite; }
+        .logo-breathe { animation: logoBreathe 1.7s ease-in-out infinite; }
 
         @keyframes haloPulse {
             0%   { transform: scale(0.9); opacity: 0.35; }
             70%  { opacity: 0; }
-            100% { transform: scale(1.6); opacity: 0; }
+            100% { transform: scale(1.7); opacity: 0; }
         }
-        .halo-pulse { animation: haloPulse 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+        .halo-pulse { animation: haloPulse 2s var(--ease-ios) infinite; }
+
+        .glass-panel {
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border: 1px solid rgba(255,255,255,0.55);
+        }
+        html.dark .glass-panel { background: rgba(24,38,31,0.55); border: 1px solid rgba(255,255,255,0.08); }
 
         @media (prefers-reduced-motion: reduce) {
             .spin, .fade-up, .bar-fill, .logo-breathe, .halo-pulse {
@@ -183,11 +198,39 @@
 
     <!-- Chart Page Application -->
     <script type="text/babel">
+        // Trimmed to two quiet glows — same ambient language as dashboard.html
+        // and bills.html, so no page feels busier than the others.
         function AmbientBackground() {
             return (
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div className="absolute -top-24 -right-20 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-3xl" />
-                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-gold/10 dark:bg-gold/5 rounded-full blur-3xl" />
+                    <div className="absolute -top-24 -right-16 w-[380px] h-[380px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
+                    <div className="absolute bottom-0 -left-24 w-[400px] h-[400px] bg-gold/10 dark:bg-gold/5 rounded-full blur-[100px]" />
+                </div>
+            );
+        }
+
+        // Same reusable header shape used on dashboard.html and bills.html —
+        // optional leading icon chip, bold Fraunces title, short subtitle,
+        // optional right-aligned action — so every page reads the same way.
+        function SectionHeader({ icon, title, subtitle, action }) {
+            return (
+                <div className="flex items-end justify-between gap-4">
+                    <div className="flex items-center gap-4 min-w-0">
+                        {icon && (
+                            <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-gold/20 to-gold/5 dark:from-gold/30 dark:to-gold/10 border border-gold/20 flex items-center justify-center shrink-0 shadow-sm">
+                                {icon}
+                            </div>
+                        )}
+                        <div className="min-w-0">
+                            <h1 className="font-display text-2xl sm:text-3xl font-semibold text-ink dark:text-paper tracking-tight leading-tight">
+                                {title}
+                            </h1>
+                            {subtitle && (
+                                <p className="text-xs sm:text-sm text-ink2/60 dark:text-paper/50 mt-1">{subtitle}</p>
+                            )}
+                        </div>
+                    </div>
+                    {action}
                 </div>
             );
         }
@@ -218,15 +261,15 @@
 
             if (user === undefined || user === null) {
                 return (
-                    <div className="min-h-screen flex items-center justify-center bg-paper dark:bg-ink">
-                        <div className="flex flex-col items-center gap-4">
+                    <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
+                        <div className="glass-panel flex flex-col items-center gap-4 rounded-[28px] px-10 py-9 shadow-sm">
                             <div className="relative flex items-center justify-center">
                                 <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/20 halo-pulse" />
                                 <div className="relative logo-breathe">
                                     <window.Logo size={40} />
                                 </div>
                             </div>
-                            <p className="text-xs font-mono tracking-[0.2em] uppercase text-ink2 dark:text-paper/50">
+                            <p className="text-xs font-mono tracking-[0.2em] uppercase text-ink2 dark:text-paper/50 text-center">
                                 Loading your chart
                             </p>
                         </div>
@@ -240,24 +283,26 @@
             };
 
             return (
-                <div className="min-h-screen relative">
+                <div className="min-h-dvh relative">
                     <AmbientBackground />
                     <Navbar user={user} onLogout={logout} activeTab="chart" />
 
-                    {/* Adjusted layout classes to fix overlap: max-w-5xl, pt-32, pb-40 */}
-                    <main className="max-w-5xl mx-auto px-5 sm:px-6 pt-32 md:pt-12 pb-40 md:pb-16 space-y-8 md:space-y-12">
+                    {/* Generous, safe-area aware padding so content never sits under the notch or bottom nav */}
+                    <main
+                        className="max-w-5xl mx-auto px-5 sm:px-8 pt-32 md:pt-14 pb-40 md:pb-20 space-y-10 md:space-y-14"
+                        style={{
+                            paddingLeft: 'max(1.25rem, calc(env(safe-area-inset-left) + 1.25rem))',
+                            paddingRight: 'max(1.25rem, calc(env(safe-area-inset-right) + 1.25rem))',
+                            paddingBottom: 'calc(10rem + env(safe-area-inset-bottom))',
+                        }}
+                    >
 
-                        {/* Premium SaaS Header */}
-                        <div className="fade-up mb-8" style={{ animationDelay: "0ms" }}>
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-gold/20 to-gold/5 dark:from-gold/30 dark:to-gold/10 border border-gold/20 flex items-center justify-center shrink-0 shadow-sm">
-                                    <Icons.Chart size={24} className="text-gold dark:text-gold" />
-                                </div>
-                                <div>
-                                    <h1 className="font-display text-3xl md:text-4xl font-semibold text-ink dark:text-paper leading-tight mb-1">Analytics</h1>
-                                    <p className="text-ink2/70 dark:text-paper/60 text-sm md:text-base">Tingnan ang paghahati ng iyong paggastos.</p>
-                                </div>
-                            </div>
+                        <div className="fade-up" style={{ animationDelay: "0ms" }}>
+                            <SectionHeader
+                                icon={<Icons.Chart size={24} className="text-gold dark:text-gold" />}
+                                title="Analytics"
+                                subtitle="Tingnan ang paghahati ng iyong paggastos."
+                            />
                         </div>
 
                         <div className="fade-up" style={{ animationDelay: "90ms" }}>

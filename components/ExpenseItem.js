@@ -67,14 +67,14 @@ function ExpenseItem({ item, entry, uid }) {
     };
 
     return (
-        <div className="flex items-center justify-between p-4 bg-white dark:bg-ink2/30 rounded-2xl border border-line dark:border-white/10 shadow-sm transition-all hover:shadow-md group row-in">
-            <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between gap-3 p-4 sm:p-4.5 bg-white dark:bg-ink2/30 rounded-[1.25rem] border border-line dark:border-white/10 shadow-[0_1px_2px_rgba(21,35,28,0.03)] transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_10px_24px_-12px_rgba(21,35,28,0.18)] hover:-translate-y-0.5 group row-in">
+            <div className="flex items-center gap-3.5 min-w-0">
                 <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${isIncome ? 'bg-peso/10 text-peso dark:bg-pesoLight/20 dark:text-pesoLight' : 'bg-expense/10 text-expense dark:bg-expense/20'}`}>
                     {isIncome ? <Icons.TrendUp size={18} /> : <Icons.TrendDown size={18} />}
                 </div>
-                <div>
-                    <p className="font-semibold text-ink dark:text-paper text-sm md:text-base">{data.desc}</p>
-                    <div className="flex items-center gap-2 mt-1">
+                <div className="min-w-0">
+                    <p className="font-semibold text-ink dark:text-paper text-sm md:text-base truncate">{data.desc}</p>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <span className="text-[10px] font-mono font-medium tracking-wide px-2 py-0.5 rounded-md bg-paperDim dark:bg-ink2/50 text-ink2/70 dark:text-paper/60 uppercase">
                             {data.category}
                         </span>
@@ -82,7 +82,7 @@ function ExpenseItem({ item, entry, uid }) {
                     </div>
                 </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
                 <span className={`font-mono font-semibold text-sm md:text-base ${isIncome ? 'text-peso dark:text-pesoLight' : 'text-ink dark:text-paper'}`}>
                     {isIncome ? '+' : '-'}₱{window.peso(data.amount)}
                 </span>
@@ -90,7 +90,7 @@ function ExpenseItem({ item, entry, uid }) {
                 <button
                     onClick={handleDelete}
                     aria-label="Burahin ang entry"
-                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity p-2 text-ink2/40 hover:text-expense dark:text-paper/40 dark:hover:text-expense active:scale-90"
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 p-2 rounded-full text-ink2/40 hover:text-expense hover:bg-expense/10 dark:text-paper/40 dark:hover:text-expense active:scale-90"
                 >
                     <Icons.Trash size={18} />
                 </button>

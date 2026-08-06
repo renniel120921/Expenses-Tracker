@@ -2,9 +2,11 @@
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Dashboard — Tipid</title>
     <meta name="theme-color" content="#1F6F54">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,6 +38,10 @@
                         body: ['"Inter"', 'sans-serif'],
                         mono: ['"IBM Plex Mono"', 'monospace'],
                     },
+                    boxShadow: {
+                        'ios': '0 1px 2px rgba(18,61,46,0.04), 0 12px 28px -12px rgba(18,61,46,0.18)',
+                        'iosLg': '0 24px 48px -16px rgba(18,61,46,0.35)',
+                    },
                 }
             }
         }
@@ -54,56 +60,83 @@
     <script type="module" src="./firebase-data.js"></script>
 
     <style>
-        html { background: #F1F4EF; transition: background-color 0.3s; }
+        :root {
+            --sat: env(safe-area-inset-top, 0px);
+            --sar: env(safe-area-inset-right, 0px);
+            --sab: env(safe-area-inset-bottom, 0px);
+            --sal: env(safe-area-inset-left, 0px);
+            --ease-ios: cubic-bezier(0.22, 1, 0.36, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        html { background: #F1F4EF; transition: background-color 0.3s var(--ease-ios); }
         html.dark { background: #111A15; color: #F1F4EF; }
 
-        body { font-feature-settings: "tnum" 1, "lnum" 1; }
+        body {
+            font-feature-settings: "tnum" 1, "lnum" 1;
+            min-height: 100dvh;
+            -webkit-tap-highlight-color: transparent;
+        }
         ::selection { background: #C9932E33; color: #15231C; }
         :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
-        .spin { animation: spin 0.8s linear infinite; }
+        .spin { animation: spin 0.85s linear infinite; }
 
         @keyframes rowIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
-        .row-in { animation: rowIn 0.3s ease-out both; }
+        .row-in { animation: rowIn 0.4s var(--ease-ios) both; }
 
-        .bar-fill { transition: width 0.9s cubic-bezier(.22,.61,.36,1); }
-
-        .ledger-rule { background-image: repeating-linear-gradient(to right, #D3DAD0 0, #D3DAD0 6px, transparent 6px, transparent 14px); height: 1px; }
-        html.dark .ledger-rule { background-image: repeating-linear-gradient(to right, #2F8E6C55 0, #2F8E6C55 6px, transparent 6px, transparent 14px); }
+        .bar-fill { transition: width 1s var(--ease-ios); }
 
         /* --- Premium page-entrance motion --- */
         @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(14px); }
+            from { opacity: 0; transform: translateY(16px); }
             to   { opacity: 1; transform: translateY(0); }
         }
-        .fade-up { animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .fade-up { animation: fadeUp 0.7s var(--ease-ios) both; }
 
         @keyframes bannerIn {
             from { opacity: 0; transform: translateY(-8px) scale(0.98); }
             to   { opacity: 1; transform: translateY(0) scale(1); }
         }
-        .banner-in { animation: bannerIn 0.4s cubic-bezier(0.34, 1.2, 0.4, 1) both; }
+        .banner-in { animation: bannerIn 0.45s var(--ease-spring) both; }
 
         @keyframes logoBreathe {
             0%, 100% { transform: scale(1); opacity: 1; }
             50%      { transform: scale(1.08); opacity: 0.85; }
         }
-        .logo-breathe { animation: logoBreathe 1.6s ease-in-out infinite; }
+        .logo-breathe { animation: logoBreathe 1.7s ease-in-out infinite; }
 
         @keyframes haloPulse {
             0%   { transform: scale(0.9); opacity: 0.35; }
             70%  { opacity: 0; }
-            100% { transform: scale(1.6); opacity: 0; }
+            100% { transform: scale(1.7); opacity: 0; }
         }
-        .halo-pulse { animation: haloPulse 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+        .halo-pulse { animation: haloPulse 2s var(--ease-ios) infinite; }
 
-        /* --- Hero card ambience --- */
+        /* --- Hero card ambience: one quiet drifting glow, nothing busier --- */
         @keyframes heroFloat {
             0%, 100% { transform: translate(0, 0); }
-            50%      { transform: translate(0, -8px); }
+            50%      { transform: translate(0, -10px); }
         }
-        .hero-float { animation: heroFloat 5s ease-in-out infinite; }
+        .hero-float { animation: heroFloat 6s ease-in-out infinite; }
+
+        /* Frosted, iOS-style glass surface used for cards */
+        .glass-panel {
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border: 1px solid rgba(255,255,255,0.55);
+        }
+        html.dark .glass-panel {
+            background: rgba(24,38,31,0.55);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .tap-scale { transition: transform 0.18s var(--ease-spring); }
+        .tap-scale:active { transform: scale(0.94); }
+
+        .tipid-swal { border-radius: 28px !important; font-family: 'Inter', sans-serif !important; }
 
         @media (prefers-reduced-motion: reduce) {
             .spin, .row-in, .bar-fill, .fade-up, .banner-in, .logo-breathe, .halo-pulse, .hero-float {
@@ -138,15 +171,17 @@
             Loader: (p) => <Icon {...p} path={<><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></>} />,
             AlertCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />,
             Inbox: (p) => <Icon {...p} path={<><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></>} />,
+            List: (p) => <Icon {...p} path={<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>} />,
             Pencil: (p) => <Icon {...p} path={<><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></>} />,
             TrendUp: (p) => <Icon {...p} path={<><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>} />,
             TrendDown: (p) => <Icon {...p} path={<><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></>} />,
             Wallet: (p) => <Icon {...p} path={<><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></>} />,
             Home: (p) => <Icon {...p} path={<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>} />,
             Chart: (p) => <Icon {...p} path={<><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></>} />,
-            List: (p) => <Icon {...p} path={<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>} />,
             Category: (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
-            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />
+            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />,
+            Eye: (p) => <Icon {...p} path={<><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></>} />,
+            EyeOff: (p) => <Icon {...p} path={<><path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.94 3.71M6.16 6.16A18.6 18.6 0 0 0 1 11s4 7 11 7a10.9 10.9 0 0 0 5.64-1.56M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></>} />
         };
 
         window.Logo = function Logo({ size = 30 }) {
@@ -209,27 +244,33 @@
     <script type="text/babel">
         // Purely decorative ambient background — same visual language as the
         // brand/marketing pages, kept fixed so it never affects scroll or layout.
+        // Trimmed to two quiet glows (was three) — cleaner without losing warmth.
         function AmbientBackground() {
             return (
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div className="absolute -top-24 -right-20 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-3xl" />
-                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-gold/10 dark:bg-gold/5 rounded-full blur-3xl" />
+                    <div className="absolute -top-24 -right-16 w-[380px] h-[380px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
+                    <div className="absolute bottom-0 -left-24 w-[400px] h-[400px] bg-gold/10 dark:bg-gold/5 rounded-full blur-[100px]" />
                 </div>
             );
         }
 
-        // Section label used above each dashboard block
-        function SectionEyebrow({ children }) {
+        // Consistent section header used above every dashboard block —
+        // bold title + optional subtitle, with room for a right-aligned
+        // meta/action, mirroring a single predictable pattern throughout.
+        function SectionHeader({ title, subtitle, action }) {
             return (
-                <p className="text-xs font-mono font-semibold tracking-[0.2em] uppercase text-ink2/70 dark:text-paper/50 mb-4 ml-1">
-                    {children}
-                </p>
+                <div className="flex items-end justify-between gap-4 mb-5">
+                    <div className="min-w-0">
+                        <h2 className="font-display text-xl sm:text-2xl font-semibold text-ink dark:text-paper tracking-tight leading-tight">
+                            {title}
+                        </h2>
+                        {subtitle && (
+                            <p className="text-xs text-ink2/50 dark:text-paper/40 mt-1">{subtitle}</p>
+                        )}
+                    </div>
+                    {action}
+                </div>
             );
-        }
-
-        // Softer divider with more generous vertical margins
-        function SectionDivider() {
-            return <div className="ledger-rule my-6 opacity-40 dark:opacity-20" />;
         }
 
         function timeGreeting() {
@@ -239,31 +280,93 @@
             return "Magandang gabi";
         }
 
-        function HeroCard({ firstName }) {
-            const scrollToAdd = () => {
-                const el = document.getElementById("add-entry");
-                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-            };
-            return (
-                <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-peso via-pesoLight to-pesoDeep text-paper px-7 py-8 md:px-10 md:py-10 shadow-[0_20px_40px_-12px_rgba(18,61,46,0.4)]">
-                    <div className="absolute -top-16 -right-10 w-52 h-52 bg-paper/10 rounded-full blur-2xl hero-float" />
-                    <div className="absolute -bottom-20 -left-10 w-56 h-56 bg-gold/15 rounded-full blur-3xl" />
+        function scrollToId(id) {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
 
-                    <div className="relative flex items-center justify-between gap-4">
-                        <div>
-                            <p className="text-[11px] font-mono font-medium tracking-[0.2em] uppercase text-paper/70 mb-3">Naka-log in</p>
-                            <h1 className="font-display text-3xl md:text-4xl font-semibold leading-tight mb-2">
-                                {timeGreeting()}, {firstName}!
+        // Balance card — greeting up top, one clear headline number below,
+        // an eye toggle to hide it in public, and the quick-add button
+        // tucked in the corner. Same visual language as before, fewer
+        // moving decorations so the number reads first.
+        function HeroCard({ firstName, balance }) {
+            const [hidden, setHidden] = React.useState(false);
+
+            return (
+                <div className="relative overflow-hidden rounded-[28px] sm:rounded-[32px] bg-gradient-to-br from-peso via-pesoLight to-pesoDeep text-paper px-6 py-7 sm:px-8 sm:py-8 md:px-10 md:py-10 shadow-iosLg ring-1 ring-white/10">
+                    {/* ambient glows */}
+                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-paper/10 rounded-full blur-[60px] hero-float" />
+                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-gold/20 rounded-full blur-[70px]" />
+
+                    <div className="relative flex items-start justify-between gap-4 mb-7">
+                        <div className="min-w-0">
+                            <p className="text-[11px] font-mono font-medium tracking-[0.22em] uppercase text-paper/70 mb-2">
+                                {timeGreeting()}
+                            </p>
+                            <h1 className="font-display text-2xl sm:text-3xl font-semibold leading-[1.15] break-words">
+                                Kumusta, {firstName}!
                             </h1>
-                            <p className="text-paper/80 text-sm md:text-base max-w-sm">Handa ka na bang mag-ipon ngayon?</p>
                         </div>
                         <button
-                            onClick={scrollToAdd}
+                            onClick={() => scrollToId("add-entry")}
                             aria-label="Magdagdag ng gastos"
-                            className="shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full bg-paper/20 hover:bg-paper/30 border border-paper/30 flex items-center justify-center transition-all duration-200 active:scale-90 shadow-sm"
+                            className="tap-scale shrink-0 w-12 h-12 rounded-full bg-paper/15 hover:bg-paper/25 border border-paper/25 flex items-center justify-center transition-colors duration-200 shadow-ios"
                         >
-                            <Icons.Plus size={24} className="text-paper" />
+                            <Icons.Plus size={22} className="text-paper" />
                         </button>
+                    </div>
+
+                    <div className="relative">
+                        <div className="flex items-center gap-2 mb-2">
+                            <p className="text-xs font-medium text-paper/70">Kasalukuyang Balanse</p>
+                            <button
+                                onClick={() => setHidden(h => !h)}
+                                aria-label={hidden ? "Ipakita ang balanse" : "Itago ang balanse"}
+                                className="text-paper/60 hover:text-paper transition-colors duration-200 p-0.5"
+                            >
+                                {hidden ? <Icons.EyeOff size={14} /> : <Icons.Eye size={14} />}
+                            </button>
+                        </div>
+                        <p className="font-mono text-3xl sm:text-[2.5rem] font-semibold tracking-tight leading-none">
+                            {hidden ? "₱ • • • • • •" : `₱${peso(balance)}`}
+                        </p>
+                    </div>
+                </div>
+            );
+        }
+
+        // Quick Actions — a small, scannable grid of shortcuts to the parts
+        // of the dashboard someone reaches for most, same idea as a bank
+        // app's "Top services" row. Pure navigation (scrolls to the
+        // relevant section below); no new data logic.
+        function QuickActionButton({ icon, label, tone, onClick }) {
+            const tones = {
+                peso: "bg-peso/10 text-peso dark:bg-pesoLight/15 dark:text-pesoLight",
+                gold: "bg-gold/10 text-gold dark:bg-gold/20 dark:text-gold",
+                expense: "bg-expense/10 text-expense dark:bg-expense/20 dark:text-expense",
+                ink: "bg-ink/5 text-ink dark:bg-paper/10 dark:text-paper",
+            };
+            return (
+                <button onClick={onClick} className="tap-scale flex flex-col items-center gap-2.5">
+                    <span className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-ios ${tones[tone] || tones.peso}`}>
+                        {icon}
+                    </span>
+                    <span className="text-[11px] font-medium text-ink2 dark:text-paper/60 text-center leading-tight">
+                        {label}
+                    </span>
+                </button>
+            );
+        }
+
+        function QuickActions() {
+            return (
+                <div>
+                    <SectionHeader title="Mabilisang Aksyon" />
+                    <div className="grid grid-cols-4 gap-3 sm:gap-5">
+                        <QuickActionButton icon={<Icons.Plus size={20} />} label="Magdagdag" tone="peso" onClick={() => scrollToId("add-entry")} />
+                        <QuickActionButton icon={<Icons.Wallet size={20} />} label="Buod & Budget" tone="gold" onClick={() => scrollToId("summary")} />
+                        <QuickActionButton icon={<Icons.Chart size={20} />} label="Analytics" tone="expense" onClick={() => scrollToId("analytics")} />
+                        <QuickActionButton icon={<Icons.List size={20} />} label="Kasaysayan" tone="ink" onClick={() => scrollToId("history")} />
                     </div>
                 </div>
             );
@@ -307,15 +410,15 @@
 
             if (user === undefined || user === null) {
                 return (
-                    <div className="min-h-screen flex items-center justify-center bg-paper dark:bg-ink">
-                        <div className="flex flex-col items-center gap-4">
+                    <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
+                        <div className="glass-panel flex flex-col items-center gap-4 rounded-[28px] px-10 py-9 shadow-ios">
                             <div className="relative flex items-center justify-center">
                                 <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/20 halo-pulse" />
                                 <div className="relative logo-breathe">
                                     <window.Logo size={40} />
                                 </div>
                             </div>
-                            <p className="text-xs font-mono tracking-[0.2em] uppercase text-ink2 dark:text-paper/50">
+                            <p className="text-xs font-mono tracking-[0.2em] uppercase text-ink2 dark:text-paper/50 text-center">
                                 Loading your dashboard
                             </p>
                         </div>
@@ -330,47 +433,62 @@
 
             const firstName = user.displayName ? user.displayName.split(" ")[0] : user.email.split("@")[0];
 
+            // Same all-time balance math AddEntryForm already uses to guard
+            // against over-spending — reused here just to headline it.
+            const totalIncome = entries.filter(e => e.type === "income").reduce((s, e) => s + (e.amount || 0), 0);
+            const totalExpense = entries.filter(e => e.type !== "income").reduce((s, e) => s + (e.amount || 0), 0);
+            const balance = totalIncome - totalExpense;
+
             return (
-                <div className="min-h-screen relative">
+                <div className="min-h-dvh relative">
                     <AmbientBackground />
                     <Navbar user={user} onLogout={logout} activeTab="dashboard" />
 
-                    {/* Na-adjust na ang padding para hindi ma-ipit ng Navbar at Bottom Nav */}
-                    <main className="max-w-5xl mx-auto px-5 sm:px-6 pt-32 md:pt-12 pb-40 md:pb-16 space-y-10 md:space-y-14">
+                    {/* Generous padding on all sides so content never feels compressed
+                        on notched/gestured Android & iOS screens; safe-area aware. */}
+                    <main
+                        className="max-w-5xl mx-auto px-5 sm:px-8 pt-32 md:pt-14 pb-40 md:pb-20 space-y-10 md:space-y-14"
+                        style={{
+                            paddingLeft: 'max(1.25rem, calc(var(--sal) + 1.25rem))',
+                            paddingRight: 'max(1.25rem, calc(var(--sar) + 1.25rem))',
+                            paddingBottom: 'calc(10rem + var(--sab))',
+                        }}
+                    >
 
                         <div className="fade-up" style={{ animationDelay: "0ms" }}>
-                            <HeroCard firstName={firstName} />
+                            <HeroCard firstName={firstName} balance={balance} />
                         </div>
 
                         {dataError && (
-                            <div className="banner-in flex items-start gap-3 bg-expense/10 text-expense text-sm font-medium border border-expense/20 rounded-2xl px-5 py-4 shadow-sm">
+                            <div className="banner-in glass-panel flex items-start gap-3 text-expense text-sm font-medium border border-expense/20 rounded-2xl px-5 py-4 shadow-ios">
                                 <Icons.AlertCircle size={18} className="shrink-0 mt-0.5" /><span>{dataError}</span>
                             </div>
                         )}
 
-                        <div className="fade-up" style={{ animationDelay: "70ms" }}>
-                            <SectionEyebrow>Buod ng Buwan</SectionEyebrow>
+                        <div className="fade-up" style={{ animationDelay: "60ms" }}>
+                            <QuickActions />
+                        </div>
+
+                        <div id="summary" className="fade-up scroll-mt-32" style={{ animationDelay: "120ms" }}>
+                            <SectionHeader title="Buod ng Buwan" subtitle="Kita, gastos, at natitirang budget" />
                             <SmartSummary uid={user.uid} entries={entries} budget={budget} />
                         </div>
 
-                        <SectionDivider />
-
-                        <div className="fade-up" style={{ animationDelay: "140ms" }}>
-                            <SectionEyebrow>Uso ng Paggastos</SectionEyebrow>
+                        <div id="analytics" className="fade-up scroll-mt-32" style={{ animationDelay: "180ms" }}>
+                            <SectionHeader title="Uso ng Paggastos" subtitle="Saan napupunta ang pera mo" />
                             <ExpenseChart entries={entries} />
                         </div>
 
-                        <SectionDivider />
-
-                        <div id="add-entry" className="fade-up scroll-mt-32" style={{ animationDelay: "210ms" }}>
-                            <SectionEyebrow>Magdagdag ng Bagong Gastos</SectionEyebrow>
+                        <div id="add-entry" className="fade-up scroll-mt-32" style={{ animationDelay: "240ms" }}>
+                            <SectionHeader title="Magdagdag ng Bagong Gastos" />
                             <AddEntryForm uid={user.uid} entries={entries} />
                         </div>
 
-                        <SectionDivider />
-
-                        <div className="fade-up" style={{ animationDelay: "280ms" }}>
-                            <SectionEyebrow>Kasaysayan ng Gastos</SectionEyebrow>
+                        <div id="history" className="fade-up scroll-mt-32" style={{ animationDelay: "300ms" }}>
+                            <SectionHeader
+                                title="Kasaysayan ng Gastos"
+                                action={<span className="text-xs font-mono text-ink2/50 dark:text-paper/40 shrink-0">{entries.length} entries</span>}
+                            />
                             <EntryList uid={user.uid} entries={entries} loading={loadingEntries} />
                         </div>
 
@@ -379,7 +497,43 @@
             );
         }
 
-        ReactDOM.createRoot(document.getElementById("root")).render(<Dashboard />);
+        // Babel-standalone doesn't guarantee that all external
+        // type="text/babel" scripts (navbar.js, DashboardSummary.js,
+        // ExpenseChart.js, ExpenseForm.js, ExpenseItem.js, ExpenseList.js)
+        // finish executing before this inline script runs, and they can even
+        // finish out of order relative to each other since each is fetched
+        // independently. Rendering before every component Dashboard() (or a
+        // component it renders, like EntryList -> ExpenseItem) depends on is
+        // ready leaves something undefined and throws React error #130.
+        // Poll until all of them are truly defined before mounting — same
+        // retry pattern as useAuthReady/useDataReady above.
+        function mountWhenComponentsReady(attempt = 0) {
+            const missingNames = [];
+            if (typeof Navbar !== "function") missingNames.push("Navbar");
+            if (typeof SmartSummary !== "function") missingNames.push("SmartSummary");
+            if (typeof ExpenseChart !== "function") missingNames.push("ExpenseChart");
+            if (typeof AddEntryForm !== "function") missingNames.push("AddEntryForm");
+            if (typeof EntryList !== "function") missingNames.push("EntryList");
+            if (typeof ExpenseItem !== "function") missingNames.push("ExpenseItem");
+
+            if (missingNames.length === 0) {
+                ReactDOM.createRoot(document.getElementById("root")).render(<Dashboard />);
+                return;
+            }
+            if (attempt > 100) { // ~3s of retrying — a genuine load failure, not just a slow race
+                document.getElementById("root").innerHTML =
+                    `<div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:Inter,sans-serif;text-align:center;color:#15231C;">
+                        <div>
+                            <p style="font-weight:600;margin-bottom:0.5rem;">Failed to load: ${missingNames.join(", ")}</p>
+                            <p style="font-size:0.875rem;opacity:0.7;">Check the file path (Network tab) and that each component's export name matches what dashboard.html expects.</p>
+                        </div>
+                    </div>`;
+                return;
+            }
+            setTimeout(() => mountWhenComponentsReady(attempt + 1), 30);
+        }
+
+        mountWhenComponentsReady();
     </script>
 
     <!-- PWA Service Worker Registration & Auto-Update Alert -->

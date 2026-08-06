@@ -50,8 +50,8 @@ function EntryListStyles() {
 
 function SkeletonRow() {
     return (
-        <div className="px-6 sm:px-7 py-4 flex items-center gap-3.5 border-b border-line/30 dark:border-line/10 last:border-0">
-            <div className="skeleton-shimmer w-9 h-9 rounded-full shrink-0" />
+        <div className="px-6 sm:px-7 py-4.5 flex items-center gap-4 border-b border-line/30 dark:border-line/10 last:border-0">
+            <div className="skeleton-shimmer w-10 h-10 rounded-full shrink-0" />
             <div className="flex-1 min-w-0 space-y-2">
                 <div className="skeleton-shimmer h-3 rounded w-2/5" />
                 <div className="skeleton-shimmer h-2.5 rounded w-1/4" />
@@ -66,14 +66,14 @@ function EntryList({ uid, entries, loading }) {
     // mismong ExpenseItem.js na ang nagha-handle ng SweetAlert at Deletion.
 
     return (
-        <div className="relative overflow-hidden bg-white/80 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm mb-16 md:mb-0">
+        <div className="relative overflow-hidden bg-white/80 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.75rem] border border-line/40 dark:border-line/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_16px_32px_-18px_rgba(21,35,28,0.22)] mb-24 md:mb-0">
             <EntryListStyles />
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-peso to-pesoDeep" />
 
             <div className="px-6 sm:px-7 py-5 border-b border-line/40 dark:border-line/10 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="w-8 h-8 rounded-xl bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center shrink-0">
-                        <Icons.List size={14} />
+                    <span className="w-9 h-9 rounded-xl bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center shrink-0">
+                        <Icons.List size={15} />
                     </span>
                     <div className="min-w-0">
                         <h2 className="font-display text-xl font-semibold text-ink dark:text-paper leading-tight">Kasaysayan</h2>
@@ -100,7 +100,7 @@ function EntryList({ uid, entries, loading }) {
                     <p className="text-sm">Wala pang naka-log. Simulan sa itaas.</p>
                 </div>
             ) : (
-                <ul className="ledger-scroll list-in max-h-[28rem] overflow-y-auto">
+                <ul className="ledger-scroll list-in max-h-[30rem] overflow-y-auto px-1.5 sm:px-2 py-1.5 space-y-2">
                     {entries.map((e) => (
                         <ExpenseItem
                             key={e.id}

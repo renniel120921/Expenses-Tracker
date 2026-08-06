@@ -99,19 +99,27 @@ function ExpenseChart({ entries }) {
         return () => { if (chartInstance.current) chartInstance.current.destroy(); };
     }, [view, analytics, filteredEntries]);
 
-    if (entries.length === 0) return null;
+    // NOTE: previously this component returned `null` here whenever
+    // `entries.length === 0`, which hid the ENTIRE card (header, toggles,
+    // canvas — everything) and left a big empty gap between the section
+    // eyebrow above and the divider below, with nothing to fill it.
+    // The card already has a proper compact empty state further down
+    // (Icons.Inbox + "Walang data sa panahong ito.") for when
+    // filteredEntries is empty — removing the early return here lets that
+    // existing empty state actually render instead of the whole card
+    // vanishing.
 
     const filterLabel = { thisMonth: "ngayong buwan", lastMonth: "nakaraang buwan", all: "lahat ng oras" }[dateFilter];
 
     return (
-        <div className="relative overflow-hidden bg-white/80 dark:bg-ink2/20 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm p-6 sm:p-7 mb-6 fade-up">
+        <div className="relative overflow-hidden bg-white/80 dark:bg-ink2/20 backdrop-blur-xl rounded-[1.75rem] border border-line/40 dark:border-line/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_16px_32px_-18px_rgba(21,35,28,0.22)] p-6 sm:p-8 mb-6 fade-up">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold to-peso" />
 
             {/* Header with Date Filter */}
-            <div className="flex items-start justify-between gap-3 mb-5">
+            <div className="flex items-start justify-between gap-3 mb-5 flex-wrap">
                 <div className="flex items-center gap-2.5">
-                    <span className="w-8 h-8 rounded-xl bg-gold/10 dark:bg-gold/20 text-gold flex items-center justify-center shrink-0">
-                        <Icons.Chart size={14} />
+                    <span className="w-9 h-9 rounded-xl bg-gold/10 dark:bg-gold/20 text-gold flex items-center justify-center shrink-0">
+                        <Icons.Chart size={15} />
                     </span>
                     <div>
                         <h2 className="font-semibold text-lg text-ink dark:text-paper tracking-tight leading-tight">Analytics</h2>
@@ -121,7 +129,7 @@ function ExpenseChart({ entries }) {
                 <select
                     value={dateFilter}
                     onChange={(e) => setDateFilter(e.target.value)}
-                    className="text-xs font-medium text-ink2 dark:text-paper bg-paperDim dark:bg-ink2/50 px-2.5 py-1.5 rounded-lg border border-transparent focus:outline-none focus:ring-1 focus:ring-peso cursor-pointer"
+                    className="text-xs font-medium text-ink2 dark:text-paper bg-paperDim dark:bg-ink2/50 px-3 py-2 rounded-xl border border-transparent focus:outline-none focus:ring-2 focus:ring-peso/40 cursor-pointer transition-shadow duration-200"
                 >
                     <option value="thisMonth">This Month</option>
                     <option value="lastMonth">Last Month</option>
@@ -144,11 +152,11 @@ function ExpenseChart({ entries }) {
             </div>
 
             {/* View Toggles */}
-            <div className="flex items-center bg-paperDim dark:bg-ink2/40 p-1 rounded-xl mb-6">
-                <button onClick={() => setView("category")} className={`flex-1 inline-flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase py-2 rounded-lg transition-all ${view === "category" ? 'bg-white dark:bg-ink text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink2/80'}`}>
+            <div className="flex items-center bg-paperDim dark:bg-ink2/40 p-1 rounded-2xl mb-6">
+                <button onClick={() => setView("category")} className={`flex-1 inline-flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase py-2.5 rounded-xl transition-all duration-200 ${view === "category" ? 'bg-white dark:bg-ink text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink2/80'}`}>
                     <Icons.Category size={12} /> Categories
                 </button>
-                <button onClick={() => setView("flow")} className={`flex-1 inline-flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase py-2 rounded-lg transition-all ${view === "flow" ? 'bg-white dark:bg-ink text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink2/80'}`}>
+                <button onClick={() => setView("flow")} className={`flex-1 inline-flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase py-2.5 rounded-xl transition-all duration-200 ${view === "flow" ? 'bg-white dark:bg-ink text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink2/80'}`}>
                     <Icons.Chart size={12} /> Cash Flow
                 </button>
             </div>

@@ -2,9 +2,11 @@
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Bills Center — Tipid</title>
-
+    <meta name="theme-color" content="#1F6F54">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -61,16 +63,43 @@
     <script type="text/babel" src="./components/BillsCenter.js"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-up { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
-        .spin { animation: spin 1s linear infinite; }
+        :root {
+            --ease-ios: cubic-bezier(0.22, 1, 0.36, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        body { font-family: 'Inter', sans-serif; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-up { animation: fadeIn 0.5s var(--ease-ios) both; }
+        .spin { animation: spin 0.9s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        @keyframes haloPulse {
+            0%   { transform: scale(0.9); opacity: 0.35; }
+            70%  { opacity: 0; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+        .halo-pulse { animation: haloPulse 1.9s var(--ease-ios) infinite; }
+
+        .glass-panel {
+            background: rgba(255,255,255,0.65);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border: 1px solid rgba(255,255,255,0.55);
+        }
+        html.dark .glass-panel { background: rgba(24,38,31,0.55); border: 1px solid rgba(255,255,255,0.08); }
+
+        .tap-scale { transition: transform 0.18s var(--ease-spring); }
+        .tap-scale:active { transform: scale(0.92); }
 
         /* Custom SweetAlert styling to match Tipid theme */
         .tipid-swal {
             border-radius: 1.5rem !important;
             font-family: 'Inter', sans-serif !important;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .fade-up, .spin, .halo-pulse, .tap-scale { animation: none !important; transition: none !important; }
         }
     </style>
 </head>
@@ -80,7 +109,6 @@
 
     <script type="text/babel">
         // --- GLOBAL COMPONENTS SETUP ---
-        // I-attach natin sa "window" para mabasa ng Navbar.js at BillsCenter.js
         window.Icons = {
             Sun: ({ size = 24 }) => (
                 <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -92,20 +120,47 @@
                 <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             )
         };
-        const Icons = window.Icons; // Alias para magamit din natin sa file na ito
+        const Icons = window.Icons;
 
         window.Logo = window.Logo || (({ size = 24 }) => (
             <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-peso">
                 <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
             </svg>
         ));
-        // --------------------------------
 
-        // Helper formatter for currency
         window.peso = (num) => {
             if (isNaN(num)) return "0.00";
             return Number(num).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         };
+
+        function AmbientBackground() {
+            return (
+                <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
+                    <div className="absolute -top-24 -right-16 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
+                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-pesoLight/10 dark:bg-pesoLight/5 rounded-full blur-[100px]" />
+                </div>
+            );
+        }
+
+        // Same predictable header pattern as dashboard.html: bold Fraunces
+        // title + short subtitle, optional right-aligned action. Keeps
+        // every page reading the same way instead of each inventing its
+        // own header shape.
+        function SectionHeader({ title, subtitle, action }) {
+            return (
+                <div className="flex items-end justify-between gap-4 mb-6">
+                    <div className="min-w-0">
+                        <h1 className="font-display text-2xl sm:text-3xl font-semibold text-ink dark:text-paper tracking-tight leading-tight">
+                            {title}
+                        </h1>
+                        {subtitle && (
+                            <p className="text-xs text-ink2/60 dark:text-paper/50 mt-1">{subtitle}</p>
+                        )}
+                    </div>
+                    {action}
+                </div>
+            );
+        }
 
         function BillsPage() {
             const { useState, useEffect } = React;
@@ -114,7 +169,9 @@
             const [loading, setLoading] = useState(true);
             const [authChecking, setAuthChecking] = useState(true);
 
-            // Dark Mode state management
+            // NAGDAGDAG: State para i-track kung nabasa na ang mga external components
+            const [componentsReady, setComponentsReady] = useState(false);
+
             const [darkMode, setDarkMode] = useState(() => {
                 return localStorage.getItem("tipid_theme") === "dark" ||
                     (!localStorage.getItem("tipid_theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -132,7 +189,17 @@
 
             const toggleDarkMode = () => setDarkMode(!darkMode);
 
-            // Wait for TipidAuth to be attached to window before calling onChange
+            // NAGDAGDAG: Siguraduhing naka-load ang window.BillsCenter at window.Navbar bago i-render
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    if (window.BillsCenter && window.Navbar) {
+                        setComponentsReady(true);
+                        clearInterval(interval);
+                    }
+                }, 50); // mag-check tuwing 50 milliseconds
+                return () => clearInterval(interval);
+            }, []);
+
             useEffect(() => {
                 let unsub = null;
                 let isMounted = true;
@@ -149,7 +216,7 @@
                             }
                         });
                     } else {
-                        setTimeout(checkAuth, 50); // Mabilisang paghintay kung naglo-load pa ang module script
+                        setTimeout(checkAuth, 50);
                     }
                 };
 
@@ -161,7 +228,6 @@
                 };
             }, []);
 
-            // Handle Logout action para sa Navbar
             const handleLogout = async () => {
                 try {
                     await window.TipidAuth.logOut();
@@ -171,7 +237,6 @@
                 }
             };
 
-            // Wait for TipidData to be attached, then subscribe to Bills
             useEffect(() => {
                 if (!user) return;
 
@@ -202,58 +267,63 @@
                 };
             }, [user]);
 
-            if (authChecking) {
+            // Hihintayin muna pareho ang Auth Checking AT ang Component Loading
+            if (authChecking || !componentsReady) {
                 return (
-                    <div className="min-h-screen flex items-center justify-center bg-paper dark:bg-ink">
-                        <div className="flex flex-col items-center gap-3">
-                            <span className="w-8 h-8 rounded-full border-2 border-peso border-t-transparent spin" />
+                    <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
+                        <div className="glass-panel flex flex-col items-center gap-3 rounded-[28px] px-10 py-9 shadow-sm">
+                            <div className="relative flex items-center justify-center">
+                                <span className="absolute inline-flex h-14 w-14 rounded-full bg-peso/20 halo-pulse" />
+                                <span className="relative w-8 h-8 rounded-full border-2 border-peso border-t-transparent spin" />
+                            </div>
                             <p className="text-xs font-mono text-ink2/60 dark:text-paper/60">Nagpapatunay...</p>
                         </div>
                     </div>
                 );
             }
 
+            // Kapag nakarating na dito, safe nang i-assign at gamitin ang mga components
+            const AppBillsCenter = window.BillsCenter;
+            const AppNavbar = window.Navbar;
+
             return (
-                <div className="min-h-screen flex flex-col pb-24 md:pb-12">
-                    {/* Top Header */}
-                    <header className="w-full max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-4 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-2xl bg-peso/10 dark:bg-pesoLight/20 text-peso dark:text-pesoLight flex items-center justify-center font-display font-bold text-xl shadow-inner">
-                                T
-                            </div>
-                            <div>
-                                <h1 className="font-display text-xl font-bold tracking-tight text-ink dark:text-paper">Bills Center</h1>
-                                <p className="text-xs text-ink2/60 dark:text-paper/50">Subaybayan ang mga bayarin at due dates</p>
-                            </div>
+                <div className="min-h-dvh flex flex-col relative">
+                    <AmbientBackground />
+
+                    {/* Navbar owns the fixed mobile top header (avatar + greeting) and
+                        the bottom tab bar / desktop nav — this page no longer draws its
+                        own competing header on top of it, same layout contract as
+                        dashboard.html so pt-32/md:pt-14 clears the fixed header consistently. */}
+                    <main
+                        className="max-w-4xl mx-auto w-full px-5 sm:px-6 pt-32 md:pt-14 pb-40 md:pb-16 flex-1"
+                        style={{
+                            paddingLeft: 'max(1.25rem, calc(env(safe-area-inset-left) + 1.25rem))',
+                            paddingRight: 'max(1.25rem, calc(env(safe-area-inset-right) + 1.25rem))',
+                            paddingBottom: 'calc(10rem + env(safe-area-inset-bottom, 0px))',
+                        }}
+                    >
+                        <div className="fade-up">
+                            <SectionHeader
+                                title="Bills Center"
+                                subtitle="Subaybayan ang mga bayarin at due dates"
+                                action={
+                                    <button
+                                        onClick={toggleDarkMode}
+                                        aria-label="Toggle Dark Mode"
+                                        className="tap-scale shrink-0 w-10 h-10 rounded-full bg-white/90 dark:bg-ink2/50 border border-line dark:border-white/10 flex items-center justify-center text-ink dark:text-paper shadow-sm"
+                                    >
+                                        {darkMode ? <Icons.Sun size={17} /> : <Icons.Moon size={17} />}
+                                    </button>
+                                }
+                            />
                         </div>
 
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={toggleDarkMode}
-                                aria-label="Toggle Dark Mode"
-                                className="w-10 h-10 rounded-full bg-white dark:bg-ink2/50 border border-line dark:border-white/10 flex items-center justify-center text-ink dark:text-paper shadow-sm transition-transform active:scale-95"
-                            >
-                                {darkMode ? <Icons.Sun size={17} /> : <Icons.Moon size={17} />}
-                            </button>
+                        <div className="fade-up" style={{ animationDelay: "60ms" }}>
+                            <AppBillsCenter uid={user.uid} bills={bills} loading={loading} />
                         </div>
-                    </header>
-
-                    {/* Main Content Area */}
-                    <main className="w-full max-w-4xl mx-auto px-4 sm:px-6 flex-1 mt-2">
-                        {/* Gamit ang React components na naka-load galing sa ibang file */}
-                        {window.BillsCenter ? (
-                            <window.BillsCenter uid={user.uid} bills={bills} loading={loading} />
-                        ) : (
-                            <BillsCenter uid={user.uid} bills={bills} loading={loading} />
-                        )}
                     </main>
 
-                    {/* Bottom Floating Navigation / Navbar */}
-                    {window.Navbar ? (
-                        <window.Navbar user={user} onLogout={handleLogout} activeTab="bills" />
-                    ) : (
-                        <Navbar user={user} onLogout={handleLogout} activeTab="bills" />
-                    )}
+                    <AppNavbar user={user} onLogout={handleLogout} activeTab="bills" />
                 </div>
             );
         }

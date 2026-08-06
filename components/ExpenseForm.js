@@ -31,7 +31,7 @@ function ExpenseFormStyles() {
 
 function FieldWrap({ icon, children, className = "" }) {
     return (
-        <div className={`flex items-center gap-2.5 bg-paperDim/60 dark:bg-ink2/40 border border-line dark:border-line/20 rounded-xl px-3.5 focus-within:ring-2 focus-within:ring-peso/40 transition-shadow duration-200 ${className}`}>
+        <div className={`flex items-center gap-2.5 bg-paperDim/60 dark:bg-ink2/40 border border-line dark:border-line/20 rounded-2xl px-3.5 focus-within:ring-2 focus-within:ring-peso/40 focus-within:border-peso/40 transition-all duration-200 ${className}`}>
             {icon}
             {children}
         </div>
@@ -114,14 +114,14 @@ function AddEntryForm({ uid, onAdded, entries = [] }) {
     };
 
     return (
-        <div className="relative overflow-hidden bg-white/80 dark:bg-ink2/20 backdrop-blur-xl rounded-[1.5rem] border border-line/40 dark:border-line/10 shadow-sm p-6 sm:p-7 mb-6 fade-up">
+        <div className="relative overflow-hidden bg-white/80 dark:bg-ink2/20 backdrop-blur-xl rounded-[1.75rem] border border-line/40 dark:border-line/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_16px_32px_-18px_rgba(21,35,28,0.22)] p-6 sm:p-8 mb-6 fade-up">
             <ExpenseFormStyles />
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-pesoDeep to-peso" />
 
-            <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
+            <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
                 <div className="flex items-center gap-2.5">
-                    <span className="w-8 h-8 rounded-xl bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center shrink-0">
-                        <Icons.Plus size={15} />
+                    <span className="w-9 h-9 rounded-xl bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center shrink-0">
+                        <Icons.Plus size={16} />
                     </span>
                     <div>
                         <h2 className="font-display text-xl font-semibold text-ink dark:text-paper leading-tight">Magdagdag ng Entry</h2>
@@ -130,9 +130,9 @@ function AddEntryForm({ uid, onAdded, entries = [] }) {
                 </div>
 
                 {/* Pure CSS Grid toggle switch */}
-                <div className="relative grid grid-cols-2 bg-paperDim dark:bg-ink2/50 rounded-full p-1 text-xs font-semibold shadow-inner w-[140px]">
+                <div className="relative grid grid-cols-2 bg-paperDim dark:bg-ink2/50 rounded-full p-1 text-xs font-semibold shadow-inner w-[144px]">
                     <div
-                        className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full shadow-sm transition-all duration-300 ease-out ${
+                        className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.2,0.4,1)] ${
                             type === "income" ? "translate-x-full bg-peso" : "translate-x-0 bg-ink dark:bg-paper"
                         }`}
                     />
@@ -162,7 +162,7 @@ function AddEntryForm({ uid, onAdded, entries = [] }) {
                     <input
                         type="text" value={desc} onChange={e => setDesc(e.target.value)}
                         placeholder={type === "income" ? "e.g., Allowance" : "e.g., Pamasahe sa Jeep"}
-                        className="w-full min-w-0 bg-transparent py-3 text-sm text-ink dark:text-paper placeholder:text-ink2/40 dark:placeholder:text-paper/40 focus:outline-none"
+                        className="w-full min-w-0 bg-transparent py-3.5 text-sm text-ink dark:text-paper placeholder:text-ink2/40 dark:placeholder:text-paper/40 focus:outline-none"
                     />
                 </FieldWrap>
 
@@ -170,26 +170,26 @@ function AddEntryForm({ uid, onAdded, entries = [] }) {
                     <input
                         type="number" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)}
                         placeholder="0.00"
-                        className="w-full min-w-0 bg-transparent py-3 text-sm font-mono text-ink dark:text-paper placeholder:text-ink2/40 dark:placeholder:text-paper/40 focus:outline-none"
+                        className="w-full min-w-0 bg-transparent py-3.5 text-sm font-mono text-ink dark:text-paper placeholder:text-ink2/40 dark:placeholder:text-paper/40 focus:outline-none"
                     />
                 </FieldWrap>
 
                 {type === "expense" && (
                     <FieldWrap className="field-pop sm:w-40" icon={<Icons.Category size={14} className="text-ink2/40 dark:text-paper/35 shrink-0" />}>
-                        <select value={category} onChange={e => setCategory(e.target.value)} className="w-full min-w-0 bg-transparent py-3 text-sm text-ink dark:text-paper focus:outline-none">
+                        <select value={category} onChange={e => setCategory(e.target.value)} className="w-full min-w-0 bg-transparent py-3.5 text-sm text-ink dark:text-paper focus:outline-none">
                             {CATEGORIES.map(c => <option key={c} value={c} className="dark:bg-ink dark:text-paper">{c}</option>)}
                         </select>
                     </FieldWrap>
                 )}
 
                 <FieldWrap className="sm:w-32" icon={<Icons.Wallet size={14} className="text-ink2/40 dark:text-paper/35 shrink-0" />}>
-                    <select value={method} onChange={e => setMethod(e.target.value)} className="w-full min-w-0 bg-transparent py-3 text-sm text-ink dark:text-paper focus:outline-none">
+                    <select value={method} onChange={e => setMethod(e.target.value)} className="w-full min-w-0 bg-transparent py-3.5 text-sm text-ink dark:text-paper focus:outline-none">
                         {METHODS.map(m => <option key={m} value={m} className="dark:bg-ink dark:text-paper">{m}</option>)}
                     </select>
                 </FieldWrap>
 
                 <button type="submit" disabled={saving}
-                    className={`font-semibold rounded-xl px-6 py-3 text-sm flex items-center justify-center gap-2 transition-colors shrink-0 text-paper disabled:opacity-60 active:scale-95 duration-200 shadow-sm ${type === "income" ? "bg-peso hover:bg-pesoLight" : "bg-ink dark:bg-peso hover:bg-pesoDeep"}`}>
+                    className={`font-semibold rounded-2xl px-6 py-3.5 text-sm flex items-center justify-center gap-2 transition-all shrink-0 text-paper disabled:opacity-60 active:scale-95 duration-200 shadow-[0_10px_24px_-10px_rgba(18,61,46,0.5)] ${type === "income" ? "bg-peso hover:bg-pesoLight" : "bg-ink dark:bg-peso hover:bg-pesoDeep"}`}>
                     <span key={saving ? "saving" : justAdded ? "added" : "idle"} className={justAdded ? "success-pop inline-flex" : "inline-flex"}>
                         {saving ? <Icons.Loader size={16} className="spin" /> : justAdded ? <Icons.Plus size={16} /> : <Icons.Plus size={16} />}
                     </span>

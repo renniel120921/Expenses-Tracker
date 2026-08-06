@@ -1,12 +1,19 @@
 // components/BillsCenter.js
 
-function BillsCenter({ uid, bills = [], loading }) {
+window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
     const { useState, useEffect } = React;
     const [title, setTitle] = useState("");
     const [amount, setAmount] = useState("");
     const [dueDate, setDueDate] = useState("");
     const [category, setCategory] = useState("Bills");
     const [saving, setSaving] = useState(false);
+
+    // Resolve global Icons safely
+    const Icons = window.Icons || {
+        Trash: ({ size = 16 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        )
+    };
 
     // Summary calculations
     const totalUnpaid = bills.filter(b => b.status === "Unpaid" || b.status === "Overdue").reduce((acc, curr) => acc + curr.amount, 0);
@@ -154,30 +161,30 @@ function BillsCenter({ uid, bills = [], loading }) {
         <div className="space-y-6 fade-up">
             {/* Top Stat Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-white/90 dark:bg-ink2/30 backdrop-blur-xl p-5 rounded-3xl border border-line/50 dark:border-white/10 shadow-sm">
-                    <p className="text-xs font-mono uppercase tracking-wider text-ink2/60 dark:text-paper/50 mb-1">Total na Babayaran</p>
+                <div className="bg-white/85 dark:bg-ink2/30 backdrop-blur-xl p-5 sm:p-6 rounded-[1.75rem] border border-line/50 dark:border-white/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_14px_28px_-16px_rgba(21,35,28,0.18)]">
+                    <p className="text-xs font-mono uppercase tracking-wider text-ink2/60 dark:text-paper/50 mb-1.5">Total na Babayaran</p>
                     <p className="font-display text-2xl font-semibold text-ink dark:text-paper">₱{window.peso(totalUnpaid)}</p>
                 </div>
-                <div className="bg-white/90 dark:bg-ink2/30 backdrop-blur-xl p-5 rounded-3xl border border-line/50 dark:border-white/10 shadow-sm">
-                    <p className="text-xs font-mono uppercase tracking-wider text-expense mb-1">Overdue Bills</p>
+                <div className="bg-white/85 dark:bg-ink2/30 backdrop-blur-xl p-5 sm:p-6 rounded-[1.75rem] border border-line/50 dark:border-white/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_14px_28px_-16px_rgba(21,35,28,0.18)]">
+                    <p className="text-xs font-mono uppercase tracking-wider text-expense mb-1.5">Overdue Bills</p>
                     <p className="font-display text-2xl font-semibold text-expense">{overdueCount} <span className="text-sm font-body font-normal">mga bill</span></p>
                 </div>
-                <div className="bg-white/90 dark:bg-ink2/30 backdrop-blur-xl p-5 rounded-3xl border border-line/50 dark:border-white/10 shadow-sm">
-                    <p className="text-xs font-mono uppercase tracking-wider text-peso dark:text-pesoLight mb-1">Bayad na (Paid)</p>
+                <div className="bg-white/85 dark:bg-ink2/30 backdrop-blur-xl p-5 sm:p-6 rounded-[1.75rem] border border-line/50 dark:border-white/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_14px_28px_-16px_rgba(21,35,28,0.18)]">
+                    <p className="text-xs font-mono uppercase tracking-wider text-peso dark:text-pesoLight mb-1.5">Bayad na (Paid)</p>
                     <p className="font-display text-2xl font-semibold text-peso dark:text-pesoLight">{paidCount} <span className="text-sm font-body font-normal">naitala</span></p>
                 </div>
             </div>
 
             {/* Add Bill Form with Native Date Picker */}
-            <div className="bg-white/90 dark:bg-ink2/30 backdrop-blur-xl rounded-3xl border border-line/50 dark:border-white/10 shadow-sm p-6">
+            <div className="bg-white/85 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.75rem] border border-line/50 dark:border-white/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_14px_28px_-16px_rgba(21,35,28,0.18)] p-6 sm:p-7">
                 <h3 className="font-display text-lg font-semibold mb-4 text-ink dark:text-paper">Magdagdag ng Bill</h3>
-                <form onSubmit={handleAddBill} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <form onSubmit={handleAddBill} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
                     <input
                         type="text"
                         placeholder="Pangalan ng Bill (e.g. Kuryente)"
                         value={title}
                         onChange={e => setTitle(e.target.value)}
-                        className="bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-peso font-medium text-ink dark:text-paper placeholder-ink2/40 dark:placeholder-paper/30"
+                        className="bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 transition-all duration-200 font-medium text-ink dark:text-paper placeholder-ink2/40 dark:placeholder-paper/30"
                     />
                     <input
                         type="number"
@@ -185,19 +192,19 @@ function BillsCenter({ uid, bills = [], loading }) {
                         placeholder="Halaga (₱)"
                         value={amount}
                         onChange={e => setAmount(e.target.value)}
-                        className="bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-peso font-medium text-ink dark:text-paper placeholder-ink2/40 dark:placeholder-paper/30"
+                        className="bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 transition-all duration-200 font-medium text-ink dark:text-paper placeholder-ink2/40 dark:placeholder-paper/30"
                     />
                     {/* Hito ang Calendar Picker (Native HTML5 Date Input) */}
                     <input
                         type="date"
                         value={dueDate}
                         onChange={e => setDueDate(e.target.value)}
-                        className="bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-peso font-medium text-ink dark:text-paper"
+                        className="bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 transition-all duration-200 font-medium text-ink dark:text-paper"
                     />
                     <select
                         value={category}
                         onChange={e => setCategory(e.target.value)}
-                        className="bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-peso text-ink dark:text-paper"
+                        className="bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 transition-all duration-200 text-ink dark:text-paper"
                     >
                         <option value="Bills">Bills</option>
                         <option value="Kuryente">Kuryente</option>
@@ -209,7 +216,7 @@ function BillsCenter({ uid, bills = [], loading }) {
                     <button
                         type="submit"
                         disabled={saving}
-                        className="bg-peso hover:bg-pesoLight active:scale-95 text-paper font-semibold rounded-xl px-4 py-3 text-sm transition-all shadow-md shadow-peso/20 flex items-center justify-center gap-2"
+                        className="bg-peso hover:bg-pesoLight active:scale-95 disabled:opacity-60 text-paper font-semibold rounded-2xl px-4 py-3 text-sm transition-all duration-200 shadow-[0_10px_22px_-10px_rgba(18,61,46,0.55)] flex items-center justify-center gap-2"
                     >
                         {saving ? "Sine-save..." : "I-save ang Bill"}
                     </button>
@@ -217,7 +224,7 @@ function BillsCenter({ uid, bills = [], loading }) {
             </div>
 
             {/* Bills List */}
-            <div className="bg-white/90 dark:bg-ink2/30 backdrop-blur-xl rounded-3xl border border-line/50 dark:border-white/10 shadow-sm overflow-hidden p-6">
+            <div className="bg-white/85 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.75rem] border border-line/50 dark:border-white/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_14px_28px_-16px_rgba(21,35,28,0.18)] overflow-hidden p-6 sm:p-7">
                 <h3 className="font-display text-lg font-semibold mb-4 text-ink dark:text-paper">Listahan ng mga Bills</h3>
 
                 {loading ? (
@@ -232,22 +239,22 @@ function BillsCenter({ uid, bills = [], loading }) {
                             const isPaid = bill.status === "Paid";
                             const isOverdue = bill.status === "Overdue";
                             return (
-                                <div key={bill.id} className="flex items-center justify-between p-4 bg-paper/40 dark:bg-ink2/40 rounded-2xl border border-line/40 dark:border-white/5 transition-all">
-                                    <div className="flex items-center gap-4">
+                                <div key={bill.id} className="flex items-center justify-between gap-3 p-4 bg-paper/40 dark:bg-ink2/40 rounded-2xl border border-line/40 dark:border-white/5 transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_10px_24px_-14px_rgba(21,35,28,0.25)] hover:-translate-y-0.5">
+                                    <div className="flex items-center gap-4 min-w-0">
                                         <button
                                             onClick={() => toggleStatus(bill)}
-                                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200 active:scale-90 ${
                                                 isPaid ? 'bg-peso border-peso text-white' : 'border-line dark:border-paper/40'
                                             }`}
                                             title="Mark as Paid"
                                         >
                                             {isPaid && <span className="text-xs font-bold">✓</span>}
                                         </button>
-                                        <div>
-                                            <p className={`font-semibold text-sm md:text-base ${isPaid ? 'line-through text-ink2/50 dark:text-paper/40' : 'text-ink dark:text-paper'}`}>
+                                        <div className="min-w-0">
+                                            <p className={`font-semibold text-sm md:text-base truncate ${isPaid ? 'line-through text-ink2/50 dark:text-paper/40' : 'text-ink dark:text-paper'}`}>
                                                 {bill.title}
                                             </p>
-                                            <div className="flex items-center gap-2 mt-0.5">
+                                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                                                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-paperDim dark:bg-ink2/50 uppercase text-ink2/70 dark:text-paper/60">
                                                     {bill.category}
                                                 </span>
@@ -263,13 +270,13 @@ function BillsCenter({ uid, bills = [], loading }) {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3 shrink-0">
                                         <span className="font-mono font-semibold text-sm md:text-base text-ink dark:text-paper">
                                             ₱{window.peso(bill.amount)}
                                         </span>
                                         <button
                                             onClick={() => handleDelete(bill.id)}
-                                            className="text-ink2/40 hover:text-expense transition-colors p-1"
+                                            className="text-ink2/40 hover:text-expense hover:bg-expense/10 active:scale-90 transition-all duration-200 p-1.5 rounded-full"
                                         >
                                             <Icons.Trash size={16} />
                                         </button>
@@ -282,4 +289,4 @@ function BillsCenter({ uid, bills = [], loading }) {
             </div>
         </div>
     );
-}
+};

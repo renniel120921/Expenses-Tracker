@@ -1,6 +1,6 @@
-// components/Navbar.js
+// components/navbar.js
 
-function Navbar({ user, onLogout, activeTab = "dashboard" }) {
+window.Navbar = function Navbar({ user, onLogout, activeTab = "dashboard" }) {
     const userName = user?.displayName ? user.displayName.split(" ")[0] : user?.email?.split("@")[0] || "User";
     const initial = userName.charAt(0).toUpperCase();
 
@@ -43,7 +43,34 @@ function Navbar({ user, onLogout, activeTab = "dashboard" }) {
         return () => window.removeEventListener("resize", measurePill);
     }, [measurePill]);
 
-    // --- Mobile: retrigger the icon "pop" every time the active tab changes ---
+    // --- Mobile: measure the active tab's X position so we can cut a real
+    // notch into the bar background at that exact spot (same technique as
+    // the desktop sliding pill above, just producing a mask instead of a
+    // moving highlight). ---
+    const mobileBarRef = React.useRef(null);
+    const mobileIconRefs = React.useRef({});
+    const [notchX, setNotchX] = React.useState(null);
+
+    const measureNotch = React.useCallback(() => {
+        const barEl = mobileBarRef.current;
+        const iconEl = mobileIconRefs.current[activeTab];
+        if (barEl && iconEl) {
+            const barRect = barEl.getBoundingClientRect();
+            const iconRect = iconEl.getBoundingClientRect();
+            setNotchX(iconRect.left + iconRect.width / 2 - barRect.left);
+        }
+    }, [activeTab]);
+
+    React.useLayoutEffect(() => {
+        measureNotch();
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(measureNotch);
+        }
+        window.addEventListener("resize", measureNotch);
+        return () => window.removeEventListener("resize", measureNotch);
+    }, [measureNotch]);
+
+    // --- Mobile: retrigger the icon "sink" every time the active tab changes ---
     const [bounceKey, setBounceKey] = React.useState(0);
     React.useEffect(() => {
         setBounceKey((k) => k + 1);
@@ -52,23 +79,38 @@ function Navbar({ user, onLogout, activeTab = "dashboard" }) {
     return (
         <React.Fragment>
             <style>{`
-                @keyframes navIconPop {
-                    0%   { transform: translateY(-1rem) scale(1); }
-                    40%  { transform: translateY(-1rem) scale(1.24); }
-                    65%  { transform: translateY(-1rem) scale(0.95); }
-                    100% { transform: translateY(-1rem) scale(1); }
+                /* Icon drops in from above then settles down INTO the notch —
+                   ends lower than before (-0.6rem instead of -1rem) so more
+                   of it visibly sits inside the cut-out, not floating above it. */
+                @keyframes navIconSink {
+                    0%   { transform: translateY(-1.9rem) scale(0.72); opacity: 0; }
+                    45%  { transform: translateY(-0.35rem) scale(1.14); opacity: 1; }
+                    70%  { transform: translateY(-0.68rem) scale(0.95); }
+                    100% { transform: translateY(-0.6rem) scale(1); }
                 }
-                .nav-icon-pop { animation: navIconPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+                .nav-icon-sink { animation: navIconSink 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+                /* Real cutout in the bar surface — a circular hole punched at
+                   --notch-x, right on the top edge. Sized noticeably bigger
+                   than the icon so there's a clear visible gap/rim all the
+                   way around it, matching the reference (not a same-size hole
+                   that just blends with the icon edge). */
+                .nav-bar-notched {
+                    -webkit-mask-image: radial-gradient(circle 36px at var(--notch-x, -9999px) 2px, transparent 0 94%, black 100%);
+                    mask-image: radial-gradient(circle 36px at var(--notch-x, -9999px) 2px, transparent 0 94%, black 100%);
+                    -webkit-mask-repeat: no-repeat;
+                    mask-repeat: no-repeat;
+                }
 
                 @keyframes navHaloPulse {
-                    0%   { transform: scale(0.85); opacity: 0.45; }
+                    0%   { transform: translateY(-0.6rem) scale(0.85); opacity: 0.45; }
                     70%  { opacity: 0; }
-                    100% { transform: scale(1.55); opacity: 0; }
+                    100% { transform: translateY(-0.6rem) scale(1.55); opacity: 0; }
                 }
                 .nav-halo-pulse { animation: navHaloPulse 1.9s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
 
                 @media (prefers-reduced-motion: reduce) {
-                    .nav-icon-pop, .nav-halo-pulse { animation: none !important; }
+                    .nav-icon-sink, .nav-halo-pulse { animation: none !important; }
                 }
             `}</style>
 
@@ -118,7 +160,7 @@ function Navbar({ user, onLogout, activeTab = "dashboard" }) {
                                 {userName}
                             </span>
                         </div>
-                        <button onClick={onLogout} className="text-sm font-semibold text-ink2 dark:text-paper/60 hover:text-expense transition-colors duration-300 shrink-0">
+                        <button onClick={onLogout} className="text-sm font-semibold text-ink2 dark:text-paper/60 hover:text-expense active:scale-95 transition-all duration-300 shrink-0">
                             Log out
                         </button>
                     </div>
@@ -126,41 +168,59 @@ function Navbar({ user, onLogout, activeTab = "dashboard" }) {
                 </div>
             </nav>
 
-            {/* Mobile Top Header */}
-            <header className="md:hidden bg-white/70 dark:bg-ink2/70 backdrop-blur-xl px-6 py-4 flex justify-between items-center fixed top-0 w-full z-50 border-b border-line/30 dark:border-white/10">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-paperDim dark:bg-white/10 border border-white dark:border-white/10 flex items-center justify-center text-ink dark:text-paper font-semibold text-base shadow-sm">
+            {/* Mobile Top Header — padded for the notch / status bar so content never sits under it */}
+            <header
+                className="md:hidden bg-white/75 dark:bg-ink2/70 backdrop-blur-xl px-5 pb-3.5 flex justify-between items-center fixed top-0 w-full z-50 border-b border-line/30 dark:border-white/10"
+                style={{ paddingTop: 'max(1rem, calc(env(safe-area-inset-top) + 0.65rem))' }}
+            >
+                <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-paperDim dark:bg-white/10 border border-white dark:border-white/10 flex items-center justify-center text-ink dark:text-paper font-semibold text-base shadow-sm shrink-0">
                         {initial}
                     </div>
-                    <div className="flex flex-col">
-                        <span className="font-semibold text-ink dark:text-paper text-sm">Hello, {userName}!</span>
+                    <div className="flex flex-col min-w-0">
+                        <span className="font-semibold text-ink dark:text-paper text-sm truncate">Hello, {userName}!</span>
                         <span className="text-[10px] text-ink2/60 dark:text-paper/45">Ready to save today?</span>
                     </div>
                 </div>
 
-                <button onClick={onLogout} className="text-ink2/60 dark:text-paper/45 hover:text-expense active:scale-90 transition-all duration-300 focus:outline-none">
+                <button onClick={onLogout} className="text-ink2/60 dark:text-paper/45 hover:text-expense active:scale-90 transition-all duration-200 focus:outline-none p-1.5 -mr-1.5 shrink-0">
                     <LogOutIcon />
                 </button>
             </header>
 
-            {/* Mobile Bottom Navigation */}
-            <nav className="md:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-[94%] max-w-md">
-                <div className="relative flex justify-around items-end px-1 pt-3 pb-2.5 bg-white/85 dark:bg-ink2/85 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] rounded-[2rem]">
-                    {tabs.map((tab) => (
-                        <BottomNavBtn
-                            key={tab.id}
-                            href={tab.href}
-                            label={tab.label}
-                            active={activeTab === tab.id}
-                            bounce={activeTab === tab.id ? bounceKey : 0}
-                            icon={<tab.icon active={activeTab === tab.id} />}
-                        />
-                    ))}
+            {/* Mobile Bottom Navigation — floats above the home indicator / gesture bar */}
+            <nav
+                className="md:hidden fixed left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-md"
+                style={{ bottom: 'max(1.25rem, calc(env(safe-area-inset-bottom) + 0.75rem))' }}
+            >
+                <div ref={mobileBarRef} className="relative h-[4.4rem]">
+                    {/* Layer 1: the bar surface itself, with a real notch cut
+                        out of it at the active tab's position. */}
+                    <div
+                        className="nav-bar-notched absolute inset-0 bg-white/85 dark:bg-ink2/85 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-[0_16px_44px_-12px_rgba(18,61,46,0.28)] dark:shadow-[0_16px_44px_-12px_rgba(0,0,0,0.5)] rounded-[2rem]"
+                        style={notchX != null ? { "--notch-x": `${notchX}px` } : undefined}
+                    />
+
+                    {/* Layer 2: the icons, unmasked, sitting on top so the
+                        active one visibly pokes through the cut-out hole. */}
+                    <div className="relative z-10 flex justify-around items-end h-full px-1 pt-3 pb-2.5">
+                        {tabs.map((tab) => (
+                            <BottomNavBtn
+                                key={tab.id}
+                                innerRef={(el) => (mobileIconRefs.current[tab.id] = el)}
+                                href={tab.href}
+                                label={tab.label}
+                                active={activeTab === tab.id}
+                                bounce={activeTab === tab.id ? bounceKey : 0}
+                                icon={<tab.icon active={activeTab === tab.id} />}
+                            />
+                        ))}
+                    </div>
                 </div>
             </nav>
         </React.Fragment>
     );
-}
+};
 
 const DesktopNavLink = ({ href, label, active, innerRef }) => (
     <a
@@ -172,20 +232,21 @@ const DesktopNavLink = ({ href, label, active, innerRef }) => (
     </a>
 );
 
-const BottomNavBtn = ({ href, icon, label, active, bounce }) => (
+const BottomNavBtn = ({ href, icon, label, active, bounce, innerRef }) => (
     <a
+        ref={innerRef}
         href={href}
         className="relative z-10 flex flex-col items-center justify-end gap-1.5 h-14 w-[3.8rem] focus:outline-none active:scale-95 transition-transform duration-200 ease-out"
     >
         <span className="relative flex items-center justify-center">
             {active && (
-                <span className="absolute w-12 h-12 -translate-y-4 rounded-full bg-peso/25 dark:bg-pesoLight/25 nav-halo-pulse pointer-events-none" />
+                <span className="absolute w-12 h-12 -translate-y-[0.6rem] rounded-full bg-peso/25 dark:bg-pesoLight/25 nav-halo-pulse pointer-events-none" />
             )}
             <span
                 key={bounce}
                 className={
                     active
-                        ? "relative flex items-center justify-center w-[3.15rem] h-[3.15rem] -translate-y-4 rounded-full bg-gradient-to-br from-pesoLight to-pesoDeep text-white ring-4 ring-white/90 dark:ring-ink2/90 shadow-[0_10px_22px_-6px_rgba(18,61,46,0.6)] nav-icon-pop"
+                        ? "nav-icon-sink relative flex items-center justify-center w-[3.15rem] h-[3.15rem] -translate-y-[0.6rem] rounded-full bg-gradient-to-br from-pesoLight to-pesoDeep text-white ring-4 ring-white/90 dark:ring-ink2/90 shadow-[0_10px_22px_-6px_rgba(18,61,46,0.6)]"
                         : "relative flex items-center justify-center w-11 h-11 rounded-full text-ink2/40 dark:text-paper/35 transition-colors duration-300"
                 }
             >
