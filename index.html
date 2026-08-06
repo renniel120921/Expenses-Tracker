@@ -221,26 +221,46 @@
             const ref = useRef(null);
             const [val, setVal] = useState(0);
             const started = useRef(false);
+            const prevTo = useRef(to);
+
             useEffect(() => {
                 const el = ref.current;
                 if (!el) return;
-                const obs = new IntersectionObserver(([entry]) => {
-                    if (entry.isIntersecting && !started.current) {
-                        started.current = true;
-                        const start = performance.now();
-                        const step = (now) => {
-                            const p = Math.min(1, (now - start) / duration);
-                            const eased = 1 - Math.pow(1 - p, 3);
-                            setVal(Math.round(eased * to));
-                            if (p < 1) requestAnimationFrame(step);
-                        };
-                        requestAnimationFrame(step);
-                        obs.disconnect();
-                    }
-                }, { threshold: 0.4 });
-                obs.observe(el);
-                return () => obs.disconnect();
-            }, [to, duration]);
+
+                const runCount = () => {
+                    const start = performance.now();
+                    const from = val;
+                    const step = (now) => {
+                        const p = Math.min(1, (now - start) / duration);
+                        const eased = 1 - Math.pow(1 - p, 3);
+                        setVal(Math.round(from + (to - from) * eased));
+                        if (p < 1) requestAnimationFrame(step);
+                    };
+                    requestAnimationFrame(step);
+                };
+
+                // Kapag unang beses lumitaw ang element sa screen
+                if (!started.current) {
+                    const obs = new IntersectionObserver(([entry]) => {
+                        if (entry.isIntersecting && !started.current) {
+                            started.current = true;
+                            runCount();
+                            obs.disconnect();
+                        }
+                    }, { threshold: 0.4 });
+                    obs.observe(el);
+                    return () => obs.disconnect();
+                }
+
+                // Kapag na-update ang "to" (e.g., user count galing Firebase dumating pagkatapos mag-mount)
+                // at nakita na dati ang element, i-animate papunta sa bagong tamang numero.
+                if (started.current && prevTo.current !== to) {
+                    prevTo.current = to;
+                    runCount();
+                }
+                // eslint-disable-next-line react-hooks/exhaustive-deps
+            }, [to]);
+
             return <span ref={ref}>{prefix}{val}{suffix}</span>;
         }
 
@@ -625,10 +645,10 @@
             );
         }
 
-        /* ---------- Stat strip (Updated with REAL Total Users) ---------- */
+        /* ---------- Stat strip (Updated with REAL, exact Total Users) ---------- */
 
         function StatStrip() {
-            const [userCount, setUserCount] = useState(0); // Default fallback number
+            const [userCount, setUserCount] = useState(null); // null = "not fetched yet", so we don't flash a wrong number
 
             useEffect(() => {
                 // Dynamically import Firebase to fetch the real user count on page load
@@ -640,11 +660,11 @@
                     return getCountFromServer(usersRef);
                 }).then(snapshot => {
                     const realCount = snapshot.data().count;
-                    if (realCount > 0) {
-                        setUserCount(realCount);
-                    }
+                    // Exact number lang, kahit na maliit pa — huwag na tago-tago sa likod ng "+"
+                    setUserCount(realCount);
                 }).catch(err => {
-                    console.warn("Hindi ma-fetch ang user count galing Firebase. (Baka naka-block sa Firestore rules). Using fallback.", err);
+                    console.warn("Hindi ma-fetch ang user count galing Firebase. (Baka naka-block sa Firestore rules).", err);
+                    setUserCount(0);
                 });
             }, []);
 
@@ -652,7 +672,9 @@
                 { to: 3, suffix: "s", label: "Average time to log one expense" },
                 { to: 100, suffix: "%", label: "Functional with zero signal" },
                 { to: 0, prefix: "₱", label: "Cost to start tracking today" },
-                { to: userCount, suffix: "+", label: "Total Active Users" },
+                // Exact count na, walang "+" — kung 0 pa ang natatanggap (di pa nakuha), ipapakita muna ang "0"
+                // hanggang dumating ang totoong resulta mula sa Firestore.
+                { to: userCount ?? 0, label: "Total Active Users" },
             ];
 
             return (
