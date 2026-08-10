@@ -181,7 +181,9 @@
             Category: (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
             LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />,
             Eye: (p) => <Icon {...p} path={<><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></>} />,
-            EyeOff: (p) => <Icon {...p} path={<><path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.94 3.71M6.16 6.16A18.6 18.6 0 0 0 1 11s4 7 11 7a10.9 10.9 0 0 0 5.64-1.56M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></>} />
+            EyeOff: (p) => <Icon {...p} path={<><path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.94 3.71M6.16 6.16A18.6 18.6 0 0 0 1 11s4 7 11 7a10.9 10.9 0 0 0 5.64-1.56M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></>} />,
+            // NAGDAGDAG: Bell Icon para sa Notification
+            Bell: (p) => <Icon {...p} path={<><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>} />
         };
 
         window.Logo = function Logo({ size = 30 }) {
@@ -242,9 +244,7 @@
     <script type="text/babel" src="./components/ExpenseList.js"></script>
 
     <script type="text/babel">
-        // Purely decorative ambient background — same visual language as the
-        // brand/marketing pages, kept fixed so it never affects scroll or layout.
-        // Trimmed to two quiet glows (was three) — cleaner without losing warmth.
+        // Purely decorative ambient background
         function AmbientBackground() {
             return (
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
@@ -254,9 +254,6 @@
             );
         }
 
-        // Consistent section header used above every dashboard block —
-        // bold title + optional subtitle, with room for a right-aligned
-        // meta/action, mirroring a single predictable pattern throughout.
         function SectionHeader({ title, subtitle, action }) {
             return (
                 <div className="flex items-end justify-between gap-4 mb-5">
@@ -285,11 +282,75 @@
             if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
         }
 
-        // Balance card — greeting up top, one clear headline number below,
-        // an eye toggle to hide it in public, and the quick-add button
-        // tucked in the corner. Same visual language as before, fewer
-        // moving decorations so the number reads first.
-        function HeroCard({ firstName, balance }) {
+        // NAGDAGDAG: Notification Bell Component Logic para sa Overspending Alert
+        function NotificationBell({ entries, budget }) {
+            // Kalkulahin ang daily budget
+            const monthlyBudget = budget?.amount || 0;
+            const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+            const dailyBudget = monthlyBudget > 0 ? monthlyBudget / daysInMonth : 0;
+
+            // Kunin ang petsa ngayon sa format na YYYY-MM-DD (Base sa local time ng device)
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
+
+            // I-sum ang lahat ng expenses NGAYONG araw
+            const todayExpenses = entries
+                .filter(e => e.type === "expense" && e.date === todayStr)
+                .reduce((sum, e) => sum + (e.amount || 0), 0);
+
+            // True kung lumagpas sa safe daily spending limit
+            const isOverspent = monthlyBudget > 0 && todayExpenses > dailyBudget;
+
+            const handleBellClick = () => {
+                if (monthlyBudget === 0) {
+                    Swal.fire({
+                        title: "Walang Budget ⚙️",
+                        text: "I-set muna ang iyong Monthly Budget sa ibaba para ma-track natin kung nag-o-overspend ka araw-araw.",
+                        icon: "info",
+                        confirmButtonText: "Sige",
+                        confirmButtonColor: "#1F6F54",
+                        customClass: { popup: 'tipid-swal' }
+                    });
+                } else if (isOverspent) {
+                    Swal.fire({
+                        title: "Alerto sa Gastos! ⚠️",
+                        html: `Ang safe daily spending mo ay <b>₱${window.peso(dailyBudget)}</b>, pero gumastos ka na ng <b>₱${window.peso(todayExpenses)}</b> ngayong araw.<br><br>Hinay-hinay lang para hindi maubos ang monthly budget mo!`,
+                        icon: "warning",
+                        confirmButtonText: "Noted, Salamat",
+                        confirmButtonColor: "#B5483B",
+                        customClass: { popup: 'tipid-swal' }
+                    });
+                } else {
+                    Swal.fire({
+                        title: "Pasok sa Budget! 🎉",
+                        html: `Wala kang overspending alerts. Ang safe daily spending mo ay <b>₱${window.peso(dailyBudget)}</b> at nakagastos ka pa lang ng <b>₱${window.peso(todayExpenses)}</b> ngayong araw.<br><br>Keep it up!`,
+                        icon: "success",
+                        confirmButtonText: "Ayos",
+                        confirmButtonColor: "#1F6F54",
+                        customClass: { popup: 'tipid-swal' }
+                    });
+                }
+            };
+
+            return (
+                <button
+                    onClick={handleBellClick}
+                    aria-label="Tingnan ang alerts"
+                    className="relative tap-scale shrink-0 w-12 h-12 rounded-full bg-paper/15 hover:bg-paper/25 border border-paper/25 flex items-center justify-center transition-colors duration-200 shadow-ios"
+                >
+                    <Icons.Bell size={22} className="text-paper" />
+                    {isOverspent && (
+                        <span className="absolute top-[0.6rem] right-[0.65rem] w-2.5 h-2.5 bg-expense border-2 border-pesoDeep rounded-full animate-pulse" />
+                    )}
+                </button>
+            );
+        }
+
+        // HeroCard — Ngayon ay tinatanggap ang entries at budget props para sa Bell
+        function HeroCard({ firstName, balance, entries, budget }) {
             const [hidden, setHidden] = React.useState(false);
 
             return (
@@ -307,13 +368,18 @@
                                 Kumusta, {firstName}!
                             </h1>
                         </div>
-                        <button
-                            onClick={() => scrollToId("add-entry")}
-                            aria-label="Magdagdag ng gastos"
-                            className="tap-scale shrink-0 w-12 h-12 rounded-full bg-paper/15 hover:bg-paper/25 border border-paper/25 flex items-center justify-center transition-colors duration-200 shadow-ios"
-                        >
-                            <Icons.Plus size={22} className="text-paper" />
-                        </button>
+
+                        {/* PINAGSAMA: Bell Icon at Plus Icon */}
+                        <div className="flex items-center gap-2.5">
+                            <NotificationBell entries={entries} budget={budget} />
+                            <button
+                                onClick={() => scrollToId("add-entry")}
+                                aria-label="Magdagdag ng gastos"
+                                className="tap-scale shrink-0 w-12 h-12 rounded-full bg-paper/15 hover:bg-paper/25 border border-paper/25 flex items-center justify-center transition-colors duration-200 shadow-ios"
+                            >
+                                <Icons.Plus size={22} className="text-paper" />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="relative">
@@ -335,10 +401,6 @@
             );
         }
 
-        // Quick Actions — a small, scannable grid of shortcuts to the parts
-        // of the dashboard someone reaches for most, same idea as a bank
-        // app's "Top services" row. Pure navigation (scrolls to the
-        // relevant section below); no new data logic.
         function QuickActionButton({ icon, label, tone, onClick }) {
             const tones = {
                 peso: "bg-peso/10 text-peso dark:bg-pesoLight/15 dark:text-pesoLight",
@@ -433,8 +495,6 @@
 
             const firstName = user.displayName ? user.displayName.split(" ")[0] : user.email.split("@")[0];
 
-            // Same all-time balance math AddEntryForm already uses to guard
-            // against over-spending — reused here just to headline it.
             const totalIncome = entries.filter(e => e.type === "income").reduce((s, e) => s + (e.amount || 0), 0);
             const totalExpense = entries.filter(e => e.type !== "income").reduce((s, e) => s + (e.amount || 0), 0);
             const balance = totalIncome - totalExpense;
@@ -444,8 +504,6 @@
                     <AmbientBackground />
                     <Navbar user={user} onLogout={logout} activeTab="dashboard" />
 
-                    {/* Generous padding on all sides so content never feels compressed
-                        on notched/gestured Android & iOS screens; safe-area aware. */}
                     <main
                         className="max-w-5xl mx-auto px-5 sm:px-8 pt-32 md:pt-14 pb-40 md:pb-20 space-y-10 md:space-y-14"
                         style={{
@@ -456,7 +514,8 @@
                     >
 
                         <div className="fade-up" style={{ animationDelay: "0ms" }}>
-                            <HeroCard firstName={firstName} balance={balance} />
+                            {/* PINASA: entries at budget para makapag-kalkula ang Bell */}
+                            <HeroCard firstName={firstName} balance={balance} entries={entries} budget={budget} />
                         </div>
 
                         {dataError && (
@@ -497,16 +556,6 @@
             );
         }
 
-        // Babel-standalone doesn't guarantee that all external
-        // type="text/babel" scripts (navbar.js, DashboardSummary.js,
-        // ExpenseChart.js, ExpenseForm.js, ExpenseItem.js, ExpenseList.js)
-        // finish executing before this inline script runs, and they can even
-        // finish out of order relative to each other since each is fetched
-        // independently. Rendering before every component Dashboard() (or a
-        // component it renders, like EntryList -> ExpenseItem) depends on is
-        // ready leaves something undefined and throws React error #130.
-        // Poll until all of them are truly defined before mounting — same
-        // retry pattern as useAuthReady/useDataReady above.
         function mountWhenComponentsReady(attempt = 0) {
             const missingNames = [];
             if (typeof Navbar !== "function") missingNames.push("Navbar");
@@ -520,7 +569,7 @@
                 ReactDOM.createRoot(document.getElementById("root")).render(<Dashboard />);
                 return;
             }
-            if (attempt > 100) { // ~3s of retrying — a genuine load failure, not just a slow race
+            if (attempt > 100) {
                 document.getElementById("root").innerHTML =
                     `<div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:Inter,sans-serif;text-align:center;color:#15231C;">
                         <div>

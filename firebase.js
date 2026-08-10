@@ -1,3 +1,4 @@
+// firebase.js
 // Use CDN links instead of bare imports
 // IMPORTANT: this version number must match the one used in firebase-auth.js
 // (and any other firebase-*.js file you add). Loading different versions
@@ -8,7 +9,23 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/fireba
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-analytics.js";
 
 // Pinalitan natin ang getFirestore para isama ang offline persistence tools
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  collection,
+  addDoc,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB0cmCEgR09ZmY_v2RMXnhnW72ttSYIVlM",
@@ -29,3 +46,25 @@ const analytics = getAnalytics(app);
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
 });
+
+// ---------------------------------------------------------------------------
+// Bridge: i-expose ang db at ang mga Firestore functions na madalas gamitin
+// papunta sa window, para magamit ng classic (non-module) scripts tulad ng
+// components/AllowanceCalculator.js na naka-<script type="text/babel">.
+// Sundin ang parehong pattern na ginamit sa TipidAuth (firebase-auth.js).
+// ---------------------------------------------------------------------------
+window.db = db;
+window.FirestoreAPI = {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  collection,
+  addDoc,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  serverTimestamp
+};

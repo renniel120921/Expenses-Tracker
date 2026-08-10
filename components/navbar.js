@@ -4,9 +4,11 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "dashboard" }) {
     const userName = user?.displayName ? user.displayName.split(" ")[0] : user?.email?.split("@")[0] || "User";
     const initial = userName.charAt(0).toUpperCase();
 
+    // ADDED: Calculator tab in the navigation array
     const tabs = [
         { id: "dashboard", href: "dashboard.html", label: "Dashboard", icon: DashboardIcon },
         { id: "bills", href: "bills.html", label: "Bills", icon: BillsIcon },
+        { id: "allowance", href: "allowance.html", label: "Calculator", icon: CalcIcon },
         { id: "chart", href: "chart.html", label: "Chart", icon: ChartIcon },
         { id: "history", href: "history.html", label: "History", icon: HistoryIcon },
         { id: "profile", href: "profile.html", label: "Profile", icon: ProfileIcon },
@@ -277,6 +279,22 @@ const BillsIcon = ({ active }) => (
         <line x1="16" y1="13" x2="8" y2="13" strokeWidth={active ? "0" : "1.5"} stroke={active ? "white" : "currentColor"} />
         <line x1="16" y1="17" x2="8" y2="17" strokeWidth={active ? "0" : "1.5"} stroke={active ? "white" : "currentColor"} />
         <polyline points="10 9 9 9 8 9" />
+    </svg>
+);
+// ADDED: Calculator Icon
+const CalcIcon = ({ active }) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={active ? "0" : "1.5"} strokeLinecap="round" strokeLinejoin="round">
+        <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+        <line x1="8" y1="6" x2="16" y2="6" strokeWidth={active ? "0" : "1.5"} stroke={active ? "white" : "currentColor"} />
+        <line x1="16" y1="14" x2="16" y2="14" strokeWidth="2" strokeLinecap="round" />
+        <line x1="8" y1="10" x2="8" y2="10" strokeWidth="2" strokeLinecap="round" />
+        <line x1="12" y1="10" x2="12" y2="10" strokeWidth="2" strokeLinecap="round" />
+        <line x1="16" y1="10" x2="16" y2="10" strokeWidth="2" strokeLinecap="round" />
+        <line x1="8" y1="14" x2="8" y2="14" strokeWidth="2" strokeLinecap="round" />
+        <line x1="12" y1="14" x2="12" y2="14" strokeWidth="2" strokeLinecap="round" />
+        <line x1="8" y1="18" x2="8" y2="18" strokeWidth="2" strokeLinecap="round" />
+        <line x1="12" y1="18" x2="12" y2="18" strokeWidth="2" strokeLinecap="round" />
+        <line x1="16" y1="18" x2="16" y2="18" strokeWidth="2" strokeLinecap="round" />
     </svg>
 );
 const ChartIcon = ({ active }) => (
