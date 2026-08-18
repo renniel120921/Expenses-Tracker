@@ -305,6 +305,59 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
         info: "bg-peso/10 dark:bg-pesoLight/10 border-peso/25 dark:border-pesoLight/25 text-peso dark:text-pesoLight"
     };
 
+    const bannerIcon = {
+        danger: (
+            <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 shrink-0" strokeWidth="2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 9v4" /><path d="M12 17h.01" />
+                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+            </svg>
+        ),
+        warning: (
+            <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 shrink-0" strokeWidth="2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" /><path d="M12 8v4" /><path d="M12 16h.01" />
+            </svg>
+        ),
+        info: (
+            <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 shrink-0" strokeWidth="2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="3" /><path d="M3 10h18" /><path d="M8 2v4" /><path d="M16 2v4" />
+            </svg>
+        )
+    };
+
+    // ---- purely visual: how full today's spending is, for the progress bar ----
+    const spendRatio = dailySafe > 0 ? Math.min(spentToday / dailySafe, 1) : 0;
+    const spendPct = Math.round(spendRatio * 100);
+    const barTone = isOverBudget ? "bg-expense" : isNearLimit ? "bg-amber-500" : "bg-peso dark:bg-pesoLight";
+
+    const fieldIcon = {
+        salary: (
+            <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" strokeWidth="2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 12V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-1" />
+                <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+            </svg>
+        ),
+        bills: (
+            <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" strokeWidth="2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+                <path d="M14 2v6h6" /><path d="M9 13h6" /><path d="M9 17h6" />
+            </svg>
+        ),
+        savings: (
+            <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" strokeWidth="2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 9V6a2 2 0 0 0-2-2H4a1 1 0 0 0-1 1v3.4a1 1 0 0 0 .6.92l1.9.82" />
+                <path d="M3 9h14a4 4 0 0 1 4 4v2a2 2 0 0 1-2 2h-1" />
+                <path d="M3 9v10a1 1 0 0 0 1 1h3v-4" />
+                <path d="M13 9v12" />
+                <circle cx="7" cy="5" r="0" />
+            </svg>
+        ),
+        payday: (
+            <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" strokeWidth="2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="3" /><path d="M3 10h18" /><path d="M8 2v4" /><path d="M16 2v4" />
+            </svg>
+        )
+    };
+
     return (
         <div className="space-y-6 fade-up relative">
             {/* Toast stack */}
@@ -312,12 +365,13 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
                 {toasts.map(t => (
                     <div
                         key={t.id}
-                        className={`fade-up pointer-events-auto rounded-2xl px-4 py-3 text-sm font-medium shadow-lg border backdrop-blur-xl ${
+                        className={`fade-up pointer-events-auto rounded-2xl px-4 py-3 text-sm font-medium shadow-lg border backdrop-blur-xl flex items-center gap-2 ${
                             t.tone === "warning"
                                 ? "bg-expense/90 text-white border-expense/50"
                                 : "bg-ink/90 dark:bg-paper/95 text-paper dark:text-ink border-white/10"
                         }`}
                     >
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${t.tone === "warning" ? "bg-white" : "bg-peso dark:bg-pesoLight"}`} />
                         {t.message}
                     </div>
                 ))}
@@ -325,6 +379,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
 
             {banner && (
                 <div className={`fade-up flex items-start gap-3 rounded-2xl border px-4 py-3.5 ${bannerStyles[banner.tone]}`}>
+                    {bannerIcon[banner.tone]}
                     <div className="flex-1">
                         <p className="text-sm font-semibold">{banner.title}</p>
                         <p className="text-xs opacity-80 mt-0.5">{banner.message}</p>
@@ -341,70 +396,104 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
 
             <div className="bg-white/85 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.75rem] border border-line/50 dark:border-white/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_14px_28px_-16px_rgba(21,35,28,0.18)] p-6 sm:p-7">
                 <div className="flex items-center justify-between mb-6 gap-3">
-                    <h3 className="font-display text-lg font-semibold text-ink dark:text-paper">Daily Allowance Calculator</h3>
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-peso/10 dark:bg-pesoLight/10 flex items-center justify-center text-peso dark:text-pesoLight shrink-0">
+                            <svg viewBox="0 0 24 24" fill="none" className="w-[18px] h-[18px]" strokeWidth="2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="6" width="18" height="14" rx="3" /><path d="M3 10h18" /><path d="M7 15h3" />
+                            </svg>
+                        </div>
+                        <h3 className="font-display text-lg font-semibold text-ink dark:text-paper">Daily Allowance Calculator</h3>
+                    </div>
                     <div className="flex items-center gap-3 shrink-0">
-                        <span className="text-[11px] font-mono text-ink2/50 dark:text-paper/40 hidden sm:inline">
+                        <span className="text-[11px] font-mono text-ink2/50 dark:text-paper/40 hidden sm:inline-flex items-center gap-1.5">
+                            {saving && <span className="w-1.5 h-1.5 rounded-full bg-peso dark:bg-pesoLight animate-pulse" />}
                             {saving ? "Sini-save..." : loaded ? "Naka-save" : ""}
                         </span>
                         <button
                             onClick={toggleNotifications}
-                            className={`text-[11px] font-mono px-3 py-1.5 rounded-full border transition-colors duration-150 ${
+                            className={`text-[11px] font-mono px-3 py-1.5 rounded-full border transition-all duration-150 flex items-center gap-1.5 ${
                                 notifEnabled
                                     ? "bg-peso/10 border-peso/30 text-peso dark:text-pesoLight"
-                                    : "bg-paper/50 dark:bg-ink2/40 border-line dark:border-ink2/50 text-ink2/60 dark:text-paper/50"
+                                    : "bg-paper/50 dark:bg-ink2/40 border-line dark:border-ink2/50 text-ink2/60 dark:text-paper/50 hover:border-line dark:hover:border-white/20"
                             }`}
                         >
-                            {notifEnabled ? "🔔 Notifications: ON" : "🔕 Notifications: OFF"}
+                            <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5" strokeWidth="2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+                                {!notifEnabled && <path d="M2 2l20 20" />}
+                            </svg>
+                            <span className="hidden xs:inline">{notifEnabled ? "Notifications ON" : "Notifications OFF"}</span>
                         </button>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                    <div>
-                        <label className="block text-xs font-mono text-ink2/60 dark:text-paper/50 mb-1.5 uppercase tracking-wider">Salary / Income</label>
-                        <input
-                            type="number"
-                            placeholder="₱18,000"
-                            value={salary}
-                            onChange={e => setSalary(e.target.value)}
-                            className="w-full bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 transition-all duration-200 font-medium text-ink dark:text-paper placeholder-ink2/40 dark:placeholder-paper/30"
-                        />
+                {!loaded ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 animate-pulse">
+                        {[0, 1, 2, 3].map(i => (
+                            <div key={i} className="h-[70px] rounded-2xl bg-paper/60 dark:bg-ink2/40 border border-line/40 dark:border-white/5" />
+                        ))}
                     </div>
-                    <div>
-                        <label className="block text-xs font-mono text-ink2/60 dark:text-paper/50 mb-1.5 uppercase tracking-wider">Fixed Bills</label>
-                        <input
-                            type="number"
-                            placeholder="₱8,000"
-                            value={bills}
-                            onChange={e => setBills(e.target.value)}
-                            className="w-full bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 transition-all duration-200 font-medium text-ink dark:text-paper placeholder-ink2/40 dark:placeholder-paper/30"
-                        />
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                        <div>
+                            <label className="flex items-center gap-1.5 text-xs font-mono text-ink2/60 dark:text-paper/50 mb-1.5 uppercase tracking-wider">
+                                <span className="text-peso/60 dark:text-pesoLight/60">{fieldIcon.salary}</span>
+                                Salary / Income
+                            </label>
+                            <input
+                                type="number"
+                                placeholder="₱18,000"
+                                value={salary}
+                                onChange={e => setSalary(e.target.value)}
+                                className="w-full bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 transition-all duration-200 font-medium text-ink dark:text-paper placeholder-ink2/40 dark:placeholder-paper/30"
+                            />
+                        </div>
+                        <div>
+                            <label className="flex items-center gap-1.5 text-xs font-mono text-ink2/60 dark:text-paper/50 mb-1.5 uppercase tracking-wider">
+                                <span className="text-peso/60 dark:text-pesoLight/60">{fieldIcon.bills}</span>
+                                Fixed Bills
+                            </label>
+                            <input
+                                type="number"
+                                placeholder="₱8,000"
+                                value={bills}
+                                onChange={e => setBills(e.target.value)}
+                                className="w-full bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 transition-all duration-200 font-medium text-ink dark:text-paper placeholder-ink2/40 dark:placeholder-paper/30"
+                            />
+                        </div>
+                        <div>
+                            <label className="flex items-center gap-1.5 text-xs font-mono text-ink2/60 dark:text-paper/50 mb-1.5 uppercase tracking-wider">
+                                <span className="text-peso/60 dark:text-pesoLight/60">{fieldIcon.savings}</span>
+                                Savings Goal
+                            </label>
+                            <input
+                                type="number"
+                                placeholder="₱2,000"
+                                value={savings}
+                                onChange={e => setSavings(e.target.value)}
+                                className="w-full bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 transition-all duration-200 font-medium text-ink dark:text-paper placeholder-ink2/40 dark:placeholder-paper/30"
+                            />
+                        </div>
+                        <div>
+                            <label className="flex items-center gap-1.5 text-xs font-mono text-ink2/60 dark:text-paper/50 mb-1.5 uppercase tracking-wider">
+                                <span className="text-peso/60 dark:text-pesoLight/60">{fieldIcon.payday}</span>
+                                Susunod na Payday
+                            </label>
+                            <input
+                                type="date"
+                                value={paydayDate}
+                                onChange={e => setPaydayDate(e.target.value)}
+                                className="w-full bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 transition-all duration-200 font-medium text-ink dark:text-paper placeholder-ink2/40 dark:placeholder-paper/30"
+                            />
+                            {paydayDate && (
+                                <p className="text-[11px] text-ink2/50 dark:text-paper/40 mt-1.5 font-mono flex items-center gap-1">
+                                    <span className="inline-block w-1 h-1 rounded-full bg-peso/60 dark:bg-pesoLight/60" />
+                                    {daysLeft} araw na lang
+                                </p>
+                            )}
+                        </div>
                     </div>
-                    <div>
-                        <label className="block text-xs font-mono text-ink2/60 dark:text-paper/50 mb-1.5 uppercase tracking-wider">Savings Goal</label>
-                        <input
-                            type="number"
-                            placeholder="₱2,000"
-                            value={savings}
-                            onChange={e => setSavings(e.target.value)}
-                            className="w-full bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 transition-all duration-200 font-medium text-ink dark:text-paper placeholder-ink2/40 dark:placeholder-paper/30"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-mono text-ink2/60 dark:text-paper/50 mb-1.5 uppercase tracking-wider">Susunod na Payday</label>
-                        <input
-                            type="date"
-                            value={paydayDate}
-                            onChange={e => setPaydayDate(e.target.value)}
-                            className="w-full bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 transition-all duration-200 font-medium text-ink dark:text-paper placeholder-ink2/40 dark:placeholder-paper/30"
-                        />
-                        {paydayDate && (
-                            <p className="text-[11px] text-ink2/50 dark:text-paper/40 mt-1.5 font-mono">
-                                {daysLeft} araw na lang
-                            </p>
-                        )}
-                    </div>
-                </div>
+                )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-line/50 dark:border-white/10">
                     <div className="bg-paperDim/50 dark:bg-ink2/40 p-5 rounded-2xl border border-line/40 dark:border-white/5">
@@ -424,10 +513,17 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
 
             {/* Today's real spending, linked to the calculator above */}
             <div className="bg-white/85 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.75rem] border border-line/50 dark:border-white/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_14px_28px_-16px_rgba(21,35,28,0.18)] p-6 sm:p-7">
-                <h3 className="font-display text-lg font-semibold mb-1 text-ink dark:text-paper">Ngayong Araw</h3>
-                <p className="text-xs text-ink2/60 dark:text-paper/50 mb-5">I-log ang ginastos mo para makita agad kung nasa loob ka pa ng safe daily spending. Lalabas din ito sa Dashboard mo.</p>
+                <div className="flex items-center gap-3 mb-1">
+                    <div className="w-9 h-9 rounded-xl bg-peso/10 dark:bg-pesoLight/10 flex items-center justify-center text-peso dark:text-pesoLight shrink-0">
+                        <svg viewBox="0 0 24 24" fill="none" className="w-[18px] h-[18px]" strokeWidth="2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+                        </svg>
+                    </div>
+                    <h3 className="font-display text-lg font-semibold text-ink dark:text-paper">Ngayong Araw</h3>
+                </div>
+                <p className="text-xs text-ink2/60 dark:text-paper/50 mb-5 pl-12 -mt-1">I-log ang ginastos mo para makita agad kung nasa loob ka pa ng safe daily spending. Lalabas din ito sa Dashboard mo.</p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <div className="bg-paperDim/50 dark:bg-ink2/40 p-5 rounded-2xl border border-line/40 dark:border-white/5">
                         <p className="text-xs font-mono uppercase tracking-wider text-ink2/60 dark:text-paper/50 mb-1">Nagastos Ngayon</p>
                         <p className="font-display text-2xl font-semibold text-ink dark:text-paper">₱{window.peso(spentToday)}</p>
@@ -442,6 +538,21 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
                     </div>
                 </div>
 
+                {dailySafe > 0 && (
+                    <div className="mb-6">
+                        <div className="flex items-center justify-between text-[11px] font-mono text-ink2/50 dark:text-paper/40 mb-1.5">
+                            <span>{spendPct}% ng safe daily spending</span>
+                            <span>₱{window.peso(spentToday)} / ₱{window.peso(dailySafe)}</span>
+                        </div>
+                        <div className="h-2 w-full rounded-full bg-paperDim dark:bg-ink2/60 overflow-hidden">
+                            <div
+                                className={`h-full rounded-full transition-all duration-500 ease-out ${barTone}`}
+                                style={{ width: `${spendRatio * 100}%` }}
+                            />
+                        </div>
+                    </div>
+                )}
+
                 <form onSubmit={handleLogExpense} className="flex flex-col gap-3 mb-5">
                     <div className="flex flex-col sm:flex-row gap-3">
                         <input
@@ -449,12 +560,12 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
                             placeholder="Halaga (₱)"
                             value={expAmount}
                             onChange={e => setExpAmount(e.target.value)}
-                            className="flex-1 bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 text-ink dark:text-paper placeholder-ink2/40 dark:placeholder-paper/30"
+                            className="flex-1 bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 transition-all duration-200 text-ink dark:text-paper placeholder-ink2/40 dark:placeholder-paper/30"
                         />
                         <select
                             value={expCategory}
                             onChange={e => setExpCategory(e.target.value)}
-                            className="flex-1 bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 text-ink dark:text-paper"
+                            className="flex-1 bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 transition-all duration-200 text-ink dark:text-paper"
                         >
                             {CATEGORIES.filter(c => c !== "Kita").map(c => (
                                 <option key={c} value={c}>{c}</option>
@@ -467,35 +578,57 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
                             placeholder="Note (opsyonal)"
                             value={expNote}
                             onChange={e => setExpNote(e.target.value)}
-                            className="flex-1 bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 text-ink dark:text-paper placeholder-ink2/40 dark:placeholder-paper/30"
+                            className="flex-1 bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-peso/40 focus:border-peso/40 transition-all duration-200 text-ink dark:text-paper placeholder-ink2/40 dark:placeholder-paper/30"
                         />
                         <button
                             type="submit"
                             disabled={loggingExpense || !expAmount}
-                            className="tap-scale bg-peso hover:bg-pesoDeep disabled:opacity-50 text-white text-sm font-medium rounded-2xl px-6 py-3 transition-colors duration-200 sm:w-40"
+                            className="tap-scale bg-peso hover:bg-pesoDeep disabled:opacity-50 disabled:hover:bg-peso text-white text-sm font-medium rounded-2xl px-6 py-3 transition-colors duration-200 sm:w-40 flex items-center justify-center gap-1.5 shadow-[0_6px_16px_-6px_rgba(21,158,109,0.55)] disabled:shadow-none"
                         >
-                            {loggingExpense ? "..." : "I-log"}
+                            {loggingExpense ? (
+                                <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 animate-spin" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round">
+                                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                                </svg>
+                            ) : (
+                                <>
+                                    <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M12 5v14" /><path d="M5 12h14" />
+                                    </svg>
+                                    I-log
+                                </>
+                            )}
                         </button>
                     </div>
                 </form>
 
-                {todaysExpenses.length > 0 && (
+                {todaysExpenses.length > 0 ? (
                     <ul className="space-y-2">
                         {todaysExpenses.map(exp => (
-                            <li key={exp.id} className="flex items-center justify-between bg-paperDim/40 dark:bg-ink2/30 rounded-xl px-4 py-2.5 text-sm">
-                                <span className="text-ink dark:text-paper">
-                                    ₱{window.peso(exp.amount)}
+                            <li key={exp.id} className="group flex items-center justify-between bg-paperDim/40 dark:bg-ink2/30 hover:bg-paperDim/70 dark:hover:bg-ink2/50 rounded-xl px-4 py-2.5 text-sm transition-colors duration-150">
+                                <span className="text-ink dark:text-paper truncate">
+                                    <span className="font-mono font-medium">₱{window.peso(exp.amount)}</span>
                                     <span className="text-ink2/50 dark:text-paper/40"> — {exp.desc || exp.category}</span>
                                 </span>
                                 <button
                                     onClick={() => handleDeleteExpense(exp.id)}
-                                    className="text-ink2/40 hover:text-expense text-xs font-mono transition-colors duration-150"
+                                    className="text-ink2/30 hover:text-expense text-xs font-mono transition-colors duration-150 shrink-0 ml-3 sm:opacity-0 sm:group-hover:opacity-100"
                                 >
                                     alisin
                                 </button>
                             </li>
                         ))}
                     </ul>
+                ) : (
+                    <div className="flex flex-col items-center justify-center text-center py-8 px-4 rounded-2xl border border-dashed border-line/60 dark:border-white/10">
+                        <div className="w-10 h-10 rounded-full bg-paperDim/70 dark:bg-ink2/50 flex items-center justify-center text-ink2/40 dark:text-paper/30 mb-2.5">
+                            <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" strokeWidth="2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+                                <path d="M14 2v6h6" /><path d="M9 13h6" /><path d="M9 17h6" />
+                            </svg>
+                        </div>
+                        <p className="text-sm font-medium text-ink2/60 dark:text-paper/40">Wala ka pang na-log na gastos ngayon</p>
+                        <p className="text-xs text-ink2/40 dark:text-paper/30 mt-0.5">Idagdag sa itaas para masubaybayan ang araw mo.</p>
+                    </div>
                 )}
             </div>
         </div>

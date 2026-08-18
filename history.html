@@ -13,7 +13,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-    <!-- Global Dark Mode Script Initializer -->
     <script>
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
@@ -46,8 +45,6 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <!-- SweetAlert2 for Delete Confirmations -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script type="module" src="./firebase.js"></script>
@@ -70,27 +67,33 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.8s linear infinite; }
 
-        @keyframes rowIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes rowIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .row-in { animation: rowIn 0.3s ease-out both; }
 
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .fade-up { animation: fadeUp 0.6s var(--ease-ios) both; }
 
         @keyframes bannerIn {
             from { opacity: 0; transform: translateY(-8px) scale(0.98); }
-            to   { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
         .banner-in { animation: bannerIn 0.4s cubic-bezier(0.34, 1.2, 0.4, 1) both; }
 
         @keyframes logoBreathe {
             0%, 100% { transform: scale(1); opacity: 1; }
-            50%      { transform: scale(1.08); opacity: 0.85; }
+            50% { transform: scale(1.08); opacity: 0.85; }
         }
         .logo-breathe { animation: logoBreathe 1.6s ease-in-out infinite; }
 
         @keyframes haloPulse {
-            0%   { transform: scale(0.9); opacity: 0.35; }
-            70%  { opacity: 0; }
+            0% { transform: scale(0.9); opacity: 0.35; }
+            70% { opacity: 0; }
             100% { transform: scale(1.6); opacity: 0; }
         }
         .halo-pulse { animation: haloPulse 1.9s var(--ease-ios) infinite; }
@@ -101,20 +104,263 @@
             -webkit-backdrop-filter: blur(20px) saturate(160%);
             border: 1px solid rgba(255,255,255,0.55);
         }
-        html.dark .glass-panel { background: rgba(24,38,31,0.55); border: 1px solid rgba(255,255,255,0.08); }
+        html.dark .glass-panel {
+            background: rgba(24,38,31,0.55);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
 
         .tap-scale { transition: transform 0.18s var(--ease-spring); }
         .tap-scale:active { transform: scale(0.92); }
 
-        /* SweetAlert2 brand skin */
         .swal2-popup.tipid-swal { border-radius: 20px !important; font-family: 'Inter', sans-serif; }
         .tipid-swal .swal2-title { font-family: 'Fraunces', serif; color: #15231C; }
         .tipid-swal .swal2-html-container { color: #33443A; }
-        .tipid-swal .swal2-confirm { border-radius: 999px !important; padding: 0.65em 1.6em !important; font-weight: 600 !important; box-shadow: none !important; }
-        .tipid-swal .swal2-cancel { border-radius: 999px !important; padding: 0.65em 1.6em !important; font-weight: 600 !important; }
+        .tipid-swal .swal2-confirm,
+        .tipid-swal .swal2-cancel {
+            border-radius: 999px !important;
+            padding: 0.65em 1.6em !important;
+            font-weight: 600 !important;
+            box-shadow: none !important;
+        }
+
+        /* --- Modern History Hero / Mascot --- */
+        @keyframes mascotFloat {
+            0%, 100% { transform: translate3d(0, 0, 0) rotate(-1deg); }
+            50% { transform: translate3d(0, -7px, 0) rotate(1deg); }
+        }
+        @keyframes mascotGlow {
+            0%, 100% { transform: scale(0.94); opacity: 0.20; }
+            50% { transform: scale(1.06); opacity: 0.34; }
+        }
+
+        .history-hero {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            min-height: 238px;
+            border-radius: 28px;
+            padding: 26px 24px 22px;
+            margin-bottom: 22px;
+            background:
+                radial-gradient(circle at 18% 0%, rgba(255,255,255,0.08), transparent 28%),
+                radial-gradient(circle at 96% 100%, rgba(201,147,46,0.16), transparent 34%),
+                linear-gradient(135deg, #2F8E6C 0%, #1F6F54 48%, #123D2E 100%);
+            box-shadow: 0 24px 50px -22px rgba(18,61,46,0.55);
+        }
+
+        .history-hero::before {
+            content: "";
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            right: -80px;
+            bottom: -150px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.07);
+            filter: blur(10px);
+        }
+
+        .history-copy {
+            position: relative;
+            z-index: 4;
+            max-width: 62%;
+            padding-right: 42px;
+        }
+
+        .history-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            color: rgba(241,244,239,0.72);
+            font: 700 10px/1.2 'JetBrains Mono', monospace;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+        }
+
+        .history-kicker::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: #FCD116;
+            box-shadow: 0 0 0 4px rgba(252,209,22,0.10);
+        }
+
+        .history-title {
+            margin: 0;
+            color: #F7FAF7;
+            font: 700 clamp(2rem, 4vw, 2.65rem)/1.03 'Fraunces', serif;
+            letter-spacing: -0.03em;
+        }
+
+        .history-subtitle {
+            margin-top: 10px;
+            max-width: 390px;
+            color: rgba(247,250,247,0.72);
+            font: 500 12px/1.55 'Inter', sans-serif;
+        }
+
+        .history-actions {
+            position: absolute;
+            z-index: 6;
+            top: 18px;
+            right: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .history-action {
+            width: 44px;
+            height: 44px;
+            border-radius: 999px;
+            display: grid;
+            place-items: center;
+            color: #F7FAF7;
+            background: rgba(255,255,255,0.10);
+            border: 1px solid rgba(255,255,255,0.24);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .history-mascot-stage {
+            position: absolute;
+            z-index: 3;
+            right: 10px;
+            bottom: -10px;
+            width: 220px;
+            height: 198px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .history-mascot-stage::before {
+            content: "";
+            position: absolute;
+            width: 136px;
+            height: 136px;
+            right: 28px;
+            bottom: 18px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.10);
+            filter: blur(28px);
+            animation: mascotGlow 3.8s ease-in-out infinite;
+        }
+
+        .history-mascot-stage::after {
+            content: "";
+            position: absolute;
+            width: 122px;
+            height: 18px;
+            right: 30px;
+            bottom: 3px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.18);
+            filter: blur(8px);
+        }
+
+        .history-mascot {
+            position: relative;
+            z-index: 2;
+            width: 205px;
+            height: 205px;
+            object-fit: contain;
+            object-position: center bottom;
+            animation: mascotFloat 4.8s ease-in-out infinite;
+            filter: drop-shadow(0 15px 18px rgba(0,0,0,0.18));
+            user-select: none;
+        }
+
+        .history-bubble {
+            position: absolute;
+            z-index: 5;
+            right: 128px;
+            bottom: 112px;
+            max-width: 138px;
+            padding: 8px 10px;
+            border-radius: 14px;
+            background: #F8FAF8;
+            color: #15231C;
+            box-shadow: 0 16px 28px -16px rgba(0,0,0,0.35);
+            font: 600 10px/1.35 'Inter', sans-serif;
+        }
+
+        .history-bubble::after {
+            content: "";
+            position: absolute;
+            right: 10px;
+            bottom: -8px;
+            width: 14px;
+            height: 14px;
+            background: #F8FAF8;
+            transform: rotate(45deg);
+            border-radius: 2px;
+        }
+
+        .history-bubble strong {
+            display: block;
+            font-size: 10px;
+            margin-bottom: 1px;
+        }
+
+        .history-list-shell {
+            position: relative;
+            z-index: 2;
+        }
+
+        @media (max-width: 640px) {
+            .history-hero {
+                min-height: 270px;
+                border-radius: 24px;
+                padding: 22px 20px;
+            }
+
+            .history-copy {
+                max-width: 68%;
+                padding-right: 10px;
+            }
+
+            .history-title {
+                font-size: 2rem;
+            }
+
+            .history-mascot-stage {
+                right: -10px;
+                bottom: -14px;
+                width: 172px;
+                height: 160px;
+            }
+
+            .history-mascot {
+                width: 165px;
+                height: 165px;
+            }
+
+            .history-bubble {
+                right: 96px;
+                bottom: 102px;
+                max-width: 112px;
+                font-size: 9px;
+            }
+
+            .history-actions {
+                top: 14px;
+                right: 14px;
+            }
+
+            .history-action {
+                width: 40px;
+                height: 40px;
+            }
+        }
 
         @media (prefers-reduced-motion: reduce) {
-            .spin, .row-in, .fade-up, .banner-in, .logo-breathe, .halo-pulse, .tap-scale {
+            .spin, .row-in, .fade-up, .banner-in, .logo-breathe, .halo-pulse,
+            .tap-scale, .history-mascot, .history-mascot-stage::before {
                 animation: none !important;
                 transition: none !important;
             }
@@ -124,7 +370,6 @@
 <body class="bg-paper dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
     <div id="root"></div>
 
-    <!-- 1. Global Utilities & Constants -->
     <script type="text/babel">
         window.useState = React.useState;
         window.useEffect = React.useEffect;
@@ -208,12 +453,10 @@
         }
     </script>
 
-    <!-- 2. Import External Components -->
     <script type="text/babel" src="./components/navbar.js"></script>
     <script type="text/babel" src="./components/ExpenseItem.js"></script>
     <script type="text/babel" src="./components/ExpenseList.js"></script>
 
-    <!-- 3. Main History Assembly -->
     <script type="text/babel">
         function AmbientBackground() {
             return (
@@ -224,28 +467,41 @@
             );
         }
 
-        // Same reusable header shape used on dashboard.html, bills.html, and
-        // chart.html — icon chip, bold Fraunces title, short subtitle,
-        // optional right-aligned action — so every page reads the same way.
-        function SectionHeader({ icon, title, subtitle, action }) {
+        function HistoryHero() {
             return (
-                <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                        {icon && (
-                            <div className="w-11 h-11 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-peso/15 to-pesoLight/5 dark:from-pesoLight/25 dark:to-pesoLight/5 border border-peso/15 text-peso dark:text-pesoLight flex items-center justify-center shrink-0 shadow-sm">
-                                {icon}
-                            </div>
-                        )}
-                        <div className="min-w-0">
-                            <h1 className="font-display text-xl md:text-2xl font-bold tracking-tight text-ink dark:text-paper leading-tight">
-                                {title}
-                            </h1>
-                            {subtitle && (
-                                <p className="text-xs md:text-sm text-ink2/70 dark:text-paper/60">{subtitle}</p>
-                            )}
-                        </div>
+                <div className="history-hero">
+                    <div className="history-copy">
+                        <div className="history-kicker">Tipid Buddy</div>
+                        <h1 className="history-title">Transaction History</h1>
+                        <p className="history-subtitle">
+                            Balikan ang mga nakaraang gastos at kita para mas madaling makita ang spending habits mo.
+                        </p>
                     </div>
-                    {action}
+
+                    <div className="history-actions">
+                        <button
+                            onClick={() => window.dispatchEvent(new CustomEvent("tipid-toggle-theme"))}
+                            aria-label="Toggle Dark Mode"
+                            className="history-action tap-scale"
+                            id="history-theme-toggle"
+                        >
+                            <Icons.Moon size={18} />
+                        </button>
+                    </div>
+
+                    <div className="history-bubble">
+                        <strong>Nice work!</strong>
+                        Keep checking your gastos. 💚
+                    </div>
+
+                    <div className="history-mascot-stage" aria-hidden="true">
+                        <img
+                            src="/assets/history_mascot.png"
+                            alt="Tipid Buddy with a savings piggy bank"
+                            className="history-mascot"
+                            draggable="false"
+                        />
+                    </div>
                 </div>
             );
         }
@@ -258,7 +514,6 @@
             const [loadingEntries, setLoadingEntries] = React.useState(true);
             const [dataError, setDataError] = React.useState("");
 
-            // Dark Mode state management (mirrors the head initializer's "theme" key)
             const [darkMode, setDarkMode] = React.useState(() => {
                 return localStorage.getItem("theme") === "dark" ||
                     (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -274,7 +529,11 @@
                 }
             }, [darkMode]);
 
-            const toggleDarkMode = () => setDarkMode((d) => !d);
+            React.useEffect(() => {
+                const handler = () => setDarkMode(d => !d);
+                window.addEventListener("tipid-toggle-theme", handler);
+                return () => window.removeEventListener("tipid-toggle-theme", handler);
+            }, []);
 
             React.useEffect(() => {
                 if (!authReady) return;
@@ -328,36 +587,37 @@
                     <Navbar user={user} onLogout={logout} activeTab="history" />
 
                     <main
-                        className="w-full max-w-5xl mx-auto px-5 sm:px-6 pt-32 md:pt-12 pb-40 md:pb-16 space-y-8 md:space-y-10"
+                        className="w-full max-w-5xl mx-auto px-5 sm:px-6 pt-32 md:pt-12 pb-40 md:pb-16 space-y-6 md:space-y-8"
                         style={{
                             paddingLeft: 'max(1.25rem, calc(env(safe-area-inset-left) + 1.25rem))',
                             paddingRight: 'max(1.25rem, calc(env(safe-area-inset-right) + 1.25rem))',
                         }}
                     >
                         <div className="fade-up" style={{ animationDelay: "0ms" }}>
-                            <SectionHeader
-                                icon={<Icons.List size={20} />}
-                                title="Transaction History"
-                                subtitle="Review your past expenses and income"
-                                action={
-                                    <button
-                                        onClick={toggleDarkMode}
-                                        aria-label="Toggle Dark Mode"
-                                        className="tap-scale w-10 h-10 rounded-full bg-white/90 dark:bg-ink2/50 border border-line dark:border-white/10 flex items-center justify-center text-ink dark:text-paper shadow-sm shrink-0"
-                                    >
-                                        {darkMode ? <Icons.Sun size={17} /> : <Icons.Moon size={17} />}
-                                    </button>
-                                }
-                            />
+                            <HistoryHero />
                         </div>
 
                         {dataError && (
-                            <div className="fade-up banner-in flex items-start gap-3 bg-expense/10 text-expense text-sm font-medium border border-expense/20 rounded-2xl px-5 py-4 shadow-sm" style={{ animationDelay: "45ms" }}>
-                                <Icons.AlertCircle size={18} className="shrink-0 mt-0.5" /><span>{dataError}</span>
+                            <div
+                                className="fade-up banner-in flex items-start gap-3 bg-expense/10 text-expense text-sm font-medium border border-expense/20 rounded-2xl px-5 py-4 shadow-sm"
+                                style={{ animationDelay: "45ms" }}
+                            >
+                                <Icons.AlertCircle size={18} className="shrink-0 mt-0.5" />
+                                <span>{dataError}</span>
                             </div>
                         )}
 
-                        <div className="fade-up" style={{ animationDelay: "90ms" }}>
+                        <div className="history-list-shell fade-up" style={{ animationDelay: "90ms" }}>
+                            <div className="mb-4 flex items-center justify-between">
+                                <div>
+                                    <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-peso dark:text-pesoLight">Kasaysayan</p>
+                                    <p className="text-sm text-ink2/60 dark:text-paper/50 mt-1">Your recorded transactions</p>
+                                </div>
+                                <span className="text-xs font-mono text-ink2/45 dark:text-paper/35">
+                                    {entries.length} {entries.length === 1 ? "entry" : "entries"}
+                                </span>
+                            </div>
+
                             <EntryList uid={user.uid} entries={entries} loading={loadingEntries} />
                         </div>
                     </main>
@@ -365,12 +625,6 @@
             );
         }
 
-        // Babel-standalone doesn't always guarantee that external
-        // type="text/babel" scripts (navbar.js, ExpenseItem.js, ExpenseList.js)
-        // finish executing before this inline script runs. Rendering too early
-        // leaves Navbar/EntryList undefined and throws React error #130.
-        // Poll until both are truly defined before mounting — same retry
-        // pattern as useAuthReady/useDataReady above.
         function mountWhenComponentsReady() {
             if (typeof Navbar === "function" && typeof EntryList === "function") {
                 ReactDOM.createRoot(document.getElementById("root")).render(<HistoryApp />);
@@ -381,7 +635,6 @@
         mountWhenComponentsReady();
     </script>
 
-    <!-- PWA Service Worker Registration & Auto-Update Alert -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

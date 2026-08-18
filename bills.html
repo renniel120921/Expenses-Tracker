@@ -23,6 +23,7 @@
                         peso: '#1F6F54',
                         pesoDeep: '#134735',
                         pesoLight: '#2F8E6C',
+                        gold: '#C9932E',
                         expense: '#B5483B',
                         line: '#D2DDD4',
                     },
@@ -30,6 +31,10 @@
                         display: ['Fraunces', 'serif'],
                         body: ['Inter', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    boxShadow: {
+                        'ios': '0 1px 2px rgba(18,61,46,0.04), 0 12px 28px -12px rgba(18,61,46,0.18)',
+                        'iosLg': '0 24px 48px -16px rgba(18,61,46,0.35)',
                     }
                 }
             }
@@ -92,14 +97,111 @@
         .tap-scale { transition: transform 0.18s var(--ease-spring); }
         .tap-scale:active { transform: scale(0.92); }
 
-        /* Custom SweetAlert styling to match Tipid theme */
+        /* Custom SweetAlert styling */
         .tipid-swal {
             border-radius: 1.5rem !important;
             font-family: 'Inter', sans-serif !important;
         }
 
+        /* --- Modern Premium Bills Hero --- */
+        @keyframes mascotHover {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .bills-hero {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            min-height: 220px;
+            border-radius: 28px;
+            padding: 32px 28px;
+            background: linear-gradient(135deg, #2F8E6C 0%, #1F6F54 50%, #123D2E 100%);
+            box-shadow: 0 20px 40px -16px rgba(18,61,46,0.45);
+        }
+
+        /* Ambient Glows Inside the Card */
+        .bills-hero::before {
+            content: "";
+            position: absolute;
+            top: -60px; right: -40px;
+            width: 220px; height: 220px;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .bills-hero::after {
+            content: "";
+            position: absolute;
+            bottom: -80px; left: -40px;
+            width: 250px; height: 250px;
+            background: radial-gradient(circle, rgba(201,147,46,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Mascot Container */
+        .bills-mascot-stage {
+            position: absolute;
+            bottom: 0; right: 10px;
+            width: 170px; height: 180px;
+            display: flex; align-items: flex-end; justify-content: center;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .bills-mascot-img {
+            width: 100%; height: 100%;
+            object-fit: contain;
+            object-position: bottom center;
+            animation: mascotHover 4.5s ease-in-out infinite;
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.3));
+        }
+
+        /* Speech Bubble */
+        .bills-bubble {
+            position: absolute;
+            z-index: 20;
+            right: 140px; top: 45px;
+            background: #F1F4EF;
+            color: #15231C;
+            padding: 10px 14px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1.35;
+            box-shadow: 0 12px 24px -8px rgba(0,0,0,0.4);
+            animation: fadeUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+            min-width: max-content;
+        }
+        .bills-bubble::after {
+            content: "";
+            position: absolute;
+            bottom: -5px; right: 20px;
+            width: 14px; height: 14px;
+            background: #F1F4EF;
+            transform: rotate(45deg);
+            border-radius: 2px;
+        }
+
+        @media (max-width: 640px) {
+            .bills-hero {
+                min-height: 240px;
+                padding: 24px 20px;
+                border-radius: 24px;
+            }
+            .bills-mascot-stage {
+                right: -5px;
+                width: 140px; height: 150px;
+            }
+            .bills-bubble {
+                right: 110px; top: 55px;
+                padding: 8px 12px;
+                font-size: 10px;
+            }
+        }
+
         @media (prefers-reduced-motion: reduce) {
-            .fade-up, .spin, .halo-pulse, .tap-scale { animation: none !important; transition: none !important; }
+            .fade-up, .spin, .halo-pulse, .tap-scale, .bills-mascot-img, .bills-bubble { animation: none !important; transition: none !important; }
         }
     </style>
 </head>
@@ -142,22 +244,49 @@
             );
         }
 
-        // Same predictable header pattern as dashboard.html: bold Fraunces
-        // title + short subtitle, optional right-aligned action. Keeps
-        // every page reading the same way instead of each inventing its
-        // own header shape.
-        function SectionHeader({ title, subtitle, action }) {
+        // --- MODERN BILLS HERO CARD (DEEP GREEN ESTHETIC) ---
+        function BillsHeroCard({ darkMode, toggleDarkMode }) {
             return (
-                <div className="flex items-end justify-between gap-4 mb-6">
-                    <div className="min-w-0">
-                        <h1 className="font-display text-2xl sm:text-3xl font-semibold text-ink dark:text-paper tracking-tight leading-tight">
-                            {title}
-                        </h1>
-                        {subtitle && (
-                            <p className="text-xs text-ink2/60 dark:text-paper/50 mt-1">{subtitle}</p>
-                        )}
+                <div className="bills-hero mb-8">
+                    {/* Dark Mode Toggle - Positioned Absolute Top Right */}
+                    <div className="absolute top-6 right-6 z-30">
+                        <button
+                            onClick={toggleDarkMode}
+                            aria-label="Toggle Dark Mode"
+                            className="tap-scale w-11 h-11 rounded-full bg-black/20 hover:bg-black/30 border border-white/20 flex items-center justify-center text-white shadow-sm backdrop-blur-md transition-colors"
+                        >
+                            {darkMode ? <Icons.Sun size={18} /> : <Icons.Moon size={18} />}
+                        </button>
                     </div>
-                    {action}
+
+                    {/* Content */}
+                    <div className="relative z-20 max-w-[60%] sm:max-w-[65%] mt-2 sm:mt-4">
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-white mb-4 shadow-sm backdrop-blur-md">
+                            <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
+                            <span className="text-[10px] font-bold uppercase tracking-[0.1em]">Paalala</span>
+                        </div>
+                        <h1 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight leading-tight mb-2.5 drop-shadow-md">
+                            Bills Center
+                        </h1>
+                        <p className="text-xs sm:text-sm font-medium text-white/80 max-w-[240px] sm:max-w-sm leading-relaxed">
+                            Subaybayan ang due dates para iwas penalty.
+                        </p>
+                    </div>
+
+                    {/* Speech Bubble */}
+                    <div className="bills-bubble">
+                        Kaya mo 'yan!<br/>Tipid lang. 💚
+                    </div>
+
+                    {/* Mascot */}
+                    <div className="bills-mascot-stage">
+                        <img
+                            src="/assets/bills_mascot.png"
+                            alt="Tipid Buddy reviewing bills"
+                            className="bills-mascot-img"
+                            draggable="false"
+                        />
+                    </div>
                 </div>
             );
         }
@@ -168,8 +297,6 @@
             const [bills, setBills] = useState([]);
             const [loading, setLoading] = useState(true);
             const [authChecking, setAuthChecking] = useState(true);
-
-            // NAGDAGDAG: State para i-track kung nabasa na ang mga external components
             const [componentsReady, setComponentsReady] = useState(false);
 
             const [darkMode, setDarkMode] = useState(() => {
@@ -189,14 +316,13 @@
 
             const toggleDarkMode = () => setDarkMode(!darkMode);
 
-            // NAGDAGDAG: Siguraduhing naka-load ang window.BillsCenter at window.Navbar bago i-render
             useEffect(() => {
                 const interval = setInterval(() => {
                     if (window.BillsCenter && window.Navbar) {
                         setComponentsReady(true);
                         clearInterval(interval);
                     }
-                }, 50); // mag-check tuwing 50 milliseconds
+                }, 50);
                 return () => clearInterval(interval);
             }, []);
 
@@ -267,7 +393,6 @@
                 };
             }, [user]);
 
-            // Hihintayin muna pareho ang Auth Checking AT ang Component Loading
             if (authChecking || !componentsReady) {
                 return (
                     <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
@@ -282,7 +407,6 @@
                 );
             }
 
-            // Kapag nakarating na dito, safe nang i-assign at gamitin ang mga components
             const AppBillsCenter = window.BillsCenter;
             const AppNavbar = window.Navbar;
 
@@ -290,10 +414,8 @@
                 <div className="min-h-dvh flex flex-col relative">
                     <AmbientBackground />
 
-                    {/* Navbar owns the fixed mobile top header (avatar + greeting) and
-                        the bottom tab bar / desktop nav — this page no longer draws its
-                        own competing header on top of it, same layout contract as
-                        dashboard.html so pt-32/md:pt-14 clears the fixed header consistently. */}
+                    <AppNavbar user={user} onLogout={handleLogout} activeTab="bills" />
+
                     <main
                         className="max-w-4xl mx-auto w-full px-5 sm:px-6 pt-32 md:pt-14 pb-40 md:pb-16 flex-1"
                         style={{
@@ -303,27 +425,13 @@
                         }}
                     >
                         <div className="fade-up">
-                            <SectionHeader
-                                title="Bills Center"
-                                subtitle="Subaybayan ang mga bayarin at due dates"
-                                action={
-                                    <button
-                                        onClick={toggleDarkMode}
-                                        aria-label="Toggle Dark Mode"
-                                        className="tap-scale shrink-0 w-10 h-10 rounded-full bg-white/90 dark:bg-ink2/50 border border-line dark:border-white/10 flex items-center justify-center text-ink dark:text-paper shadow-sm"
-                                    >
-                                        {darkMode ? <Icons.Sun size={17} /> : <Icons.Moon size={17} />}
-                                    </button>
-                                }
-                            />
+                            <BillsHeroCard darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
                         </div>
 
                         <div className="fade-up" style={{ animationDelay: "60ms" }}>
                             <AppBillsCenter uid={user.uid} bills={bills} loading={loading} />
                         </div>
                     </main>
-
-                    <AppNavbar user={user} onLogout={handleLogout} activeTab="bills" />
                 </div>
             );
         }

@@ -47,10 +47,7 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Chart.js UMD Integration -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.js"></script>
-
-    <!-- SweetAlert2 (Added to make the Auto-Update script work) -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script type="module" src="./firebase.js"></script>
@@ -66,27 +63,35 @@
         html { background: #F1F4EF; transition: background-color 0.3s var(--ease-ios); }
         html.dark { background: #111A15; color: #F1F4EF; }
 
-        body { font-feature-settings: "tnum" 1, "lnum" 1; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-feature-settings: "tnum" 1, "lnum" 1;
+            min-height: 100dvh;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         ::selection { background: #C9932E33; color: #15231C; }
         :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.85s linear infinite; }
 
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .fade-up { animation: fadeUp 0.7s var(--ease-ios) both; }
 
         .bar-fill { transition: width 1s var(--ease-ios); }
 
         @keyframes logoBreathe {
             0%, 100% { transform: scale(1); opacity: 1; }
-            50%      { transform: scale(1.08); opacity: 0.85; }
+            50% { transform: scale(1.08); opacity: 0.85; }
         }
         .logo-breathe { animation: logoBreathe 1.7s ease-in-out infinite; }
 
         @keyframes haloPulse {
-            0%   { transform: scale(0.9); opacity: 0.35; }
-            70%  { opacity: 0; }
+            0% { transform: scale(0.9); opacity: 0.35; }
+            70% { opacity: 0; }
             100% { transform: scale(1.7); opacity: 0; }
         }
         .halo-pulse { animation: haloPulse 2s var(--ease-ios) infinite; }
@@ -97,16 +102,222 @@
             -webkit-backdrop-filter: blur(20px) saturate(160%);
             border: 1px solid rgba(255,255,255,0.55);
         }
-        html.dark .glass-panel { background: rgba(24,38,31,0.55); border: 1px solid rgba(255,255,255,0.08); }
+        html.dark .glass-panel {
+            background: rgba(24,38,31,0.55);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        /* Modern analytics hero with mascot integrated into the composition. */
+        @keyframes mascotFloat {
+            0%, 100% { transform: translate3d(0, 0, 0) rotate(-1deg); }
+            50% { transform: translate3d(0, -7px, 0) rotate(1deg); }
+        }
+
+        @keyframes mascotGlow {
+            0%, 100% { transform: scale(0.94); opacity: 0.20; }
+            50% { transform: scale(1.06); opacity: 0.34; }
+        }
+
+        .analytics-hero {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            min-height: 240px;
+            border-radius: 28px;
+            padding: 26px 24px 22px;
+            background:
+                radial-gradient(circle at 18% 0%, rgba(255,255,255,0.08), transparent 28%),
+                radial-gradient(circle at 96% 100%, rgba(201,147,46,0.16), transparent 34%),
+                linear-gradient(135deg, #2F8E6C 0%, #1F6F54 48%, #123D2E 100%);
+            box-shadow: 0 24px 50px -22px rgba(18,61,46,0.55);
+        }
+
+        .analytics-hero::before {
+            content: "";
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            right: -80px;
+            bottom: -150px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.07);
+            filter: blur(10px);
+        }
+
+        .analytics-copy {
+            position: relative;
+            z-index: 4;
+            max-width: 62%;
+            padding-right: 42px;
+        }
+
+        .analytics-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            color: rgba(241,244,239,0.72);
+            font: 700 10px/1.2 'IBM Plex Mono', monospace;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+        }
+
+        .analytics-kicker::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: #FCD116;
+            box-shadow: 0 0 0 4px rgba(252,209,22,0.10);
+        }
+
+        .analytics-title {
+            margin: 0;
+            color: #F7FAF7;
+            font: 700 clamp(2rem, 4vw, 2.7rem)/1.03 'Fraunces', serif;
+            letter-spacing: -0.03em;
+        }
+
+        .analytics-subtitle {
+            margin-top: 10px;
+            max-width: 380px;
+            color: rgba(247,250,247,0.72);
+            font: 500 12px/1.55 'Inter', sans-serif;
+        }
+
+        .analytics-mascot-stage {
+            position: absolute;
+            z-index: 3;
+            right: 8px;
+            bottom: -8px;
+            width: 220px;
+            height: 200px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .analytics-mascot-stage::before {
+            content: "";
+            position: absolute;
+            width: 136px;
+            height: 136px;
+            right: 28px;
+            bottom: 18px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.10);
+            filter: blur(28px);
+            animation: mascotGlow 3.8s ease-in-out infinite;
+        }
+
+        .analytics-mascot-stage::after {
+            content: "";
+            position: absolute;
+            width: 120px;
+            height: 18px;
+            right: 31px;
+            bottom: 3px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.18);
+            filter: blur(8px);
+        }
+
+        .analytics-mascot {
+            position: relative;
+            z-index: 2;
+            width: 206px;
+            height: 206px;
+            object-fit: contain;
+            object-position: center bottom;
+            animation: mascotFloat 4.8s ease-in-out infinite;
+            filter: drop-shadow(0 15px 18px rgba(0,0,0,0.18));
+            user-select: none;
+        }
+
+        .analytics-bubble {
+            position: absolute;
+            z-index: 5;
+            right: 130px;
+            bottom: 112px;
+            max-width: 132px;
+            padding: 8px 10px;
+            border-radius: 14px;
+            background: #F8FAF8;
+            color: #15231C;
+            box-shadow: 0 16px 28px -16px rgba(0,0,0,0.35);
+            font: 600 10px/1.35 'Inter', sans-serif;
+        }
+
+        .analytics-bubble::after {
+            content: "";
+            position: absolute;
+            right: 10px;
+            bottom: -8px;
+            width: 14px;
+            height: 14px;
+            background: #F8FAF8;
+            transform: rotate(45deg);
+            border-radius: 2px;
+        }
+
+        .analytics-bubble strong {
+            display: block;
+            font-size: 10px;
+            margin-bottom: 1px;
+        }
+
+        .analytics-chart-shell {
+            position: relative;
+            z-index: 2;
+        }
+
+        @media (max-width: 640px) {
+            .analytics-hero {
+                min-height: 270px;
+                border-radius: 24px;
+                padding: 22px 20px;
+            }
+
+            .analytics-copy {
+                max-width: 68%;
+                padding-right: 8px;
+            }
+
+            .analytics-title {
+                font-size: 2rem;
+            }
+
+            .analytics-mascot-stage {
+                right: -10px;
+                bottom: -14px;
+                width: 172px;
+                height: 160px;
+            }
+
+            .analytics-mascot {
+                width: 166px;
+                height: 166px;
+            }
+
+            .analytics-bubble {
+                right: 98px;
+                bottom: 102px;
+                max-width: 110px;
+                font-size: 9px;
+            }
+        }
 
         @media (prefers-reduced-motion: reduce) {
-            .spin, .fade-up, .bar-fill, .logo-breathe, .halo-pulse {
+            .spin, .fade-up, .bar-fill, .logo-breathe, .halo-pulse,
+            .analytics-mascot, .analytics-mascot-stage::before {
                 animation: none !important;
                 transition: none !important;
             }
         }
     </style>
 </head>
+
 <body class="bg-paper dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
     <div id="root"></div>
 
@@ -131,7 +342,7 @@
             Trash: (p) => <Icon {...p} path={<><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></>} />,
             Loader: (p) => <Icon {...p} path={<><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></>} />,
             AlertCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />,
-            Inbox: (p) => <Icon {...p} path={<><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></>} />,
+            Inbox: (p) => <Icon {...p} path={<><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2-2v-6l3.45-6.89A2 2 0 0 0 7.24 4h9.52a2 2 0 0 1 1.79 1.11L22 12v6a2 2 0 0 1-2 2H7"/></>} />,
             Pencil: (p) => <Icon {...p} path={<><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></>} />,
             TrendUp: (p) => <Icon {...p} path={<><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>} />,
             TrendDown: (p) => <Icon {...p} path={<><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></>} />,
@@ -198,8 +409,6 @@
 
     <!-- Chart Page Application -->
     <script type="text/babel">
-        // Trimmed to two quiet glows — same ambient language as dashboard.html
-        // and bills.html, so no page feels busier than the others.
         function AmbientBackground() {
             return (
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
@@ -209,28 +418,30 @@
             );
         }
 
-        // Same reusable header shape used on dashboard.html and bills.html —
-        // optional leading icon chip, bold Fraunces title, short subtitle,
-        // optional right-aligned action — so every page reads the same way.
-        function SectionHeader({ icon, title, subtitle, action }) {
+        function AnalyticsHero() {
             return (
-                <div className="flex items-end justify-between gap-4">
-                    <div className="flex items-center gap-4 min-w-0">
-                        {icon && (
-                            <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-gold/20 to-gold/5 dark:from-gold/30 dark:to-gold/10 border border-gold/20 flex items-center justify-center shrink-0 shadow-sm">
-                                {icon}
-                            </div>
-                        )}
-                        <div className="min-w-0">
-                            <h1 className="font-display text-2xl sm:text-3xl font-semibold text-ink dark:text-paper tracking-tight leading-tight">
-                                {title}
-                            </h1>
-                            {subtitle && (
-                                <p className="text-xs sm:text-sm text-ink2/60 dark:text-paper/50 mt-1">{subtitle}</p>
-                            )}
-                        </div>
+                <div className="analytics-hero">
+                    <div className="analytics-copy">
+                        <div className="analytics-kicker">Tipid Buddy</div>
+                        <h1 className="analytics-title">Analytics</h1>
+                        <p className="analytics-subtitle">
+                            Tingnan ang paghahati ng iyong paggastos at alamin kung saan napupunta ang pera mo.
+                        </p>
                     </div>
-                    {action}
+
+                    <div className="analytics-bubble">
+                        <strong>May idea si Buddy!</strong>
+                        Tingnan kung saan pinakamalaki ang gastos mo.
+                    </div>
+
+                    <div className="analytics-mascot-stage" aria-hidden="true">
+                        <img
+                            src="/assets/chart_mascot.png"
+                            alt="Tipid Buddy with a money idea"
+                            className="analytics-mascot"
+                            draggable="false"
+                        />
+                    </div>
                 </div>
             );
         }
@@ -287,25 +498,19 @@
                     <AmbientBackground />
                     <Navbar user={user} onLogout={logout} activeTab="chart" />
 
-                    {/* Generous, safe-area aware padding so content never sits under the notch or bottom nav */}
                     <main
-                        className="max-w-5xl mx-auto px-5 sm:px-8 pt-32 md:pt-14 pb-40 md:pb-20 space-y-10 md:space-y-14"
+                        className="max-w-5xl mx-auto px-5 sm:px-8 pt-32 md:pt-14 pb-40 md:pb-20 space-y-8 md:space-y-12"
                         style={{
                             paddingLeft: 'max(1.25rem, calc(env(safe-area-inset-left) + 1.25rem))',
                             paddingRight: 'max(1.25rem, calc(env(safe-area-inset-right) + 1.25rem))',
                             paddingBottom: 'calc(10rem + env(safe-area-inset-bottom))',
                         }}
                     >
-
                         <div className="fade-up" style={{ animationDelay: "0ms" }}>
-                            <SectionHeader
-                                icon={<Icons.Chart size={24} className="text-gold dark:text-gold" />}
-                                title="Analytics"
-                                subtitle="Tingnan ang paghahati ng iyong paggastos."
-                            />
+                            <AnalyticsHero />
                         </div>
 
-                        <div className="fade-up" style={{ animationDelay: "90ms" }}>
+                        <div className="analytics-chart-shell fade-up" style={{ animationDelay: "90ms" }}>
                             <ExpenseChart entries={entries} />
                         </div>
                     </main>

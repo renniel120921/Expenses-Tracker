@@ -88,7 +88,6 @@
 
         .bar-fill { transition: width 1s var(--ease-ios); }
 
-        /* --- Premium page-entrance motion --- */
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(16px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -114,14 +113,12 @@
         }
         .halo-pulse { animation: haloPulse 2s var(--ease-ios) infinite; }
 
-        /* --- Hero card ambience: one quiet drifting glow, nothing busier --- */
         @keyframes heroFloat {
             0%, 100% { transform: translate(0, 0); }
             50%      { transform: translate(0, -10px); }
         }
         .hero-float { animation: heroFloat 6s ease-in-out infinite; }
 
-        /* Frosted, iOS-style glass surface used for cards */
         .glass-panel {
             background: rgba(255,255,255,0.6);
             backdrop-filter: blur(20px) saturate(160%);
@@ -138,8 +135,21 @@
 
         .tipid-swal { border-radius: 28px !important; font-family: 'Inter', sans-serif !important; }
 
+        /* --- Modern Tipid Mascot Integration --- */
+        @keyframes mascotHover {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .tipid-mascot-img {
+            animation: mascotHover 4.5s ease-in-out infinite;
+            filter: drop-shadow(0 15px 25px rgba(18,61,46,0.3));
+        }
+        .speech-bubble {
+            animation: fadeUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
+        }
+
         @media (prefers-reduced-motion: reduce) {
-            .spin, .row-in, .bar-fill, .fade-up, .banner-in, .logo-breathe, .halo-pulse, .hero-float {
+            .spin, .row-in, .bar-fill, .fade-up, .banner-in, .logo-breathe, .halo-pulse, .hero-float, .tipid-mascot-img, .speech-bubble {
                 animation: none !important;
                 transition: none !important;
             }
@@ -154,7 +164,6 @@
         window.useEffect = React.useEffect;
         window.useMemo = React.useMemo;
         window.useRef = React.useRef;
-
 
         function Icon({ path, size = 20, className = "", strokeWidth = 2 }) {
             return (
@@ -182,7 +191,6 @@
             LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />,
             Eye: (p) => <Icon {...p} path={<><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></>} />,
             EyeOff: (p) => <Icon {...p} path={<><path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.94 3.71M6.16 6.16A18.6 18.6 0 0 0 1 11s4 7 11 7a10.9 10.9 0 0 0 5.64-1.56M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></>} />,
-            // NAGDAGDAG: Bell Icon para sa Notification
             Bell: (p) => <Icon {...p} path={<><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>} />
         };
 
@@ -244,7 +252,6 @@
     <script type="text/babel" src="./components/ExpenseList.js"></script>
 
     <script type="text/babel">
-        // Purely decorative ambient background
         function AmbientBackground() {
             return (
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
@@ -282,26 +289,21 @@
             if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
         }
 
-        // NAGDAGDAG: Notification Bell Component Logic para sa Overspending Alert
         function NotificationBell({ entries, budget }) {
-            // Kalkulahin ang daily budget
             const monthlyBudget = budget?.amount || 0;
             const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
             const dailyBudget = monthlyBudget > 0 ? monthlyBudget / daysInMonth : 0;
 
-            // Kunin ang petsa ngayon sa format na YYYY-MM-DD (Base sa local time ng device)
             const now = new Date();
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
             const todayStr = `${year}-${month}-${day}`;
 
-            // I-sum ang lahat ng expenses NGAYONG araw
             const todayExpenses = entries
                 .filter(e => e.type === "expense" && e.date === todayStr)
                 .reduce((sum, e) => sum + (e.amount || 0), 0);
 
-            // True kung lumagpas sa safe daily spending limit
             const isOverspent = monthlyBudget > 0 && todayExpenses > dailyBudget;
 
             const handleBellClick = () => {
@@ -339,7 +341,7 @@
                 <button
                     onClick={handleBellClick}
                     aria-label="Tingnan ang alerts"
-                    className="relative tap-scale shrink-0 w-12 h-12 rounded-full bg-paper/15 hover:bg-paper/25 border border-paper/25 flex items-center justify-center transition-colors duration-200 shadow-ios"
+                    className="relative tap-scale shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-paper/15 hover:bg-paper/25 border border-paper/25 flex items-center justify-center transition-colors duration-200 shadow-ios"
                 >
                     <Icons.Bell size={22} className="text-paper" />
                     {isOverspent && (
@@ -349,53 +351,87 @@
             );
         }
 
-        // HeroCard — Ngayon ay tinatanggap ang entries at budget props para sa Bell
+        /* --- MODERNIZED HERO CARD --- */
         function HeroCard({ firstName, balance, entries, budget }) {
             const [hidden, setHidden] = React.useState(false);
 
             return (
-                <div className="relative overflow-hidden rounded-[28px] sm:rounded-[32px] bg-gradient-to-br from-peso via-pesoLight to-pesoDeep text-paper px-6 py-7 sm:px-8 sm:py-8 md:px-10 md:py-10 shadow-iosLg ring-1 ring-white/10">
-                    {/* ambient glows */}
+                <div className="relative overflow-hidden rounded-[28px] sm:rounded-[32px] bg-gradient-to-br from-peso via-pesoLight to-pesoDeep text-paper p-6 sm:p-8 shadow-iosLg ring-1 ring-white/10 min-h-[220px]">
+
+                    {/* Ambient Glows */}
                     <div className="absolute -top-16 -right-10 w-56 h-56 bg-paper/10 rounded-full blur-[60px] hero-float" />
                     <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-gold/20 rounded-full blur-[70px]" />
 
-                    <div className="relative flex items-start justify-between gap-4 mb-7">
-                        <div className="min-w-0">
-                            <p className="text-[11px] font-mono font-medium tracking-[0.22em] uppercase text-paper/70 mb-2">
-                                {timeGreeting()}
-                            </p>
-                            <h1 className="font-display text-2xl sm:text-3xl font-semibold leading-[1.15] break-words">
-                                Kumusta, {firstName}!
-                            </h1>
-                        </div>
+                    {/* Mascot Container - Absolute positioned to the bottom right */}
+                    <div className="absolute right-0 bottom-0 pointer-events-none flex items-end justify-end w-[240px] h-[220px] z-0">
+                        <div className="relative w-full h-full">
+                            {/* Ambient glow behind mascot */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-paper/10 blur-2xl rounded-full"></div>
 
-                        {/* PINAGSAMA: Bell Icon at Plus Icon */}
-                        <div className="flex items-center gap-2.5">
-                            <NotificationBell entries={entries} budget={budget} />
-                            <button
-                                onClick={() => scrollToId("add-entry")}
-                                aria-label="Magdagdag ng gastos"
-                                className="tap-scale shrink-0 w-12 h-12 rounded-full bg-paper/15 hover:bg-paper/25 border border-paper/25 flex items-center justify-center transition-colors duration-200 shadow-ios"
-                            >
-                                <Icons.Plus size={22} className="text-paper" />
-                            </button>
+                            {/* Mascot Image */}
+                            <img
+                                src="/assets/tipid_mascot.png"
+                                alt="Tipid Buddy"
+                                className="absolute bottom-[-10px] -right-2 sm:right-2 w-[140px] sm:w-[170px] object-contain tipid-mascot-img"
+                                draggable="false"
+                            />
+
+                            {/* Speech Bubble */}
+                            <div className="speech-bubble absolute top-6 right-24 sm:right-32 bg-paper text-pesoDeep rounded-2xl px-3.5 py-2.5 shadow-iosLg text-[10px] sm:text-xs font-semibold leading-tight w-max max-w-[130px]">
+                                Kaya mo 'yan!<br/>Tipid lang. 🇵🇭
+                                <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-paper rotate-45"></div>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="relative">
-                        <div className="flex items-center gap-2 mb-2">
-                            <p className="text-xs font-medium text-paper/70">Kasalukuyang Balanse</p>
-                            <button
-                                onClick={() => setHidden(h => !h)}
-                                aria-label={hidden ? "Ipakita ang balanse" : "Itago ang balanse"}
-                                className="text-paper/60 hover:text-paper transition-colors duration-200 p-0.5"
-                            >
-                                {hidden ? <Icons.EyeOff size={14} /> : <Icons.Eye size={14} />}
-                            </button>
+                    {/* Main Content Layout */}
+                    <div className="relative z-10 flex flex-col h-full justify-between gap-8 sm:gap-10">
+
+                        {/* Top Row: Greeting (Left) + Buttons (Right) */}
+                        <div className="flex justify-between items-start gap-4">
+                            <div className="min-w-0">
+                                <p className="text-[11px] font-mono font-medium tracking-[0.22em] uppercase text-paper/70 mb-2">
+                                    {timeGreeting()}
+                                </p>
+                                <h1 className="font-display text-2xl sm:text-3xl font-semibold leading-[1.15] break-words max-w-[200px] sm:max-w-[280px]">
+                                    Kumusta, {firstName}!
+                                </h1>
+                                <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-paper/12 border border-paper/20 px-3 py-1.5 backdrop-blur-sm shadow-sm">
+                                    <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
+                                    <span className="text-[11px] font-medium text-paper/90">Kasama mo si Tipid Buddy</span>
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex items-center gap-2.5 shrink-0 relative z-20">
+                                <NotificationBell entries={entries} budget={budget} />
+                                <button
+                                    onClick={() => scrollToId("add-entry")}
+                                    aria-label="Magdagdag ng gastos"
+                                    className="tap-scale shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-paper/15 hover:bg-paper/25 border border-paper/25 flex items-center justify-center transition-colors duration-200 shadow-ios"
+                                >
+                                    <Icons.Plus size={22} className="text-paper" />
+                                </button>
+                            </div>
                         </div>
-                        <p className="font-mono text-3xl sm:text-[2.5rem] font-semibold tracking-tight leading-none">
-                            {hidden ? "₱ • • • • • •" : `₱${peso(balance)}`}
-                        </p>
+
+                        {/* Bottom Row: Balance */}
+                        <div className="relative max-w-[55%] sm:max-w-[65%] mt-4">
+                            <div className="flex items-center gap-2 mb-1.5">
+                                <p className="text-xs font-medium text-paper/70">Kasalukuyang Balanse</p>
+                                <button
+                                    onClick={() => setHidden(h => !h)}
+                                    aria-label={hidden ? "Ipakita ang balanse" : "Itago ang balanse"}
+                                    className="text-paper/60 hover:text-paper transition-colors duration-200 p-0.5 relative z-20"
+                                >
+                                    {hidden ? <Icons.EyeOff size={14} /> : <Icons.Eye size={14} />}
+                                </button>
+                            </div>
+                            <p className="font-mono text-3xl sm:text-4xl font-semibold tracking-tight leading-none drop-shadow-md">
+                                {hidden ? "₱ • • • • • •" : `₱${peso(balance)}`}
+                            </p>
+                        </div>
+
                     </div>
                 </div>
             );
@@ -514,7 +550,6 @@
                     >
 
                         <div className="fade-up" style={{ animationDelay: "0ms" }}>
-                            {/* PINASA: entries at budget para makapag-kalkula ang Bell */}
                             <HeroCard firstName={firstName} balance={balance} entries={entries} budget={budget} />
                         </div>
 

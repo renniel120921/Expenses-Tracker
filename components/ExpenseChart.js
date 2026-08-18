@@ -1,4 +1,47 @@
 // components/ExpenseChart.js
+//
+// ASSUMPTIONS (unchanged from the original — carried forward, not re-verified here):
+//   - window.useState/useMemo/useEffect/useRef, window.Chart, window.CATEGORY_COLOR,
+//     and a bare global `peso()` formatter are all set up elsewhere before this loads
+//   - Icons.{Chart, Category, AlertCircle, Inbox} exist on a global Icons object
+//   - `ExpenseChart` is referenced by its exact global name elsewhere, so it's unchanged
+//   - `expense` and `gold` are real Tailwind color tokens in this project (confirmed by
+//     their use in the original file — bg-expense, text-gold, etc.), so new markup below
+//     uses those tokens directly instead of arbitrary hex values.
+
+function ExpenseChartStyles() {
+    return (
+        <style>{`
+            @keyframes legendRowIn {
+                from { opacity: 0; transform: translateX(-4px); }
+                to   { opacity: 1; transform: translateX(0); }
+            }
+            .legend-row { animation: legendRowIn 0.3s ease both; }
+
+            /* Signature touch: a ruler/axis tick pattern instead of a flat bar —
+               distinct from the perforated "receipt" edge used on the entry form,
+               but drawn from the same gold-to-peso gradient family. */
+            .tick-edge {
+                -webkit-mask-image: repeating-linear-gradient(90deg, black 0 3px, transparent 3px 9px);
+                mask-image: repeating-linear-gradient(90deg, black 0 3px, transparent 3px 9px);
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                .legend-row { animation: none !important; }
+            }
+        `}</style>
+    );
+}
+
+// Small inline glyph so the net indicator doesn't assume an up/down arrow
+// exists on the shared Icons set.
+function TrendGlyph({ up, size = 11 }) {
+    return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            {up ? <path d="M6 18L18 6M18 6H9M18 6v9" /> : <path d="M6 6l12 12M18 18H9M18 18V9" />}
+        </svg>
+    );
+}
 
 function ExpenseChart({ entries }) {
     const { useState, useMemo, useEffect, useRef } = window;
@@ -53,8 +96,27 @@ function ExpenseChart({ entries }) {
         const categories = catLabels.map(k => catGroup[k]);
         const catColors = catLabels.map(cat => window.CATEGORY_COLOR[cat] || "#D3DAD0");
 
-        return { totalExpense, totalIncome, categories, catLabels, catColors };
+        // Added purely for display (net chip below) — doesn't touch any existing field.
+        const net = totalIncome - totalExpense;
+
+        return { totalExpense, totalIncome, categories, catLabels, catColors, net };
     }, [filteredEntries]);
+
+    // Category breakdown re-shaped for the custom legend: joined by index into
+    // one array per category and sorted biggest-first, like a real ledger line-up.
+    const sortedCategories = useMemo(() => {
+        const total = analytics.totalExpense || 0;
+        return analytics.catLabels
+            .map((label, i) => ({
+                label,
+                amount: analytics.categories[i],
+                color: analytics.catColors[i],
+                pct: total > 0 ? (analytics.categories[i] / total) * 100 : 0,
+            }))
+            .sort((a, b) => b.amount - a.amount);
+    }, [analytics]);
+
+    const hasCategoryData = analytics.catLabels.length > 0;
 
     // 3. Render Chart
     useEffect(() => {
@@ -79,7 +141,9 @@ function ExpenseChart({ entries }) {
                     labels: analytics.catLabels,
                     datasets: [{ data: analytics.categories, backgroundColor: analytics.catColors, borderWidth: 0, hoverOffset: 6, borderRadius: 4 }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Inter' }, boxWidth: 10, padding: 14 } } }, cutout: '75%' }
+                // Legend is now rendered as custom HTML below (with amounts + share
+                // bars), so Chart.js doesn't need to draw its own anymore.
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' }
             };
         } else {
             config = {
@@ -110,10 +174,16 @@ function ExpenseChart({ entries }) {
     // vanishing.
 
     const filterLabel = { thisMonth: "ngayong buwan", lastMonth: "nakaraang buwan", all: "lahat ng oras" }[dateFilter];
+    const DATE_FILTERS = [
+        { key: "thisMonth", label: "This Month" },
+        { key: "lastMonth", label: "Last Month" },
+        { key: "all", label: "All Time" },
+    ];
 
     return (
         <div className="relative overflow-hidden bg-white/80 dark:bg-ink2/20 backdrop-blur-xl rounded-[1.75rem] border border-line/40 dark:border-line/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_16px_32px_-18px_rgba(21,35,28,0.22)] p-6 sm:p-8 mb-6 fade-up">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold to-peso" />
+            <ExpenseChartStyles />
+            <div className="tick-edge absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-gold to-peso" />
 
             {/* Header with Date Filter */}
             <div className="flex items-start justify-between gap-3 mb-5 flex-wrap">
@@ -126,18 +196,27 @@ function ExpenseChart({ entries }) {
                         <p className="text-[11px] text-ink2/50 dark:text-paper/40">Batay sa {filterLabel}</p>
                     </div>
                 </div>
-                <select
-                    value={dateFilter}
-                    onChange={(e) => setDateFilter(e.target.value)}
-                    className="text-xs font-medium text-ink2 dark:text-paper bg-paperDim dark:bg-ink2/50 px-3 py-2 rounded-xl border border-transparent focus:outline-none focus:ring-2 focus:ring-peso/40 cursor-pointer transition-shadow duration-200"
-                >
-                    <option value="thisMonth">This Month</option>
-                    <option value="lastMonth">Last Month</option>
-                    <option value="all">All Time</option>
-                </select>
+
+                {/* Segmented control instead of a native <select>, to match the
+                    Category / Cash Flow toggle below and keep both selectors
+                    reading as the same kind of control. */}
+                <div className="flex items-center gap-0.5 bg-paperDim dark:bg-ink2/40 p-1 rounded-xl text-[11px] font-medium">
+                    {DATE_FILTERS.map(opt => (
+                        <button
+                            key={opt.key}
+                            type="button"
+                            onClick={() => setDateFilter(opt.key)}
+                            className={`px-2.5 py-1.5 rounded-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 ${
+                                dateFilter === opt.key ? 'bg-white dark:bg-ink text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink2/80'
+                            }`}
+                        >
+                            {opt.label}
+                        </button>
+                    ))}
+                </div>
             </div>
 
-            {/* Quick income/expense stat chips — useful at a glance, especially in Cash Flow view where the chart legend is hidden */}
+            {/* Quick income/expense/net stat chips — useful at a glance, especially in Cash Flow view where the chart legend is hidden */}
             <div className="flex items-center gap-4 mb-5 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 text-xs">
                     <span className="w-2 h-2 rounded-full bg-pesoLight"></span>
@@ -149,41 +228,78 @@ function ExpenseChart({ entries }) {
                     <span className="text-ink2/60 dark:text-paper/50">Gastos</span>
                     <span className="font-mono font-semibold text-ink dark:text-paper">₱{peso(analytics.totalExpense)}</span>
                 </span>
+                <span className={`inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg ${analytics.net >= 0 ? "bg-peso/10 text-peso dark:bg-pesoLight/15 dark:text-pesoLight" : "bg-expense/10 text-expense"}`}>
+                    <TrendGlyph up={analytics.net >= 0} />
+                    <span className="font-mono font-semibold">₱{peso(Math.abs(analytics.net))}</span>
+                    <span className="opacity-70">{analytics.net >= 0 ? "natitira" : "kulang"}</span>
+                </span>
             </div>
 
             {/* View Toggles */}
             <div className="flex items-center bg-paperDim dark:bg-ink2/40 p-1 rounded-2xl mb-6">
-                <button onClick={() => setView("category")} className={`flex-1 inline-flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase py-2.5 rounded-xl transition-all duration-200 ${view === "category" ? 'bg-white dark:bg-ink text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink2/80'}`}>
+                <button onClick={() => setView("category")} className={`flex-1 inline-flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase py-2.5 rounded-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 ${view === "category" ? 'bg-white dark:bg-ink text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink2/80'}`}>
                     <Icons.Category size={12} /> Categories
                 </button>
-                <button onClick={() => setView("flow")} className={`flex-1 inline-flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase py-2.5 rounded-xl transition-all duration-200 ${view === "flow" ? 'bg-white dark:bg-ink text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink2/80'}`}>
+                <button onClick={() => setView("flow")} className={`flex-1 inline-flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase py-2.5 rounded-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 ${view === "flow" ? 'bg-white dark:bg-ink text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink2/80'}`}>
                     <Icons.Chart size={12} /> Cash Flow
                 </button>
             </div>
 
-            {/* Chart Canvas */}
-            <div className="relative h-64 w-full flex items-center justify-center">
+            {/* Chart area */}
+            <div className="relative w-full">
                 {!chartLoaded && (
-                    <div className="flex flex-col items-center gap-2 text-center">
+                    <div className="h-64 flex flex-col items-center justify-center gap-2 text-center">
                         <Icons.AlertCircle size={18} className="text-expense" />
                         <p className="text-xs text-expense font-medium">Chart library failed to load. Please refresh the page.</p>
                     </div>
                 )}
-                {filteredEntries.length === 0 && chartLoaded ? (
-                    <div className="flex flex-col items-center gap-2 text-center">
+
+                {chartLoaded && filteredEntries.length === 0 && (
+                    <div className="h-64 flex flex-col items-center justify-center gap-2 text-center">
                         <Icons.Inbox size={20} className="text-ink2/30 dark:text-paper/25" />
                         <p className="text-sm text-ink2/50 dark:text-paper/40">Walang data sa panahong ito.</p>
                     </div>
-                ) : (
-                    <React.Fragment>
-                        <canvas ref={chartRef} className={!chartLoaded ? "hidden" : ""}></canvas>
-                        {view === "category" && chartLoaded && filteredEntries.length > 0 && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-8">
+                )}
+
+                {chartLoaded && filteredEntries.length > 0 && view === "category" && !hasCategoryData && (
+                    <div className="h-64 flex flex-col items-center justify-center gap-2 text-center">
+                        <Icons.Inbox size={20} className="text-ink2/30 dark:text-paper/25" />
+                        <p className="text-sm text-ink2/50 dark:text-paper/40">Walang gastos na naitala sa panahong ito.</p>
+                    </div>
+                )}
+
+                {chartLoaded && filteredEntries.length > 0 && view === "category" && hasCategoryData && (
+                    <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
+                        <div className="relative h-48 w-48 shrink-0">
+                            <canvas ref={chartRef}></canvas>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                 <span className="text-[10px] font-mono uppercase tracking-wide text-ink2/50 dark:text-paper/40">Kabuuang Gastos</span>
-                                <span className="font-mono text-lg font-semibold text-ink dark:text-paper">₱{peso(analytics.totalExpense)}</span>
+                                <span className="font-mono text-base font-semibold text-ink dark:text-paper">₱{peso(analytics.totalExpense)}</span>
                             </div>
-                        )}
-                    </React.Fragment>
+                        </div>
+
+                        {/* Custom legend: category, share-of-total bar, and amount — replaces
+                            Chart.js's built-in canvas-drawn legend so labels use the app's
+                            own type and the proportions are legible at a glance. */}
+                        <div className="w-full flex flex-col gap-2.5 min-w-0">
+                            {sortedCategories.map((c, i) => (
+                                <div key={c.label} className="legend-row flex items-center gap-2.5" style={{ animationDelay: `${i * 40}ms` }}>
+                                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: c.color }}></span>
+                                    <span className="text-xs text-ink2/70 dark:text-paper/60 flex-1 min-w-0 truncate">{c.label}</span>
+                                    <div className="hidden sm:block w-16 h-1.5 rounded-full bg-paperDim dark:bg-ink2/50 overflow-hidden shrink-0">
+                                        <div className="h-full rounded-full" style={{ width: `${c.pct}%`, backgroundColor: c.color }}></div>
+                                    </div>
+                                    <span className="text-xs font-mono font-medium text-ink dark:text-paper w-16 text-right shrink-0">₱{peso(c.amount)}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {chartLoaded && filteredEntries.length > 0 && view === "flow" && (
+                    <div className="h-64 w-full">
+                        <canvas ref={chartRef}></canvas>
+                    </div>
                 )}
             </div>
         </div>

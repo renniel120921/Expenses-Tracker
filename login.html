@@ -20,7 +20,6 @@
                         paper: '#F1F4EF', paperDim: '#E9EDE6', ink: '#15231C', ink2: '#33443A',
                         peso: '#1F6F54', pesoLight: '#2F8E6C', pesoDeep: '#123D2E',
                         gold: '#C9932E', expense: '#B5483B', line: '#D3DAD0',
-                        /* Flag-referenced accents, used sparingly for the sun/star motif */
                         sun: '#FCD116', bayani: '#0038A8',
                     },
                     fontFamily: {
@@ -36,11 +35,8 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- Firebase (Updated to correct file names and relative paths) -->
     <script type="module" src="./firebase.js"></script>
     <script type="module" src="./firebase-auth.js"></script>
 
@@ -49,24 +45,26 @@
         body { font-feature-settings: "tnum" 1, "lnum" 1; }
         ::selection { background: #C9932E33; color: #15231C; }
         :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
-        .ledger-rule { background-image: repeating-linear-gradient(to right, #D3DAD0 0, #D3DAD0 6px, transparent 6px, transparent 14px); height: 1px; }
+
+        .ledger-rule {
+            background-image: repeating-linear-gradient(to right, #D3DAD0 0, #D3DAD0 6px, transparent 6px, transparent 14px);
+            height: 1px;
+        }
+
         .perf-edge {
             -webkit-mask-image: radial-gradient(circle 5px at 5px 5px, transparent 5px, black 5.5px);
             mask-image: radial-gradient(circle 5px at 5px 5px, transparent 5px, black 5.5px);
-            -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
-            -webkit-mask-position: -5px -5px; mask-position: -5px -5px;
-            -webkit-mask-size: 20px 10px; mask-size: 20px 10px;
+            -webkit-mask-repeat: repeat-x;
+            mask-repeat: repeat-x;
+            -webkit-mask-position: -5px -5px;
+            mask-position: -5px -5px;
+            -webkit-mask-size: 20px 10px;
+            mask-size: 20px 10px;
         }
-        /* vertical perforation used on the seam between the two panels */
-        .perf-edge-v {
-            -webkit-mask-image: radial-gradient(circle 5px at 5px 5px, transparent 5px, black 5.5px);
-            mask-image: radial-gradient(circle 5px at 5px 5px, transparent 5px, black 5.5px);
-            -webkit-mask-repeat: repeat-y; mask-repeat: repeat-y;
-            -webkit-mask-position: -5px -5px; mask-position: -5px -5px;
-            -webkit-mask-size: 10px 20px; mask-size: 10px 20px;
-        }
+
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.8s linear infinite; }
+
         @keyframes shake {
             10%, 90% { transform: translateX(-1px); }
             20%, 80% { transform: translateX(2px); }
@@ -74,44 +72,488 @@
             40%, 60% { transform: translateX(4px); }
         }
         .shake { animation: shake 0.5s; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .fade-up { animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
         .panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s ease; }
         .panel.open { grid-template-rows: 1fr; }
         .panel > div { overflow: hidden; }
 
-        /* --- Filipino-referenced ambient motifs (brand panel only) --- */
-        @keyframes sunRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes sunRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
         .sun-rotate { animation: sunRotate 140s linear infinite; }
 
         @keyframes starTwinkle {
             0%, 100% { opacity: 0.35; transform: scale(0.9); }
-            50%      { opacity: 1; transform: scale(1.05); }
+            50% { opacity: 1; transform: scale(1.05); }
         }
         .star-twinkle { animation: starTwinkle 2.6s ease-in-out infinite; }
 
-        @keyframes stampPop {
-            0%   { opacity: 0; transform: rotate(-28deg) scale(0.6); }
-            70%  { opacity: 1; transform: rotate(-10deg) scale(1.08); }
-            100% { opacity: 1; transform: rotate(-12deg) scale(1); }
+        @keyframes mascotFloat {
+            0%, 100% { transform: translate3d(0, 0, 0) rotate(-1deg); }
+            50% { transform: translate3d(0, -7px, 0) rotate(1deg); }
         }
-        .stamp-pop { animation: stampPop 0.6s cubic-bezier(0.22, 1.4, 0.36, 1) 0.5s both; }
+        @keyframes mascotGlow {
+            0%, 100% { transform: scale(0.94); opacity: 0.18; }
+            50% { transform: scale(1.06); opacity: 0.30; }
+        }
 
-        @media (prefers-reduced-motion: reduce) {
-            .spin, .shake, .fade-up, .sun-rotate, .star-twinkle, .stamp-pop {
-                animation: none !important;
+        .login-shell {
+            width: min(1120px, calc(100vw - 32px));
+            min-height: min(720px, calc(100dvh - 48px));
+            margin: 24px auto;
+            display: grid;
+            grid-template-columns: 0.9fr 1.1fr;
+            overflow: hidden;
+            border-radius: 32px;
+            background: rgba(255,255,255,.82);
+            border: 1px solid rgba(255,255,255,.72);
+            box-shadow: 0 36px 90px -38px rgba(18,61,46,.38);
+            backdrop-filter: blur(20px) saturate(145%);
+            -webkit-backdrop-filter: blur(20px) saturate(145%);
+        }
+
+        .login-visual {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 78% 20%, rgba(47,142,108,.30), transparent 30%),
+                radial-gradient(circle at 10% 88%, rgba(201,147,46,.18), transparent 30%),
+                linear-gradient(150deg, #0F3F2F 0%, #134735 48%, #1F6F54 100%);
+            color: #F7FAF7;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .login-visual::before {
+            content: "";
+            position: absolute;
+            width: 340px;
+            height: 340px;
+            top: -150px;
+            right: -120px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.06);
+            filter: blur(8px);
+        }
+
+        .login-visual::after {
+            content: "";
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            bottom: -150px;
+            left: -120px;
+            border-radius: 999px;
+            background: rgba(201,147,46,.08);
+            filter: blur(8px);
+        }
+
+        .visual-top,
+        .visual-content,
+        .visual-bottom {
+            position: relative;
+            z-index: 2;
+        }
+
+        .visual-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .visual-pill {
+            display: inline-flex;
+            width: fit-content;
+            align-items: center;
+            gap: 7px;
+            margin-top: 18px;
+            padding: 7px 11px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,255,255,.12);
+            color: rgba(247,250,247,.82);
+            font: 700 10px/1 'Inter',sans-serif;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .visual-content {
+            max-width: 390px;
+            margin-top: 36px;
+        }
+
+        .visual-eyebrow {
+            color: rgba(241,244,239,.56);
+            font: 700 10px/1.2 'IBM Plex Mono',monospace;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .visual-title {
+            font: 700 clamp(2.2rem, 4vw, 3.4rem)/1.02 'Fraunces',serif;
+            letter-spacing: -.035em;
+            margin: 0;
+        }
+
+        .visual-copy {
+            margin-top: 14px;
+            max-width: 340px;
+            color: rgba(247,250,247,.68);
+            font: 500 13px/1.65 'Inter',sans-serif;
+        }
+
+        .visual-mascot {
+            position: absolute;
+            z-index: 2;
+            right: 24px;
+            bottom: 10px;
+            width: 300px;
+            height: 330px;
+            object-fit: contain;
+            object-position: center bottom;
+            animation: mascotFloat 4.8s ease-in-out infinite;
+            filter: drop-shadow(0 22px 24px rgba(0,0,0,.22));
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .visual-mascot-glow {
+            position: absolute;
+            z-index: 1;
+            width: 190px;
+            height: 190px;
+            right: 70px;
+            bottom: 72px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.09);
+            filter: blur(34px);
+            animation: mascotGlow 3.8s ease-in-out infinite;
+        }
+
+        .visual-note {
+            width: fit-content;
+            max-width: 260px;
+            padding: 11px 13px;
+            border-radius: 16px;
+            background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,255,255,.12);
+            color: rgba(247,250,247,.76);
+            font: 600 11px/1.45 'Inter',sans-serif;
+        }
+
+        .visual-stat {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
+            color: rgba(247,250,247,.54);
+            font: 500 11px/1.4 'Inter',sans-serif;
+        }
+
+        .visual-stat-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: #FCD116;
+            box-shadow: 0 0 0 5px rgba(252,209,22,.08);
+            flex: 0 0 auto;
+        }
+
+        .login-form-side {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 46px;
+            background: rgba(250,252,249,.74);
+        }
+
+        .login-form-wrap {
+            width: min(100%, 430px);
+        }
+
+        .login-mobile-brand {
+            display: none;
+        }
+
+        .login-form-head {
+            margin-bottom: 26px;
+        }
+
+        .login-form-eyebrow {
+            margin-bottom: 8px;
+            color: #1F6F54;
+            font: 700 10px/1.2 'IBM Plex Mono',monospace;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+        }
+
+        .login-form-title {
+            margin: 0;
+            color: #15231C;
+            font: 700 2.35rem/1.04 'Fraunces',serif;
+            letter-spacing: -.03em;
+        }
+
+        .login-form-subtitle {
+            margin-top: 9px;
+            color: rgba(51,68,58,.66);
+            font: 500 13px/1.55 'Inter',sans-serif;
+        }
+
+        .login-form-card {
+            padding: 0;
+        }
+
+        .social-button {
+            width: 100%;
+            border: 1px solid #D3DAD0;
+            border-radius: 14px;
+            padding: 12px 16px;
+            font-weight: 700;
+            background: #FFFFFF;
+            transition: background-color .2s ease, border-color .2s ease, transform .18s ease, box-shadow .2s ease;
+        }
+
+        .social-button:hover {
+            background: #FAFCFA;
+            border-color: rgba(21,35,28,.18);
+            box-shadow: 0 10px 28px -20px rgba(18,61,46,.40);
+        }
+
+        .social-button:active { transform: scale(.985); }
+
+        .field-shell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #FFFFFF;
+            border: 1px solid #D3DAD0;
+            border-radius: 14px;
+            padding: 0 13px;
+            transition: box-shadow .2s ease, border-color .2s ease, transform .2s ease;
+        }
+
+        .field-shell:focus-within {
+            border-color: rgba(31,111,84,.45);
+            box-shadow: 0 0 0 4px rgba(31,111,84,.10);
+            transform: translateY(-1px);
+        }
+
+        .field-shell.error { border-color: rgba(181,72,59,.55); }
+
+        .field-shell input {
+            width: 100%;
+            background: transparent;
+            padding: 13px 0;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .auth-button {
+            width: 100%;
+            border-radius: 14px;
+            padding: 14px 16px;
+            font-weight: 700;
+            transition: transform .18s ease, background-color .2s ease, box-shadow .2s ease;
+        }
+
+        .auth-button:hover {
+            box-shadow: 0 18px 34px -20px rgba(31,111,84,.65);
+        }
+
+        .auth-button:active { transform: scale(.985); }
+
+        .login-helper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        .login-helper-note {
+            color: rgba(51,68,58,.48);
+            font: 500 10px/1.4 'Inter',sans-serif;
+        }
+
+        .mascot-float-key {
+            animation: mascotFloat 4.8s ease-in-out infinite;
+        }
+
+        @media (max-width: 1023px) {
+            body { background: #F1F4EF; }
+
+            .login-shell {
+                width: min(720px, calc(100vw - 28px));
+                min-height: auto;
+                margin: 18px auto 28px;
+                grid-template-columns: 1fr;
+                border-radius: 28px;
+            }
+
+            .login-visual {
+                min-height: 240px;
+                padding: 26px 26px 22px;
+            }
+
+            .visual-content {
+                max-width: 56%;
+                margin-top: 28px;
+            }
+
+            .visual-title {
+                font-size: 2.4rem;
+            }
+
+            .visual-copy { font-size: 12px; }
+
+            .visual-mascot {
+                width: 220px;
+                height: 240px;
+                right: 20px;
+                bottom: -4px;
+            }
+
+            .visual-mascot-glow {
+                width: 150px;
+                height: 150px;
+                right: 44px;
+                bottom: 34px;
+            }
+
+            .visual-note,
+            .visual-stat {
+                display: none;
+            }
+
+            .login-form-side {
+                padding: 34px 24px 32px;
+            }
+
+            .login-mobile-brand { display: none; }
+        }
+
+        @media (max-width: 640px) {
+            .login-shell {
+                width: calc(100vw - 20px);
+                margin: 10px auto 18px;
+                border-radius: 24px;
+            }
+
+            .login-visual {
+                min-height: 188px;
+                padding: 20px 20px 18px;
+            }
+
+            .visual-brand span {
+                font-size: 17px;
+            }
+
+            .visual-pill {
+                margin-top: 10px;
+                padding: 6px 9px;
+                font-size: 9px;
+            }
+
+            .visual-content {
+                max-width: 62%;
+                margin-top: 18px;
+            }
+
+            .visual-eyebrow {
+                font-size: 9px;
+                margin-bottom: 8px;
+            }
+
+            .visual-title {
+                font-size: 2rem;
+            }
+
+            .visual-copy { display: none; }
+
+            .visual-mascot {
+                width: 164px;
+                height: 180px;
+                right: -2px;
+                bottom: -8px;
+            }
+
+            .visual-mascot-glow {
+                width: 124px;
+                height: 124px;
+                right: 18px;
+                bottom: 18px;
+            }
+
+            .login-form-side {
+                padding: 28px 18px 24px;
+            }
+
+            .login-form-head {
+                margin-bottom: 20px;
+            }
+
+            .login-form-title {
+                font-size: 2.05rem;
+            }
+
+            .login-form-subtitle {
+                font-size: 12px;
+            }
+
+            .login-helper {
+                margin-top: 14px;
+            }
+
+            .login-helper-note {
+                display: none;
             }
         }
 
-        /* SweetAlert2 brand skin */
-        .swal2-popup.tipid-swal { border-radius: 20px !important; font-family: 'Inter', sans-serif; }
-        .tipid-swal .swal2-title { font-family: 'Fraunces', serif; color: #15231C; }
+        @media (prefers-reduced-motion: reduce) {
+            .spin, .shake, .fade-up, .sun-rotate, .star-twinkle,
+            .login-visual, .visual-mascot, .visual-mascot-glow {
+                animation: none !important;
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .spin, .shake, .fade-up, .sun-rotate, .star-twinkle, .mascotFloat, .login-mascot, .login-mascot-stage::before {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+        .swal2-popup.tipid-swal {
+            border-radius: 20px !important;
+            font-family: 'Inter', sans-serif;
+        }
+        .tipid-swal .swal2-title {
+            font-family: 'Fraunces', serif;
+            color: #15231C;
+        }
         .tipid-swal .swal2-html-container { color: #33443A; }
-        .tipid-swal .swal2-confirm { border-radius: 999px !important; padding: 0.65em 1.6em !important; font-weight: 600 !important; box-shadow: none !important; }
+        .tipid-swal .swal2-confirm {
+            border-radius: 999px !important;
+            padding: .65em 1.6em !important;
+            font-weight: 600 !important;
+            box-shadow: none !important;
+        }
     </style>
 </head>
-<body class="bg-paper text-ink antialiased font-body min-h-screen">
 
+<body class="bg-paper text-ink antialiased font-body min-h-screen">
     <div id="root"></div>
 
     <script type="text/babel">
@@ -125,6 +567,7 @@
                 </svg>
             );
         }
+
         const Icons = {
             Mail: (p) => <Icon {...p} path={<><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></>} />,
             Lock: (p) => <Icon {...p} path={<><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></>} />,
@@ -168,9 +611,6 @@
                 if (window.TipidAuth) { setReady(true); return; }
                 const h = () => setReady(true);
                 window.addEventListener("tipid-auth-ready", h, { once: true });
-                // If auth still hasn't announced itself after a few seconds
-                // (bad import path, blocked script, offline, etc.) surface
-                // that instead of leaving the button silently disabled.
                 const t = setTimeout(() => setTimedOut(true), 6000);
                 return () => {
                     window.removeEventListener("tipid-auth-ready", h);
@@ -180,7 +620,6 @@
             return { ready, timedOut };
         }
 
-        // Brand-styled SweetAlert helpers
         function swalSuccess({ title, text, confirmButtonText }) {
             return Swal.fire({
                 icon: "success",
@@ -191,6 +630,7 @@
                 customClass: { popup: "tipid-swal" },
             });
         }
+
         function swalError(text) {
             return Swal.fire({
                 icon: "error",
@@ -206,23 +646,21 @@
 
         function Field({ icon: IconCmp, error, children }) {
             return (
-                <div className={`flex items-center gap-2.5 bg-white border rounded-xl px-3.5 focus-within:ring-2 focus-within:ring-peso/40 transition-shadow ${error ? "border-expense/60" : "border-line"}`}>
+                <div className={`field-shell ${error ? "error" : ""}`}>
                     <IconCmp size={17} className="text-ink2/50 shrink-0" />
                     {children}
                 </div>
             );
         }
 
-        // --- Filipino-referenced decorative motifs ------------------------------
-        // Eight rays, echoing the sun's eight rays on the flag (the eight provinces
-        // that rose first in 1896). Purely ambient — low opacity, slow rotation.
         function SunRays({ size = 420, className = "" }) {
             const rayCount = 8;
             return (
                 <svg width={size} height={size} viewBox="0 0 100 100" className={`sun-rotate ${className}`}>
                     <g stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
                         {Array.from({ length: rayCount }).map((_, i) => (
-                            <line key={i} x1="50" y1="2" x2="50" y2="20" transform={`rotate(${(360 / rayCount) * i} 50 50)`} />
+                            <line key={i} x1="50" y1="2" x2="50" y2="20"
+                                  transform={`rotate(${(360 / rayCount) * i} 50 50)`} />
                         ))}
                     </g>
                     <circle cx="50" cy="50" r="13" fill="none" stroke="currentColor" strokeWidth="1.3" />
@@ -230,7 +668,6 @@
             );
         }
 
-        // Three stars for Luzon, Visayas, and Mindanao.
         function TinyStar({ style, size = 11, delay = 0 }) {
             return (
                 <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"
@@ -240,12 +677,12 @@
             );
         }
 
-        // Faint diagonal weave, echoing hand-woven banig / abaca matting.
         function WeavePattern() {
             return (
                 <svg className="absolute inset-0 w-full h-full opacity-[0.05] pointer-events-none">
                     <defs>
-                        <pattern id="banig-weave-login" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                        <pattern id="banig-weave-login" width="14" height="14" patternUnits="userSpaceOnUse"
+                                 patternTransform="rotate(45)">
                             <line x1="0" y1="0" x2="0" y2="14" stroke="currentColor" strokeWidth="1" />
                             <line x1="7" y1="0" x2="7" y2="14" stroke="currentColor" strokeWidth="1" opacity="0.5" />
                         </pattern>
@@ -255,10 +692,9 @@
             );
         }
 
-        // A little rubber-stamp mark, the kind you'd see on a sari-sari store receipt.
         function GenuineStamp() {
             return (
-                <div className="stamp-pop absolute -top-3 -right-3 w-[4.5rem] h-[4.5rem] rounded-full border-2 border-dashed border-ink2/30 flex items-center justify-center bg-paper/70">
+                <div className="absolute -top-3 -right-3 w-[4.5rem] h-[4.5rem] rounded-full border-2 border-dashed border-ink2/30 flex items-center justify-center bg-paper/70">
                     <span className="text-center text-[7.5px] font-mono font-bold tracking-wider text-ink2/50 leading-tight uppercase">
                         Tunay na<br/>Tipid
                     </span>
@@ -266,7 +702,6 @@
             );
         }
 
-        // --- left brand panel (shared visual language with signup.html) -------
         function ReceiptMock() {
             const rows = [
                 { label: "Grocery", cat: "bg-gold", amount: "− ₱1,240.00", tone: "text-ink" },
@@ -311,18 +746,17 @@
                 { icon: Icons.BarChart, text: "Malinaw na ulat, bawat sentimo" },
                 { icon: Icons.Target, text: "Itakda ang layunin, subaybayan ang progreso" },
             ];
+
             return (
                 <div className="relative h-full bg-pesoDeep text-paper overflow-hidden px-8 py-10 lg:px-12 lg:py-14 flex flex-col">
                     <WeavePattern />
                     <div className="absolute top-[-120px] right-[-100px] w-[320px] h-[320px] bg-pesoLight/20 rounded-full blur-3xl"></div>
                     <div className="absolute bottom-[-160px] left-[-120px] w-[360px] h-[360px] bg-gold/10 rounded-full blur-3xl"></div>
 
-                    {/* Ambient sun motif — eight rays, echoing the flag's eight provinces */}
                     <div className="absolute -bottom-20 -right-20 text-sun/70 pointer-events-none">
                         <SunRays size={380} />
                     </div>
 
-                    {/* Three stars — Luzon, Visayas, Mindanao */}
                     <TinyStar style={{ position: "absolute", top: "14%", left: "62%" }} delay={0} size={10} />
                     <TinyStar style={{ position: "absolute", top: "22%", left: "78%" }} delay={0.6} size={8} />
                     <TinyStar style={{ position: "absolute", top: "9%", left: "85%" }} delay={1.2} size={9} />
@@ -366,12 +800,16 @@
 
         function ForgotPassword({ open, onClose }) {
             const [email, setEmail] = useState("");
-            const [status, setStatus] = useState("idle"); // idle | sending | sent | error
+            const [status, setStatus] = useState("idle");
             const [msg, setMsg] = useState("");
 
             const send = async (e) => {
                 e.preventDefault();
-                if (!/^\S+@\S+\.\S+$/.test(email)) { setStatus("error"); setMsg("Hindi valid ang email address."); return; }
+                if (!/^\S+@\S+\.\S+$/.test(email)) {
+                    setStatus("error");
+                    setMsg("Hindi valid ang email address.");
+                    return;
+                }
                 setStatus("sending");
                 try {
                     await window.TipidAuth.resetPassword(email.trim());
@@ -394,18 +832,22 @@
                             ) : (
                                 <form onSubmit={send} className="space-y-3">
                                     <p className="text-sm text-ink2">Ilagay ang email mo, papadalhan ka namin ng reset link.</p>
+
                                     {status === "error" && (
                                         <div className="flex items-start gap-2 bg-expense/10 text-expense text-sm rounded-xl px-3.5 py-2.5">
-                                            <Icons.AlertCircle size={15} className="shrink-0 mt-0.5" /><span>{msg}</span>
+                                            <Icons.AlertCircle size={15} className="shrink-0 mt-0.5" />
+                                            <span>{msg}</span>
                                         </div>
                                     )}
+
                                     <Field icon={Icons.Mail}>
                                         <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                                            placeholder="Email address" className="w-full bg-transparent py-2.5 text-sm focus:outline-none" />
+                                               placeholder="Email address" className="w-full bg-transparent py-2.5 text-sm focus:outline-none" />
                                     </Field>
+
                                     <div className="flex gap-2.5">
                                         <button type="submit" disabled={status === "sending"}
-                                            className="flex-1 bg-ink hover:bg-pesoDeep disabled:opacity-60 text-paper text-sm font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2">
+                                                className="flex-1 bg-ink hover:bg-pesoDeep disabled:opacity-60 text-paper text-sm font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2">
                                             {status === "sending" && <Icons.Loader size={14} className="spin" />}
                                             {status === "sending" ? "Padadala..." : "Ipadala ang link"}
                                         </button>
@@ -440,18 +882,23 @@
 
             const handleSubmit = async (e) => {
                 e.preventDefault();
-                setError(""); setFieldErr({});
+                setError("");
+                setFieldErr({});
+
                 if (!/^\S+@\S+\.\S+$/.test(email)) return fail("Hindi valid ang email address.", "email");
                 if (!password) return fail("Ilagay ang password.", "password");
+
                 setLoading(true);
                 try {
                     await window.TipidAuth.logIn(email.trim(), password);
                     setLoading(false);
+
                     await swalSuccess({
                         title: "Balik ka na!",
                         text: "Matagumpay kang naka-log in. Papasok ka na sa dashboard mo.",
                         confirmButtonText: "Sige",
                     });
+
                     window.location.href = "dashboard.html";
                 } catch (err) {
                     setLoading(false);
@@ -460,15 +907,19 @@
             };
 
             const handleGoogle = async () => {
-                setError(""); setLoading(true);
+                setError("");
+                setLoading(true);
+
                 try {
                     await window.TipidAuth.loginWithGoogle();
                     setLoading(false);
+
                     await swalSuccess({
                         title: "Balik ka na!",
                         text: "Naka-log in ka gamit ang Google. Papasok ka na sa dashboard mo.",
                         confirmButtonText: "Sige",
                     });
+
                     window.location.href = "dashboard.html";
                 } catch (err) {
                     setLoading(false);
@@ -477,24 +928,71 @@
             };
 
             return (
-                <div className="min-h-screen grid lg:grid-cols-[1.05fr_1fr]">
-                    <div className="hidden lg:block relative">
-                        <BrandPanel />
-                        <div className="perf-edge-v absolute top-0 right-0 h-full w-2.5 bg-paper"></div>
-                    </div>
+                <div className="min-h-screen flex items-center bg-paper text-ink px-2 sm:px-3 lg:px-4">
+                    <div className={shake ? "login-shell shake" : "login-shell"}>
 
-                    <div className="flex items-center justify-center px-6 py-6 lg:py-10 relative">
-                        <div className="w-full max-w-sm fade-up">
-                            <a href="index.html" className="lg:hidden flex items-center justify-center gap-2.5 mb-5">
-                                <Logo size={30} />
-                                <span className="text-xl font-display font-semibold tracking-tight text-ink">Tipid</span>
-                            </a>
+                        <section className="login-visual">
+                            <WeavePattern />
 
-                            <div className={shake ? "shake" : ""}>
-                                <div className="mb-5 text-center lg:text-left">
-                                    <p className="text-xs font-mono tracking-[0.2em] uppercase text-peso mb-2">Balik-tanaw sa gastos</p>
-                                    <h1 className="font-display text-3xl font-semibold text-ink tracking-tight">Mag-log in</h1>
-                                    <p className="text-ink2 text-sm mt-2">Masaya kaming makita kang muli.</p>
+                            <div className="visual-top">
+                                <a href="index.html" className="visual-brand">
+                                    <Logo size={30} light />
+                                    <span className="text-xl font-display font-semibold tracking-tight">Tipid</span>
+                                </a>
+
+                                <div className="visual-pill">
+                                    <span aria-hidden="true">🇵🇭</span>
+                                    Gawang Pilipino
+                                </div>
+                            </div>
+
+                            <div className="visual-content">
+                                <p className="visual-eyebrow">Balik-tanaw sa gastos</p>
+                                <h2 className="visual-title">Mas madaling mag-tipid kapag alam mo kung saan napupunta.</h2>
+                                <p className="visual-copy">
+                                    Isang simple at friendly na space para ma-manage ang iyong gastos, budget, at mga goal.
+                                </p>
+                            </div>
+
+                            <div className="visual-mascot-glow"></div>
+                            <img
+                                src="/assets/login_mascot.png"
+                                alt="Tipid Buddy"
+                                className="visual-mascot"
+                                draggable="false"
+                            />
+
+                            <div className="visual-bottom">
+                                <div className="visual-note">
+                                    “Konti-konti lang. Ang mahalaga, tuloy-tuloy.”
+                                </div>
+
+                                <div className="visual-stat">
+                                    <span className="visual-stat-dot"></span>
+                                    Simple · Filipino · Built for everyday spending
+                                </div>
+                            </div>
+
+                            <div className="absolute -bottom-24 -right-24 text-sun/50 pointer-events-none">
+                                <SunRays size={300} />
+                            </div>
+
+                            <TinyStar style={{ position: "absolute", top: "18%", right: "26%" }} delay={0} size={9} />
+                            <TinyStar style={{ position: "absolute", top: "27%", right: "18%" }} delay={0.8} size={7} />
+                            <TinyStar style={{ position: "absolute", top: "11%", right: "11%" }} delay={1.5} size={8} />
+                        </section>
+
+                        <section className="login-form-side">
+                            <div className="login-form-wrap fade-up">
+                                <div className="login-mobile-brand mb-6 flex items-center justify-center gap-2.5">
+                                    <Logo size={28} />
+                                    <span className="text-lg font-display font-semibold">Tipid</span>
+                                </div>
+
+                                <div className="login-form-head">
+                                    <p className="login-form-eyebrow">Welcome back</p>
+                                    <h1 className="login-form-title">Mag-log in</h1>
+                                    <p className="login-form-subtitle">Masaya kaming makita kang muli. Balik na tayo sa tipid.</p>
                                 </div>
 
                                 {timedOut && !authReady && (
@@ -504,80 +1002,111 @@
                                     </div>
                                 )}
 
-                                <button onClick={handleGoogle} disabled={loading || !authReady} type="button"
-                                    className="w-full flex items-center justify-center gap-2.5 border border-line hover:border-ink/30 hover:bg-paperDim/50 active:scale-[0.98] rounded-xl py-3 text-sm font-semibold text-ink transition-all duration-200 disabled:opacity-50">
-                                    <GoogleIcon size={18} /> Mag-log in gamit ang Google
-                                </button>
-
-                                <div className="flex items-center gap-3 my-4">
-                                    <div className="ledger-rule flex-1"></div>
-                                    <span className="text-xs font-mono text-ink2/50 uppercase">o</span>
-                                    <div className="ledger-rule flex-1"></div>
-                                </div>
-
-                                {error && (
-                                    <div className="mb-5 flex items-start gap-2 bg-expense/10 text-expense text-sm rounded-xl px-3.5 py-3">
-                                        <Icons.AlertCircle size={16} className="shrink-0 mt-0.5" />
-                                        <span>{error}</span>
-                                    </div>
-                                )}
-
-                                <form onSubmit={handleSubmit} className="space-y-3.5">
-                                    <Field icon={Icons.Mail} error={fieldErr.email}>
-                                        <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                                            placeholder="Email address" autoComplete="email"
-                                            className="w-full bg-transparent py-3 text-sm focus:outline-none" />
-                                    </Field>
-
-                                    <Field icon={Icons.Lock} error={fieldErr.password}>
-                                        <input type={showPw ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)}
-                                            placeholder="Password" autoComplete="current-password"
-                                            className="w-full bg-transparent py-3 text-sm focus:outline-none" />
-                                        <button type="button" onClick={() => setShowPw(v => !v)} className="text-ink2/50 hover:text-ink2 shrink-0 transition-colors duration-200" aria-label="Toggle password visibility">
-                                            {showPw ? <Icons.EyeOff size={17} /> : <Icons.Eye size={17} />}
-                                        </button>
-                                    </Field>
-
-                                    <div className="flex justify-end">
-                                        <button type="button" onClick={() => setForgotOpen(v => !v)} className="text-xs font-semibold text-peso hover:underline">
-                                            Nakalimutan ang password?
-                                        </button>
-                                    </div>
-
-                                    <ForgotPassword open={forgotOpen} onClose={() => setForgotOpen(false)} />
-
-                                    <button type="submit" disabled={loading || !authReady}
-                                        className="w-full bg-peso hover:bg-pesoLight active:scale-[0.98] disabled:opacity-60 text-paper font-semibold py-3.5 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 mt-2">
-                                        {loading && <Icons.Loader size={16} className="spin" />}
-                                        {loading ? "Nag-lo-log in..." : "Mag-log In"}
+                                <div className="login-form-card">
+                                    <button
+                                        onClick={handleGoogle}
+                                        disabled={loading || !authReady}
+                                        type="button"
+                                        className="social-button flex items-center justify-center gap-2.5 disabled:opacity-50"
+                                    >
+                                        <GoogleIcon size={18} />
+                                        Mag-log in gamit ang Google
                                     </button>
-                                </form>
 
-                                <p className="text-center text-sm text-ink2 mt-7">
-                                    Wala pang account? <a href="signup.html" className="text-peso font-semibold hover:underline">Gumawa ng account</a>
-                                </p>
+                                    <div className="flex items-center gap-3 my-5">
+                                        <div className="ledger-rule flex-1"></div>
+                                        <span className="text-[11px] font-mono text-ink2/45 uppercase">o</span>
+                                        <div className="ledger-rule flex-1"></div>
+                                    </div>
+
+                                    {error && (
+                                        <div className="mb-5 flex items-start gap-2 bg-expense/10 text-expense text-sm rounded-xl px-3.5 py-3">
+                                            <Icons.AlertCircle size={16} className="shrink-0 mt-0.5" />
+                                            <span>{error}</span>
+                                        </div>
+                                    )}
+
+                                    <form onSubmit={handleSubmit} className="space-y-3.5">
+                                        <Field icon={Icons.Mail} error={fieldErr.email}>
+                                            <input
+                                                type="email"
+                                                value={email}
+                                                onChange={e => setEmail(e.target.value)}
+                                                placeholder="Email address"
+                                                autoComplete="email"
+                                            />
+                                        </Field>
+
+                                        <Field icon={Icons.Lock} error={fieldErr.password}>
+                                            <input
+                                                type={showPw ? "text" : "password"}
+                                                value={password}
+                                                onChange={e => setPassword(e.target.value)}
+                                                placeholder="Password"
+                                                autoComplete="current-password"
+                                            />
+
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPw(v => !v)}
+                                                className="text-ink2/50 hover:text-ink2 shrink-0 transition-colors"
+                                                aria-label="Toggle password visibility"
+                                            >
+                                                {showPw ? <Icons.EyeOff size={17} /> : <Icons.Eye size={17} />}
+                                            </button>
+                                        </Field>
+
+                                        <div className="flex justify-end">
+                                            <button
+                                                type="button"
+                                                onClick={() => setForgotOpen(v => !v)}
+                                                className="text-xs font-semibold text-peso hover:underline"
+                                            >
+                                                Nakalimutan ang password?
+                                            </button>
+                                        </div>
+
+                                        <ForgotPassword open={forgotOpen} onClose={() => setForgotOpen(false)} />
+
+                                        <button
+                                            type="submit"
+                                            disabled={loading || !authReady}
+                                            className="auth-button bg-peso hover:bg-pesoLight disabled:opacity-60 text-paper flex items-center justify-center gap-2 mt-2"
+                                        >
+                                            {loading && <Icons.Loader size={16} className="spin" />}
+                                            {loading ? "Nag-lo-log in..." : "Mag-log In"}
+                                        </button>
+                                    </form>
+
+                                    <div className="login-helper">
+                                        <span className="login-helper-note">Secure login · Gawang Pilipino · Tipid</span>
+                                        <p className="text-sm text-ink2">
+                                            Wala pang account?
+                                            <a href="signup.html" className="text-peso font-semibold hover:underline ml-1">
+                                                Gumawa ng account
+                                            </a>
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        </section>
                     </div>
                 </div>
-            );
+            )
         }
 
         ReactDOM.createRoot(document.getElementById("root")).render(<LogIn />);
     </script>
+
     <!-- PWA Service Worker Registration & Auto-Update Alert -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').then(registration => {
-
-                    // Makikinig ang app kung may dina-download na bagong update (bagong CACHE_VERSION)
                     registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing;
                         newWorker.addEventListener('statechange', () => {
-                            // Kapag tapos na i-download ang bagong update
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                // Premium UX: Magpapakita ng magandang prompt imbes na biglang i-refresh ang screen
                                 Swal.fire({
                                     title: "May Bagong Update! 🎉",
                                     text: "May in-add kaming bagong features sa Tipid App. I-refresh ang app para magamit ito.",
@@ -587,13 +1116,11 @@
                                     allowOutsideClick: false,
                                     customClass: { popup: "tipid-swal" }
                                 }).then(() => {
-                                    // Ire-reload ang app at makikita na ang bagong features
                                     window.location.reload();
                                 });
                             }
                         });
                     });
-
                 }).catch(err => console.error("Service Worker registration failed:", err));
             });
         }

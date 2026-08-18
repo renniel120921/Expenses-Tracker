@@ -4,7 +4,6 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "dashboard" }) {
     const userName = user?.displayName ? user.displayName.split(" ")[0] : user?.email?.split("@")[0] || "User";
     const initial = userName.charAt(0).toUpperCase();
 
-    // ADDED: Calculator tab in the navigation array
     const tabs = [
         { id: "dashboard", href: "dashboard.html", label: "Dashboard", icon: DashboardIcon },
         { id: "bills", href: "bills.html", label: "Bills", icon: BillsIcon },
@@ -16,7 +15,6 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "dashboard" }) {
 
     // --- Desktop: measure the active link so the pill can glide to it ---
     const linkRefs = React.useRef({});
-    // Nag-add tayo ng isInitial para i-disable ang slide animation sa first page load
     const [pillStyle, setPillStyle] = React.useState({ left: 0, width: 0, opacity: 0, isInitial: true });
 
     const measurePill = React.useCallback(() => {
@@ -32,23 +30,15 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "dashboard" }) {
     }, [activeTab]);
 
     React.useLayoutEffect(() => {
-        // Initial measurement
         measurePill();
-
-        // FIX: Hintaying mag-load ang custom fonts (Inter/Fraunces) bago sukatin ulit
-        // Ito ang mag-aayos sa isyu kung saan nagiging maliit ang pill
         if (document.fonts && document.fonts.ready) {
             document.fonts.ready.then(measurePill);
         }
-
         window.addEventListener("resize", measurePill);
         return () => window.removeEventListener("resize", measurePill);
     }, [measurePill]);
 
-    // --- Mobile: measure the active tab's X position so we can cut a real
-    // notch into the bar background at that exact spot (same technique as
-    // the desktop sliding pill above, just producing a mask instead of a
-    // moving highlight). ---
+    // --- Mobile: measure the active tab's X position to cut a real notch ---
     const mobileBarRef = React.useRef(null);
     const mobileIconRefs = React.useRef({});
     const [notchX, setNotchX] = React.useState(null);
@@ -81,65 +71,57 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "dashboard" }) {
     return (
         <React.Fragment>
             <style>{`
-                /* Icon drops in from above then settles down INTO the notch —
-                   ends lower than before (-0.6rem instead of -1rem) so more
-                   of it visibly sits inside the cut-out, not floating above it. */
                 @keyframes navIconSink {
-                    0%   { transform: translateY(-1.9rem) scale(0.72); opacity: 0; }
-                    45%  { transform: translateY(-0.35rem) scale(1.14); opacity: 1; }
-                    70%  { transform: translateY(-0.68rem) scale(0.95); }
-                    100% { transform: translateY(-0.6rem) scale(1); }
+                    0%   { transform: translateY(-2rem) scale(0.6); opacity: 0; }
+                    50%  { transform: translateY(-0.3rem) scale(1.1); opacity: 1; }
+                    75%  { transform: translateY(-0.7rem) scale(0.95); }
+                    100% { transform: translateY(-0.55rem) scale(1); }
                 }
-                .nav-icon-sink { animation: navIconSink 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+                .nav-icon-sink { animation: navIconSink 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 
-                /* Real cutout in the bar surface — a circular hole punched at
-                   --notch-x, right on the top edge. Sized noticeably bigger
-                   than the icon so there's a clear visible gap/rim all the
-                   way around it, matching the reference (not a same-size hole
-                   that just blends with the icon edge). */
                 .nav-bar-notched {
-                    -webkit-mask-image: radial-gradient(circle 36px at var(--notch-x, -9999px) 2px, transparent 0 94%, black 100%);
-                    mask-image: radial-gradient(circle 36px at var(--notch-x, -9999px) 2px, transparent 0 94%, black 100%);
+                    -webkit-mask-image: radial-gradient(circle 38px at var(--notch-x, -9999px) -2px, transparent 0 94%, black 100%);
+                    mask-image: radial-gradient(circle 38px at var(--notch-x, -9999px) -2px, transparent 0 94%, black 100%);
                     -webkit-mask-repeat: no-repeat;
                     mask-repeat: no-repeat;
                 }
 
                 @keyframes navHaloPulse {
-                    0%   { transform: translateY(-0.6rem) scale(0.85); opacity: 0.45; }
+                    0%   { transform: translateY(-0.55rem) scale(0.85); opacity: 0.45; }
                     70%  { opacity: 0; }
-                    100% { transform: translateY(-0.6rem) scale(1.55); opacity: 0; }
+                    100% { transform: translateY(-0.55rem) scale(1.45); opacity: 0; }
                 }
-                .nav-halo-pulse { animation: navHaloPulse 1.9s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+                .nav-halo-pulse { animation: navHaloPulse 2.2s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
 
                 @media (prefers-reduced-motion: reduce) {
                     .nav-icon-sink, .nav-halo-pulse { animation: none !important; }
                 }
             `}</style>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex justify-center bg-white/80 dark:bg-ink2/70 backdrop-blur-md text-ink dark:text-paper w-full sticky top-0 z-50 border-b border-line/40 dark:border-white/10">
+            {/* --- Desktop Navigation --- */}
+            <nav className="hidden md:flex justify-center bg-white/75 dark:bg-ink2/75 backdrop-blur-2xl text-ink dark:text-paper w-full sticky top-0 z-50 border-b border-line/40 dark:border-white/10 shadow-[0_4px_24px_-12px_rgba(0,0,0,0.06)]">
                 <div className="w-full max-w-6xl px-6 py-4 flex justify-between items-center">
 
                     <div className="flex-1 flex justify-start">
-                        <a href="dashboard.html" className="flex items-center gap-3">
-                            <window.Logo size={28} />
+                        <a href="dashboard.html" className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 rounded-xl">
+                            <div className="transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-1">
+                                <window.Logo size={28} />
+                            </div>
                             <span className="font-display font-semibold text-xl tracking-tight">Tipid</span>
                         </a>
                     </div>
 
-                    <div className="relative flex items-center gap-1 lg:gap-2 shrink-0">
-                        {/* Sliding pill indicator */}
+                    <div className="relative flex items-center gap-1.5 lg:gap-2.5 shrink-0 bg-paperDim/60 dark:bg-white/[0.04] p-1.5 rounded-full border border-line/50 dark:border-white/5 shadow-inner">
                         <div
-                            className="absolute top-1/2 h-9 rounded-full bg-peso/10 dark:bg-pesoLight/15 shadow-inner pointer-events-none"
+                            className="absolute top-1/2 h-10 rounded-full bg-white dark:bg-ink2 ring-1 ring-black/[0.04] dark:ring-white/10 shadow-md pointer-events-none"
                             style={{
                                 left: pillStyle.left,
                                 width: pillStyle.width,
                                 opacity: pillStyle.opacity,
                                 transform: "translateY(-50%)",
-                                // FIX: Naka-disable ang transition sa initial load para hindi mag-slide-in from left
                                 transition: pillStyle.isInitial
                                     ? "none"
-                                    : "left 0.45s cubic-bezier(0.34, 1.2, 0.4, 1), width 0.45s cubic-bezier(0.34, 1.2, 0.4, 1), opacity 0.3s ease",
+                                    : "left 0.5s cubic-bezier(0.34, 1.2, 0.4, 1), width 0.5s cubic-bezier(0.34, 1.2, 0.4, 1), opacity 0.3s ease",
                             }}
                         />
                         {tabs.map((tab) => (
@@ -149,63 +131,73 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "dashboard" }) {
                                 href={tab.href}
                                 label={tab.label}
                                 active={activeTab === tab.id}
+                                icon={<tab.icon active={activeTab === tab.id} size={16} />}
                             />
                         ))}
                     </div>
 
                     <div className="flex-1 flex items-center justify-end gap-4 lg:gap-6">
-                        <div className="flex items-center gap-2.5 shrink-0">
-                            <div className="w-8 h-8 rounded-full bg-paperDim dark:bg-white/10 border border-line dark:border-white/10 flex items-center justify-center text-ink dark:text-paper font-semibold text-sm">
-                                {initial}
+                        <div className="flex items-center gap-3 shrink-0">
+                            <div className="w-9 h-9 rounded-full p-[1.5px] bg-gradient-to-br from-peso/50 via-peso/15 to-transparent dark:from-pesoLight/40 dark:via-white/10 shrink-0">
+                                <div className="w-full h-full rounded-full bg-gradient-to-br from-peso/15 to-pesoLight/5 dark:from-white/15 dark:to-white/5 flex items-center justify-center text-peso dark:text-paper font-bold text-sm">
+                                    {initial}
+                                </div>
                             </div>
-                            <span className="hidden lg:block text-sm font-medium text-ink2 dark:text-paper/70 truncate max-w-[120px]">
+                            <span className="hidden lg:block text-sm font-semibold text-ink2 dark:text-paper/80 truncate max-w-[120px]">
                                 {userName}
                             </span>
                         </div>
-                        <button onClick={onLogout} className="text-sm font-semibold text-ink2 dark:text-paper/60 hover:text-expense active:scale-95 transition-all duration-300 shrink-0">
-                            Log out
+                        <button
+                            onClick={onLogout}
+                            aria-label="Log out"
+                            className="flex items-center gap-1.5 text-sm font-semibold text-ink2/50 dark:text-paper/45 hover:text-expense hover:bg-expense/10 active:scale-95 transition-all duration-300 shrink-0 pl-3 pr-3.5 py-2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-expense/40"
+                        >
+                            <LogOutIcon size={15} />
+                            <span className="hidden lg:inline">Logout</span>
                         </button>
                     </div>
 
                 </div>
             </nav>
 
-            {/* Mobile Top Header — padded for the notch / status bar so content never sits under it */}
+            {/* --- Mobile Top Header --- */}
             <header
-                className="md:hidden bg-white/75 dark:bg-ink2/70 backdrop-blur-xl px-5 pb-3.5 flex justify-between items-center fixed top-0 w-full z-50 border-b border-line/30 dark:border-white/10"
+                className="md:hidden bg-white/85 dark:bg-ink2/85 backdrop-blur-2xl px-5 pb-3.5 flex justify-between items-center fixed top-0 w-full z-50 border-b border-line/30 dark:border-white/10 shadow-[0_4px_24px_-12px_rgba(0,0,0,0.08)]"
                 style={{ paddingTop: 'max(1rem, calc(env(safe-area-inset-top) + 0.65rem))' }}
             >
-                <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-full bg-paperDim dark:bg-white/10 border border-white dark:border-white/10 flex items-center justify-center text-ink dark:text-paper font-semibold text-base shadow-sm shrink-0">
-                        {initial}
+                <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="w-10 h-10 rounded-full p-[1.5px] bg-gradient-to-br from-peso/50 via-peso/15 to-transparent dark:from-pesoLight/40 dark:via-white/10 shrink-0">
+                        <div className="w-full h-full rounded-full bg-gradient-to-br from-peso/20 to-pesoLight/5 dark:from-white/15 dark:to-white/5 flex items-center justify-center text-peso dark:text-paper font-bold text-base">
+                            {initial}
+                        </div>
                     </div>
                     <div className="flex flex-col min-w-0">
-                        <span className="font-semibold text-ink dark:text-paper text-sm truncate">Hello, {userName}!</span>
-                        <span className="text-[10px] text-ink2/60 dark:text-paper/45">Ready to save today?</span>
+                        <span className="font-bold text-ink dark:text-paper text-[15px] truncate tracking-tight">Hello, {userName}!</span>
+                        <span className="text-[10px] font-medium text-peso dark:text-pesoLight uppercase tracking-wider">Ready to save?</span>
                     </div>
                 </div>
 
-                <button onClick={onLogout} className="text-ink2/60 dark:text-paper/45 hover:text-expense active:scale-90 transition-all duration-200 focus:outline-none p-1.5 -mr-1.5 shrink-0">
-                    <LogOutIcon />
+                <button
+                    onClick={onLogout}
+                    aria-label="Log out"
+                    className="text-ink2/40 dark:text-paper/40 hover:text-expense hover:bg-expense/10 rounded-full p-2 active:scale-90 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-expense/40 shrink-0"
+                >
+                    <LogOutIcon size={20} />
                 </button>
             </header>
 
-            {/* Mobile Bottom Navigation — floats above the home indicator / gesture bar */}
+            {/* --- Mobile Bottom Navigation --- */}
             <nav
-                className="md:hidden fixed left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-md"
+                className="md:hidden fixed left-1/2 -translate-x-1/2 z-50 w-[96%] max-w-[400px]"
                 style={{ bottom: 'max(1.25rem, calc(env(safe-area-inset-bottom) + 0.75rem))' }}
             >
-                <div ref={mobileBarRef} className="relative h-[4.4rem]">
-                    {/* Layer 1: the bar surface itself, with a real notch cut
-                        out of it at the active tab's position. */}
+                <div ref={mobileBarRef} className="relative h-[4.5rem]">
                     <div
-                        className="nav-bar-notched absolute inset-0 bg-white/85 dark:bg-ink2/85 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-[0_16px_44px_-12px_rgba(18,61,46,0.28)] dark:shadow-[0_16px_44px_-12px_rgba(0,0,0,0.5)] rounded-[2rem]"
+                        className="nav-bar-notched absolute inset-0 bg-white/90 dark:bg-ink2/95 backdrop-blur-3xl border border-white/80 dark:border-white/10 shadow-[0_22px_45px_-14px_rgba(18,61,46,0.32)] dark:shadow-[0_20px_48px_-12px_rgba(0,0,0,0.6)] rounded-[2.25rem]"
                         style={notchX != null ? { "--notch-x": `${notchX}px` } : undefined}
                     />
 
-                    {/* Layer 2: the icons, unmasked, sitting on top so the
-                        active one visibly pokes through the cut-out hole. */}
-                    <div className="relative z-10 flex justify-around items-end h-full px-1 pt-3 pb-2.5">
+                    <div className="relative z-10 flex justify-around items-end h-full px-1.5 pt-3 pb-2.5">
                         {tabs.map((tab) => (
                             <BottomNavBtn
                                 key={tab.id}
@@ -214,7 +206,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "dashboard" }) {
                                 label={tab.label}
                                 active={activeTab === tab.id}
                                 bounce={activeTab === tab.id ? bounceKey : 0}
-                                icon={<tab.icon active={activeTab === tab.id} />}
+                                icon={<tab.icon active={activeTab === tab.id} size={23} />}
                             />
                         ))}
                     </div>
@@ -224,12 +216,14 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "dashboard" }) {
     );
 };
 
-const DesktopNavLink = ({ href, label, active, innerRef }) => (
+const DesktopNavLink = ({ href, label, active, icon, innerRef }) => (
     <a
         ref={innerRef}
         href={href}
-        className={`relative z-10 text-sm transition-colors duration-300 px-3.5 py-2 rounded-full ${active ? 'font-semibold text-peso dark:text-pesoLight' : 'font-medium text-ink2/60 dark:text-paper/45 hover:text-ink dark:hover:text-paper'}`}
+        aria-current={active ? "page" : undefined}
+        className={`relative z-10 flex items-center gap-2 text-sm transition-all duration-300 px-4 py-2.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 ${active ? 'font-bold text-peso dark:text-pesoLight' : 'font-medium text-ink2/50 dark:text-paper/40 hover:text-ink dark:hover:text-paper'}`}
     >
+        {icon}
         {label}
     </a>
 );
@@ -238,87 +232,163 @@ const BottomNavBtn = ({ href, icon, label, active, bounce, innerRef }) => (
     <a
         ref={innerRef}
         href={href}
-        className="relative z-10 flex flex-col items-center justify-end gap-1.5 h-14 w-[3.8rem] focus:outline-none active:scale-95 transition-transform duration-200 ease-out"
+        aria-current={active ? "page" : undefined}
+        aria-label={label}
+        className="relative z-10 flex flex-col items-center justify-end gap-1.5 h-[3.8rem] w-[3.8rem] rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 active:scale-90 transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
     >
         <span className="relative flex items-center justify-center">
             {active && (
-                <span className="absolute w-12 h-12 -translate-y-[0.6rem] rounded-full bg-peso/25 dark:bg-pesoLight/25 nav-halo-pulse pointer-events-none" />
+                <span className="absolute w-[3.3rem] h-[3.3rem] -translate-y-[0.55rem] rounded-[1.4rem] bg-pesoLight/25 dark:bg-pesoLight/30 nav-halo-pulse pointer-events-none" />
             )}
             <span
                 key={bounce}
                 className={
                     active
-                        ? "nav-icon-sink relative flex items-center justify-center w-[3.15rem] h-[3.15rem] -translate-y-[0.6rem] rounded-full bg-gradient-to-br from-pesoLight to-pesoDeep text-white ring-4 ring-white/90 dark:ring-ink2/90 shadow-[0_10px_22px_-6px_rgba(18,61,46,0.6)]"
+                        ? "nav-icon-sink relative flex items-center justify-center w-[3.4rem] h-[3.4rem] -translate-y-[0.55rem] rounded-[1.35rem] bg-gradient-to-br from-pesoLight via-peso to-pesoDeep text-white ring-[3.5px] ring-white dark:ring-ink shadow-[0_10px_22px_-6px_rgba(31,111,84,0.55)] overflow-hidden"
                         : "relative flex items-center justify-center w-11 h-11 rounded-full text-ink2/40 dark:text-paper/35 transition-colors duration-300"
                 }
             >
-                {icon}
+                {active && (
+                    <span className="absolute inset-x-2 top-1 h-1/2 rounded-t-[1rem] bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
+                )}
+                <span className="relative flex items-center justify-center">{icon}</span>
             </span>
         </span>
         {!active && (
-            <span className="text-[10px] font-medium tracking-tight text-ink2/40 dark:text-paper/35">
+            <span className="text-[10px] font-semibold tracking-tight text-ink2/40 dark:text-paper/35">
                 {label}
             </span>
         )}
     </a>
 );
 
-// --- Icons ---
-const DashboardIcon = ({ active }) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={active ? "0" : "1.5"} strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="7" height="9" rx="1.5" />
-        <rect x="14" y="3" width="7" height="5" rx="1.5" />
-        <rect x="14" y="12" width="7" height="9" rx="1.5" />
-        <rect x="3" y="16" width="7" height="5" rx="1.5" />
+/* ========================================================================
+   MODERN APP ICONS
+   - Inactive: 1.75px smooth rounded outlines
+   - Active: consistent duotone (solid + 30% opacity secondary shape)
+======================================================================== */
+
+const DashboardIcon = ({ active, size = 24 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+        {active ? (
+            <>
+                <rect x="3" y="3" width="7.5" height="7.5" rx="2.75" fill="currentColor" />
+                <rect x="13.5" y="3" width="7.5" height="7.5" rx="2.75" fill="currentColor" opacity="0.3" />
+                <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2.75" fill="currentColor" />
+                <rect x="3" y="13.5" width="7.5" height="7.5" rx="2.75" fill="currentColor" opacity="0.3" />
+            </>
+        ) : (
+            <>
+                <rect x="3" y="3" width="7.5" height="7.5" rx="2.25" />
+                <rect x="13.5" y="3" width="7.5" height="7.5" rx="2.25" />
+                <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2.25" />
+                <rect x="3" y="13.5" width="7.5" height="7.5" rx="2.25" />
+            </>
+        )}
     </svg>
 );
-const BillsIcon = ({ active }) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={active ? "0" : "1.5"} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-        <line x1="16" y1="13" x2="8" y2="13" strokeWidth={active ? "0" : "1.5"} stroke={active ? "white" : "currentColor"} />
-        <line x1="16" y1="17" x2="8" y2="17" strokeWidth={active ? "0" : "1.5"} stroke={active ? "white" : "currentColor"} />
-        <polyline points="10 9 9 9 8 9" />
+
+const BillsIcon = ({ active, size = 24 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+        {active ? (
+            <>
+                <path d="M4 2v20l3-3 3 3 3-3 3 3 3-3V2a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z" fill="currentColor" opacity="0.3" />
+                <rect x="8" y="7.25" width="8" height="2.5" rx="1.25" fill="currentColor" />
+                <rect x="8" y="12.75" width="5" height="2.5" rx="1.25" fill="currentColor" />
+            </>
+        ) : (
+            <>
+                <path d="M4 2v20l3-3 3 3 3-3 3 3 3-3V2a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z" />
+                <line x1="8" y1="8.5" x2="16" y2="8.5" />
+                <line x1="8" y1="14" x2="13" y2="14" />
+            </>
+        )}
     </svg>
 );
-// ADDED: Calculator Icon
-const CalcIcon = ({ active }) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={active ? "0" : "1.5"} strokeLinecap="round" strokeLinejoin="round">
-        <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
-        <line x1="8" y1="6" x2="16" y2="6" strokeWidth={active ? "0" : "1.5"} stroke={active ? "white" : "currentColor"} />
-        <line x1="16" y1="14" x2="16" y2="14" strokeWidth="2" strokeLinecap="round" />
-        <line x1="8" y1="10" x2="8" y2="10" strokeWidth="2" strokeLinecap="round" />
-        <line x1="12" y1="10" x2="12" y2="10" strokeWidth="2" strokeLinecap="round" />
-        <line x1="16" y1="10" x2="16" y2="10" strokeWidth="2" strokeLinecap="round" />
-        <line x1="8" y1="14" x2="8" y2="14" strokeWidth="2" strokeLinecap="round" />
-        <line x1="12" y1="14" x2="12" y2="14" strokeWidth="2" strokeLinecap="round" />
-        <line x1="8" y1="18" x2="8" y2="18" strokeWidth="2" strokeLinecap="round" />
-        <line x1="12" y1="18" x2="12" y2="18" strokeWidth="2" strokeLinecap="round" />
-        <line x1="16" y1="18" x2="16" y2="18" strokeWidth="2" strokeLinecap="round" />
+
+const CalcIcon = ({ active, size = 24 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+        {active ? (
+            <>
+                <rect x="4" y="2" width="16" height="20" rx="4" fill="currentColor" opacity="0.3" />
+                <rect x="7" y="5" width="10" height="4.5" rx="1.25" fill="currentColor" />
+                <rect x="7" y="12" width="3.2" height="3.2" rx="1" fill="currentColor" opacity="0.55" />
+                <rect x="10.4" y="12" width="3.2" height="3.2" rx="1" fill="currentColor" opacity="0.55" />
+                <rect x="13.8" y="12" width="3.2" height="3.2" rx="1" fill="currentColor" opacity="0.55" />
+                <rect x="7" y="15.6" width="3.2" height="3.2" rx="1" fill="currentColor" opacity="0.55" />
+                <rect x="10.4" y="15.6" width="3.2" height="3.2" rx="1" fill="currentColor" opacity="0.55" />
+                <rect x="13.8" y="15.6" width="3.2" height="3.2" rx="1" fill="currentColor" />
+            </>
+        ) : (
+            <>
+                <rect x="4" y="2" width="16" height="20" rx="4" />
+                <rect x="7" y="5.25" width="10" height="4" rx="1" />
+                <rect x="7.4" y="12" width="2.6" height="2.6" rx="0.7" />
+                <rect x="10.7" y="12" width="2.6" height="2.6" rx="0.7" />
+                <rect x="14" y="12" width="2.6" height="2.6" rx="0.7" />
+                <rect x="7.4" y="15.4" width="2.6" height="2.6" rx="0.7" />
+                <rect x="10.7" y="15.4" width="2.6" height="2.6" rx="0.7" />
+                <rect x="14" y="15.4" width="2.6" height="2.6" rx="0.7" />
+            </>
+        )}
     </svg>
 );
-const ChartIcon = ({ active }) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={active ? "0" : "1.5"} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
-        <path d="M22 12A10 10 0 0 0 12 2v10z" />
+
+const ChartIcon = ({ active, size = 24 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+        {active ? (
+            <>
+                <path d="M21.21 15.89A10 10 0 1 1 8 2.83V12h13.21z" fill="currentColor" opacity="0.3" />
+                <path d="M22 12A10 10 0 0 0 12 2v10h10z" fill="currentColor" />
+            </>
+        ) : (
+            <>
+                <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+                <path d="M22 12A10 10 0 0 0 12 2v10z" />
+            </>
+        )}
     </svg>
 );
-const HistoryIcon = ({ active }) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={active ? "0" : "1.5"} strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-        <line x1="16" y1="2" x2="16" y2="6" strokeWidth={active ? "0" : "1.5"} />
-        <line x1="8" y1="2" x2="8" y2="6" strokeWidth={active ? "0" : "1.5"} />
-        <line x1="3" y1="10" x2="21" y2="10" strokeWidth={active ? "0" : "1.5"} stroke={active ? "white" : "currentColor"} />
+
+const HistoryIcon = ({ active, size = 24 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+        {active ? (
+            <>
+                <circle cx="12" cy="13" r="8.5" fill="currentColor" opacity="0.3" />
+                <path d="M4.2 8.5A8.5 8.5 0 1 1 3.5 13" stroke="currentColor" strokeWidth="1.9" fill="none" />
+                <path d="M4.2 4.5v4h4" stroke="currentColor" strokeWidth="1.9" fill="none" />
+                <path d="M12 9v4l3 2" stroke="currentColor" strokeWidth="1.9" fill="none" />
+            </>
+        ) : (
+            <>
+                <path d="M4.2 8.5A8.5 8.5 0 1 1 3.5 13" />
+                <path d="M4.2 4.5v4h4" />
+                <path d="M12 9v4l3 2" />
+            </>
+        )}
     </svg>
 );
-const ProfileIcon = ({ active }) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={active ? "0" : "1.5"} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-        <circle cx="12" cy="7" r="4" />
+
+const ProfileIcon = ({ active, size = 24 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+        {active ? (
+            <>
+                <circle cx="12" cy="7.5" r="4.5" fill="currentColor" />
+                <path d="M20 21v-1.5a5.5 5.5 0 0 0-5.5-5.5h-5A5.5 5.5 0 0 0 4 19.5V21" fill="currentColor" opacity="0.3" />
+            </>
+        ) : (
+            <>
+                <path d="M20 21v-1.5a5.5 5.5 0 0 0-5.5-5.5h-5A5.5 5.5 0 0 0 4 19.5V21" />
+                <circle cx="12" cy="7.5" r="4.5" />
+            </>
+        )}
     </svg>
 );
-const LogOutIcon = () => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+
+const LogOutIcon = ({ size = 24 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        <polyline points="16 17 21 12 16 7" />
+        <line x1="21" y1="12" x2="9" y2="12" />
     </svg>
 );

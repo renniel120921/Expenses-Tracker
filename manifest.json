@@ -13,12 +13,12 @@
   "categories": ["finance", "productivity"],
   "icons": [
     {
-      "src": "/assets/logo-512.png",
+      "src": "/assets/tipid_mascot_full.png",
       "sizes": "512x512",
       "type": "image/png"
     },
     {
-      "src": "/assets/logo.svg",
+      "src": "/assets/tipid_mascot_full.png",
       "sizes": "any",
       "type": "image/svg+xml"
     }
