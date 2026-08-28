@@ -1,31 +1,51 @@
 // components/navbar.js
 
-window.Navbar = function Navbar({ user, onLogout, activeTab = "dashboard" }) {
+window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
     const userName = user?.displayName ? user.displayName.split(" ")[0] : user?.email?.split("@")[0] || "User";
     const initial = userName.charAt(0).toUpperCase();
 
+    // Renamed tabs and updated href links
     const tabs = [
-        { id: "dashboard", href: "dashboard.html", label: "Dashboard", icon: DashboardIcon },
+        { id: "home", href: "dashboard.html", label: "Home", icon: HomeIcon },
         { id: "bills", href: "bills.html", label: "Bills", icon: BillsIcon },
-        { id: "allowance", href: "allowance.html", label: "Calculator", icon: CalcIcon },
-        { id: "chart", href: "chart.html", label: "Chart", icon: ChartIcon },
+        { id: "budget", href: "allowance.html", label: "Budget", icon: BudgetIcon },
+        { id: "analytics", href: "chart.html", label: "Analytics", icon: AnalyticsIcon },
         { id: "history", href: "history.html", label: "History", icon: HistoryIcon },
-        { id: "profile", href: "profile.html", label: "Profile", icon: ProfileIcon },
+        { id: "account", href: "profile.html", label: "Account", icon: AccountIcon },
     ];
 
-    // --- Desktop: measure the active link so the pill can glide to it ---
+    // --- Desktop: Exact bounding box calculation for flawless gliding ---
     const linkRefs = React.useRef({});
-    const [pillStyle, setPillStyle] = React.useState({ left: 0, width: 0, opacity: 0, isInitial: true });
+    const [pillStyle, setPillStyle] = React.useState({ left: 0, top: 0, width: 0, height: 0, opacity: 0, isInitial: true });
 
     const measurePill = React.useCallback(() => {
         const el = linkRefs.current[activeTab];
-        if (el) {
-            setPillStyle(prev => ({
-                left: el.offsetLeft,
-                width: el.offsetWidth,
-                opacity: 1,
-                isInitial: false
-            }));
+        const container = el?.parentElement;
+        if (el && container) {
+            const elRect = el.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            const style = window.getComputedStyle(container);
+
+            const borderLeft = parseFloat(style.borderLeftWidth) || 0;
+            const borderTop = parseFloat(style.borderTopWidth) || 0;
+
+            setPillStyle(prev => {
+                const newLeft = elRect.left - containerRect.left - borderLeft;
+                const newTop = elRect.top - containerRect.top - borderTop;
+
+                // Prevent unnecessary state updates if dimensions haven't changed
+                if (prev.left === newLeft && prev.top === newTop && prev.width === elRect.width && !prev.isInitial) {
+                    return prev;
+                }
+                return {
+                    left: newLeft,
+                    top: newTop,
+                    width: elRect.width,
+                    height: elRect.height,
+                    opacity: 1,
+                    isInitial: false
+                };
+            });
         }
     }, [activeTab]);
 
@@ -38,66 +58,8 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "dashboard" }) {
         return () => window.removeEventListener("resize", measurePill);
     }, [measurePill]);
 
-    // --- Mobile: measure the active tab's X position to cut a real notch ---
-    const mobileBarRef = React.useRef(null);
-    const mobileIconRefs = React.useRef({});
-    const [notchX, setNotchX] = React.useState(null);
-
-    const measureNotch = React.useCallback(() => {
-        const barEl = mobileBarRef.current;
-        const iconEl = mobileIconRefs.current[activeTab];
-        if (barEl && iconEl) {
-            const barRect = barEl.getBoundingClientRect();
-            const iconRect = iconEl.getBoundingClientRect();
-            setNotchX(iconRect.left + iconRect.width / 2 - barRect.left);
-        }
-    }, [activeTab]);
-
-    React.useLayoutEffect(() => {
-        measureNotch();
-        if (document.fonts && document.fonts.ready) {
-            document.fonts.ready.then(measureNotch);
-        }
-        window.addEventListener("resize", measureNotch);
-        return () => window.removeEventListener("resize", measureNotch);
-    }, [measureNotch]);
-
-    // --- Mobile: retrigger the icon "sink" every time the active tab changes ---
-    const [bounceKey, setBounceKey] = React.useState(0);
-    React.useEffect(() => {
-        setBounceKey((k) => k + 1);
-    }, [activeTab]);
-
     return (
         <React.Fragment>
-            <style>{`
-                @keyframes navIconSink {
-                    0%   { transform: translateY(-2rem) scale(0.6); opacity: 0; }
-                    50%  { transform: translateY(-0.3rem) scale(1.1); opacity: 1; }
-                    75%  { transform: translateY(-0.7rem) scale(0.95); }
-                    100% { transform: translateY(-0.55rem) scale(1); }
-                }
-                .nav-icon-sink { animation: navIconSink 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-
-                .nav-bar-notched {
-                    -webkit-mask-image: radial-gradient(circle 38px at var(--notch-x, -9999px) -2px, transparent 0 94%, black 100%);
-                    mask-image: radial-gradient(circle 38px at var(--notch-x, -9999px) -2px, transparent 0 94%, black 100%);
-                    -webkit-mask-repeat: no-repeat;
-                    mask-repeat: no-repeat;
-                }
-
-                @keyframes navHaloPulse {
-                    0%   { transform: translateY(-0.55rem) scale(0.85); opacity: 0.45; }
-                    70%  { opacity: 0; }
-                    100% { transform: translateY(-0.55rem) scale(1.45); opacity: 0; }
-                }
-                .nav-halo-pulse { animation: navHaloPulse 2.2s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
-
-                @media (prefers-reduced-motion: reduce) {
-                    .nav-icon-sink, .nav-halo-pulse { animation: none !important; }
-                }
-            `}</style>
-
             {/* --- Desktop Navigation --- */}
             <nav className="hidden md:flex justify-center bg-white/75 dark:bg-ink2/75 backdrop-blur-2xl text-ink dark:text-paper w-full sticky top-0 z-50 border-b border-line/40 dark:border-white/10 shadow-[0_4px_24px_-12px_rgba(0,0,0,0.06)]">
                 <div className="w-full max-w-6xl px-6 py-4 flex justify-between items-center">
@@ -113,15 +75,16 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "dashboard" }) {
 
                     <div className="relative flex items-center gap-1.5 lg:gap-2.5 shrink-0 bg-paperDim/60 dark:bg-white/[0.04] p-1.5 rounded-full border border-line/50 dark:border-white/5 shadow-inner">
                         <div
-                            className="absolute top-1/2 h-10 rounded-full bg-white dark:bg-ink2 ring-1 ring-black/[0.04] dark:ring-white/10 shadow-md pointer-events-none"
+                            className="absolute rounded-full bg-white dark:bg-ink2 ring-1 ring-black/[0.04] dark:ring-white/10 shadow-md pointer-events-none"
                             style={{
                                 left: pillStyle.left,
+                                top: pillStyle.top,
                                 width: pillStyle.width,
+                                height: pillStyle.height,
                                 opacity: pillStyle.opacity,
-                                transform: "translateY(-50%)",
                                 transition: pillStyle.isInitial
                                     ? "none"
-                                    : "left 0.5s cubic-bezier(0.34, 1.2, 0.4, 1), width 0.5s cubic-bezier(0.34, 1.2, 0.4, 1), opacity 0.3s ease",
+                                    : "all 0.5s cubic-bezier(0.34, 1.2, 0.4, 1)",
                             }}
                         />
                         {tabs.map((tab) => (
@@ -186,30 +149,21 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "dashboard" }) {
                 </button>
             </header>
 
-            {/* --- Mobile Bottom Navigation --- */}
+            {/* --- Mobile Bottom Navigation (Modern Floating Style) --- */}
             <nav
-                className="md:hidden fixed left-1/2 -translate-x-1/2 z-50 w-[96%] max-w-[400px]"
+                className="md:hidden fixed left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-[400px]"
                 style={{ bottom: 'max(1.25rem, calc(env(safe-area-inset-bottom) + 0.75rem))' }}
             >
-                <div ref={mobileBarRef} className="relative h-[4.5rem]">
-                    <div
-                        className="nav-bar-notched absolute inset-0 bg-white/90 dark:bg-ink2/95 backdrop-blur-3xl border border-white/80 dark:border-white/10 shadow-[0_22px_45px_-14px_rgba(18,61,46,0.32)] dark:shadow-[0_20px_48px_-12px_rgba(0,0,0,0.6)] rounded-[2.25rem]"
-                        style={notchX != null ? { "--notch-x": `${notchX}px` } : undefined}
-                    />
-
-                    <div className="relative z-10 flex justify-around items-end h-full px-1.5 pt-3 pb-2.5">
-                        {tabs.map((tab) => (
-                            <BottomNavBtn
-                                key={tab.id}
-                                innerRef={(el) => (mobileIconRefs.current[tab.id] = el)}
-                                href={tab.href}
-                                label={tab.label}
-                                active={activeTab === tab.id}
-                                bounce={activeTab === tab.id ? bounceKey : 0}
-                                icon={<tab.icon active={activeTab === tab.id} size={23} />}
-                            />
-                        ))}
-                    </div>
+                <div className="relative h-[4.25rem] bg-white/90 dark:bg-ink2/90 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-[1.75rem] flex items-center justify-between px-1.5">
+                    {tabs.map((tab) => (
+                        <BottomNavBtn
+                            key={tab.id}
+                            href={tab.href}
+                            label={tab.label}
+                            active={activeTab === tab.id}
+                            icon={<tab.icon active={activeTab === tab.id} size={activeTab === tab.id ? 22 : 24} />}
+                        />
+                    ))}
                 </div>
             </nav>
         </React.Fragment>
@@ -228,48 +182,40 @@ const DesktopNavLink = ({ href, label, active, icon, innerRef }) => (
     </a>
 );
 
-const BottomNavBtn = ({ href, icon, label, active, bounce, innerRef }) => (
+const BottomNavBtn = ({ href, icon, label, active }) => (
     <a
-        ref={innerRef}
         href={href}
         aria-current={active ? "page" : undefined}
         aria-label={label}
-        className="relative z-10 flex flex-col items-center justify-end gap-1.5 h-[3.8rem] w-[3.8rem] rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 active:scale-90 transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+        className="relative flex-1 flex flex-col items-center justify-center h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 rounded-2xl active:scale-90 transition-transform duration-200"
     >
-        <span className="relative flex items-center justify-center">
-            {active && (
-                <span className="absolute w-[3.3rem] h-[3.3rem] -translate-y-[0.55rem] rounded-[1.4rem] bg-pesoLight/25 dark:bg-pesoLight/30 nav-halo-pulse pointer-events-none" />
-            )}
-            <span
-                key={bounce}
-                className={
-                    active
-                        ? "nav-icon-sink relative flex items-center justify-center w-[3.4rem] h-[3.4rem] -translate-y-[0.55rem] rounded-[1.35rem] bg-gradient-to-br from-pesoLight via-peso to-pesoDeep text-white ring-[3.5px] ring-white dark:ring-ink shadow-[0_10px_22px_-6px_rgba(31,111,84,0.55)] overflow-hidden"
-                        : "relative flex items-center justify-center w-11 h-11 rounded-full text-ink2/40 dark:text-paper/35 transition-colors duration-300"
-                }
-            >
-                {active && (
-                    <span className="absolute inset-x-2 top-1 h-1/2 rounded-t-[1rem] bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
-                )}
-                <span className="relative flex items-center justify-center">{icon}</span>
-            </span>
+        <div
+            className={`absolute flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+                active
+                    ? "-top-[1.1rem] w-[3.15rem] h-[3.15rem] bg-[#A0D44A] rounded-full shadow-[0_8px_16px_-4px_rgba(160,212,74,0.6)] text-[#111A15]"
+                    : "top-[14px] w-7 h-7 bg-transparent text-ink2/40 dark:text-paper/40"
+            }`}
+        >
+            {icon}
+        </div>
+        <span
+            className={`absolute bottom-1.5 text-[9.5px] font-semibold tracking-tight transition-all duration-300 ${
+                active
+                    ? "opacity-0 translate-y-3 pointer-events-none"
+                    : "opacity-100 translate-y-0 text-ink2/50 dark:text-paper/50"
+            }`}
+        >
+            {label}
         </span>
-        {!active && (
-            <span className="text-[10px] font-semibold tracking-tight text-ink2/40 dark:text-paper/35">
-                {label}
-            </span>
-        )}
     </a>
 );
 
 /* ========================================================================
    MODERN APP ICONS
-   - Inactive: 1.75px smooth rounded outlines
-   - Active: consistent duotone (solid + 30% opacity secondary shape)
 ======================================================================== */
 
-const DashboardIcon = ({ active, size = 24 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+const HomeIcon = ({ active, size = 24 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth={active ? "0" : "1.75"} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
         {active ? (
             <>
                 <rect x="3" y="3" width="7.5" height="7.5" rx="2.75" fill="currentColor" />
@@ -289,7 +235,7 @@ const DashboardIcon = ({ active, size = 24 }) => (
 );
 
 const BillsIcon = ({ active, size = 24 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth={active ? "0" : "1.75"} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
         {active ? (
             <>
                 <path d="M4 2v20l3-3 3 3 3-3 3 3 3-3V2a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z" fill="currentColor" opacity="0.3" />
@@ -306,8 +252,8 @@ const BillsIcon = ({ active, size = 24 }) => (
     </svg>
 );
 
-const CalcIcon = ({ active, size = 24 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+const BudgetIcon = ({ active, size = 24 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth={active ? "0" : "1.75"} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
         {active ? (
             <>
                 <rect x="4" y="2" width="16" height="20" rx="4" fill="currentColor" opacity="0.3" />
@@ -334,8 +280,8 @@ const CalcIcon = ({ active, size = 24 }) => (
     </svg>
 );
 
-const ChartIcon = ({ active, size = 24 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+const AnalyticsIcon = ({ active, size = 24 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth={active ? "0" : "1.75"} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
         {active ? (
             <>
                 <path d="M21.21 15.89A10 10 0 1 1 8 2.83V12h13.21z" fill="currentColor" opacity="0.3" />
@@ -351,7 +297,7 @@ const ChartIcon = ({ active, size = 24 }) => (
 );
 
 const HistoryIcon = ({ active, size = 24 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth={active ? "0" : "1.75"} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
         {active ? (
             <>
                 <circle cx="12" cy="13" r="8.5" fill="currentColor" opacity="0.3" />
@@ -369,8 +315,8 @@ const HistoryIcon = ({ active, size = 24 }) => (
     </svg>
 );
 
-const ProfileIcon = ({ active, size = 24 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+const AccountIcon = ({ active, size = 24 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth={active ? "0" : "1.75"} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
         {active ? (
             <>
                 <circle cx="12" cy="7.5" r="4.5" fill="currentColor" />

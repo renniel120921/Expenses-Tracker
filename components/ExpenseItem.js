@@ -1,6 +1,5 @@
 // components/ExpenseItem.js
 
-// Dinagdag natin ang 'entry' sa tinatanggap na properties
 function ExpenseItem({ item, entry, uid }) {
     // Babasahin niya ang data kung 'item' man o 'entry' ang ginamit ng parent component
     const data = item || entry;
@@ -29,7 +28,7 @@ function ExpenseItem({ item, entry, uid }) {
 
         Swal.fire({
             title: 'Sigurado ka ba?',
-            text: `Buburahin mo ang record para sa "${data.desc}" (₱${window.peso(data.amount)}). Hindi na ito maibabalik.`,
+            html: `Buburahin mo ang record para sa <b>"${data.desc}"</b> (₱${window.peso(data.amount)}).<br>Hindi na ito maibabalik.`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#B5483B',
@@ -67,40 +66,54 @@ function ExpenseItem({ item, entry, uid }) {
     };
 
     return (
-        <li className="list-none flex items-center justify-between gap-3 p-4 sm:p-[1.125rem] bg-white dark:bg-ink2/30 rounded-[1.25rem] border border-line dark:border-white/10 shadow-[0_1px_2px_rgba(21,35,28,0.03)] transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_10px_24px_-12px_rgba(21,35,28,0.18)] hover:-translate-y-0.5 group row-in">
-            <div className="flex items-center gap-3.5 min-w-0">
+        <li className="list-none group flex items-center justify-between gap-3 p-3.5 sm:p-4 bg-transparent hover:bg-white/60 dark:hover:bg-white/[0.04] rounded-[1.25rem] transition-all duration-300 row-in">
+
+            {/* Left Side: Icon & Details */}
+            <div className="flex items-center gap-3.5 min-w-0 flex-1">
                 <div
-                    className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 border ${
+                    className={`w-11 h-11 sm:w-12 sm:h-12 rounded-[14px] flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 ${
                         isIncome
-                            ? 'bg-gradient-to-br from-peso/15 to-pesoLight/5 dark:from-pesoLight/20 dark:to-white/5 border-peso/10 dark:border-white/10 text-peso dark:text-pesoLight'
-                            : 'bg-gradient-to-br from-expense/15 to-expense/5 dark:from-expense/25 dark:to-expense/5 border-expense/10 dark:border-expense/20 text-expense'
+                            ? 'bg-[#E6F3EF] text-[#1F6F54] dark:bg-[#1F6F54]/20 dark:text-[#52C8A1]'
+                            : 'bg-[#FAEDE9] text-[#B5483B] dark:bg-[#B5483B]/20 dark:text-[#F38C80]'
                     }`}
                 >
-                    {isIncome ? <Icons.TrendUp size={18} /> : <Icons.TrendDown size={18} />}
+                    {isIncome ? <Icons.TrendUp size={20} /> : <Icons.TrendDown size={20} />}
                 </div>
-                <div className="min-w-0">
-                    <p className="font-semibold text-ink dark:text-paper text-sm md:text-base truncate">{data.desc}</p>
-                    <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <span className="text-[10px] font-mono font-medium tracking-wide px-2 py-0.5 rounded-lg bg-paperDim dark:bg-ink2/50 text-ink2/70 dark:text-paper/60 uppercase ring-1 ring-black/[0.03] dark:ring-white/5">
+
+                <div className="min-w-0 flex-1 pr-2">
+                    <p className="font-semibold text-ink dark:text-paper text-sm sm:text-[15px] leading-tight truncate">
+                        {data.desc}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        <span className="text-[9px] sm:text-[10px] font-mono font-semibold tracking-wide px-2 py-0.5 rounded-md bg-ink/[0.04] dark:bg-white/10 text-ink2/70 dark:text-paper/70 uppercase">
                             {data.category}
                         </span>
-                        <span className="text-[11px] text-ink2/50 dark:text-paper/40">{dateStr}</span>
+                        <span className="text-[10px] sm:text-[11px] font-medium text-ink2/40 dark:text-paper/40">
+                            {dateStr}
+                        </span>
                     </div>
                 </div>
             </div>
-            <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-                <span className={`font-mono font-semibold tabular-nums text-sm md:text-base ${isIncome ? 'text-peso dark:text-pesoLight' : 'text-ink dark:text-paper'}`}>
-                    {isIncome ? '+' : '-'}₱{window.peso(data.amount)}
-                </span>
+
+            {/* Right Side: Amount & Delete Button */}
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                <div className="text-right flex flex-col items-end justify-center">
+                    <span className={`font-mono font-bold tabular-nums text-[15px] sm:text-base tracking-tight leading-none ${
+                        isIncome ? 'text-[#1F6F54] dark:text-[#52C8A1]' : 'text-ink dark:text-paper'
+                    }`}>
+                        {isIncome ? '+' : '-'}₱{window.peso(data.amount)}
+                    </span>
+                </div>
 
                 <button
                     onClick={handleDelete}
                     aria-label="Burahin ang entry"
-                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 transition-all duration-200 p-2.5 rounded-full text-ink2/40 hover:text-expense hover:bg-expense/10 dark:text-paper/40 dark:hover:text-expense active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-expense/40"
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 p-2 sm:p-2.5 rounded-full text-ink2/30 hover:text-expense hover:bg-expense/10 dark:text-paper/30 dark:hover:text-[#F38C80] dark:hover:bg-[#B5483B]/20 active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-expense/40 shrink-0"
                 >
-                    <Icons.Trash size={18} />
+                    <Icons.Trash size={18} strokeWidth={2.2} />
                 </button>
             </div>
+
         </li>
     );
 }

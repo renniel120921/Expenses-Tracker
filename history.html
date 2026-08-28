@@ -9,18 +9,21 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
 
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Global Dark Mode Script Initializer -->
     <script>
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        if (localStorage.getItem('tipid_theme') === 'dark' || (!('tipid_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
         }
     </script>
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -28,345 +31,116 @@
             theme: {
                 extend: {
                     colors: {
-                        paper: '#F1F4EF', paperDim: '#E2E8DE', ink: '#15231C', ink2: '#2F4037',
-                        peso: '#1F6F54', pesoLight: '#2F8E6C', pesoDeep: '#134735',
-                        gold: '#C9932E', expense: '#B5483B', line: '#D2DDD4',
+                        paper: '#F1F4EF', paperDim: '#E9EDE6', ink: '#15231C', ink2: '#33443A',
+                        peso: '#1F6F54', pesoLight: '#2F8E6C', pesoDeep: '#123D2E',
+                        gold: '#C9932E', expense: '#B5483B', line: '#D3DAD0',
                     },
                     fontFamily: {
                         display: ['"Fraunces"', 'serif'],
                         body: ['"Inter"', 'sans-serif'],
-                        mono: ['"JetBrains Mono"', 'monospace'],
+                        mono: ['"IBM Plex Mono"', 'monospace'],
                     },
+                    boxShadow: {
+                        'ios': '0 2px 10px rgba(18,61,46,0.06), 0 16px 32px -12px rgba(18,61,46,0.15)',
+                        'iosLg': '0 24px 48px -12px rgba(18,61,46,0.25)',
+                    }
                 }
             }
         }
     </script>
 
+    <!-- React & Babel -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- Firebase Scripts -->
     <script type="module" src="./firebase.js"></script>
     <script type="module" src="./firebase-auth.js"></script>
     <script type="module" src="./firebase-data.js"></script>
 
+    <!-- Components -->
+    <script type="text/babel" src="./components/navbar.js"></script>
+    <script type="text/babel" src="./components/ExpenseItem.js"></script>
+    <script type="text/babel" src="./components/ExpenseList.js"></script>
+
     <style>
         :root {
+            --sat: env(safe-area-inset-top, 0px);
+            --sar: env(safe-area-inset-right, 0px);
+            --sab: env(safe-area-inset-bottom, 0px);
+            --sal: env(safe-area-inset-left, 0px);
             --ease-ios: cubic-bezier(0.22, 1, 0.36, 1);
             --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        html { background: #F1F4EF; transition: background-color 0.3s; }
+        html { background: #F1F4EF; transition: background-color 0.3s var(--ease-ios); }
         html.dark { background: #111A15; color: #F1F4EF; }
 
-        body { font-feature-settings: "tnum" 1, "lnum" 1; -webkit-tap-highlight-color: transparent; }
+        body { font-feature-settings: "tnum" 1, "lnum" 1; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
         ::selection { background: #C9932E33; color: #15231C; }
         :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
 
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-up { animation: fadeUp 0.7s var(--ease-ios) both; }
+
         @keyframes spin { to { transform: rotate(360deg); } }
-        .spin { animation: spin 0.8s linear infinite; }
-
-        @keyframes rowIn {
-            from { opacity: 0; transform: translateY(-6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .row-in { animation: rowIn 0.3s ease-out both; }
-
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(14px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-up { animation: fadeUp 0.6s var(--ease-ios) both; }
-
-        @keyframes bannerIn {
-            from { opacity: 0; transform: translateY(-8px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .banner-in { animation: bannerIn 0.4s cubic-bezier(0.34, 1.2, 0.4, 1) both; }
-
-        @keyframes logoBreathe {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.08); opacity: 0.85; }
-        }
-        .logo-breathe { animation: logoBreathe 1.6s ease-in-out infinite; }
+        .spin { animation: spin 0.85s linear infinite; }
 
         @keyframes haloPulse {
-            0% { transform: scale(0.9); opacity: 0.35; }
-            70% { opacity: 0; }
-            100% { transform: scale(1.6); opacity: 0; }
+            0%   { transform: scale(0.9); opacity: 0.35; }
+            70%  { opacity: 0; }
+            100% { transform: scale(1.7); opacity: 0; }
         }
-        .halo-pulse { animation: haloPulse 1.9s var(--ease-ios) infinite; }
+        .halo-pulse { animation: haloPulse 2s var(--ease-ios) infinite; }
+
+        @keyframes heroFloat {
+            0%, 100% { transform: translate(0, 0); }
+            50%      { transform: translate(0, -10px); }
+        }
+        .hero-float { animation: heroFloat 6s ease-in-out infinite; }
 
         .glass-panel {
-            background: rgba(255,255,255,0.65);
-            backdrop-filter: blur(20px) saturate(160%);
-            -webkit-backdrop-filter: blur(20px) saturate(160%);
-            border: 1px solid rgba(255,255,255,0.55);
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.8);
         }
         html.dark .glass-panel {
             background: rgba(24,38,31,0.55);
             border: 1px solid rgba(255,255,255,0.08);
         }
 
-        .tap-scale { transition: transform 0.18s var(--ease-spring); }
+        .tap-scale { transition: transform 0.15s var(--ease-spring); }
         .tap-scale:active { transform: scale(0.92); }
 
-        .swal2-popup.tipid-swal { border-radius: 20px !important; font-family: 'Inter', sans-serif; }
-        .tipid-swal .swal2-title { font-family: 'Fraunces', serif; color: #15231C; }
-        .tipid-swal .swal2-html-container { color: #33443A; }
-        .tipid-swal .swal2-confirm,
-        .tipid-swal .swal2-cancel {
-            border-radius: 999px !important;
-            padding: 0.65em 1.6em !important;
-            font-weight: 600 !important;
-            box-shadow: none !important;
+        .tipid-swal { border-radius: 28px !important; font-family: 'Inter', sans-serif !important; }
+
+        /* --- Mascot Animations --- */
+        @keyframes mascotHover {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
         }
-
-        /* --- Modern History Hero / Mascot --- */
-        @keyframes mascotFloat {
-            0%, 100% { transform: translate3d(0, 0, 0) rotate(-1deg); }
-            50% { transform: translate3d(0, -7px, 0) rotate(1deg); }
+        .history-mascot-img {
+            animation: mascotHover 4s ease-in-out infinite;
+            filter: drop-shadow(0 15px 25px rgba(18,61,46,0.35));
         }
-        @keyframes mascotGlow {
-            0%, 100% { transform: scale(0.94); opacity: 0.20; }
-            50% { transform: scale(1.06); opacity: 0.34; }
-        }
-
-        .history-hero {
-            position: relative;
-            isolation: isolate;
-            overflow: hidden;
-            min-height: 238px;
-            border-radius: 28px;
-            padding: 26px 24px 22px;
-            margin-bottom: 22px;
-            background:
-                radial-gradient(circle at 18% 0%, rgba(255,255,255,0.08), transparent 28%),
-                radial-gradient(circle at 96% 100%, rgba(201,147,46,0.16), transparent 34%),
-                linear-gradient(135deg, #2F8E6C 0%, #1F6F54 48%, #123D2E 100%);
-            box-shadow: 0 24px 50px -22px rgba(18,61,46,0.55);
-        }
-
-        .history-hero::before {
-            content: "";
-            position: absolute;
-            width: 250px;
-            height: 250px;
-            right: -80px;
-            bottom: -150px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.07);
-            filter: blur(10px);
-        }
-
-        .history-copy {
-            position: relative;
-            z-index: 4;
-            max-width: 62%;
-            padding-right: 42px;
-        }
-
-        .history-kicker {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
-            color: rgba(241,244,239,0.72);
-            font: 700 10px/1.2 'JetBrains Mono', monospace;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-        }
-
-        .history-kicker::before {
-            content: "";
-            width: 6px;
-            height: 6px;
-            border-radius: 999px;
-            background: #FCD116;
-            box-shadow: 0 0 0 4px rgba(252,209,22,0.10);
-        }
-
-        .history-title {
-            margin: 0;
-            color: #F7FAF7;
-            font: 700 clamp(2rem, 4vw, 2.65rem)/1.03 'Fraunces', serif;
-            letter-spacing: -0.03em;
-        }
-
-        .history-subtitle {
-            margin-top: 10px;
-            max-width: 390px;
-            color: rgba(247,250,247,0.72);
-            font: 500 12px/1.55 'Inter', sans-serif;
-        }
-
-        .history-actions {
-            position: absolute;
-            z-index: 6;
-            top: 18px;
-            right: 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .history-action {
-            width: 44px;
-            height: 44px;
-            border-radius: 999px;
-            display: grid;
-            place-items: center;
-            color: #F7FAF7;
-            background: rgba(255,255,255,0.10);
-            border: 1px solid rgba(255,255,255,0.24);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
-
-        .history-mascot-stage {
-            position: absolute;
-            z-index: 3;
-            right: 10px;
-            bottom: -10px;
-            width: 220px;
-            height: 198px;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            pointer-events: none;
-        }
-
-        .history-mascot-stage::before {
-            content: "";
-            position: absolute;
-            width: 136px;
-            height: 136px;
-            right: 28px;
-            bottom: 18px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.10);
-            filter: blur(28px);
-            animation: mascotGlow 3.8s ease-in-out infinite;
-        }
-
-        .history-mascot-stage::after {
-            content: "";
-            position: absolute;
-            width: 122px;
-            height: 18px;
-            right: 30px;
-            bottom: 3px;
-            border-radius: 999px;
-            background: rgba(0,0,0,0.18);
-            filter: blur(8px);
-        }
-
-        .history-mascot {
-            position: relative;
-            z-index: 2;
-            width: 205px;
-            height: 205px;
-            object-fit: contain;
-            object-position: center bottom;
-            animation: mascotFloat 4.8s ease-in-out infinite;
-            filter: drop-shadow(0 15px 18px rgba(0,0,0,0.18));
-            user-select: none;
-        }
-
-        .history-bubble {
-            position: absolute;
-            z-index: 5;
-            right: 128px;
-            bottom: 112px;
-            max-width: 138px;
-            padding: 8px 10px;
-            border-radius: 14px;
-            background: #F8FAF8;
-            color: #15231C;
-            box-shadow: 0 16px 28px -16px rgba(0,0,0,0.35);
-            font: 600 10px/1.35 'Inter', sans-serif;
-        }
-
-        .history-bubble::after {
-            content: "";
-            position: absolute;
-            right: 10px;
-            bottom: -8px;
-            width: 14px;
-            height: 14px;
-            background: #F8FAF8;
-            transform: rotate(45deg);
-            border-radius: 2px;
-        }
-
-        .history-bubble strong {
-            display: block;
-            font-size: 10px;
-            margin-bottom: 1px;
-        }
-
-        .history-list-shell {
-            position: relative;
-            z-index: 2;
-        }
-
-        @media (max-width: 640px) {
-            .history-hero {
-                min-height: 270px;
-                border-radius: 24px;
-                padding: 22px 20px;
-            }
-
-            .history-copy {
-                max-width: 68%;
-                padding-right: 10px;
-            }
-
-            .history-title {
-                font-size: 2rem;
-            }
-
-            .history-mascot-stage {
-                right: -10px;
-                bottom: -14px;
-                width: 172px;
-                height: 160px;
-            }
-
-            .history-mascot {
-                width: 165px;
-                height: 165px;
-            }
-
-            .history-bubble {
-                right: 96px;
-                bottom: 102px;
-                max-width: 112px;
-                font-size: 9px;
-            }
-
-            .history-actions {
-                top: 14px;
-                right: 14px;
-            }
-
-            .history-action {
-                width: 40px;
-                height: 40px;
-            }
+        .speech-bubble {
+            animation: fadeUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
+            box-shadow: 0 10px 25px -5px rgba(18, 61, 46, 0.25);
         }
 
         @media (prefers-reduced-motion: reduce) {
-            .spin, .row-in, .fade-up, .banner-in, .logo-breathe, .halo-pulse,
-            .tap-scale, .history-mascot, .history-mascot-stage::before {
-                animation: none !important;
-                transition: none !important;
+            .fade-up, .spin, .halo-pulse, .hero-float, .tap-scale, .history-mascot-img, .speech-bubble {
+                animation: none !important; transition: none !important;
             }
         }
     </style>
 </head>
+
 <body class="bg-paper dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
     <div id="root"></div>
 
@@ -374,8 +148,10 @@
         window.useState = React.useState;
         window.useEffect = React.useEffect;
         window.useMemo = React.useMemo;
+        window.useRef = React.useRef;
 
-        function Icon({ path, size = 20, className = "", strokeWidth = 2 }) {
+        // --- COMPREHENSIVE GLOBAL ICONS ---
+        function Icon({ path, size = 20, className = "", strokeWidth = 2.2 }) {
             return (
                 <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -385,22 +161,24 @@
         }
 
         window.Icons = {
+            Sun: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>} />,
+            Moon: (p) => <Icon {...p} path={<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>} />,
+            Trash: (p) => <Icon {...p} path={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></>} />,
             Plus: (p) => <Icon {...p} path={<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>} />,
-            Trash: (p) => <Icon {...p} path={<><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></>} />,
-            Loader: (p) => <Icon {...p} path={<><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></>} />,
-            AlertCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />,
-            Inbox: (p) => <Icon {...p} path={<><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></>} />,
             Pencil: (p) => <Icon {...p} path={<><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></>} />,
+            Calendar: (p) => <Icon {...p} path={<><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>} />,
+            Category: (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
+            Wallet: (p) => <Icon {...p} path={<><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></>} />,
+            AlertCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />,
+            Check: (p) => <Icon {...p} path={<><polyline points="20 6 9 17 4 12"/></>} strokeWidth={3} />,
+            Inbox: (p) => <Icon {...p} path={<><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></>} />,
+            Loader: (p) => <Icon {...p} path={<><path d="M12 2a10 10 0 0 1 10 10"/></>} />,
             TrendUp: (p) => <Icon {...p} path={<><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>} />,
             TrendDown: (p) => <Icon {...p} path={<><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></>} />,
-            Wallet: (p) => <Icon {...p} path={<><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></>} />,
             Home: (p) => <Icon {...p} path={<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>} />,
             Chart: (p) => <Icon {...p} path={<><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></>} />,
             List: (p) => <Icon {...p} path={<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>} />,
-            Category: (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
-            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />,
-            Sun: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>} />,
-            Moon: (p) => <Icon {...p} path={<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>} />,
+            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />
         };
 
         window.Logo = function Logo({ size = 30 }) {
@@ -416,18 +194,69 @@
             return (n || 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        window.CATEGORIES = ["Pagkain", "Pamasahe", "Bills", "Load", "Ipon", "Project Components", "Iba pa"];
-        window.CATEGORY_COLOR = {
-            Pagkain: "bg-peso", Pamasahe: "bg-ink2", Bills: "bg-gold",
-            Load: "bg-pesoDeep", Ipon: "bg-pesoLight", "Project Components": "bg-ink", "Iba pa": "bg-expense",
-        };
-        window.METHODS = ["Cash", "GCash", "Maya", "Bank"];
+        function AmbientBackground() {
+            return (
+                <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
+                    <div className="absolute -top-24 -right-16 w-[380px] h-[380px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
+                    <div className="absolute bottom-0 -left-24 w-[400px] h-[400px] bg-[#C9932E]/10 dark:bg-[#C9932E]/5 rounded-full blur-[100px]" />
+                </div>
+            );
+        }
 
-        window.startOfMonth = function startOfMonth() {
-            const d = new Date();
-            d.setDate(1);
-            d.setHours(0, 0, 0, 0);
-            return d;
+        /* --- MODERN HISTORY HERO CARD --- */
+        function HistoryHeroCard({ darkMode, toggleDarkMode }) {
+            return (
+                <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-5 sm:p-7 shadow-iosLg ring-1 ring-white/15 min-h-[220px] sm:min-h-[240px] flex flex-col justify-between mb-6 sm:mb-8">
+
+                    {/* Ambient Glows Inside Card */}
+                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/10 rounded-full blur-[50px] hero-float" />
+                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-[#FFD700]/10 rounded-full blur-[60px]" />
+
+                    {/* Dark Mode Toggle */}
+                    <div className="absolute top-5 right-5 sm:top-6 sm:right-6 z-30">
+                        <button
+                            onClick={toggleDarkMode}
+                            aria-label="Toggle Dark Mode"
+                            className="tap-scale w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/20 hover:bg-white/30 border border-white/20 flex items-center justify-center text-white shadow-sm backdrop-blur-md transition-colors"
+                        >
+                            {darkMode ? <window.Icons.Sun size={18} /> : <window.Icons.Moon size={18} />}
+                        </button>
+                    </div>
+
+                    {/* Mascot Container */}
+                    <div className="absolute right-0 bottom-0 w-[140px] sm:w-[190px] h-full pointer-events-none z-0 overflow-visible">
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-24 h-24 bg-white/15 blur-2xl rounded-full"></div>
+                        <img
+                            src="/assets/history_mascot.png"
+                            alt="Tipid Buddy with a savings piggy bank"
+                            className="absolute bottom-[-10px] sm:bottom-[-15px] right-[-10px] sm:right-2 w-full object-contain history-mascot-img"
+                            draggable="false"
+                        />
+                        {/* Speech Bubble */}
+                        <div className="speech-bubble absolute top-[15%] right-[60%] sm:right-[70%] bg-paper text-ink rounded-2xl px-3 py-2 text-[10px] sm:text-xs font-medium leading-tight w-max max-w-[120px] sm:max-w-[140px] border border-white/50">
+                            <strong className="block font-bold text-[#1F6F54] mb-0.5">Nice work!</strong>
+                            Keep checking your gastos. 💚
+                            <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-paper rotate-45 border-r border-b border-white/50"></div>
+                        </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="relative z-10 flex flex-col h-full gap-4 sm:gap-6 max-w-[55%] sm:max-w-[60%]">
+                        <div className="mt-2 sm:mt-4">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/15 border border-white/10 text-white mb-3 backdrop-blur-sm">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#FFD700] animate-pulse" />
+                                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-paper/90">Tipid Buddy</span>
+                            </div>
+                            <h1 className="font-display text-[1.6rem] sm:text-[2.5rem] font-bold tracking-tight leading-[1.1] mb-2 sm:mb-3">
+                                Kasaysayan
+                            </h1>
+                            <p className="text-[11px] sm:text-[13px] font-medium text-white/80 leading-relaxed pr-2">
+                                Balikan ang mga nakaraang gastos at kita para mas madaling makita ang spending habits mo.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
         }
 
         window.useAuthReady = function useAuthReady() {
@@ -451,60 +280,6 @@
             }, []);
             return ready;
         }
-    </script>
-
-    <script type="text/babel" src="./components/navbar.js"></script>
-    <script type="text/babel" src="./components/ExpenseItem.js"></script>
-    <script type="text/babel" src="./components/ExpenseList.js"></script>
-
-    <script type="text/babel">
-        function AmbientBackground() {
-            return (
-                <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div className="absolute -top-24 -right-16 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
-                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-gold/10 dark:bg-gold/5 rounded-full blur-[100px]" />
-                </div>
-            );
-        }
-
-        function HistoryHero() {
-            return (
-                <div className="history-hero">
-                    <div className="history-copy">
-                        <div className="history-kicker">Tipid Buddy</div>
-                        <h1 className="history-title">Transaction History</h1>
-                        <p className="history-subtitle">
-                            Balikan ang mga nakaraang gastos at kita para mas madaling makita ang spending habits mo.
-                        </p>
-                    </div>
-
-                    <div className="history-actions">
-                        <button
-                            onClick={() => window.dispatchEvent(new CustomEvent("tipid-toggle-theme"))}
-                            aria-label="Toggle Dark Mode"
-                            className="history-action tap-scale"
-                            id="history-theme-toggle"
-                        >
-                            <Icons.Moon size={18} />
-                        </button>
-                    </div>
-
-                    <div className="history-bubble">
-                        <strong>Nice work!</strong>
-                        Keep checking your gastos. 💚
-                    </div>
-
-                    <div className="history-mascot-stage" aria-hidden="true">
-                        <img
-                            src="/assets/history_mascot.png"
-                            alt="Tipid Buddy with a savings piggy bank"
-                            className="history-mascot"
-                            draggable="false"
-                        />
-                    </div>
-                </div>
-            );
-        }
 
         function HistoryApp() {
             const authReady = window.useAuthReady();
@@ -515,25 +290,21 @@
             const [dataError, setDataError] = React.useState("");
 
             const [darkMode, setDarkMode] = React.useState(() => {
-                return localStorage.getItem("theme") === "dark" ||
-                    (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches);
+                return localStorage.getItem("tipid_theme") === "dark" ||
+                    (!localStorage.getItem("tipid_theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
             });
 
             React.useEffect(() => {
                 if (darkMode) {
-                    document.documentElement.classList.add("dark");
-                    localStorage.setItem("theme", "dark");
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem("tipid_theme", "dark");
                 } else {
-                    document.documentElement.classList.remove("dark");
-                    localStorage.setItem("theme", "light");
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem("tipid_theme", "light");
                 }
             }, [darkMode]);
 
-            React.useEffect(() => {
-                const handler = () => setDarkMode(d => !d);
-                window.addEventListener("tipid-toggle-theme", handler);
-                return () => window.removeEventListener("tipid-toggle-theme", handler);
-            }, []);
+            const toggleDarkMode = () => setDarkMode(!darkMode);
 
             React.useEffect(() => {
                 if (!authReady) return;
@@ -561,15 +332,15 @@
             if (user === undefined || user === null) {
                 return (
                     <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
-                        <div className="glass-panel flex flex-col items-center gap-3 rounded-[28px] px-10 py-9 shadow-sm">
+                        <div className="glass-panel flex flex-col items-center gap-5 rounded-[32px] px-10 py-10 shadow-ios">
                             <div className="relative flex items-center justify-center">
-                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/20 halo-pulse" />
+                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/25 halo-pulse" />
                                 <div className="relative logo-breathe">
-                                    <window.Logo size={40} />
+                                    <window.Logo size={44} />
                                 </div>
                             </div>
-                            <p className="text-xs font-mono tracking-[0.2em] uppercase text-ink2/60 dark:text-paper/50">
-                                Loading your history
+                            <p className="text-[11px] font-mono font-semibold tracking-widest uppercase text-ink2 dark:text-paper/60 text-center">
+                                Loading History
                             </p>
                         </div>
                     </div>
@@ -581,60 +352,70 @@
                 window.location.href = "login.html";
             };
 
+            const AppEntryList = window.EntryList;
+
             return (
                 <div className="min-h-dvh flex flex-col relative">
                     <AmbientBackground />
-                    <Navbar user={user} onLogout={logout} activeTab="history" />
+
+                    <window.Navbar user={user} onLogout={logout} activeTab="history" />
 
                     <main
-                        className="w-full max-w-5xl mx-auto px-5 sm:px-6 pt-32 md:pt-12 pb-40 md:pb-16 space-y-6 md:space-y-8"
+                        className="max-w-[1000px] mx-auto w-full px-5 sm:px-8 pt-[6.5rem] md:pt-10 pb-36 md:pb-20 flex-1"
                         style={{
-                            paddingLeft: 'max(1.25rem, calc(env(safe-area-inset-left) + 1.25rem))',
-                            paddingRight: 'max(1.25rem, calc(env(safe-area-inset-right) + 1.25rem))',
+                            paddingLeft: 'max(1.25rem, calc(var(--sal) + 1.25rem))',
+                            paddingRight: 'max(1.25rem, calc(var(--sar) + 1.25rem))',
+                            paddingBottom: 'calc(8rem + var(--sab))',
                         }}
                     >
                         <div className="fade-up" style={{ animationDelay: "0ms" }}>
-                            <HistoryHero />
+                            <HistoryHeroCard darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
                         </div>
 
                         {dataError && (
                             <div
-                                className="fade-up banner-in flex items-start gap-3 bg-expense/10 text-expense text-sm font-medium border border-expense/20 rounded-2xl px-5 py-4 shadow-sm"
+                                className="fade-up flex items-start gap-3 bg-[#FAEDE9] dark:bg-[#B5483B]/20 text-[#B5483B] dark:text-[#F38C80] text-[13px] font-medium border border-[#B5483B]/20 rounded-2xl px-5 py-4 shadow-sm mb-6"
                                 style={{ animationDelay: "45ms" }}
                             >
-                                <Icons.AlertCircle size={18} className="shrink-0 mt-0.5" />
+                                <window.Icons.AlertCircle size={18} className="shrink-0 mt-0.5" />
                                 <span>{dataError}</span>
                             </div>
                         )}
 
-                        <div className="history-list-shell fade-up" style={{ animationDelay: "90ms" }}>
-                            <div className="mb-4 flex items-center justify-between">
-                                <div>
-                                    <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-peso dark:text-pesoLight">Kasaysayan</p>
-                                    <p className="text-sm text-ink2/60 dark:text-paper/50 mt-1">Your recorded transactions</p>
-                                </div>
-                                <span className="text-xs font-mono text-ink2/45 dark:text-paper/35">
-                                    {entries.length} {entries.length === 1 ? "entry" : "entries"}
-                                </span>
-                            </div>
-
-                            <EntryList uid={user.uid} entries={entries} loading={loadingEntries} />
+                        <div className="fade-up" style={{ animationDelay: "90ms" }}>
+                            <AppEntryList uid={user.uid} entries={entries} loading={loadingEntries} />
                         </div>
                     </main>
                 </div>
             );
         }
 
-        function mountWhenComponentsReady() {
-            if (typeof Navbar === "function" && typeof EntryList === "function") {
+        function mountWhenComponentsReady(attempt = 0) {
+            const missingNames = [];
+            if (typeof window.Navbar !== "function") missingNames.push("Navbar");
+            if (typeof window.EntryList !== "function") missingNames.push("EntryList");
+
+            if (missingNames.length === 0) {
                 ReactDOM.createRoot(document.getElementById("root")).render(<HistoryApp />);
-            } else {
-                setTimeout(mountWhenComponentsReady, 30);
+                return;
             }
+            if (attempt > 100) {
+                document.getElementById("root").innerHTML =
+                    `<div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:Inter,sans-serif;text-align:center;color:#15231C;">
+                        <div>
+                            <p style="font-weight:600;margin-bottom:0.5rem;">Failed to load: ${missingNames.join(", ")}</p>
+                            <p style="font-size:0.875rem;opacity:0.7;">Check the file path (Network tab) and ensure component exports match.</p>
+                        </div>
+                    </div>`;
+                return;
+            }
+            setTimeout(() => mountWhenComponentsReady(attempt + 1), 30);
         }
+
         mountWhenComponentsReady();
     </script>
 
+    <!-- PWA Service Worker Registration & Auto-Update Alert -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

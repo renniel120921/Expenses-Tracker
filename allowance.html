@@ -7,7 +7,23 @@
     <meta name="theme-color" content="#1F6F54">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
 
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Global Dark Mode Script Initializer -->
+    <script>
+        if (localStorage.getItem('tipid_theme') === 'dark' || (!('tipid_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -15,378 +31,261 @@
             theme: {
                 extend: {
                     colors: {
-                        ink: '#15231C', ink2: '#2F4037', paper: '#F1F4EF', paperDim: '#E2E8DE',
-                        peso: '#1F6F54', pesoDeep: '#134735', pesoLight: '#2F8E6C', expense: '#B5483B', line: '#D2DDD4',
+                        paper: '#F1F4EF', paperDim: '#E9EDE6', ink: '#15231C', ink2: '#33443A',
+                        peso: '#1F6F54', pesoLight: '#2F8E6C', pesoDeep: '#123D2E',
+                        gold: '#C9932E', expense: '#B5483B', line: '#D3DAD0',
                     },
                     fontFamily: {
-                        display: ['Fraunces', 'serif'], body: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'],
+                        display: ['"Fraunces"', 'serif'],
+                        body: ['"Inter"', 'sans-serif'],
+                        mono: ['"IBM Plex Mono"', 'monospace'],
+                    },
+                    boxShadow: {
+                        'ios': '0 2px 10px rgba(18,61,46,0.06), 0 16px 32px -12px rgba(18,61,46,0.15)',
+                        'iosLg': '0 24px 48px -12px rgba(18,61,46,0.25)',
                     }
                 }
             }
         }
     </script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
-
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- React & Babel -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Firebase Scripts -->
     <script type="module" src="./firebase.js"></script>
     <script type="module" src="./firebase-auth.js"></script>
     <script type="module" src="./firebase-data.js"></script>
 
+    <!-- Components -->
     <script type="text/babel" src="./components/navbar.js"></script>
     <script type="text/babel" src="./components/AllowanceCalculator.js"></script>
 
     <style>
-        :root { --ease-ios: cubic-bezier(0.22, 1, 0.36, 1); --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); }
-        body { font-family: 'Inter', sans-serif; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
+        :root {
+            --sat: env(safe-area-inset-top, 0px);
+            --sar: env(safe-area-inset-right, 0px);
+            --sab: env(safe-area-inset-bottom, 0px);
+            --sal: env(safe-area-inset-left, 0px);
+            --ease-ios: cubic-bezier(0.22, 1, 0.36, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-up { animation: fadeIn 0.5s var(--ease-ios) both; }
+        html { background: #F1F4EF; transition: background-color 0.3s var(--ease-ios); }
+        html.dark { background: #111A15; color: #F1F4EF; }
 
-        .spin { animation: spin 0.9s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        body { font-feature-settings: "tnum" 1, "lnum" 1; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
+        ::selection { background: #C9932E33; color: #15231C; }
+        :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
 
-        @keyframes haloPulse { 0% { transform: scale(0.9); opacity: 0.35; } 70% { opacity: 0; } 100% { transform: scale(1.6); opacity: 0; } }
-        .halo-pulse { animation: haloPulse 1.9s var(--ease-ios) infinite; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-up { animation: fadeUp 0.7s var(--ease-ios) both; }
 
-        .glass-panel { background: rgba(255,255,255,0.65); backdrop-filter: blur(20px) saturate(160%); border: 1px solid rgba(255,255,255,0.55); }
-        html.dark .glass-panel { background: rgba(24,38,31,0.55); border: 1px solid rgba(255,255,255,0.08); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin { animation: spin 0.85s linear infinite; }
 
-        .tap-scale { transition: transform 0.18s var(--ease-spring); }
+        @keyframes logoBreathe {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50%      { transform: scale(1.08); opacity: 0.85; }
+        }
+        .logo-breathe { animation: logoBreathe 1.7s ease-in-out infinite; }
+
+        @keyframes haloPulse {
+            0%   { transform: scale(0.9); opacity: 0.35; }
+            70%  { opacity: 0; }
+            100% { transform: scale(1.7); opacity: 0; }
+        }
+        .halo-pulse { animation: haloPulse 2s var(--ease-ios) infinite; }
+
+        @keyframes heroFloat {
+            0%, 100% { transform: translate(0, 0); }
+            50%      { transform: translate(0, -10px); }
+        }
+        .hero-float { animation: heroFloat 6s ease-in-out infinite; }
+
+        .glass-panel {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+        html.dark .glass-panel {
+            background: rgba(24,38,31,0.55);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .tap-scale { transition: transform 0.15s var(--ease-spring); }
         .tap-scale:active { transform: scale(0.92); }
 
-        @keyframes driftA { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-18px, 14px) scale(1.06); } }
-        @keyframes driftB { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(16px, -12px) scale(1.04); } }
-        .drift-a { animation: driftA 16s ease-in-out infinite; }
-        .drift-b { animation: driftB 19s ease-in-out infinite; }
+        .tipid-swal { border-radius: 28px !important; font-family: 'Inter', sans-serif !important; }
 
-        .grain { position: fixed; inset: 0; z-index: -5; pointer-events: none; opacity: 0.05; mix-blend-mode: multiply; }
-        html.dark .grain { opacity: 0.07; mix-blend-mode: overlay; }
-
-        .switch-track { transition: background-color 0.25s var(--ease-ios); }
-        .switch-thumb { transition: transform 0.3s var(--ease-spring); }
-
-        /* --- Modern Allowance Hero / Mascot --- */
-        @keyframes allowanceMascotFloat {
-            0%, 100% { transform: translate3d(0, 0, 0) rotate(-1deg); }
-            50% { transform: translate3d(0, -8px, 0) rotate(1deg); }
+        /* --- Mascot Animations --- */
+        @keyframes mascotHover {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
         }
-        @keyframes allowanceGlow {
-            0%, 100% { transform: scale(0.94); opacity: 0.20; }
-            50% { transform: scale(1.06); opacity: 0.34; }
+        .allowance-mascot-img {
+            animation: mascotHover 4s ease-in-out infinite;
+            filter: drop-shadow(0 15px 25px rgba(18,61,46,0.35));
         }
-
-        .allowance-hero {
-            position: relative;
-            isolation: isolate;
-            overflow: hidden;
-            min-height: 240px;
-            border-radius: 28px;
-            margin-bottom: 26px;
-            padding: 26px 24px 22px;
-            background:
-                radial-gradient(circle at 18% 0%, rgba(255,255,255,0.08), transparent 28%),
-                radial-gradient(circle at 96% 100%, rgba(201,147,46,0.16), transparent 34%),
-                linear-gradient(135deg, #2F8E6C 0%, #1F6F54 48%, #123D2E 100%);
-            box-shadow: 0 24px 50px -22px rgba(18,61,46,0.55);
-        }
-
-        .allowance-hero::before {
-            content: "";
-            position: absolute;
-            width: 250px;
-            height: 250px;
-            right: -80px;
-            bottom: -150px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.07);
-            filter: blur(10px);
-        }
-
-        .allowance-copy {
-            position: relative;
-            z-index: 4;
-            max-width: 60%;
-            padding-right: 48px;
-        }
-
-        .allowance-kicker {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
-            color: rgba(241,244,239,0.72);
-            font: 700 10px/1.2 'JetBrains Mono', monospace;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-        }
-
-        .allowance-kicker::before {
-            content: "";
-            width: 6px;
-            height: 6px;
-            border-radius: 999px;
-            background: #C9932E;
-            box-shadow: 0 0 0 4px rgba(201,147,46,0.10);
-        }
-
-        .allowance-title {
-            margin: 0;
-            color: #F7FAF7;
-            font: 700 clamp(2rem, 4vw, 2.7rem)/1.03 'Fraunces', serif;
-            letter-spacing: -0.03em;
-        }
-
-        .allowance-subtitle {
-            margin-top: 10px;
-            max-width: 365px;
-            color: rgba(247,250,247,0.72);
-            font: 500 12px/1.55 'Inter', sans-serif;
-        }
-
-        .allowance-actions {
-            position: absolute;
-            z-index: 6;
-            top: 18px;
-            right: 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .allowance-action {
-            width: 46px;
-            height: 46px;
-            border-radius: 999px;
-            display: grid;
-            place-items: center;
-            color: #F7FAF7;
-            background: rgba(255,255,255,0.10);
-            border: 1px solid rgba(255,255,255,0.24);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
-
-        .allowance-mascot-stage {
-            position: absolute;
-            z-index: 3;
-            right: 10px;
-            bottom: -10px;
-            width: 220px;
-            height: 198px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            pointer-events: none;
-        }
-
-        .allowance-mascot-stage::before {
-            content: "";
-            position: absolute;
-            width: 135px;
-            height: 135px;
-            right: 32px;
-            bottom: 16px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.10);
-            filter: blur(28px);
-            animation: allowanceGlow 3.8s ease-in-out infinite;
-        }
-
-        .allowance-mascot-stage::after {
-            content: "";
-            position: absolute;
-            width: 120px;
-            height: 18px;
-            right: 34px;
-            bottom: 4px;
-            border-radius: 999px;
-            background: rgba(0,0,0,0.18);
-            filter: blur(8px);
-        }
-
-        .allowance-mascot {
-            width: 206px;
-            height: 206px;
-            object-fit: contain;
-            object-position: center bottom;
-            position: relative;
-            z-index: 2;
-            animation: allowanceMascotFloat 4.8s ease-in-out infinite;
-            filter: drop-shadow(0 15px 18px rgba(0,0,0,0.18));
-            user-select: none;
-        }
-
-        .allowance-bubble {
-            position: absolute;
-            z-index: 5;
-            right: 130px;
-            bottom: 112px;
-            max-width: 132px;
-            padding: 8px 10px;
-            border-radius: 14px;
-            background: #F8FAF8;
-            color: #15231C;
-            box-shadow: 0 16px 28px -16px rgba(0,0,0,0.35);
-            font: 600 10px/1.35 'Inter', sans-serif;
-        }
-
-        .allowance-bubble::after {
-            content: "";
-            position: absolute;
-            right: 10px;
-            bottom: -8px;
-            width: 14px;
-            height: 14px;
-            background: #F8FAF8;
-            transform: rotate(45deg);
-            border-radius: 2px;
-        }
-
-        .allowance-bubble strong {
-            display: block;
-            font-size: 10px;
-            margin-bottom: 1px;
-        }
-
-        .allowance-calculator-shell {
-            position: relative;
-            z-index: 2;
-        }
-
-        @media (max-width: 640px) {
-            .allowance-hero {
-                min-height: 270px;
-                border-radius: 24px;
-                padding: 22px 20px;
-            }
-
-            .allowance-copy {
-                max-width: 66%;
-                padding-right: 12px;
-            }
-
-            .allowance-title {
-                font-size: 2rem;
-            }
-
-            .allowance-mascot-stage {
-                right: -10px;
-                bottom: -14px;
-                width: 170px;
-                height: 158px;
-            }
-
-            .allowance-mascot {
-                width: 165px;
-                height: 165px;
-            }
-
-            .allowance-bubble {
-                right: 98px;
-                bottom: 102px;
-                max-width: 110px;
-                font-size: 9px;
-            }
-
-            .allowance-actions {
-                top: 14px;
-                right: 14px;
-            }
-
-            .allowance-action {
-                width: 40px;
-                height: 40px;
-            }
+        .speech-bubble {
+            animation: fadeUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
+            box-shadow: 0 10px 25px -5px rgba(18, 61, 46, 0.25);
         }
 
         @media (prefers-reduced-motion: reduce) {
-            .fade-up, .spin, .halo-pulse, .drift-a, .drift-b, .switch-track, .switch-thumb,
-            .tap-scale, .allowance-mascot, .allowance-mascot-stage::before {
-                animation: none !important;
-                transition: none !important;
+            .fade-up, .spin, .logo-breathe, .halo-pulse, .hero-float, .tap-scale, .allowance-mascot-img, .speech-bubble {
+                animation: none !important; transition: none !important;
             }
         }
     </style>
 </head>
-<body class="bg-paper dark:bg-ink text-ink dark:text-paper min-h-screen flex flex-col transition-colors duration-300">
-
-    <svg class="grain" xmlns="http://www.w3.org/2000/svg">
-        <filter id="grainFilter"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter>
-        <rect width="100%" height="100%" filter="url(#grainFilter)"/>
-    </svg>
-
+<body class="bg-paper dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
     <div id="root"></div>
 
     <script type="text/babel">
+        window.useState = React.useState;
+        window.useEffect = React.useEffect;
+        window.useMemo = React.useMemo;
+        window.useRef = React.useRef;
+
+        // --- COMPREHENSIVE GLOBAL ICONS ---
+        function Icon({ path, size = 20, className = "", strokeWidth = 2.2 }) {
+            return (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
+                    {path}
+                </svg>
+            );
+        }
+
         window.Icons = {
-            Sun: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/></svg>,
-            Moon: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>,
+            Sun: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>} />,
+            Moon: (p) => <Icon {...p} path={<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>} />,
+            Trash: (p) => <Icon {...p} path={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></>} />,
+            Plus: (p) => <Icon {...p} path={<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>} />,
+            Pencil: (p) => <Icon {...p} path={<><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></>} />,
+            Calendar: (p) => <Icon {...p} path={<><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>} />,
+            Category: (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
+            Wallet: (p) => <Icon {...p} path={<><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></>} />,
+            AlertCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />,
+            Check: (p) => <Icon {...p} path={<><polyline points="20 6 9 17 4 12"/></>} strokeWidth={3} />,
+            Inbox: (p) => <Icon {...p} path={<><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></>} />,
+            Loader: (p) => <Icon {...p} path={<><path d="M12 2a10 10 0 0 1 10 10"/></>} />,
+            TrendUp: (p) => <Icon {...p} path={<><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>} />,
+            TrendDown: (p) => <Icon {...p} path={<><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></>} />,
+            Home: (p) => <Icon {...p} path={<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>} />,
+            Chart: (p) => <Icon {...p} path={<><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></>} />,
+            List: (p) => <Icon {...p} path={<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>} />,
+            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />
         };
-        const Icons = window.Icons;
 
-        window.Logo = window.Logo || (({ size = 24 }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-peso">
-                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-            </svg>
-        ));
+        window.Logo = function Logo({ size = 30 }) {
+            const [broken, setBroken] = React.useState(false);
+            if (!broken) {
+                return <img src="/assets/logo.svg" alt="Tipid logo" width={size} height={size}
+                            onError={() => setBroken(true)} style={{ width: size, height: size }} className="rounded-md" />;
+            }
+            return <span style={{ width: size, height: size }} className="rounded-md bg-ink text-paper flex items-center justify-center font-display font-semibold">₱</span>;
+        }
 
-        window.peso = (num) => {
-            if (isNaN(num)) return "0.00";
-            return Number(num).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        };
+        window.peso = function peso(n) {
+            return (n || 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
 
-        window.CATEGORIES = window.CATEGORIES || ["Pagkain", "Pamasahe", "Bills", "Load", "Ipon", "Project Components", "Iba pa"];
+        window.CATEGORIES = ["Pagkain", "Pamasahe", "Bills", "Load", "Ipon", "Project Components", "Iba pa"];
 
         function AmbientBackground() {
             return (
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div className="drift-a absolute -top-24 -right-16 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
-                    <div className="drift-b absolute bottom-0 -left-24 w-[380px] h-[380px] bg-pesoLight/10 dark:bg-pesoLight/5 rounded-full blur-[100px]" />
+                    <div className="absolute -top-24 -right-16 w-[380px] h-[380px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
+                    <div className="absolute bottom-0 -left-24 w-[400px] h-[400px] bg-gold/10 dark:bg-gold/5 rounded-full blur-[100px]" />
                 </div>
             );
         }
 
-        function DarkModeSwitch({ darkMode, onToggle }) {
+        /* --- MODERN ALLOWANCE HERO CARD --- */
+        function AllowanceHeroCard({ darkMode, toggleDarkMode }) {
             return (
-                <button
-                    onClick={onToggle}
-                    aria-label={darkMode ? "Lumipat sa light mode" : "Lumipat sa dark mode"}
-                    aria-pressed={darkMode}
-                    className={`switch-track tap-scale relative w-[52px] h-8 rounded-full border flex items-center px-1 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 ${
-                        darkMode ? "bg-ink2 border-white/10" : "bg-white/90 border-line"
-                    }`}
-                >
-                    <span
-                        className={`switch-thumb absolute top-0.5 left-0.5 w-7 h-7 rounded-full bg-white dark:bg-paper shadow-md flex items-center justify-center ${
-                            darkMode ? "translate-x-[20px]" : "translate-x-0"
-                        }`}
-                    >
-                        {darkMode ? <Icons.Moon size={14} /> : <Icons.Sun size={14} />}
-                    </span>
-                </button>
+                <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-5 sm:p-7 shadow-iosLg ring-1 ring-white/15 min-h-[220px] sm:min-h-[240px] flex flex-col justify-between mb-6 sm:mb-8">
+
+                    {/* Ambient Glows Inside Card */}
+                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/10 rounded-full blur-[50px] hero-float" />
+                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-gold/15 rounded-full blur-[60px]" />
+
+                    {/* Dark Mode Toggle */}
+                    <div className="absolute top-5 right-5 sm:top-6 sm:right-6 z-30">
+                        <button
+                            onClick={toggleDarkMode}
+                            aria-label="Toggle Dark Mode"
+                            className="tap-scale w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/20 hover:bg-white/30 border border-white/20 flex items-center justify-center text-white shadow-sm backdrop-blur-md transition-colors"
+                        >
+                            {darkMode ? <window.Icons.Sun size={18} /> : <window.Icons.Moon size={18} />}
+                        </button>
+                    </div>
+
+                    {/* Mascot Container */}
+                    <div className="absolute right-0 bottom-0 w-[140px] sm:w-[190px] h-full pointer-events-none z-0 overflow-visible">
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-24 h-24 bg-white/15 blur-2xl rounded-full"></div>
+                        <img
+                            src="/assets/allowance_mascot.png"
+                            alt="Tipid Buddy"
+                            className="absolute bottom-[-10px] sm:bottom-[-15px] right-[-10px] sm:right-2 w-full object-contain allowance-mascot-img"
+                            draggable="false"
+                        />
+                        {/* Speech Bubble */}
+                        <div className="speech-bubble absolute top-[15%] right-[60%] sm:right-[70%] bg-paper text-ink rounded-2xl px-3 py-2 text-[10px] sm:text-xs font-semibold leading-tight w-max max-w-[120px] sm:max-w-[140px] border border-white/50">
+                            Kaya mo 'yan!<br/>Tipid lang. 💚
+                            <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-paper rotate-45 border-r border-b border-white/50"></div>
+                        </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="relative z-10 flex flex-col h-full gap-4 sm:gap-6 max-w-[55%] sm:max-w-[60%]">
+                        <div className="mt-2 sm:mt-4">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/15 border border-white/10 text-white mb-3 backdrop-blur-sm">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#C9932E] shadow-[0_0_0_2px_rgba(201,147,46,0.3)]" />
+                                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-paper/90">Tipid Buddy</span>
+                            </div>
+                            <h1 className="font-display text-[1.5rem] sm:text-[2.25rem] font-bold tracking-tight leading-[1.1] mb-2 sm:mb-3">
+                                Allowance Calculator
+                            </h1>
+                            <p className="text-[11px] sm:text-[13px] font-medium text-white/80 leading-relaxed pr-2">
+                                Planuhin ang pang-araw-araw na budget para alam mo kung magkano ang puwedeng gastusin at itabi.
+                            </p>
+                        </div>
+                    </div>
+                </div>
             );
         }
 
-        function AllowancePage() {
-            const { useState, useEffect } = React;
-            const [user, setUser] = useState(null);
-            const [authChecking, setAuthChecking] = useState(true);
-            const [componentsReady, setComponentsReady] = useState(false);
+        window.useAuthReady = function useAuthReady() {
+            const [ready, setReady] = React.useState(!!window.TipidAuth);
+            React.useEffect(() => {
+                if (window.TipidAuth) { setReady(true); return; }
+                const h = () => setReady(true);
+                window.addEventListener("tipid-auth-ready", h, { once: true });
+                return () => window.removeEventListener("tipid-auth-ready", h);
+            }, []);
+            return ready;
+        }
 
-            const [darkMode, setDarkMode] = useState(() => {
-                return localStorage.getItem("tipid_theme") === "dark" || (!localStorage.getItem("tipid_theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        function AllowanceApp() {
+            const authReady = window.useAuthReady();
+            const [user, setUser] = React.useState(undefined);
+            const [componentsReady, setComponentsReady] = React.useState(false);
+
+            const [darkMode, setDarkMode] = React.useState(() => {
+                return localStorage.getItem("tipid_theme") === "dark" ||
+                    (!localStorage.getItem("tipid_theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
             });
 
-            useEffect(() => {
+            React.useEffect(() => {
                 if (darkMode) {
                     document.documentElement.classList.add('dark');
                     localStorage.setItem("tipid_theme", "dark");
@@ -398,7 +297,7 @@
 
             const toggleDarkMode = () => setDarkMode(!darkMode);
 
-            useEffect(() => {
+            React.useEffect(() => {
                 const interval = setInterval(() => {
                     if (window.AllowanceCalculator && window.Navbar) {
                         setComponentsReady(true);
@@ -408,42 +307,29 @@
                 return () => clearInterval(interval);
             }, []);
 
-            useEffect(() => {
-                let unsub = null;
-                let isMounted = true;
+            React.useEffect(() => {
+                if (!authReady) return;
+                return window.TipidAuth.onChange((u) => setUser(u || null));
+            }, [authReady]);
 
-                const checkAuth = () => {
-                    if (window.TipidAuth) {
-                        unsub = window.TipidAuth.onChange((currentUser) => {
-                            if (!isMounted) return;
-                            if (!currentUser) window.location.href = "./login.html";
-                            else { setUser(currentUser); setAuthChecking(false); }
-                        });
-                    } else setTimeout(checkAuth, 50);
-                };
+            React.useEffect(() => {
+                if (user === null) window.location.href = "login.html";
+            }, [user]);
 
-                checkAuth();
-                return () => { isMounted = false; if (typeof unsub === "function") unsub(); };
-            }, []);
-
-            const handleLogout = async () => {
-                await window.TipidAuth.logOut();
-                window.location.href = "./login.html";
-            };
-
-            if (authChecking || !componentsReady) {
+            if (user === undefined || user === null || !componentsReady) {
                 return (
                     <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
                         <AmbientBackground />
-                        <div className="glass-panel fade-up flex flex-col items-center gap-4 rounded-[28px] px-10 py-9 shadow-sm">
+                        <div className="glass-panel fade-up flex flex-col items-center gap-5 rounded-[32px] px-10 py-10 shadow-ios relative z-10">
                             <div className="relative flex items-center justify-center">
-                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/20 halo-pulse" />
-                                <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-br from-peso/15 to-pesoLight/5 dark:from-pesoLight/25 dark:to-pesoLight/5 border border-peso/15 text-peso dark:text-pesoLight flex items-center justify-center font-display font-bold text-lg">
-                                    T
+                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/25 halo-pulse" />
+                                <div className="relative logo-breathe">
+                                    <window.Logo size={44} />
                                 </div>
-                                <span className="absolute w-8 h-8 rounded-full border-2 border-peso border-t-transparent spin" style={{ top: '-6px', right: '-6px' }} />
                             </div>
-                            <p className="text-xs font-mono uppercase tracking-wider text-ink2/50 dark:text-paper/40">Ina-ayos ang calculator mo...</p>
+                            <p className="text-[11px] font-mono font-semibold tracking-widest uppercase text-ink2 dark:text-paper/60 text-center">
+                                Loading Calculator
+                            </p>
                         </div>
                     </div>
                 );
@@ -452,51 +338,30 @@
             const AppAllowance = window.AllowanceCalculator;
             const AppNavbar = window.Navbar;
 
+            const logout = async () => {
+                await window.TipidAuth.logOut();
+                window.location.href = "login.html";
+            };
+
             return (
                 <div className="min-h-dvh flex flex-col relative">
                     <AmbientBackground />
 
-                    <AppNavbar user={user} onLogout={handleLogout} activeTab="allowance" />
+                    <AppNavbar user={user} onLogout={logout} activeTab="allowance" />
 
                     <main
-                        className="max-w-4xl mx-auto w-full px-5 sm:px-6 pt-32 md:pt-14 pb-40 md:pb-16 flex-1"
+                        className="max-w-[1000px] mx-auto w-full px-5 sm:px-8 pt-[6.5rem] md:pt-10 pb-36 md:pb-20 flex-1"
                         style={{
-                            paddingLeft: 'max(1.25rem, calc(env(safe-area-inset-left) + 1.25rem))',
-                            paddingRight: 'max(1.25rem, calc(env(safe-area-inset-right) + 1.25rem))',
-                            paddingBottom: 'calc(10rem + env(safe-area-inset-bottom, 0px))',
+                            paddingLeft: 'max(1.25rem, calc(var(--sal) + 1.25rem))',
+                            paddingRight: 'max(1.25rem, calc(var(--sar) + 1.25rem))',
+                            paddingBottom: 'calc(8rem + var(--sab))',
                         }}
                     >
-                        <div className="fade-up">
-                            <div className="allowance-hero">
-                                <div className="allowance-copy">
-                                    <div className="allowance-kicker">Tipid Buddy</div>
-                                    <h1 className="allowance-title">Allowance Calculator</h1>
-                                    <p className="allowance-subtitle">
-                                        Planuhin ang pang-araw-araw na budget para alam mo kung magkano ang puwedeng gastusin at magkano ang puwedeng itabi.
-                                    </p>
-                                </div>
-
-                                <div className="allowance-actions">
-                                    <DarkModeSwitch darkMode={darkMode} onToggle={toggleDarkMode} />
-                                </div>
-
-                                <div className="allowance-bubble">
-                                    <strong>Kaya mo 'yan!</strong>
-                                    Tipid lang. 💚
-                                </div>
-
-                                <div className="allowance-mascot-stage" aria-hidden="true">
-                                    <img
-                                        src="/assets/allowance_mascot.png"
-                                        alt="Tipid Buddy"
-                                        className="allowance-mascot"
-                                        draggable="false"
-                                    />
-                                </div>
-                            </div>
+                        <div className="fade-up" style={{ animationDelay: "0ms" }}>
+                            <AllowanceHeroCard darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
                         </div>
 
-                        <div className="allowance-calculator-shell fade-up" style={{ animationDelay: "60ms" }}>
+                        <div className="fade-up" style={{ animationDelay: "90ms" }}>
                             <AppAllowance user={user} />
                         </div>
                     </main>
@@ -504,7 +369,53 @@
             );
         }
 
-        ReactDOM.createRoot(document.getElementById("root")).render(<AllowancePage />);
+        function mountWhenComponentsReady(attempt = 0) {
+            if (typeof window.Navbar === "function" && typeof window.AllowanceCalculator === "function") {
+                ReactDOM.createRoot(document.getElementById("root")).render(<AllowanceApp />);
+                return;
+            }
+            if (attempt > 100) {
+                document.getElementById("root").innerHTML =
+                    `<div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:Inter,sans-serif;text-align:center;color:#15231C;">
+                        <div>
+                            <p style="font-weight:600;margin-bottom:0.5rem;">Failed to load components.</p>
+                            <p style="font-size:0.875rem;opacity:0.7;">Check the file path (Network tab) and ensure component exports match.</p>
+                        </div>
+                    </div>`;
+                return;
+            }
+            setTimeout(() => mountWhenComponentsReady(attempt + 1), 30);
+        }
+
+        mountWhenComponentsReady();
+    </script>
+
+    <!-- PWA Service Worker Registration & Auto-Update Alert -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                Swal.fire({
+                                    title: "May Bagong Update! 🎉",
+                                    text: "May in-add kaming bagong features sa Tipid App. I-refresh ang app para magamit ito.",
+                                    icon: "info",
+                                    confirmButtonText: "I-update Ngayon",
+                                    confirmButtonColor: "#1F6F54",
+                                    allowOutsideClick: false,
+                                    customClass: { popup: "tipid-swal" }
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            }
+                        });
+                    });
+                }).catch(err => console.error("Service Worker registration failed:", err));
+            });
+        }
     </script>
 </body>
 </html>
