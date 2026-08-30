@@ -26,6 +26,10 @@ function billsRef(uid) {
   return collection(db, "users", uid, "bills");
 }
 
+function utangRef(uid) {
+  return collection(db, "users", uid, "utang");
+}
+
 window.TipidData = {
   // --- entries (expenses + income) ---------------------------------------
 
@@ -180,6 +184,85 @@ window.TipidData = {
       },
       (error) => {
         console.error("Error subscribing to bills:", error);
+        if (onError) onError(error);
+      }
+    );
+  },
+
+  // --- utang tracker ---------------------------------------------------------
+  // direction: "owed_to_me"  -> may utang sa akin ang ibang tao
+  //            "i_owe"       -> may utang ako sa ibang tao
+  // status:    "Unpaid" | "Paid"
+
+  async addUtang(uid, { name, amount, direction, dueDate, notes }) {
+    try {
+      return await addDoc(utangRef(uid), {
+        name,
+        amount: parseFloat(amount),
+        direction: direction === "i_owe" ? "i_owe" : "owed_to_me",
+        dueDate: dueDate || null, // Format: "YYYY-MM-DD" or null
+        notes: notes || "",
+        status: "Unpaid",
+        createdAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error adding utang:", error);
+      throw error;
+    }
+  },
+
+  async settleUtang(uid, utangId) {
+    try {
+      const utangDocRef = doc(db, "users", uid, "utang", utangId);
+      return await updateDoc(utangDocRef, {
+        status: "Paid",
+        settledAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error settling utang:", error);
+      throw error;
+    }
+  },
+
+  async reopenUtang(uid, utangId) {
+    try {
+      const utangDocRef = doc(db, "users", uid, "utang", utangId);
+      return await updateDoc(utangDocRef, { status: "Unpaid" });
+    } catch (error) {
+      console.error("Error reopening utang:", error);
+      throw error;
+    }
+  },
+
+  async deleteUtang(uid, utangId) {
+    try {
+      const utangDocRef = doc(db, "users", uid, "utang", utangId);
+      return await deleteDoc(utangDocRef);
+    } catch (error) {
+      console.error("Error deleting utang:", error);
+      throw error;
+    }
+  },
+
+  // cb receives an array of utang records, newest first.
+  subscribeUtang(uid, cb, onError) {
+    const q = query(utangRef(uid), orderBy("createdAt", "desc"));
+
+    return onSnapshot(
+      q,
+      { includeMetadataChanges: true },
+      (snap) => {
+        cb(
+          snap.docs.map((d) => ({
+            id: d.id,
+            status: "Unpaid",
+            direction: "owed_to_me",
+            ...d.data({ serverTimestamps: "estimate" }),
+          }))
+        );
+      },
+      (error) => {
+        console.error("Error subscribing to utang:", error);
         if (onError) onError(error);
       }
     );

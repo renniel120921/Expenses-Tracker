@@ -106,17 +106,17 @@
         .logo-breathe { animation: logoBreathe 1.7s ease-in-out infinite; }
 
         @keyframes haloPulse {
-            0%   { transform: scale(0.9); opacity: 0.35; }
+            0%   { transform: scale(0.9); opacity: 0.3; }
             70%  { opacity: 0; }
-            100% { transform: scale(1.7); opacity: 0; }
+            100% { transform: scale(1.5); opacity: 0; }
         }
-        .halo-pulse { animation: haloPulse 2s var(--ease-ios) infinite; }
+        .halo-pulse { animation: haloPulse 2.4s var(--ease-ios) infinite; }
 
         @keyframes heroFloat {
             0%, 100% { transform: translate(0, 0); }
-            50%      { transform: translate(0, -10px); }
+            50%      { transform: translate(0, -6px); }
         }
-        .hero-float { animation: heroFloat 6s ease-in-out infinite; }
+        .hero-float { animation: heroFloat 7s ease-in-out infinite; }
 
         .glass-panel {
             background: rgba(255,255,255,0.7);
@@ -140,10 +140,10 @@
 
         @keyframes mascotHover {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
+            50% { transform: translateY(-4px); }
         }
         .tipid-mascot-img {
-            animation: mascotHover 4s ease-in-out infinite;
+            animation: mascotHover 4.5s ease-in-out infinite;
             filter: drop-shadow(0 15px 25px rgba(18,61,46,0.35));
         }
         .speech-bubble {
@@ -261,8 +261,8 @@
         function AmbientBackground() {
             return (
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div className="absolute -top-24 -right-16 w-[380px] h-[380px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
-                    <div className="absolute bottom-0 -left-24 w-[400px] h-[400px] bg-gold/10 dark:bg-gold/5 rounded-full blur-[100px]" />
+                    <div className="absolute -top-24 -right-16 w-[320px] h-[320px] bg-peso/[0.07] dark:bg-pesoLight/[0.07] rounded-full blur-[100px]" />
+                    <div className="absolute bottom-0 -left-24 w-[340px] h-[340px] bg-gold/[0.07] dark:bg-gold/[0.04] rounded-full blur-[110px]" />
                 </div>
             );
         }
@@ -271,11 +271,14 @@
             return (
                 <div className="flex items-end justify-between gap-4 mb-4 sm:mb-6 mt-2 ml-1">
                     <div className="min-w-0">
-                        <h2 className="font-display text-[1.35rem] sm:text-[1.5rem] font-semibold text-ink dark:text-paper tracking-tight leading-tight">
-                            {title}
-                        </h2>
+                        <div className="flex items-center gap-2.5 mb-1.5">
+                            <span className="w-4 h-[3px] rounded-full bg-peso dark:bg-pesoLight shrink-0" />
+                            <h2 className="font-display text-[1.35rem] sm:text-[1.5rem] font-semibold text-ink dark:text-paper tracking-tight leading-tight">
+                                {title}
+                            </h2>
+                        </div>
                         {subtitle && (
-                            <p className="text-[12.5px] text-ink2/60 dark:text-paper/50 mt-1.5">{subtitle}</p>
+                            <p className="text-[12.5px] text-ink2/60 dark:text-paper/50 ml-[1.625rem]">{subtitle}</p>
                         )}
                     </div>
                     {action}
@@ -347,9 +350,9 @@
                 <button
                     onClick={handleBellClick}
                     aria-label="Tingnan ang alerts"
-                    className="relative tap-scale shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md flex items-center justify-center transition-colors duration-200 shadow-sm"
+                    className="relative tap-scale shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 hover:bg-white/20 ring-1 ring-white/20 backdrop-blur-md flex items-center justify-center transition-colors duration-200"
                 >
-                    <Icons.Bell size={20} className="text-paper" strokeWidth={2.2} />
+                    <Icons.Bell size={19} className="text-paper" strokeWidth={2.2} />
                     {isOverspent && (
                         <span className="absolute top-[0.45rem] right-[0.45rem] w-2.5 h-2.5 bg-[#FF6B6B] border-2 border-pesoDeep rounded-full animate-pulse" />
                     )}
@@ -363,8 +366,8 @@
 
             return (
                 <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-5 sm:p-7 shadow-iosLg ring-1 ring-white/15 min-h-[200px] sm:min-h-[220px] flex flex-col justify-between">
-                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/10 rounded-full blur-[50px] hero-float pointer-events-none" />
-                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-[#FFD700]/10 rounded-full blur-[60px] pointer-events-none" />
+                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/[0.08] rounded-full blur-[50px] hero-float pointer-events-none" />
+                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-[#FFD700]/[0.08] rounded-full blur-[60px] pointer-events-none" />
 
                     <div className="absolute right-0 bottom-0 w-[140px] sm:w-[170px] h-full pointer-events-none z-0 overflow-visible">
                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-24 h-24 bg-white/15 blur-2xl rounded-full"></div>
@@ -395,9 +398,9 @@
                                 <button
                                     onClick={() => scrollToId("add-entry")}
                                     aria-label="Magdagdag ng gastos"
-                                    className="tap-scale shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md flex items-center justify-center transition-colors duration-200 shadow-sm"
+                                    className="tap-scale shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-paper text-pesoDeep hover:bg-white flex items-center justify-center transition-colors duration-200 shadow-md"
                                 >
-                                    <Icons.Plus size={22} className="text-paper" strokeWidth={2.2} />
+                                    <Icons.Plus size={20} strokeWidth={2.4} />
                                 </button>
                             </div>
                         </div>
@@ -429,15 +432,15 @@
         /* --- MODERN QUICK ACTIONS --- */
         function QuickActionButton({ icon, label, tone, onClick }) {
             const tones = {
-                peso: "bg-[#E6F3EF] text-[#1F6F54] dark:bg-[#1F6F54]/20 dark:text-[#52C8A1]",
-                gold: "bg-[#FDF6E3] text-[#C9932E] dark:bg-[#C9932E]/20 dark:text-[#E8C071]",
-                expense: "bg-[#FAEDE9] text-[#B5483B] dark:bg-[#B5483B]/20 dark:text-[#F38C80]",
-                ink: "bg-[#F0F2F1] text-[#33443A] dark:bg-white/10 dark:text-[#E9EDE6]",
+                peso: "bg-[#E6F3EF] text-[#1F6F54] ring-1 ring-black/[0.03] dark:bg-[#1F6F54]/20 dark:text-[#52C8A1] dark:ring-white/[0.06]",
+                gold: "bg-[#FDF6E3] text-[#C9932E] ring-1 ring-black/[0.03] dark:bg-[#C9932E]/20 dark:text-[#E8C071] dark:ring-white/[0.06]",
+                expense: "bg-[#FAEDE9] text-[#B5483B] ring-1 ring-black/[0.03] dark:bg-[#B5483B]/20 dark:text-[#F38C80] dark:ring-white/[0.06]",
+                ink: "bg-[#F0F2F1] text-[#33443A] ring-1 ring-black/[0.03] dark:bg-white/10 dark:text-[#E9EDE6] dark:ring-white/[0.06]",
             };
 
             return (
                 <button onClick={onClick} className="tap-scale flex flex-col items-center gap-2 w-full group focus:outline-none">
-                    <div className={`w-[3.25rem] h-[3.25rem] sm:w-[3.75rem] sm:h-[3.75rem] rounded-[18px] sm:rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:shadow-md ${tones[tone] || tones.peso}`}>
+                    <div className={`w-[3.25rem] h-[3.25rem] sm:w-[3.75rem] sm:h-[3.75rem] rounded-[18px] sm:rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md ${tones[tone] || tones.peso}`}>
                         {icon}
                     </div>
                     <span className="text-[10px] sm:text-[11px] font-medium text-ink2 dark:text-paper/70 text-center leading-tight w-full truncate px-0.5">
@@ -507,7 +510,7 @@
 
             return (
                 <div
-                    className={`fade-up snap-start shrink-0 w-[11.5rem] sm:w-[13.5rem] h-32 sm:h-[8.5rem] rounded-[1.25rem] bg-gradient-to-br ${bgClass} p-4 sm:p-5 flex flex-col justify-between shadow-lg relative overflow-hidden transition-transform duration-300 hover:-translate-y-1`}
+                    className={`fade-up snap-start shrink-0 w-[11.5rem] sm:w-[13.5rem] h-32 sm:h-[8.5rem] rounded-[1.25rem] bg-gradient-to-br ${bgClass} ring-1 ring-white/10 p-4 sm:p-5 flex flex-col justify-between shadow-lg relative overflow-hidden transition-transform duration-300 hover:-translate-y-1`}
                     style={{ animationDelay: `${delay}ms` }}
                 >
                     {/* Glass reflections */}
@@ -668,10 +671,8 @@
                     <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
                         <div className="glass-panel flex flex-col items-center gap-5 rounded-[32px] px-10 py-10 shadow-ios">
                             <div className="relative flex items-center justify-center">
-                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/25 halo-pulse" />
-                                <div className="relative logo-breathe">
-                                    <window.Logo size={44} />
-                                </div>
+                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/20 halo-pulse" />
+                                <window.Logo size={40} />
                             </div>
                             <p className="text-[11px] font-mono font-semibold tracking-widest uppercase text-ink2 dark:text-paper/60 text-center">
                                 Loading dashboard
@@ -696,7 +697,7 @@
                 <div className="min-h-dvh relative">
                     <AmbientBackground />
 
-                    <Navbar user={user} onLogout={logout} activeTab="dashboard" />
+                    <Navbar user={user} onLogout={logout} activeTab="home" />
 
                     <main
                         className="max-w-[1000px] mx-auto w-full px-5 sm:px-8 pt-[6.5rem] md:pt-10 pb-36 md:pb-20 space-y-9 sm:space-y-12"

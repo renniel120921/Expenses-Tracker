@@ -8,6 +8,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
     const tabs = [
         { id: "home", href: "dashboard.html", label: "Home", icon: HomeIcon },
         { id: "bills", href: "bills.html", label: "Bills", icon: BillsIcon },
+        { id: "utang", href: "utang.html", label: "Utang", icon: UtangIcon },
         { id: "budget", href: "allowance.html", label: "Budget", icon: BudgetIcon },
         { id: "analytics", href: "chart.html", label: "Analytics", icon: AnalyticsIcon },
         { id: "history", href: "history.html", label: "History", icon: HistoryIcon },
@@ -16,6 +17,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
 
     // --- Desktop: Exact bounding box calculation for flawless gliding ---
     const linkRefs = React.useRef({});
+    const navContainerRef = React.useRef(null);
     const [pillStyle, setPillStyle] = React.useState({ left: 0, top: 0, width: 0, height: 0, opacity: 0, isInitial: true });
 
     const measurePill = React.useCallback(() => {
@@ -34,7 +36,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                 const newTop = elRect.top - containerRect.top - borderTop;
 
                 // Prevent unnecessary state updates if dimensions haven't changed
-                if (prev.left === newLeft && prev.top === newTop && prev.width === elRect.width && !prev.isInitial) {
+                if (prev.left === newLeft && prev.top === newTop && prev.width === elRect.width && prev.height === elRect.height && !prev.isInitial) {
                     return prev;
                 }
                 return {
@@ -58,22 +60,57 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
         return () => window.removeEventListener("resize", measurePill);
     }, [measurePill]);
 
+    // FIX (desktop "crash"): window resize only fires when the *viewport* changes.
+    // It does NOT fire when the tab row itself reflows (font swap, label wrap,
+    // content pushing the row wider/narrower). That stale measurement is what
+    // threw the pill out of alignment / made the nav look broken. A
+    // ResizeObserver on the actual pill container catches every one of those
+    // cases, not just viewport resizes.
+    React.useEffect(() => {
+        const container = navContainerRef.current;
+        if (!container || typeof ResizeObserver === "undefined") return;
+        const ro = new ResizeObserver(() => measurePill());
+        ro.observe(container);
+        return () => ro.disconnect();
+    }, [measurePill]);
+
+    // FIX (mobile pop-in only on Bills): the floating bubble used to carry
+    // `transition-all` from the very first paint. If a page's `active` prop
+    // resolves a frame after mount, that transition animates the bubble
+    // popping in — purely a timing accident, not something tied to "Bills"
+    // specifically. Every tab is equally exposed to it. Suppressing
+    // transitions until after first mount (same guard the desktop pill
+    // already uses) makes every tab behave identically: instant on load,
+    // smooth only on an actual in-app tab change.
+    const [mobileMounted, setMobileMounted] = React.useState(false);
+    React.useEffect(() => {
+        const id = requestAnimationFrame(() => setMobileMounted(true));
+        return () => cancelAnimationFrame(id);
+    }, []);
+
     return (
         <React.Fragment>
             {/* --- Desktop Navigation --- */}
             <nav className="hidden md:flex justify-center bg-white/75 dark:bg-ink2/75 backdrop-blur-2xl text-ink dark:text-paper w-full sticky top-0 z-50 border-b border-line/40 dark:border-white/10 shadow-[0_4px_24px_-12px_rgba(0,0,0,0.06)]">
-                <div className="w-full max-w-6xl px-6 py-4 flex justify-between items-center">
+                <div className="w-full max-w-6xl px-4 md:px-5 lg:px-6 py-3.5 lg:py-4 flex items-center gap-3 lg:gap-6">
 
-                    <div className="flex-1 flex justify-start">
-                        <a href="dashboard.html" className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 rounded-xl">
+                    <div className="flex-none flex justify-start">
+                        <a href="dashboard.html" className="flex items-center gap-2.5 lg:gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 rounded-xl">
                             <div className="transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-1">
                                 <window.Logo size={28} />
                             </div>
-                            <span className="font-display font-semibold text-xl tracking-tight">Tipid</span>
+                            <span className="hidden lg:inline font-display font-semibold text-xl tracking-tight">Tipid</span>
                         </a>
                     </div>
 
-                    <div className="relative flex items-center gap-1.5 lg:gap-2.5 shrink-0 bg-paperDim/60 dark:bg-white/[0.04] p-1.5 rounded-full border border-line/50 dark:border-white/5 shadow-inner">
+                    {/* FIX: min-w-0 + overflow-x-auto is the safety net — if the row
+                        ever runs out of room again (extra-narrow window, longer
+                        translated labels, etc.) it scrolls instead of wrapping and
+                        breaking the pill's absolute positioning. */}
+                    <div
+                        ref={navContainerRef}
+                        className="relative flex flex-nowrap items-center gap-1 lg:gap-2 min-w-0 flex-1 justify-center overflow-x-auto no-scrollbar bg-paperDim/60 dark:bg-white/[0.04] p-1.5 rounded-full border border-line/50 dark:border-white/5 shadow-inner"
+                    >
                         <div
                             className="absolute rounded-full bg-white dark:bg-ink2 ring-1 ring-black/[0.04] dark:ring-white/10 shadow-md pointer-events-none"
                             style={{
@@ -99,14 +136,14 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                         ))}
                     </div>
 
-                    <div className="flex-1 flex items-center justify-end gap-4 lg:gap-6">
-                        <div className="flex items-center gap-3 shrink-0">
+                    <div className="flex-none flex items-center justify-end gap-3 lg:gap-6 min-w-0">
+                        <div className="flex items-center gap-2.5 lg:gap-3 min-w-0">
                             <div className="w-9 h-9 rounded-full p-[1.5px] bg-gradient-to-br from-peso/50 via-peso/15 to-transparent dark:from-pesoLight/40 dark:via-white/10 shrink-0">
                                 <div className="w-full h-full rounded-full bg-gradient-to-br from-peso/15 to-pesoLight/5 dark:from-white/15 dark:to-white/5 flex items-center justify-center text-peso dark:text-paper font-bold text-sm">
                                     {initial}
                                 </div>
                             </div>
-                            <span className="hidden lg:block text-sm font-semibold text-ink2 dark:text-paper/80 truncate max-w-[120px]">
+                            <span className="hidden xl:block text-sm font-semibold text-ink2 dark:text-paper/80 truncate max-w-[120px]">
                                 {userName}
                             </span>
                         </div>
@@ -154,13 +191,14 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                 className="md:hidden fixed left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-[400px]"
                 style={{ bottom: 'max(1.25rem, calc(env(safe-area-inset-bottom) + 0.75rem))' }}
             >
-                <div className="relative h-[4.25rem] bg-white/90 dark:bg-ink2/90 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-[1.75rem] flex items-center justify-between px-1.5">
+                <div className="relative h-[4.25rem] bg-white/90 dark:bg-ink2/90 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-[1.75rem] flex items-center justify-between px-1.5 overflow-x-auto no-scrollbar">
                     {tabs.map((tab) => (
                         <BottomNavBtn
                             key={tab.id}
                             href={tab.href}
                             label={tab.label}
                             active={activeTab === tab.id}
+                            allowTransition={mobileMounted}
                             icon={<tab.icon active={activeTab === tab.id} size={activeTab === tab.id ? 22 : 24} />}
                         />
                     ))}
@@ -175,22 +213,22 @@ const DesktopNavLink = ({ href, label, active, icon, innerRef }) => (
         ref={innerRef}
         href={href}
         aria-current={active ? "page" : undefined}
-        className={`relative z-10 flex items-center gap-2 text-sm transition-all duration-300 px-4 py-2.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 ${active ? 'font-bold text-peso dark:text-pesoLight' : 'font-medium text-ink2/50 dark:text-paper/40 hover:text-ink dark:hover:text-paper'}`}
+        className={`relative z-10 flex items-center gap-2 text-sm whitespace-nowrap shrink-0 transition-all duration-300 px-3 lg:px-4 py-2.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 ${active ? 'font-bold text-peso dark:text-pesoLight' : 'font-medium text-ink2/50 dark:text-paper/40 hover:text-ink dark:hover:text-paper'}`}
     >
         {icon}
-        {label}
+        <span className="hidden lg:inline">{label}</span>
     </a>
 );
 
-const BottomNavBtn = ({ href, icon, label, active }) => (
+const BottomNavBtn = ({ href, icon, label, active, allowTransition }) => (
     <a
         href={href}
         aria-current={active ? "page" : undefined}
         aria-label={label}
-        className="relative flex-1 flex flex-col items-center justify-center h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 rounded-2xl active:scale-90 transition-transform duration-200"
+        className="relative flex-1 flex flex-col items-center justify-center h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 rounded-2xl active:scale-90 transition-transform duration-200 min-w-[3.2rem]"
     >
         <div
-            className={`absolute flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+            className={`absolute flex items-center justify-center ${allowTransition ? "transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]" : ""} ${
                 active
                     ? "-top-[1.1rem] w-[3.15rem] h-[3.15rem] bg-[#A0D44A] rounded-full shadow-[0_8px_16px_-4px_rgba(160,212,74,0.6)] text-[#111A15]"
                     : "top-[14px] w-7 h-7 bg-transparent text-ink2/40 dark:text-paper/40"
@@ -199,7 +237,7 @@ const BottomNavBtn = ({ href, icon, label, active }) => (
             {icon}
         </div>
         <span
-            className={`absolute bottom-1.5 text-[9.5px] font-semibold tracking-tight transition-all duration-300 ${
+            className={`absolute bottom-1.5 text-[9.5px] font-semibold tracking-tight ${allowTransition ? "transition-all duration-300" : ""} ${
                 active
                     ? "opacity-0 translate-y-3 pointer-events-none"
                     : "opacity-100 translate-y-0 text-ink2/50 dark:text-paper/50"
@@ -247,6 +285,31 @@ const BillsIcon = ({ active, size = 24 }) => (
                 <path d="M4 2v20l3-3 3 3 3-3 3 3 3-3V2a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z" />
                 <line x1="8" y1="8.5" x2="16" y2="8.5" />
                 <line x1="8" y1="14" x2="13" y2="14" />
+            </>
+        )}
+    </svg>
+);
+
+// Utang tab: two people + a coin passing between them — reads clearly at nav size
+// and doesn't reuse any existing tab's silhouette.
+const UtangIcon = ({ active, size = 24 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={active ? "none" : "currentColor"} strokeWidth={active ? "0" : "1.75"} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+        {active ? (
+            <>
+                <circle cx="6" cy="7" r="3" fill="currentColor" opacity="0.3" />
+                <circle cx="18" cy="7" r="3" fill="currentColor" opacity="0.3" />
+                <path d="M2 21v-1a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v1" fill="currentColor" opacity="0.3" />
+                <path d="M14 21v-1a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v1" fill="currentColor" opacity="0.3" />
+                <circle cx="12" cy="13" r="4" fill="currentColor" />
+                <path d="M12 11.2v3.6M10.7 12.3h2.6M10.7 13.8h2.6" stroke="#fff" strokeWidth="1" />
+            </>
+        ) : (
+            <>
+                <circle cx="6" cy="7" r="3" />
+                <circle cx="18" cy="7" r="3" />
+                <path d="M2 21v-1a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v1" />
+                <path d="M14 21v-1a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v1" />
+                <circle cx="12" cy="13" r="3.2" />
             </>
         )}
     </svg>

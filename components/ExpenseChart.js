@@ -22,8 +22,15 @@ function ExpenseChartStyles() {
                 mask-image: repeating-linear-gradient(90deg, black 0 4px, transparent 4px 10px);
             }
 
+            /* Quiet "just recalculated" pulse for totals when the filter/view changes */
+            @keyframes statPop {
+                from { opacity: 0; transform: scale(0.97) translateY(2px); }
+                to   { opacity: 1; transform: scale(1) translateY(0); }
+            }
+            .stat-pop { animation: statPop 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
             @media (prefers-reduced-motion: reduce) {
-                .legend-row { animation: none !important; }
+                .legend-row, .stat-pop { animation: none !important; }
             }
         `}</style>
     );
@@ -109,6 +116,19 @@ function ExpenseChart({ entries }) {
     }, [analytics]);
 
     const hasCategoryData = analytics.catLabels.length > 0;
+
+    // Plain-language chart description for screen readers — a <canvas> has no accessible
+    // content on its own, so this is the only thing that lets non-visual users read the data.
+    const chartSummary = useMemo(() => {
+        if (view === "category") {
+            if (!hasCategoryData) return "Walang gastos na naitala sa napiling panahon.";
+            const top = sortedCategories.slice(0, 3)
+                .map(c => `${c.label} ₱${peso(c.amount)}, ${c.pct.toFixed(0)} porsyento`)
+                .join("; ");
+            return `Doughnut chart ng gastos ayon sa kategorya. Kabuuang gastos: ₱${peso(analytics.totalExpense)}. Pangunahing kategorya: ${top}.`;
+        }
+        return `Bar chart ng cash flow. Kita: ₱${peso(analytics.totalIncome)}. Gastos: ₱${peso(analytics.totalExpense)}. ${analytics.net >= 0 ? "Natitira" : "Kulang"}: ₱${peso(Math.abs(analytics.net))}.`;
+    }, [view, hasCategoryData, sortedCategories, analytics]);
 
     // 3. Render Chart
     useEffect(() => {
@@ -196,7 +216,7 @@ function ExpenseChart({ entries }) {
                 </div>
 
                 {/* iOS-Style Segmented Date Control */}
-                <div className="flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-full text-[12px] font-medium w-full sm:w-auto">
+                <div role="group" aria-label="Saklaw ng petsa" className="flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-full text-[12px] font-medium w-full sm:w-auto">
                     {[
                         { key: "thisMonth", label: "This Month" },
                         { key: "lastMonth", label: "Last Month" },
@@ -205,6 +225,7 @@ function ExpenseChart({ entries }) {
                         <button
                             key={opt.key}
                             type="button"
+                            aria-pressed={dateFilter === opt.key}
                             onClick={() => setDateFilter(opt.key)}
                             className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 ${
                                 dateFilter === opt.key
@@ -218,8 +239,8 @@ function ExpenseChart({ entries }) {
                 </div>
             </div>
 
-            {/* Quick Stat Chips */}
-            <div className="flex items-center gap-2.5 sm:gap-4 mb-6 flex-wrap">
+            {/* Quick Stat Chips — pop softly whenever the date filter changes, so a refreshed total reads as "live" */}
+            <div key={`stats-${dateFilter}`} className="stat-pop flex items-center gap-2.5 sm:gap-4 mb-6 flex-wrap">
                 <div className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#E6F3EF] dark:bg-[#1F6F54]/15">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#2F8E6C]"></span>
                     <span className="text-[11px] font-medium text-[#1F6F54] dark:text-[#52C8A1]">Kita:</span>
@@ -244,9 +265,10 @@ function ExpenseChart({ entries }) {
             </div>
 
             {/* View Toggles (Category vs Cash Flow) */}
-            <div className="flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-[14px] mb-6">
+            <div role="group" aria-label="Uri ng tsart" className="flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-[14px] mb-6">
                 <button
                     onClick={() => setView("category")}
+                    aria-pressed={view === "category"}
                     className={`flex-1 inline-flex items-center justify-center gap-2 text-[12px] font-semibold py-2.5 rounded-xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 ${
                         view === "category" ? 'bg-white dark:bg-ink2 text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink dark:hover:text-paper'
                     }`}
@@ -255,6 +277,7 @@ function ExpenseChart({ entries }) {
                 </button>
                 <button
                     onClick={() => setView("flow")}
+                    aria-pressed={view === "flow"}
                     className={`flex-1 inline-flex items-center justify-center gap-2 text-[12px] font-semibold py-2.5 rounded-xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 ${
                         view === "flow" ? 'bg-white dark:bg-ink2 text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink dark:hover:text-paper'
                     }`}
@@ -265,6 +288,9 @@ function ExpenseChart({ entries }) {
 
             {/* Chart Area */}
             <div className="relative w-full">
+                {/* Screen-reader-only data summary — announces itself when the filter/view changes */}
+                <p className="sr-only" aria-live="polite">{chartSummary}</p>
+
                 {!chartLoaded && (
                     <div className="h-56 flex flex-col items-center justify-center gap-3 text-center bg-white/40 dark:bg-black/10 rounded-2xl">
                         <Icons.AlertCircle size={22} className="text-expense" />
@@ -297,8 +323,8 @@ function ExpenseChart({ entries }) {
                     <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
                         {/* Doughnut Chart */}
                         <div className="relative h-48 w-48 sm:h-52 sm:w-52 shrink-0 drop-shadow-md">
-                            <canvas ref={chartRef}></canvas>
-                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-1">
+                            <canvas ref={chartRef} role="img" aria-label={chartSummary}></canvas>
+                            <div key={`center-${dateFilter}-${analytics.totalExpense}`} aria-hidden="true" className="stat-pop absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-1">
                                 <span className="text-[9px] font-mono font-semibold uppercase tracking-[0.1em] text-ink2/50 dark:text-paper/50 mb-0.5">Kabuuang Gastos</span>
                                 <span className="font-mono text-lg font-bold text-ink dark:text-paper">₱{peso(analytics.totalExpense)}</span>
                             </div>
@@ -310,6 +336,9 @@ function ExpenseChart({ entries }) {
                                 <div key={c.label} className="legend-row flex items-center gap-3 bg-white/40 dark:bg-white/[0.03] p-2 rounded-xl transition-colors hover:bg-white/60 dark:hover:bg-white/10" style={{ animationDelay: `${i * 50}ms` }}>
                                     <div className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: c.color }}></div>
                                     <span className="text-[13px] font-medium text-ink2/80 dark:text-paper/80 flex-1 min-w-0 truncate">{c.label}</span>
+
+                                    {/* Share of total, so the bar's length isn't the only way to read it */}
+                                    <span className="text-[10px] font-mono text-ink2/40 dark:text-paper/40 w-7 text-right shrink-0">{c.pct.toFixed(0)}%</span>
 
                                     {/* Progress Bar (Visible on all screens now, adapted sizes) */}
                                     <div className="w-12 sm:w-20 h-1.5 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden shrink-0">
@@ -325,7 +354,7 @@ function ExpenseChart({ entries }) {
 
                 {chartLoaded && filteredEntries.length > 0 && view === "flow" && (
                     <div className="h-60 w-full pt-2">
-                        <canvas ref={chartRef}></canvas>
+                        <canvas ref={chartRef} role="img" aria-label={chartSummary}></canvas>
                     </div>
                 )}
             </div>

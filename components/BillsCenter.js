@@ -6,8 +6,9 @@ function StatIcon({ icon, tone }) {
         expense: "bg-[#FAEDE9] text-[#B5483B] dark:bg-[#B5483B]/20 dark:text-[#F38C80]",
         gold: "bg-[#FDF6E3] text-[#C9932E] dark:bg-[#C9932E]/20 dark:text-[#E8C071]",
     };
+    // Decorative — always sits beside a text label in this file, so hidden from assistive tech.
     return (
-        <span className={`w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 ${tones[tone] || tones.peso}`}>
+        <span aria-hidden="true" className={`w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 ${tones[tone] || tones.peso}`}>
             {icon}
         </span>
     );
@@ -15,7 +16,7 @@ function StatIcon({ icon, tone }) {
 
 function SelectChevron() {
     return (
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-ink2/30 dark:text-paper/30 shrink-0 pointer-events-none">
+        <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-ink2/30 dark:text-paper/30 shrink-0 pointer-events-none">
             <path d="M6 9l6 6 6-6" />
         </svg>
     );
@@ -23,11 +24,53 @@ function SelectChevron() {
 
 function FieldWrap({ icon, children, className = "" }) {
     return (
-        <div className={`flex items-center gap-2.5 bg-white/60 dark:bg-black/20 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-3.5 focus-within:ring-2 focus-within:ring-peso/40 focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200 ${className}`}>
+        <div className={`flex items-center gap-2.5 bg-white/60 dark:bg-black/20 ring-1 ring-black/5 dark:ring-white/10 hover:ring-black/10 dark:hover:ring-white/20 rounded-[14px] px-3.5 focus-within:ring-2 focus-within:ring-peso/40 focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200 ${className}`}>
             {icon}
             {children}
         </div>
     );
+}
+
+// Same count-up treatment as the dashboard's headline totals, kept local since each
+// component file in this app is self-contained (no shared import between them).
+function AnimatedAmount({ value, className }) {
+    const { useState, useEffect, useRef } = React;
+    const safeValue = Number.isFinite(value) ? value : 0;
+    const [display, setDisplay] = useState(safeValue);
+    const prevValue = useRef(safeValue);
+    const rafRef = useRef(null);
+
+    useEffect(() => {
+        const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const from = prevValue.current;
+        const to = safeValue;
+
+        if (reduceMotion || from === to) {
+            setDisplay(to);
+            prevValue.current = to;
+            return;
+        }
+
+        const duration = 600;
+        const start = performance.now();
+        cancelAnimationFrame(rafRef.current);
+
+        const tick = (now) => {
+            const t = Math.min(1, (now - start) / duration);
+            const eased = 1 - Math.pow(1 - t, 4);
+            setDisplay(from + (to - from) * eased);
+            if (t < 1) {
+                rafRef.current = requestAnimationFrame(tick);
+            } else {
+                prevValue.current = to;
+                setDisplay(to);
+            }
+        };
+        rafRef.current = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(rafRef.current);
+    }, [safeValue]);
+
+    return <span className={className}>₱{window.peso(display)}</span>;
 }
 
 function formatDueDate(dateStr) {
@@ -81,6 +124,11 @@ const BillsCenterFallbackIcons = {
     Loader: ({ size = 16, className = "" }) => (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className={className}><path d="M12 2a10 10 0 0 1 10 10"/></svg>
     ),
+    // Was referenced by the submit button below but missing from this fallback set — added so
+    // the form still renders correctly even if window.Icons isn't loaded yet.
+    Plus: ({ size = 16, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 5v14M5 12h14"/></svg>
+    ),
 };
 
 window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
@@ -96,6 +144,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
     const totalUnpaid = bills.filter(b => b.status === "Unpaid" || b.status === "Overdue").reduce((acc, curr) => acc + curr.amount, 0);
     const overdueCount = bills.filter(b => b.status === "Overdue").length;
     const paidCount = bills.filter(b => b.status === "Paid").length;
+    const paidPct = bills.length > 0 ? Math.round((paidCount / bills.length) * 100) : 0;
 
     // --- IN-APP NOTIFICATION LOGIC ---
     useEffect(() => {
@@ -246,7 +295,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                         <StatIcon tone="gold" icon={<Icons.Wallet size={16} />} />
                         <p className="text-[10px] sm:text-[11px] font-mono uppercase font-semibold tracking-wider text-ink2/50 dark:text-paper/50">Total na Babayaran</p>
                     </div>
-                    <p className="font-mono text-[1.7rem] sm:text-3xl font-bold tracking-tight text-ink dark:text-paper">₱{window.peso(totalUnpaid)}</p>
+                    <AnimatedAmount value={totalUnpaid} className="font-mono text-[1.7rem] sm:text-3xl font-bold tracking-tight text-ink dark:text-paper" />
                 </div>
 
                 {/* Overdue */}
@@ -289,7 +338,9 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                 <form onSubmit={handleAddBill} className="flex flex-col gap-3 sm:gap-3.5">
 
                     <FieldWrap icon={<Icons.Pencil size={16} className="text-ink2/40 dark:text-paper/40 shrink-0" />}>
+                        <label htmlFor="bill-title" className="sr-only">Pangalan ng bill</label>
                         <input
+                            id="bill-title"
                             type="text"
                             placeholder="Pangalan ng Bill (Hal: Kuryente)"
                             value={title}
@@ -301,7 +352,9 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-3.5">
 
                         <FieldWrap className="sm:w-[150px]" icon={<span className="text-ink2/40 dark:text-paper/40 font-mono text-[15px] shrink-0">₱</span>}>
+                            <label htmlFor="bill-amount" className="sr-only">Halaga</label>
                             <input
+                                id="bill-amount"
                                 type="number"
                                 step="0.01"
                                 placeholder="Halaga"
@@ -313,7 +366,9 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
 
                         {/* Calendar Picker */}
                         <FieldWrap className="sm:w-[170px]" icon={<Icons.Calendar size={15} className="text-ink2/40 dark:text-paper/40 shrink-0" />}>
+                            <label htmlFor="bill-due-date" className="sr-only">Due date</label>
                             <input
+                                id="bill-due-date"
                                 type="date"
                                 value={dueDate}
                                 onChange={e => setDueDate(e.target.value)}
@@ -323,7 +378,9 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
 
                         {/* Category Select */}
                         <FieldWrap className="sm:w-[150px] relative" icon={<Icons.Category size={15} className="text-ink2/40 dark:text-paper/40 shrink-0" />}>
+                            <label htmlFor="bill-category" className="sr-only">Kategorya</label>
                             <select
+                                id="bill-category"
                                 value={category}
                                 onChange={e => setCategory(e.target.value)}
                                 className="w-full min-w-0 bg-transparent py-3.5 text-[14px] text-ink dark:text-paper focus:outline-none appearance-none pr-2"
@@ -341,6 +398,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                         <button
                             type="submit"
                             disabled={saving}
+                            aria-label={saving ? "Sinasave" : "Idagdag ang bill"}
                             className="bg-gradient-to-r from-peso to-pesoLight hover:shadow-lg hover:shadow-peso/20 active:scale-95 disabled:opacity-60 text-white font-semibold rounded-[14px] px-6 py-3.5 text-[14px] transition-all duration-200 shrink-0 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50"
                         >
                             {saving ? <Icons.Loader size={18} className="spin" /> : <Icons.Plus size={18} />}
@@ -363,18 +421,25 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
 
                 {/* Modern Progress Bar */}
                 {!loading && bills.length > 0 && (
-                    <div className="h-1.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden mb-6">
-                        <div className="h-full rounded-full bg-[#1F6F54] transition-all duration-700 ease-out" style={{ width: `${Math.round((paidCount / bills.length) * 100)}%` }} />
+                    <div
+                        role="progressbar"
+                        aria-label="Porsyento ng mga bills na bayad na"
+                        aria-valuenow={paidPct}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        className="h-1.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden mb-6"
+                    >
+                        <div className="h-full rounded-full bg-[#1F6F54] transition-all duration-700 ease-out" style={{ width: `${paidPct}%` }} />
                     </div>
                 )}
 
                 {loading ? (
-                    <div className="py-12 flex items-center justify-center text-ink2/40 dark:text-paper/30">
+                    <div role="status" aria-label="Naglo-load ng mga bills" className="py-12 flex items-center justify-center text-ink2/40 dark:text-paper/30">
                         <Icons.Loader size={24} className="spin" />
                     </div>
                 ) : bills.length === 0 ? (
                     <div className="py-12 flex flex-col items-center justify-center gap-4 text-center">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-paperDim to-paperDim/50 dark:from-ink2/60 dark:to-ink2/20 border border-dashed border-line dark:border-white/15 flex items-center justify-center">
+                        <div aria-hidden="true" className="w-16 h-16 rounded-2xl bg-gradient-to-br from-paperDim to-paperDim/50 dark:from-ink2/60 dark:to-ink2/20 border border-dashed border-line dark:border-white/15 flex items-center justify-center">
                             <Icons.Inbox size={26} className="text-ink2/30 dark:text-paper/25" />
                         </div>
                         <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/50">Wala pang naka-set na bills.<br/>Magdagdag sa itaas.</p>
@@ -386,19 +451,38 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                             const isOverdue = bill.status === "Overdue";
                             const dueBadge = getDueBadge(bill);
 
+                            // At-a-glance urgency, same "scan bar" language as the expense list:
+                            // green once paid, red if overdue, gold if due within the next 3 days,
+                            // quiet neutral otherwise.
+                            const rowAccent = isPaid
+                                ? "bg-[#1F6F54] dark:bg-[#52C8A1]"
+                                : isOverdue
+                                    ? "bg-[#B5483B] dark:bg-[#F38C80]"
+                                    : dueBadge
+                                        ? "bg-[#C9932E] dark:bg-[#E8C071]"
+                                        : "bg-ink2/15 dark:bg-paper/15";
+
                             return (
-                                <div key={bill.id} className="group flex items-center justify-between gap-3 p-3.5 sm:p-4 bg-white/40 dark:bg-white/[0.03] rounded-2xl transition-all duration-300 hover:bg-white/70 dark:hover:bg-white/10 hover:shadow-sm">
+                                <div key={bill.id} className="relative overflow-hidden group flex items-center justify-between gap-3 pl-5 pr-3.5 sm:pl-6 sm:pr-4 py-3.5 sm:py-4 bg-white/40 dark:bg-white/[0.03] rounded-2xl transition-all duration-300 hover:bg-white/70 dark:hover:bg-white/10 hover:shadow-sm">
+
+                                    <div
+                                        className={`absolute left-1.5 top-1/2 -translate-y-1/2 h-[55%] w-[3px] rounded-full transition-opacity duration-300 ${rowAccent} opacity-30 group-hover:opacity-100`}
+                                        aria-hidden="true"
+                                    ></div>
+
                                     <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
 
                                         {/* iOS Style Circular Checkbox */}
                                         <button
                                             onClick={() => toggleStatus(bill)}
+                                            aria-pressed={isPaid}
+                                            aria-label={isPaid ? `Markahan bilang hindi pa bayad: ${bill.title}` : `Markahan bilang bayad na: ${bill.title}`}
+                                            title={isPaid ? "Markahan bilang hindi pa bayad" : "Markahan bilang bayad na"}
                                             className={`w-6 h-6 sm:w-[1.65rem] sm:h-[1.65rem] rounded-full flex items-center justify-center shrink-0 transition-all duration-300 active:scale-90 ${
                                                 isPaid
                                                     ? 'bg-[#1F6F54] border-2 border-[#1F6F54] text-white shadow-sm'
                                                     : 'bg-transparent border-2 border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/40'
                                             }`}
-                                            title="Mark as Paid"
                                         >
                                             <Icons.Check size={14} className={`transition-opacity duration-300 ${isPaid ? 'opacity-100' : 'opacity-0'}`} />
                                         </button>
@@ -408,7 +492,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                                                 {bill.title}
                                             </p>
                                             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                                                <span className={`text-[9px] sm:text-[10px] font-mono font-semibold tracking-wide px-2 py-0.5 rounded-md uppercase ${isPaid ? 'bg-black/5 dark:bg-white/5 text-ink2/30 dark:text-paper/20' : 'bg-ink/[0.04] dark:bg-white/10 text-ink2/70 dark:text-paper/70'}`}>
+                                                <span className={`text-[9px] sm:text-[10px] font-mono font-semibold tracking-wide px-2 py-0.5 rounded-full uppercase ${isPaid ? 'bg-black/5 dark:bg-white/5 text-ink2/30 dark:text-paper/20' : 'bg-ink/[0.04] dark:bg-white/10 text-ink2/70 dark:text-paper/70'}`}>
                                                     {bill.category}
                                                 </span>
                                                 <span className={`text-[10px] sm:text-[11px] font-medium ${isPaid ? 'text-ink2/30 dark:text-paper/20' : 'text-ink2/50 dark:text-paper/40'}`}>
@@ -434,8 +518,8 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                                         </span>
                                         <button
                                             onClick={() => handleDelete(bill.id)}
-                                            aria-label="Burahin ang entry"
-                                            className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-200 p-2 rounded-full text-ink2/30 hover:text-expense hover:bg-expense/10 dark:text-paper/30 dark:hover:text-[#F38C80] dark:hover:bg-[#B5483B]/20 active:scale-90 focus:outline-none"
+                                            aria-label={`Burahin ang bill: ${bill.title}`}
+                                            className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-200 p-2 rounded-full text-ink2/30 hover:text-expense hover:bg-expense/10 dark:text-paper/30 dark:hover:text-[#F38C80] dark:hover:bg-[#B5483B]/20 active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-expense/40"
                                         >
                                             <Icons.Trash size={18} strokeWidth={2.2} />
                                         </button>

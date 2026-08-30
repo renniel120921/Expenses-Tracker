@@ -75,10 +75,11 @@
             --sal: env(safe-area-inset-left, 0px);
             --ease-ios: cubic-bezier(0.22, 1, 0.36, 1);
             --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --page-bg: #F1F4EF;
         }
 
         html { background: #F1F4EF; transition: background-color 0.3s var(--ease-ios); }
-        html.dark { background: #111A15; color: #F1F4EF; }
+        html.dark { background: #111A15; color: #F1F4EF; --page-bg: #111A15; }
 
         body { font-feature-settings: "tnum" 1, "lnum" 1; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
         ::selection { background: #C9932E33; color: #15231C; }
@@ -89,6 +90,12 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.85s linear infinite; }
+
+        @keyframes logoBreathe {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.08); opacity: 0.85; }
+        }
+        .logo-breathe { animation: logoBreathe 1.7s ease-in-out infinite; }
 
         @keyframes haloPulse {
             0%   { transform: scale(0.9); opacity: 0.35; }
@@ -119,6 +126,22 @@
 
         .tipid-swal { border-radius: 28px !important; font-family: 'Inter', sans-serif !important; }
 
+        /* --- Resibo perforation: torn-receipt seam under the hero card, on-brand with Tipid's perf-edge motif --- */
+        .receipt-edge { position: relative; }
+        .receipt-edge::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -9px;
+            height: 18px;
+            background-image: radial-gradient(circle at 9px 9px, var(--page-bg) 9px, transparent 9.5px);
+            background-size: 18px 18px;
+            background-repeat: repeat-x;
+            pointer-events: none;
+            z-index: 5;
+        }
+
         /* --- Mascot Animations --- */
         @keyframes mascotHover {
             0%, 100% { transform: translateY(0); }
@@ -134,7 +157,7 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
-            .fade-up, .spin, .halo-pulse, .hero-float, .tap-scale, .history-mascot-img, .speech-bubble {
+            .fade-up, .spin, .logo-breathe, .halo-pulse, .hero-float, .tap-scale, .history-mascot-img, .speech-bubble {
                 animation: none !important; transition: none !important;
             }
         }
@@ -197,27 +220,28 @@
         function AmbientBackground() {
             return (
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div className="absolute -top-24 -right-16 w-[380px] h-[380px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
-                    <div className="absolute bottom-0 -left-24 w-[400px] h-[400px] bg-[#C9932E]/10 dark:bg-[#C9932E]/5 rounded-full blur-[100px]" />
+                    <div className="absolute -top-24 -right-16 w-[380px] h-[380px] bg-peso/[0.07] dark:bg-pesoLight/[0.07] rounded-full blur-[90px]" />
+                    <div className="absolute bottom-0 -left-24 w-[400px] h-[400px] bg-[#C9932E]/[0.07] dark:bg-[#C9932E]/[0.04] rounded-full blur-[100px]" />
                 </div>
             );
         }
 
-        /* --- MODERN HISTORY HERO CARD --- */
+        /* --- MODERN HISTORY HERO CARD (matched to the Bills Center / Analytics hero) --- */
         function HistoryHeroCard({ darkMode, toggleDarkMode }) {
             return (
-                <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-5 sm:p-7 shadow-iosLg ring-1 ring-white/15 min-h-[220px] sm:min-h-[240px] flex flex-col justify-between mb-6 sm:mb-8">
+                <div className="relative receipt-edge mb-6 sm:mb-8">
+                <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-5 sm:p-7 shadow-iosLg ring-1 ring-white/15 min-h-[220px] sm:min-h-[240px] flex flex-col justify-between">
 
                     {/* Ambient Glows Inside Card */}
-                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/10 rounded-full blur-[50px] hero-float" />
-                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-[#FFD700]/10 rounded-full blur-[60px]" />
+                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/[0.08] rounded-full blur-[50px] hero-float" />
+                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-[#FFD700]/[0.1] rounded-full blur-[60px]" />
 
                     {/* Dark Mode Toggle */}
                     <div className="absolute top-5 right-5 sm:top-6 sm:right-6 z-30">
                         <button
                             onClick={toggleDarkMode}
                             aria-label="Toggle Dark Mode"
-                            className="tap-scale w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/20 hover:bg-white/30 border border-white/20 flex items-center justify-center text-white shadow-sm backdrop-blur-md transition-colors"
+                            className="tap-scale w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 hover:bg-white/20 ring-1 ring-white/20 flex items-center justify-center text-white shadow-sm backdrop-blur-md transition-colors"
                         >
                             {darkMode ? <window.Icons.Sun size={18} /> : <window.Icons.Moon size={18} />}
                         </button>
@@ -234,8 +258,8 @@
                         />
                         {/* Speech Bubble */}
                         <div className="speech-bubble absolute top-[15%] right-[60%] sm:right-[70%] bg-paper text-ink rounded-2xl px-3 py-2 text-[10px] sm:text-xs font-medium leading-tight w-max max-w-[120px] sm:max-w-[140px] border border-white/50">
-                            <strong className="block font-bold text-[#1F6F54] mb-0.5">Nice work!</strong>
-                            Keep checking your gastos. 💚
+                            <strong className="block font-bold text-[#1F6F54] mb-0.5">Ang galing!</strong>
+                            Panatilihing subaybayan ang gastos mo. 💚
                             <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-paper rotate-45 border-r border-b border-white/50"></div>
                         </div>
                     </div>
@@ -255,6 +279,7 @@
                             </p>
                         </div>
                     </div>
+                </div>
                 </div>
             );
         }

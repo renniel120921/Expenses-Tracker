@@ -11,11 +11,11 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Global Dark Mode Script Initializer -->
     <script>
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        if (localStorage.getItem('tipid_theme') === 'dark' || (!('tipid_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
@@ -38,6 +38,10 @@
                         body: ['"Inter"', 'sans-serif'],
                         mono: ['"IBM Plex Mono"', 'monospace'],
                     },
+                    boxShadow: {
+                        'ios': '0 2px 10px rgba(18,61,46,0.06), 0 16px 32px -12px rgba(18,61,46,0.15)',
+                        'iosLg': '0 24px 48px -12px rgba(18,61,46,0.25)',
+                    }
                 }
             }
         }
@@ -56,11 +60,12 @@
         :root {
             --ease-ios: cubic-bezier(0.22, 1, 0.36, 1);
             --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --page-bg: #F1F4EF;
         }
 
         /* Base Dark Mode overrides */
         html { background: #F1F4EF; transition: background-color 0.3s var(--ease-ios); }
-        html.dark { background: #111A15; color: #F1F4EF; }
+        html.dark { background: #111A15; color: #F1F4EF; --page-bg: #111A15; }
 
         body { font-feature-settings: "tnum" 1, "lnum" 1; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
         ::selection { background: #C9932E33; color: #15231C; }
@@ -83,6 +88,41 @@
         }
         .halo-pulse { animation: haloPulse 2s var(--ease-ios) infinite; }
 
+        @keyframes heroFloat {
+            0%, 100% { transform: translate(0, 0); }
+            50%      { transform: translate(0, -10px); }
+        }
+        .hero-float { animation: heroFloat 6s ease-in-out infinite; }
+
+        /* --- Resibo perforation: torn-receipt seam under the hero card, on-brand with Tipid's perf-edge motif --- */
+        .receipt-edge { position: relative; }
+        .receipt-edge::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -9px;
+            height: 18px;
+            background-image: radial-gradient(circle at 9px 9px, var(--page-bg) 9px, transparent 9.5px);
+            background-size: 18px 18px;
+            background-repeat: repeat-x;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        @keyframes mascotHover {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .profile-mascot-img {
+            animation: mascotHover 4s ease-in-out infinite;
+            filter: drop-shadow(0 15px 25px rgba(18,61,46,0.35));
+        }
+        .speech-bubble {
+            animation: fadeUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
+            box-shadow: 0 10px 25px -5px rgba(18, 61, 46, 0.25);
+        }
+
         /* iOS-style spring for the dark mode toggle knob */
         .ios-toggle-knob { transition: transform 0.35s var(--ease-spring); }
 
@@ -98,7 +138,7 @@
         .tap-scale:active { transform: scale(0.94); }
 
         @media (prefers-reduced-motion: reduce) {
-            .spin, .fade-up, .logo-breathe, .halo-pulse, .ios-toggle-knob, .tap-scale {
+            .spin, .fade-up, .logo-breathe, .halo-pulse, .hero-float, .ios-toggle-knob, .tap-scale, .profile-mascot-img, .speech-bubble {
                 animation: none !important;
                 transition: none !important;
             }
@@ -184,8 +224,8 @@
         function AmbientBackground() {
             return (
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div className="absolute -top-24 -right-16 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
-                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-gold/10 dark:bg-gold/5 rounded-full blur-[100px]" />
+                    <div className="absolute -top-24 -right-16 w-[360px] h-[360px] bg-peso/[0.07] dark:bg-pesoLight/[0.07] rounded-full blur-[90px]" />
+                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-gold/[0.07] dark:bg-gold/[0.04] rounded-full blur-[100px]" />
                 </div>
             );
         }
@@ -208,6 +248,70 @@
             );
         }
 
+        /* --- MODERN PROFILE HERO CARD (matched to Bills Center / Analytics / Kasaysayan) ---
+           No dark-mode icon toggle here on purpose — the Appearance card
+           below already owns that control, so this stays the identity
+           moment: avatar, greeting, email, and Buddy saying hi. The mascot
+           image is optional and hides itself gracefully if the asset
+           hasn't been added yet, same pattern as window.Logo's fallback. */
+        function ProfileHeroCard({ displayName, email, initial }) {
+            const [mascotOk, setMascotOk] = React.useState(true);
+            const firstName = displayName ? displayName.trim().split(/\s+/)[0] : "";
+
+            return (
+                <div className="relative receipt-edge mb-6 sm:mb-8">
+                <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-5 sm:p-7 shadow-iosLg ring-1 ring-white/15 min-h-[190px] sm:min-h-[210px] flex flex-col justify-between">
+
+                    {/* Ambient Glows Inside Card */}
+                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/[0.08] rounded-full blur-[50px] hero-float" />
+                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-gold/[0.12] rounded-full blur-[60px]" />
+
+                    {/* Mascot Container (self-hides if /assets/profile_mascot.png isn't there yet) */}
+                    {mascotOk && (
+                        <div className="absolute right-0 bottom-0 w-[120px] sm:w-[160px] h-full pointer-events-none z-0 overflow-visible">
+                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-20 h-20 bg-white/15 blur-2xl rounded-full"></div>
+                            <img
+                                src="/assets/profile_mascot.png"
+                                alt="Tipid Buddy waving hello"
+                                onError={() => setMascotOk(false)}
+                                className="absolute bottom-[-8px] right-0 w-full object-contain profile-mascot-img"
+                                draggable="false"
+                            />
+                            <div className="speech-bubble absolute top-[12%] right-[55%] sm:right-[65%] bg-paper text-ink rounded-2xl px-3 py-2 text-[10px] sm:text-xs font-medium leading-tight w-max max-w-[110px] sm:max-w-[130px] border border-white/50">
+                                <strong className="block font-bold text-[#1F6F54] mb-0.5">Kumusta!</strong>
+                                Ito ang lugar mo. 💚
+                                <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-paper rotate-45 border-r border-b border-white/50"></div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Main Content */}
+                    <div className="relative z-10 flex flex-col h-full gap-4 max-w-[75%] sm:max-w-[62%]">
+                        <div className="mt-2 sm:mt-3">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/15 border border-white/10 text-white mb-3 backdrop-blur-sm">
+                                <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
+                                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-paper/90">Tipid Buddy</span>
+                            </div>
+
+                            <div className="flex items-center gap-3 mb-2 sm:mb-3">
+                                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/15 border-2 border-white/40 flex items-center justify-center text-paper font-display font-semibold text-lg backdrop-blur-sm shrink-0">
+                                    {initial}
+                                </div>
+                                <h1 className="font-display text-[1.35rem] sm:text-[2rem] font-bold tracking-tight leading-[1.1]">
+                                    {firstName ? `Kumusta, ${firstName}!` : "Kumusta!"}
+                                </h1>
+                            </div>
+
+                            <p className="text-[11px] sm:text-[13px] font-medium text-white/80 leading-relaxed break-all pr-2">
+                                {email}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            );
+        }
+
         function ProfileApp() {
             const authReady = window.useAuthReady();
             const dataReady = window.useDataReady();
@@ -223,11 +327,11 @@
             const toggleDarkMode = () => {
                 if (isDark) {
                     document.documentElement.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
+                    localStorage.setItem('tipid_theme', 'light');
                     setIsDark(false);
                 } else {
                     document.documentElement.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
+                    localStorage.setItem('tipid_theme', 'dark');
                     setIsDark(true);
                 }
             };
@@ -325,20 +429,14 @@
                         }}
                     >
 
-                        {/* Header Area — kept centered/avatar-first since this is
-                            an identity header, not a section list like the other
-                            pages; same "quiet, one clear focal point" idea though. */}
-                        <div className="fade-up text-center flex flex-col items-center" style={{ animationDelay: '0ms' }}>
-                            <div className="w-24 h-24 rounded-full bg-paperDim dark:bg-ink2/30 border-4 border-white dark:border-ink2 flex items-center justify-center text-ink dark:text-paper font-semibold text-4xl shadow-[0_10px_28px_-10px_rgba(21,35,28,0.25)] mb-4">
-                                {initial}
-                            </div>
-                            <h1 className="font-display text-3xl font-semibold tracking-tight">{displayName || "User"}</h1>
-                            <p className="text-ink2/70 dark:text-paper/60 text-sm mt-1">{user.email}</p>
+                        {/* Identity hero — replaces the old plain centered avatar block */}
+                        <div className="fade-up" style={{ animationDelay: '0ms' }}>
+                            <ProfileHeroCard displayName={displayName} email={user.email} initial={initial} />
                         </div>
 
                         {/* Appearance Card */}
                         <div className="fade-up" style={{ animationDelay: '90ms' }}>
-                            <SectionHeader title="Appearance" />
+                            <SectionHeader title="Appearance" subtitle="I-adjust ang itsura ng app." />
                             <div className="bg-white/85 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.75rem] border border-line/50 dark:border-white/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_14px_28px_-16px_rgba(21,35,28,0.18)] overflow-hidden p-5 sm:p-6 flex items-center justify-between transition-all">
                                 <div className="flex items-center gap-4">
                                     <div className="w-10 h-10 rounded-full bg-ink dark:bg-paper flex items-center justify-center text-paper dark:text-ink shadow-sm">
@@ -359,13 +457,13 @@
 
                         {/* Financial Goals & Settings Card */}
                         <div className="fade-up" style={{ animationDelay: '180ms' }}>
-                            <SectionHeader title="Financial Settings" />
+                            <SectionHeader title="Financial Settings" subtitle="Para sa mas magandang pagpaplano ng pera mo." />
                             <div className="bg-white/85 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.75rem] border border-line/50 dark:border-white/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_14px_28px_-16px_rgba(21,35,28,0.18)] overflow-hidden">
                                 <form onSubmit={handleUpdatePreferences} className="p-6 sm:p-7 flex flex-col gap-6">
 
                                     {/* Monthly Budget Input */}
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-xs font-semibold uppercase tracking-wider text-ink2/60 dark:text-paper/60">Monthly Budget (₱)</label>
+                                        <label className="text-xs font-semibold uppercase tracking-wider text-ink2/60 dark:text-paper/60">Buwanang Budget (₱)</label>
                                         <div className="flex-1 flex items-center gap-3 bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3.5 focus-within:ring-2 focus-within:ring-peso/40 focus-within:border-peso/40 shadow-inner transition-all duration-200">
                                             <Icons.Wallet size={18} className="text-ink2/50 dark:text-paper/50" />
                                             <input type="number" step="0.01" value={budgetInput} onChange={e => setBudgetInput(e.target.value)} placeholder="e.g. 10000" className="w-full bg-transparent text-base focus:outline-none font-medium text-ink dark:text-paper" />
@@ -383,7 +481,7 @@
                                     </div>
 
                                     <button type="submit" className="tap-scale w-full bg-peso hover:bg-pesoLight text-paper py-3.5 rounded-2xl text-base font-semibold transition-colors mt-4 shadow-[0_10px_24px_-10px_rgba(18,61,46,0.5)]">
-                                        Save Settings
+                                        I-save ang mga Setting
                                     </button>
                                 </form>
                             </div>

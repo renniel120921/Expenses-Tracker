@@ -31,7 +31,7 @@ function DashboardSummaryStyles() {
             .budget-glow { animation: budgetGlow 2.5s ease-out infinite; }
 
             .summary-card {
-                transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+                transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease, border-color 0.3s ease;
             }
             .summary-card:hover {
                 transform: translateY(-4px);
@@ -94,6 +94,9 @@ function AnimatedAmount({ value, className }) {
 }
 
 /* ---------- Pastel Icon Chip ---------- */
+// Decorative by default: every call site in this file sits directly beside a text label
+// that already says what the card is (Kita Ngayon, Gastos Ngayon, etc.), so the glyph
+// itself is hidden from assistive tech to avoid a redundant announcement.
 function IconChip({ icon, tone }) {
     const tones = {
         peso: "bg-[#E6F3EF] text-[#1F6F54] dark:bg-[#1F6F54]/20 dark:text-[#52C8A1]",
@@ -101,7 +104,7 @@ function IconChip({ icon, tone }) {
         gold: "bg-[#FDF6E3] text-[#C9932E] dark:bg-[#C9932E]/20 dark:text-[#E8C071]",
     };
     return (
-        <span className={`w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 ${tones[tone] || tones.peso}`}>
+        <span aria-hidden="true" className={`w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 ${tones[tone] || tones.peso}`}>
             {icon}
         </span>
     );
@@ -135,9 +138,13 @@ function DeltaChip({ pct, invert = false }) {
     if (pct === null) return null;
     const positive = pct >= 0;
     const isGood = invert ? !positive : positive;
+    // The arrow direction carries real meaning here (di gaya ng ibang icon sa file na pure
+    // decoration), kaya isinasama sa aria-label — hindi pwedeng umasa lang sa kulay/anyo ng icon.
+    const directionWord = positive ? "pagtaas" : "pagbaba";
     return (
         <span
             title="kumpara sa nakaraang buwan"
+            aria-label={`${Math.abs(pct)}% na ${directionWord} kumpara sa nakaraang buwan`}
             className={`inline-flex items-center gap-1 text-[10.5px] font-mono font-bold px-2 py-1 rounded-lg shrink-0 transition-colors ${
                 isGood
                     ? "text-[#1F6F54] bg-[#E6F3EF] dark:text-[#52C8A1] dark:bg-[#1F6F54]/20"
@@ -185,7 +192,9 @@ function BudgetEditor({ uid, budget }) {
     }
     return (
         <form onSubmit={save} className="editor-pop inline-flex items-center gap-2">
+            <label htmlFor="tipid-budget-input" className="sr-only">Bagong halaga ng buwanang budget</label>
             <input
+                id="tipid-budget-input"
                 type="number" inputMode="decimal" autoFocus value={value}
                 onChange={e => setValue(e.target.value)}
                 placeholder="₱0.00"
@@ -301,11 +310,15 @@ function SmartSummary({ uid, entries, budget }) {
                     <AnimatedAmount value={spent} className="font-mono text-[1.7rem] sm:text-3xl font-bold tracking-tight text-ink dark:text-paper" />
                 </div>
 
-                {/* Remaining / Budget Card */}
+                {/* Remaining / Budget Card — gains a quiet gold ring once nearingBudget kicks in,
+                    so the escalation reads normal → nearing → over instead of jumping straight
+                    from calm to full alarm. */}
                 <div className={`relative overflow-hidden summary-row-in summary-card rounded-[1.75rem] border shadow-ios p-5 sm:p-6 backdrop-blur-2xl ${
                     overBudget
                         ? "bg-expense/10 border-expense/30 budget-glow"
-                        : "bg-white/60 dark:bg-ink2/30 border-white/60 dark:border-white/10"
+                        : nearingBudget
+                            ? "bg-white/60 dark:bg-ink2/30 border-white/60 dark:border-white/10 ring-1 ring-gold/25 dark:ring-[#E8C071]/25"
+                            : "bg-white/60 dark:bg-ink2/30 border-white/60 dark:border-white/10"
                 }`} style={{ animationDelay: "120ms" }}>
                     <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${overBudget ? "from-[#F38C80] to-[#B5483B]" : "from-[#E8C071] to-[#C9932E]"}`} />
 
@@ -320,13 +333,20 @@ function SmartSummary({ uid, entries, budget }) {
 
                     {budgetPct != null && (
                         <div className="mt-4 sm:mt-5">
-                            <div className="h-2 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
+                            <div
+                                role="progressbar"
+                                aria-label="Porsyento ng buwanang budget na nagastos na"
+                                aria-valuenow={budgetPct}
+                                aria-valuemin={0}
+                                aria-valuemax={100}
+                                className="h-2 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden"
+                            >
                                 <div
                                     className={`bar-fill h-full rounded-full ${overBudget ? "bg-expense" : nearingBudget ? "bg-gold" : "bg-peso"}`}
                                     style={{ width: `${budgetPct}%` }}
                                 />
                             </div>
-                            <p className={`text-[11px] mt-2 font-mono font-medium ${overBudget ? "text-expense dark:text-[#F38C80]" : nearingBudget ? "text-[#C9932E] dark:text-[#E8C071]" : "text-ink2/60 dark:text-paper/50"}`}>
+                            <p role="status" aria-live="polite" className={`text-[11px] mt-2 font-mono font-medium ${overBudget ? "text-expense dark:text-[#F38C80]" : nearingBudget ? "text-[#C9932E] dark:text-[#E8C071]" : "text-ink2/60 dark:text-paper/50"}`}>
                                 {budgetPct}% ng budget nagastos na{nearingBudget ? " — dahan dahan lang" : ""}
                             </p>
                         </div>
@@ -351,7 +371,7 @@ function SmartSummary({ uid, entries, budget }) {
 
                 {byCategory.length === 0 ? (
                     <div className="py-6 flex flex-col items-center justify-center gap-3 text-ink2/40 dark:text-paper/30">
-                        <Icons.Wallet size={24} className="opacity-50" />
+                        <Icons.Wallet size={24} className="opacity-50" aria-hidden="true" />
                         <p className="text-[13px] font-medium text-center">Wala pang gastos ngayong buwan.</p>
                     </div>
                 ) : (
@@ -364,7 +384,7 @@ function SmartSummary({ uid, entries, budget }) {
                                         <span className="font-semibold text-[13.5px] sm:text-[15px] text-ink dark:text-paper flex items-center gap-2">
                                             {c.label}
                                             {i === 0 && (
-                                                <span className="text-[9px] font-mono font-bold tracking-wider uppercase text-[#C9932E] dark:text-[#E8C071] bg-[#FDF6E3] dark:bg-[#C9932E]/15 rounded-md px-1.5 py-0.5">
+                                                <span className="text-[9px] font-mono font-bold tracking-wider uppercase text-[#C9932E] dark:text-[#E8C071] bg-[#FDF6E3] dark:bg-[#C9932E]/15 rounded-full px-2 py-0.5">
                                                     Pinakamalaki
                                                 </span>
                                             )}
@@ -373,7 +393,8 @@ function SmartSummary({ uid, entries, budget }) {
                                             ₱{window.peso(c.amount)} <span className="text-[11px] font-medium text-ink2/40 dark:text-paper/40 ml-1">{pct}%</span>
                                         </span>
                                     </div>
-                                    <div className="h-1.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
+                                    {/* Decorative — the amount and % just above already say this in text */}
+                                    <div aria-hidden="true" className="h-1.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
                                         <div
                                             className="bar-fill h-full rounded-full transition-all duration-700 ease-out"
                                             style={{ width: `${pct}%`, backgroundColor: window.CATEGORY_COLOR[c.label] || "#1F6F54" }}

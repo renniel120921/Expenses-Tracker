@@ -8,6 +8,48 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
     // Fall back to the same list dashboard.html defines
     const CATEGORIES = window.CATEGORIES || ["Pagkain", "Pamasahe", "Bills", "Load", "Ipon", "Project Components", "Iba pa"];
 
+    // ---- category visual language (icon + accent per category) ----
+    const CATEGORY_META = {
+        "Pagkain": {
+            color: "#C9932E",
+            bg: "#FDF6E3",
+            dark: "rgba(201,147,46,0.22)",
+            icon: <path d="M7 2v6a2 2 0 0 0 2 2v10M7 2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2m0-8v8m10-8c-2.2 0-4 2.1-4 5.5S14.8 15 17 15v7" />
+        },
+        "Pamasahe": {
+            color: "#2E7DC9",
+            bg: "#E8F1FB",
+            dark: "rgba(46,125,201,0.22)",
+            icon: <><path d="M4 16V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9" /><path d="M4 16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2" /><circle cx="8" cy="19" r="1.4" /><circle cx="16" cy="19" r="1.4" /></>
+        },
+        "Bills": {
+            color: "#B5483B",
+            bg: "#FAEDE9",
+            dark: "rgba(181,72,59,0.22)",
+            icon: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" /><path d="M14 2v6h6" /><path d="M9 13h6" /><path d="M9 17h6" /></>
+        },
+        "Load": {
+            color: "#7C5CBF",
+            bg: "#F1ECFB",
+            dark: "rgba(124,92,191,0.22)",
+            icon: <><rect x="7" y="2" width="10" height="20" rx="2.5" /><path d="M11 18h2" /></>
+        },
+        "Ipon": {
+            color: "#1F6F54",
+            bg: "#E6F3EF",
+            dark: "rgba(31,111,84,0.22)",
+            icon: <><path d="M19 9V6a2 2 0 0 0-2-2H4a1 1 0 0 0-1 1v3.4a1 1 0 0 0 .6.92l1.9.82" /><path d="M3 9h14a4 4 0 0 1 4 4v2a2 2 0 0 1-2 2h-1" /><path d="M3 9v10a1 1 0 0 0 1 1h3v-4" /><path d="M13 9v12" /></>
+        },
+        "Project Components": {
+            color: "#4A5568",
+            bg: "#EEF1F4",
+            dark: "rgba(74,85,104,0.22)",
+            icon: <><path d="m21 16-9 5-9-5V8l9-5 9 5Z" /><path d="M12 21v-8" /><path d="m21 8-9 5-9-5" /></>
+        }
+    };
+    const DEFAULT_META = { color: "#6B7280", bg: "#EEF0F2", dark: "rgba(107,114,128,0.22)", icon: <><circle cx="6" cy="12" r="1.4" /><circle cx="12" cy="12" r="1.4" /><circle cx="18" cy="12" r="1.4" /></> };
+    const getCategoryMeta = (cat) => CATEGORY_META[cat] || DEFAULT_META;
+
     // ---- form state ----
     const [salary, setSalary] = useState("");
     const [bills, setBills] = useState("");
@@ -18,6 +60,10 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
     const [loaded, setLoaded] = useState(false);
     const [saving, setSaving] = useState(false);
     const saveTimer = useRef(null);
+
+    // ---- progressive disclosure: settings collapsed once configured ----
+    const [editOpen, setEditOpen] = useState(false);
+    const autoOpenedRef = useRef(false);
 
     // ---- real entries, via window.TipidData ----
     const [dataReady, setDataReady] = useState(!!window.TipidData);
@@ -203,6 +249,15 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
     const isOverBudget = loaded && dailySafe > 0 && remainingToday < 0;
     const isNearLimit = loaded && dailySafe > 0 && !isOverBudget && spentToday >= dailySafe * 0.8;
     const isPaydaySoon = loaded && daysLeft > 0 && daysLeft <= 2;
+    const isConfigured = numSalary > 0 && !!paydayDate;
+
+    // ---- auto-open settings the first time there's nothing configured yet ----
+    useEffect(() => {
+        if (loaded && !isConfigured && !autoOpenedRef.current) {
+            autoOpenedRef.current = true;
+            setEditOpen(true);
+        }
+    }, [loaded, isConfigured]);
 
     // ---- 4. Fire alerts ----
     useEffect(() => {
@@ -319,11 +374,14 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
 
     const spendRatio = dailySafe > 0 ? Math.min(spentToday / dailySafe, 1) : 0;
     const spendPct = Math.round(spendRatio * 100);
-    const barTone = isOverBudget ? "bg-[#B5483B]" : isNearLimit ? "bg-[#C9932E]" : "bg-[#1F6F54]";
+    const ringTone = isOverBudget ? "#B5483B" : isNearLimit ? "#C9932E" : "#1F6F54";
+    const RING_R = 54;
+    const RING_C = 2 * Math.PI * RING_R;
+    const ringOffset = RING_C * (1 - spendRatio);
 
     // Reusable field wrapper to match entry forms
-    const FieldWrap = ({ icon, children }) => (
-        <div className="flex items-center gap-2.5 bg-white/60 dark:bg-black/20 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-3.5 focus-within:ring-2 focus-within:ring-peso/40 focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200">
+    const FieldWrap = ({ icon, children, className = "" }) => (
+        <div className={`flex items-center gap-2.5 bg-white/60 dark:bg-black/20 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-3.5 focus-within:ring-2 focus-within:ring-peso/40 focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200 ${className}`}>
             {icon}
             {children}
         </div>
@@ -335,6 +393,16 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
         savings: <svg viewBox="0 0 24 24" fill="none" className="w-[18px] h-[18px] shrink-0 text-ink2/30 dark:text-paper/30" strokeWidth="2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M19 9V6a2 2 0 0 0-2-2H4a1 1 0 0 0-1 1v3.4a1 1 0 0 0 .6.92l1.9.82" /><path d="M3 9h14a4 4 0 0 1 4 4v2a2 2 0 0 1-2 2h-1" /><path d="M3 9v10a1 1 0 0 0 1 1h3v-4" /><path d="M13 9v12" /><circle cx="7" cy="5" r="0" /></svg>,
         payday: <svg viewBox="0 0 24 24" fill="none" className="w-[18px] h-[18px] shrink-0 text-ink2/30 dark:text-paper/30" strokeWidth="2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="3" /><path d="M3 10h18" /><path d="M8 2v4" /><path d="M16 2v4" /></svg>
     };
+
+    const QUICK_AMOUNTS = [20, 50, 100, 200];
+
+    // Compact read-only stat used in the collapsed settings summary
+    const StatChip = ({ label, value, accent }) => (
+        <div className="flex-1 min-w-[7.5rem] bg-white/60 dark:bg-black/20 rounded-2xl border border-black/5 dark:border-white/5 px-4 py-3">
+            <p className="text-[9.5px] font-mono uppercase font-semibold tracking-widest text-ink2/50 dark:text-paper/40 mb-1">{label}</p>
+            <p className={`font-mono text-[15px] font-bold tracking-tight ${accent || "text-ink dark:text-paper"}`}>{value}</p>
+        </div>
+    );
 
     return (
         <div className="space-y-6 sm:space-y-8 fade-up relative">
@@ -374,7 +442,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
             )}
 
             {/* Allowance Settings Card */}
-            <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios p-5 sm:p-7">
+            <div className="relative bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios p-5 sm:p-7 overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-peso to-pesoLight rounded-t-[1.75rem]" />
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 mt-1">
@@ -392,21 +460,33 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
                             </span>
                         </div>
                     </div>
-                    <button
-                        onClick={toggleNotifications}
-                        className={`text-[11px] font-mono font-medium px-3.5 py-2 rounded-full border transition-all duration-200 flex items-center gap-2 shrink-0 w-max ${
-                            notifEnabled
-                                ? "bg-[#E6F3EF] border-[#1F6F54]/30 text-[#1F6F54] dark:bg-[#1F6F54]/20 dark:border-[#52C8A1]/30 dark:text-[#52C8A1]"
-                                : "bg-white/60 dark:bg-ink2/40 border-black/10 dark:border-white/10 text-ink2/60 dark:text-paper/50 hover:bg-black/5 dark:hover:bg-white/5"
-                        }`}
-                    >
-                        <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-                            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-                            {!notifEnabled && <path d="M2 2l20 20" />}
-                        </svg>
-                        <span>{notifEnabled ? "Notifications ON" : "Notifications OFF"}</span>
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                        {loaded && isConfigured && (
+                            <button
+                                onClick={() => setEditOpen(o => !o)}
+                                className="text-[11px] font-mono font-medium px-3.5 py-2 rounded-full border bg-white/60 dark:bg-ink2/40 border-black/10 dark:border-white/10 text-ink2/70 dark:text-paper/60 hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-200 flex items-center gap-1.5"
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                                </svg>
+                                {editOpen ? "Tapos" : "I-edit"}
+                            </button>
+                        )}
+                        <button
+                            onClick={toggleNotifications}
+                            className={`text-[11px] font-mono font-medium px-3.5 py-2 rounded-full border transition-all duration-200 flex items-center gap-2 w-max ${
+                                notifEnabled
+                                    ? "bg-[#E6F3EF] border-[#1F6F54]/30 text-[#1F6F54] dark:bg-[#1F6F54]/20 dark:border-[#52C8A1]/30 dark:text-[#52C8A1]"
+                                    : "bg-white/60 dark:bg-ink2/40 border-black/10 dark:border-white/10 text-ink2/60 dark:text-paper/50 hover:bg-black/5 dark:hover:bg-white/5"
+                            }`}
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+                                {!notifEnabled && <path d="M2 2l20 20" />}
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 {!loaded ? (
@@ -415,8 +495,8 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
                             <div key={i} className="h-[52px] rounded-[14px] bg-black/5 dark:bg-white/5" />
                         ))}
                     </div>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-8">
+                ) : editOpen ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-8 fade-up">
                         <div>
                             <label className="block text-[10px] font-mono font-semibold text-ink2/60 dark:text-paper/50 mb-1.5 uppercase tracking-widest px-1">
                                 Salary / Income
@@ -480,21 +560,56 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
                             </FieldWrap>
                         </div>
                     </div>
+                ) : (
+                    <div className="flex flex-wrap gap-3 mb-8 fade-up">
+                        <StatChip label="Salary" value={`₱${window.peso(numSalary)}`} />
+                        <StatChip label="Bills" value={`₱${window.peso(numBills)}`} />
+                        <StatChip label="Ipon" value={`₱${window.peso(numSavings)}`} />
+                        <StatChip
+                            label="Payday"
+                            value={paydayDate ? `${daysLeft} araw pa` : "Not set"}
+                            accent={paydayDate ? "text-[#1F6F54] dark:text-[#52C8A1]" : "text-ink2/40 dark:text-paper/40"}
+                        />
+                    </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-black/5 dark:border-white/10">
-                    <div className="bg-white/60 dark:bg-black/20 p-5 rounded-2xl border border-black/5 dark:border-white/5">
-                        <p className="text-[10px] font-mono uppercase font-semibold tracking-wider text-ink2/60 dark:text-paper/50 mb-1.5">Remaining Budget</p>
-                        <p className={`font-mono text-2xl font-bold tracking-tight ${remaining < 0 ? 'text-[#B5483B] dark:text-[#F38C80]' : 'text-ink dark:text-paper'}`}>
-                            ₱{window.peso(remaining)}
-                        </p>
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 sm:gap-6 items-center pt-6 border-t border-black/5 dark:border-white/10">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-white/60 dark:bg-black/20 p-5 rounded-2xl border border-black/5 dark:border-white/5">
+                            <p className="text-[10px] font-mono uppercase font-semibold tracking-wider text-ink2/60 dark:text-paper/50 mb-1.5">Remaining Budget</p>
+                            <p className={`font-mono text-2xl font-bold tracking-tight ${remaining < 0 ? 'text-[#B5483B] dark:text-[#F38C80]' : 'text-ink dark:text-paper'}`}>
+                                ₱{window.peso(remaining)}
+                            </p>
+                        </div>
+                        <div className="bg-gradient-to-br from-[#E6F3EF] to-[#D5EBE3] dark:from-[#1F6F54]/20 dark:to-[#1F6F54]/10 p-5 rounded-2xl border border-[#1F6F54]/10 dark:border-[#52C8A1]/20">
+                            <p className="text-[10px] font-mono uppercase font-semibold tracking-wider text-[#1F6F54] dark:text-[#52C8A1] mb-1.5">Safe Daily</p>
+                            <p className="font-mono text-2xl font-bold tracking-tight text-[#1F6F54] dark:text-[#52C8A1]">
+                                ₱{window.peso(dailySafe)}
+                            </p>
+                        </div>
                     </div>
-                    <div className="bg-gradient-to-br from-[#E6F3EF] to-[#D5EBE3] dark:from-[#1F6F54]/20 dark:to-[#1F6F54]/10 p-5 rounded-2xl border border-[#1F6F54]/10 dark:border-[#52C8A1]/20">
-                        <p className="text-[10px] font-mono uppercase font-semibold tracking-wider text-[#1F6F54] dark:text-[#52C8A1] mb-1.5">Safe Daily Spending</p>
-                        <p className="font-mono text-3xl font-bold tracking-tight text-[#1F6F54] dark:text-[#52C8A1]">
-                            ₱{window.peso(dailySafe)}<span className="text-sm font-body font-medium opacity-60 tracking-normal"> / day</span>
-                        </p>
-                    </div>
+
+                    {/* Circular progress ring: today's spend vs safe daily amount */}
+                    {dailySafe > 0 && (
+                        <div className="flex items-center justify-center sm:justify-self-end">
+                            <div className="relative w-[132px] h-[132px] shrink-0">
+                                <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
+                                    <circle cx="60" cy="60" r={RING_R} fill="none" strokeWidth="10" className="stroke-black/5 dark:stroke-white/10" />
+                                    <circle
+                                        cx="60" cy="60" r={RING_R} fill="none" strokeWidth="10" strokeLinecap="round"
+                                        stroke={ringTone}
+                                        strokeDasharray={RING_C}
+                                        strokeDashoffset={ringOffset}
+                                        className="transition-[stroke-dashoffset,stroke] duration-700 ease-out"
+                                    />
+                                </svg>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span className="font-mono text-2xl font-bold tracking-tight text-ink dark:text-paper">{spendPct}%</span>
+                                    <span className="text-[9.5px] font-mono uppercase tracking-widest text-ink2/50 dark:text-paper/40 mt-0.5">ngayong araw</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -510,7 +625,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
                 </div>
                 <p className="text-[12px] text-ink2/60 dark:text-paper/50 mb-6 pl-[3.25rem] leading-snug">I-log ang ginastos mo para makita agad kung nasa loob ka pa ng safe daily spending.</p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-7">
                     <div className="bg-white/60 dark:bg-black/20 p-5 rounded-2xl border border-black/5 dark:border-white/5">
                         <p className="text-[10px] font-mono uppercase font-semibold tracking-wider text-ink2/60 dark:text-paper/50 mb-1.5">Nagastos Ngayon</p>
                         <p className="font-mono text-2xl font-bold tracking-tight text-ink dark:text-paper">₱{window.peso(spentToday)}</p>
@@ -533,48 +648,42 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
                     </div>
                 </div>
 
-                {dailySafe > 0 && (
-                    <div className="mb-7 px-1">
-                        <div className="flex items-center justify-between text-[11px] font-mono font-medium text-ink2/60 dark:text-paper/50 mb-2.5">
-                            <span>{spendPct}% ng safe daily spending</span>
-                            <span>₱{window.peso(spentToday)} / ₱{window.peso(dailySafe)}</span>
-                        </div>
-                        <div className="h-2 w-full rounded-full bg-black/5 dark:bg-white/10 overflow-hidden">
-                            <div
-                                className={`h-full rounded-full transition-all duration-700 ease-out ${barTone}`}
-                                style={{ width: `${spendRatio * 100}%` }}
-                            />
-                        </div>
-                    </div>
-                )}
-
-                <form onSubmit={handleLogExpense} className="flex flex-col gap-3.5 mb-6">
+                <form onSubmit={handleLogExpense} className="flex flex-col gap-3.5 mb-7">
                     <div className="flex flex-col sm:flex-row gap-3.5">
-                        <FieldWrap className="sm:flex-1" icon={<span className="text-ink2/40 dark:text-paper/40 font-mono text-[14px] shrink-0">₱</span>}>
-                            <input
-                                type="number"
-                                step="0.01"
-                                placeholder="Halaga"
-                                value={expAmount}
-                                onChange={e => setExpAmount(e.target.value)}
-                                className="w-full min-w-0 bg-transparent py-3.5 text-[14px] font-mono font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
-                            />
-                        </FieldWrap>
-                        <FieldWrap className="sm:flex-1 relative" icon={<span className="text-ink2/40 dark:text-paper/40 shrink-0"><svg viewBox="0 0 24 24" fill="none" className="w-[15px] h-[15px]" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.59 9.59a2 2 0 0 0 2.82 0l4.59-4.59a2 2 0 0 0 0-2.82Z"/><circle cx="7.5" cy="7.5" r="1"/></svg></span>}>
-                            <select
-                                value={expCategory}
-                                onChange={e => setExpCategory(e.target.value)}
-                                className="w-full min-w-0 bg-transparent py-3.5 text-[14px] text-ink dark:text-paper focus:outline-none appearance-none pr-2"
-                            >
-                                {CATEGORIES.filter(c => c !== "Kita").map(c => (
-                                    <option key={c} value={c} className="bg-paper dark:bg-ink dark:text-paper">{c}</option>
+                        <div className="sm:flex-1">
+                            <FieldWrap icon={<span className="text-ink2/40 dark:text-paper/40 font-mono text-[14px] shrink-0">₱</span>}>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="Halaga"
+                                    value={expAmount}
+                                    onChange={e => setExpAmount(e.target.value)}
+                                    className="w-full min-w-0 bg-transparent py-3.5 text-[14px] font-mono font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
+                                />
+                            </FieldWrap>
+                            <div className="flex items-center gap-1.5 mt-2 px-0.5">
+                                {QUICK_AMOUNTS.map(a => (
+                                    <button
+                                        key={a}
+                                        type="button"
+                                        onClick={() => setExpAmount(String((parseFloat(expAmount) || 0) + a))}
+                                        className="text-[11px] font-mono font-semibold text-ink2/60 dark:text-paper/50 bg-black/[0.03] dark:bg-white/[0.05] hover:bg-black/[0.06] dark:hover:bg-white/[0.1] active:scale-95 px-2.5 py-1 rounded-full transition-all duration-150"
+                                    >
+                                        +₱{a}
+                                    </button>
                                 ))}
-                            </select>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-ink2/30 dark:text-paper/30 shrink-0 pointer-events-none absolute right-4"><path d="M6 9l6 6 6-6" /></svg>
-                        </FieldWrap>
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-3.5">
-                        <FieldWrap className="flex-1" icon={<span className="text-ink2/40 dark:text-paper/40 shrink-0"><svg viewBox="0 0 24 24" fill="none" className="w-[15px] h-[15px]" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>}>
+                                {expAmount !== "" && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setExpAmount("")}
+                                        className="text-[11px] font-mono text-ink2/40 dark:text-paper/40 hover:text-expense dark:hover:text-[#F38C80] ml-auto transition-colors duration-150"
+                                    >
+                                        I-clear
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                        <FieldWrap className="sm:flex-1 self-start" icon={<svg viewBox="0 0 24 24" fill="none" className="w-[15px] h-[15px] shrink-0 text-ink2/40 dark:text-paper/40" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>}>
                             <input
                                 type="text"
                                 placeholder="Note (opsyonal)"
@@ -583,40 +692,78 @@ window.AllowanceCalculator = function AllowanceCalculator({ user }) {
                                 className="w-full min-w-0 bg-transparent py-3.5 text-[14px] text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
                             />
                         </FieldWrap>
-                        <button
-                            type="submit"
-                            disabled={loggingExpense || !expAmount}
-                            className="bg-gradient-to-r from-peso to-pesoLight hover:shadow-lg hover:shadow-peso/20 active:scale-95 disabled:opacity-60 disabled:hover:shadow-none text-white text-[14px] font-semibold rounded-[14px] px-6 py-3.5 transition-all duration-200 sm:w-40 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 shrink-0"
-                        >
-                            {loggingExpense ? (
-                                <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 animate-spin" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
-                            ) : (
-                                <>
-                                    <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
-                                    I-log
-                                </>
-                            )}
-                        </button>
                     </div>
+
+                    {/* Category chips — tap to select, replaces a plain dropdown */}
+                    <div className="flex flex-wrap gap-2 px-0.5">
+                        {CATEGORIES.filter(c => c !== "Kita").map(c => {
+                            const meta = getCategoryMeta(c);
+                            const active = expCategory === c;
+                            return (
+                                <button
+                                    key={c}
+                                    type="button"
+                                    onClick={() => setExpCategory(c)}
+                                    style={active ? { backgroundColor: meta.bg, borderColor: `${meta.color}55`, color: meta.color } : undefined}
+                                    className={`flex items-center gap-1.5 text-[12px] font-medium px-3 py-1.5 rounded-full border transition-all duration-150 active:scale-95 ${
+                                        active
+                                            ? "shadow-sm"
+                                            : "bg-black/[0.02] dark:bg-white/[0.04] border-black/5 dark:border-white/5 text-ink2/60 dark:text-paper/50 hover:bg-black/5 dark:hover:bg-white/[0.08]"
+                                    }`}
+                                >
+                                    <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5 shrink-0" strokeWidth="2.2" stroke={active ? meta.color : "currentColor"} strokeLinecap="round" strokeLinejoin="round">
+                                        {meta.icon}
+                                    </svg>
+                                    {c}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={loggingExpense || !expAmount}
+                        className="bg-gradient-to-r from-peso to-pesoLight hover:shadow-lg hover:shadow-peso/20 active:scale-[0.98] disabled:opacity-60 disabled:hover:shadow-none text-white text-[14px] font-semibold rounded-[14px] px-6 py-3.5 transition-all duration-200 w-full flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50"
+                    >
+                        {loggingExpense ? (
+                            <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 animate-spin" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+                        ) : (
+                            <>
+                                <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+                                I-log ang Gastos
+                            </>
+                        )}
+                    </button>
                 </form>
 
                 {todaysExpenses.length > 0 ? (
                     <ul className="space-y-2.5">
-                        {todaysExpenses.map(exp => (
-                            <li key={exp.id} className="group flex items-center justify-between bg-white/40 dark:bg-white/[0.03] hover:bg-white/70 dark:hover:bg-white/[0.08] border border-black/[0.03] dark:border-white/[0.02] rounded-2xl px-4 sm:px-5 py-3.5 transition-all duration-200">
-                                <span className="text-ink dark:text-paper truncate pr-2">
-                                    <span className="font-mono font-bold text-[14px] sm:text-[15px]">₱{window.peso(exp.amount)}</span>
-                                    <span className="text-[13px] font-medium text-ink2/60 dark:text-paper/50 ml-1.5">— {exp.desc || exp.category}</span>
-                                </span>
-                                <button
-                                    onClick={() => handleDeleteExpense(exp.id)}
-                                    aria-label="Alisin"
-                                    className="text-ink2/30 hover:text-expense dark:text-paper/30 dark:hover:text-[#F38C80] p-1.5 rounded-full hover:bg-expense/10 dark:hover:bg-[#B5483B]/20 transition-all duration-200 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 active:scale-90"
-                                >
-                                    <svg viewBox="0 0 24 24" fill="none" className="w-[18px] h-[18px]" strokeWidth="2.2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                </button>
-                            </li>
-                        ))}
+                        {todaysExpenses.map(exp => {
+                            const meta = getCategoryMeta(exp.category);
+                            return (
+                                <li key={exp.id} className="group flex items-center gap-3 bg-white/40 dark:bg-white/[0.03] hover:bg-white/70 dark:hover:bg-white/[0.08] border border-black/[0.03] dark:border-white/[0.02] rounded-2xl px-4 sm:px-5 py-3.5 transition-all duration-200">
+                                    <div
+                                        className="w-9 h-9 rounded-[12px] flex items-center justify-center shrink-0"
+                                        style={{ backgroundColor: meta.bg, color: meta.color }}
+                                    >
+                                        <svg viewBox="0 0 24 24" fill="none" className="w-[17px] h-[17px]" strokeWidth="2.2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                                            {meta.icon}
+                                        </svg>
+                                    </div>
+                                    <span className="flex-1 min-w-0 text-ink dark:text-paper truncate">
+                                        <span className="font-mono font-bold text-[14px] sm:text-[15px]">₱{window.peso(exp.amount)}</span>
+                                        <span className="text-[13px] font-medium text-ink2/60 dark:text-paper/50 ml-1.5">— {exp.desc || exp.category}</span>
+                                    </span>
+                                    <button
+                                        onClick={() => handleDeleteExpense(exp.id)}
+                                        aria-label="Alisin"
+                                        className="text-ink2/30 hover:text-expense dark:text-paper/30 dark:hover:text-[#F38C80] p-1.5 rounded-full hover:bg-expense/10 dark:hover:bg-[#B5483B]/20 transition-all duration-200 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 active:scale-90"
+                                    >
+                                        <svg viewBox="0 0 24 24" fill="none" className="w-[18px] h-[18px]" strokeWidth="2.2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                    </button>
+                                </li>
+                            );
+                        })}
                     </ul>
                 ) : (
                     <div className="flex flex-col items-center justify-center text-center py-10 px-4 rounded-2xl bg-white/40 dark:bg-black/10 border border-dashed border-black/10 dark:border-white/10">

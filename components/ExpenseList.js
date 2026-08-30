@@ -3,6 +3,9 @@
 function EntryListStyles() {
     return (
         <style>{`
+            :root { --entrylist-bg: #F1F4EF; }
+            html.dark { --entrylist-bg: #111A15; }
+
             @keyframes shimmerSweep {
                 0% { background-position: -200% 0; }
                 100% { background-position: 200% 0; }
@@ -30,6 +33,12 @@ function EntryListStyles() {
             }
             .list-in { animation: listIn 0.4s ease-out both; }
 
+            @keyframes countPop {
+                0% { transform: scale(0.85); opacity: 0; }
+                100% { transform: scale(1); opacity: 1; }
+            }
+            .count-pop { animation: countPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
             /* Modern hover lift for list items */
             .ledger-scroll > li {
                 border-radius: 1rem;
@@ -53,8 +62,24 @@ function EntryListStyles() {
             html.dark .ledger-scroll::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.1); }
             html.dark .ledger-scroll:hover::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.2); }
 
+            /* Resibo perforation: torn-receipt seam along the bottom of the card,
+               on-brand with Tipid's perf-edge motif — fitting for a transaction list */
+            .receipt-edge-bottom { position: relative; }
+            .receipt-edge-bottom::after {
+                content: "";
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: -9px;
+                height: 18px;
+                background-image: radial-gradient(circle at 9px 9px, var(--entrylist-bg) 9px, transparent 9.5px);
+                background-size: 18px 18px;
+                background-repeat: repeat-x;
+                pointer-events: none;
+            }
+
             @media (prefers-reduced-motion: reduce) {
-                .skeleton-shimmer, .empty-bounce, .list-in {
+                .skeleton-shimmer, .empty-bounce, .list-in, .count-pop {
                     animation: none !important;
                 }
             }
@@ -62,20 +87,21 @@ function EntryListStyles() {
     );
 }
 
-function SkeletonRow() {
+function SkeletonRow({ delay = 0 }) {
+    const shimmerStyle = { animationDelay: `${delay}ms` };
     return (
         <div className="px-5 sm:px-6 py-4 flex items-center gap-4 border-b border-line/20 dark:border-white/5 last:border-0">
             {/* Icon Skeleton */}
-            <div className="skeleton-shimmer w-[2.85rem] h-[2.85rem] rounded-[14px] shrink-0" />
+            <div className="skeleton-shimmer w-[2.85rem] h-[2.85rem] rounded-[14px] shrink-0" style={shimmerStyle} />
 
             {/* Text Skeleton */}
             <div className="flex-1 min-w-0 space-y-2.5">
-                <div className="skeleton-shimmer h-3.5 rounded-full w-3/5 max-w-[160px]" />
-                <div className="skeleton-shimmer h-2.5 rounded-full w-2/5 max-w-[100px]" />
+                <div className="skeleton-shimmer h-3.5 rounded-full w-3/5 max-w-[160px]" style={shimmerStyle} />
+                <div className="skeleton-shimmer h-2.5 rounded-full w-2/5 max-w-[100px]" style={shimmerStyle} />
             </div>
 
             {/* Amount Skeleton */}
-            <div className="skeleton-shimmer h-4 rounded-full w-16 sm:w-20 shrink-0" />
+            <div className="skeleton-shimmer h-4 rounded-full w-16 sm:w-20 shrink-0" style={shimmerStyle} />
         </div>
     );
 }
@@ -84,7 +110,10 @@ function EntryList({ uid, entries, loading }) {
     // Inalis na natin yung "remove" function dito dahil ang
     // mismong ExpenseItem.js na ang nagha-handle ng SweetAlert at Deletion.
 
+    const count = entries ? entries.length : 0;
+
     return (
+        <div className="relative receipt-edge-bottom">
         <div className="relative overflow-hidden bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios">
             <EntryListStyles />
 
@@ -92,7 +121,7 @@ function EntryList({ uid, entries, loading }) {
             <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-peso/80 via-pesoLight/80 to-gold/80" />
 
             {/* Inner Header - Clean & Minimal */}
-            <div className="px-5 sm:px-6 py-4 border-b border-line/30 dark:border-white/5 flex items-center justify-between bg-white/40 dark:bg-white/5">
+            <div className="px-5 sm:px-6 py-4 border-b border-line/30 dark:border-white/5 flex items-center justify-between gap-3 bg-white/40 dark:bg-white/5">
                 <div className="flex items-center gap-3 min-w-0">
                     <span className="w-9 h-9 rounded-xl bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center shrink-0">
                         <Icons.List size={18} />
@@ -101,14 +130,20 @@ function EntryList({ uid, entries, loading }) {
                         <h3 className="text-[15px] font-semibold text-ink dark:text-paper leading-tight">Mga Transaksyon</h3>
                     </div>
                 </div>
+
+                {!loading && count > 0 && (
+                    <span className="count-pop shrink-0 text-[11px] font-mono font-semibold text-ink2/60 dark:text-paper/50 bg-paper/70 dark:bg-white/5 px-2.5 py-1 rounded-full border border-line/40 dark:border-white/10">
+                        {count} {count === 1 ? "entry" : "entries"}
+                    </span>
+                )}
             </div>
 
             {loading ? (
                 <div className="py-1">
-                    <SkeletonRow />
-                    <SkeletonRow />
-                    <SkeletonRow />
-                    <SkeletonRow />
+                    <SkeletonRow delay={0} />
+                    <SkeletonRow delay={90} />
+                    <SkeletonRow delay={180} />
+                    <SkeletonRow delay={270} />
                 </div>
             ) : (!entries || entries.length === 0) ? (
                 <div className="empty-bounce py-16 sm:py-20 flex flex-col items-center justify-center gap-4 text-ink2/50 dark:text-paper/40">
@@ -134,6 +169,7 @@ function EntryList({ uid, entries, loading }) {
                     ))}
                 </ul>
             )}
+        </div>
         </div>
     );
 }
