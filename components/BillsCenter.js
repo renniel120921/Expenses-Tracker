@@ -6,9 +6,8 @@ function StatIcon({ icon, tone }) {
         expense: "bg-[#FAEDE9] text-[#B5483B] dark:bg-[#B5483B]/20 dark:text-[#F38C80]",
         gold: "bg-[#FDF6E3] text-[#C9932E] dark:bg-[#C9932E]/20 dark:text-[#E8C071]",
     };
-    // Decorative — always sits beside a text label in this file, so hidden from assistive tech.
     return (
-        <span aria-hidden="true" className={`w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 ${tones[tone] || tones.peso}`}>
+        <span aria-hidden="true" className={`w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 shadow-sm border border-white/40 dark:border-white/5 ${tones[tone] || tones.peso}`}>
             {icon}
         </span>
     );
@@ -24,15 +23,13 @@ function SelectChevron() {
 
 function FieldWrap({ icon, children, className = "" }) {
     return (
-        <div className={`flex items-center gap-2.5 bg-white/60 dark:bg-black/20 ring-1 ring-black/5 dark:ring-white/10 hover:ring-black/10 dark:hover:ring-white/20 rounded-[14px] px-3.5 focus-within:ring-2 focus-within:ring-peso/40 focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200 ${className}`}>
+        <div className={`flex items-center gap-2.5 bg-white/80 dark:bg-black/20 ring-1 ring-black/5 dark:ring-white/10 hover:ring-black/10 dark:hover:ring-white/20 rounded-[14px] px-3.5 focus-within:ring-2 focus-within:ring-peso/40 focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200 shadow-sm ${className}`}>
             {icon}
             {children}
         </div>
     );
 }
 
-// Same count-up treatment as the dashboard's headline totals, kept local since each
-// component file in this app is self-contained (no shared import between them).
 function AnimatedAmount({ value, className }) {
     const { useState, useEffect, useRef } = React;
     const safeValue = Number.isFinite(value) ? value : 0;
@@ -75,11 +72,11 @@ function AnimatedAmount({ value, className }) {
 
 function formatDueDate(dateStr) {
     const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr; // fallback kung hindi ma-parse
+    if (isNaN(d.getTime())) return dateStr;
     return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-// Updated with modern pastel tags for urgency
+// FIX: Gumamit ng Math.round para mas tumpak ang araw at iwas timezone shifts
 function getDueBadge(bill) {
     if (bill.status === "Paid" || bill.status === "Overdue") return null;
     const bDate = new Date(bill.dueDate);
@@ -87,48 +84,25 @@ function getDueBadge(bill) {
     bDate.setHours(0, 0, 0, 0);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const diffDays = Math.ceil((bDate - today) / (1000 * 60 * 60 * 24));
+    const diffDays = Math.round((bDate - today) / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0 || diffDays > 3) return null;
-    if (diffDays === 0) return { label: "Due Ngayon", tone: "text-[#B5483B] bg-[#FAEDE9] dark:text-[#F38C80] dark:bg-[#B5483B]/20" };
-    if (diffDays === 1) return { label: "Bukas", tone: "text-[#C9932E] bg-[#FDF6E3] dark:text-[#E8C071] dark:bg-[#C9932E]/20" };
-    return { label: `Sa loob ng ${diffDays} araw`, tone: "text-ink2/70 bg-ink/[0.04] dark:text-paper/70 dark:bg-white/10" };
+    if (diffDays === 0) return { label: "Due Ngayon", tone: "text-[#B5483B] bg-[#FAEDE9] border-[#B5483B]/20 dark:text-[#F38C80] dark:bg-[#B5483B]/20 dark:border-[#F38C80]/30" };
+    if (diffDays === 1) return { label: "Bukas", tone: "text-[#C9932E] bg-[#FDF6E3] border-[#C9932E]/20 dark:text-[#E8C071] dark:bg-[#C9932E]/20 dark:border-[#E8C071]/30" };
+    return { label: `Sa loob ng ${diffDays} araw`, tone: "text-[#1F6F54] bg-[#E6F3EF] border-[#1F6F54]/20 dark:text-[#52C8A1] dark:bg-[#1F6F54]/20 dark:border-[#52C8A1]/30" };
 }
 
-// Local fallback icon set with optimized stroke weights
 const BillsCenterFallbackIcons = {
-    Trash: ({ size = 16 }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-    ),
-    Pencil: ({ size = 16, className = "" }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-    ),
-    Calendar: ({ size = 16, className = "" }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-    ),
-    Category: ({ size = 16, className = "" }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.59 9.59a2 2 0 0 0 2.82 0l4.59-4.59a2 2 0 0 0 0-2.82Z"/><circle cx="7.5" cy="7.5" r="1"/></svg>
-    ),
-    Wallet: ({ size = 16, className = "" }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
-    ),
-    AlertCircle: ({ size = 16, className = "" }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    ),
-    Check: ({ size = 16, className = "" }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 6 9 17 4 12"/></svg>
-    ),
-    Inbox: ({ size = 16, className = "" }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></svg>
-    ),
-    Loader: ({ size = 16, className = "" }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className={className}><path d="M12 2a10 10 0 0 1 10 10"/></svg>
-    ),
-    // Was referenced by the submit button below but missing from this fallback set — added so
-    // the form still renders correctly even if window.Icons isn't loaded yet.
-    Plus: ({ size = 16, className = "" }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 5v14M5 12h14"/></svg>
-    ),
+    Trash: ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
+    Pencil: ({ size = 16, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>,
+    Calendar: ({ size = 16, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>,
+    Category: ({ size = 16, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.59 9.59a2 2 0 0 0 2.82 0l4.59-4.59a2 2 0 0 0 0-2.82Z"/><circle cx="7.5" cy="7.5" r="1"/></svg>,
+    Wallet: ({ size = 16, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>,
+    AlertCircle: ({ size = 16, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+    Check: ({ size = 16, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 6 9 17 4 12"/></svg>,
+    Inbox: ({ size = 16, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></svg>,
+    Loader: ({ size = 16, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className={className}><path d="M12 2a10 10 0 0 1 10 10"/></svg>,
+    Plus: ({ size = 16, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 5v14M5 12h14"/></svg>
 };
 
 window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
@@ -136,7 +110,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
     const [title, setTitle] = useState("");
     const [amount, setAmount] = useState("");
     const [dueDate, setDueDate] = useState("");
-    const [category, setCategory] = useState("Bills");
+    const [category, setCategory] = useState("Kuryente");
     const [saving, setSaving] = useState(false);
 
     const Icons = { ...BillsCenterFallbackIcons, ...(window.Icons || {}) };
@@ -146,7 +120,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
     const paidCount = bills.filter(b => b.status === "Paid").length;
     const paidPct = bills.length > 0 ? Math.round((paidCount / bills.length) * 100) : 0;
 
-    // --- IN-APP NOTIFICATION LOGIC ---
+    // --- FIX: EXACT DATE LOGIC IN NOTIFICATIONS ---
     useEffect(() => {
         if (!loading && bills.length > 0) {
             const hasNotified = sessionStorage.getItem('tipid_bills_notified');
@@ -164,35 +138,42 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                 const bDate = new Date(bill.dueDate);
                 bDate.setHours(0, 0, 0, 0);
 
-                const diffTime = bDate - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const diffDays = Math.round((bDate - today) / (1000 * 60 * 60 * 24));
 
                 if (diffDays < 0) {
-                    overdue.push(bill);
+                    overdue.push({ ...bill, diffDays });
                 } else if (diffDays >= 0 && diffDays <= 3) {
-                    upcoming.push(bill);
+                    upcoming.push({ ...bill, diffDays });
                 }
             });
 
             if (overdue.length > 0 || upcoming.length > 0) {
-                let htmlMsg = `<div class="text-left text-sm space-y-4 mt-2 font-body">`;
+                let htmlMsg = `<div class="text-left text-sm space-y-4 mt-2 font-body" style="color: #15231C;">`;
 
                 if (overdue.length > 0) {
-                    htmlMsg += `<div>
-                        <strong style="color: #B5483B;">⚠️ Overdue Na:</strong>
-                        <ul class="list-disc ml-5 mt-1.5 text-gray-700">`;
+                    htmlMsg += `<div style="margin-bottom: 16px; padding: 12px; background: #FAEDE9; border-radius: 12px; border: 1px solid rgba(181, 72, 59, 0.2);">
+                        <strong style="color: #B5483B; display: flex; align-items: center; gap: 6px;">⚠️ Overdue Na</strong>
+                        <ul style="margin-top: 8px; margin-bottom: 0; padding-left: 18px; list-style-type: disc;">`;
                     overdue.forEach(b => {
-                        htmlMsg += `<li>${b.title} — <b class="font-mono">₱${window.peso(b.amount)}</b></li>`;
+                        htmlMsg += `<li style="margin-bottom: 4px;">${b.title} — <b style="font-family: 'JetBrains Mono', monospace;">₱${window.peso(b.amount)}</b></li>`;
                     });
                     htmlMsg += `</ul></div>`;
                 }
 
                 if (upcoming.length > 0) {
                     htmlMsg += `<div>
-                        <strong style="color: #1F6F54;">📅 Paparating (Next 3 Days):</strong>
-                        <ul class="list-disc ml-5 mt-1.5 text-gray-700">`;
+                        <strong style="color: #1F6F54; display: flex; align-items: center; gap: 6px;">📅 Paalala sa Bayarin</strong>
+                        <ul style="margin-top: 10px; margin-bottom: 0; padding-left: 0; list-style-type: none;">`;
                     upcoming.forEach(b => {
-                        htmlMsg += `<li>${b.title} — <b class="font-mono">₱${window.peso(b.amount)}</b></li>`;
+                        let dayLabel = "";
+                        if (b.diffDays === 0) dayLabel = "Ngayong Araw!";
+                        else if (b.diffDays === 1) dayLabel = "Bukas";
+                        else dayLabel = `Sa loob ng ${b.diffDays} araw`;
+
+                        htmlMsg += `<li style="margin-bottom: 10px; border-left: 3px solid #2F8E6C; padding-left: 10px; background: #F1F4EF; padding-top: 6px; padding-bottom: 6px; border-radius: 0 8px 8px 0;">
+                            <div style="font-weight: 600;">${b.title} — <span style="font-family: 'JetBrains Mono', monospace;">₱${window.peso(b.amount)}</span></div>
+                            <div style="font-size: 10px; color: #2F8E6C; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 3px;">${dayLabel}</div>
+                        </li>`;
                     });
                     htmlMsg += `</ul></div>`;
                 }
@@ -200,9 +181,8 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                 htmlMsg += `</div>`;
 
                 Swal.fire({
-                    title: 'Paalala sa Bayarin!',
+                    title: 'May Babayaran Ka',
                     html: htmlMsg,
-                    icon: 'info',
                     confirmButtonText: 'Sige, Titingnan Ko',
                     confirmButtonColor: '#1F6F54',
                     customClass: { popup: 'tipid-swal' }
@@ -289,44 +269,48 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
 
                 {/* Total Unpaid */}
-                <div className="relative overflow-hidden bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl p-5 sm:p-6 rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios transition-transform hover:-translate-y-1 duration-300">
+                <div className="relative overflow-hidden bg-white/70 dark:bg-ink2/30 backdrop-blur-2xl p-5 sm:p-6 rounded-[1.75rem] border border-white/80 dark:border-white/10 shadow-ios transition-transform hover:-translate-y-1 duration-300 group">
                     <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#E8C071] to-[#C9932E]" />
-                    <div className="flex items-center gap-3 mb-4">
+                    <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-gold/10 rounded-full blur-xl group-hover:bg-gold/20 transition-colors"></div>
+                    <div className="flex items-center gap-3 mb-4 relative z-10">
                         <StatIcon tone="gold" icon={<Icons.Wallet size={16} />} />
                         <p className="text-[10px] sm:text-[11px] font-mono uppercase font-semibold tracking-wider text-ink2/50 dark:text-paper/50">Total na Babayaran</p>
                     </div>
-                    <AnimatedAmount value={totalUnpaid} className="font-mono text-[1.7rem] sm:text-3xl font-bold tracking-tight text-ink dark:text-paper" />
+                    <AnimatedAmount value={totalUnpaid} className="relative z-10 font-mono text-[1.7rem] sm:text-3xl font-bold tracking-tight text-ink dark:text-paper" />
                 </div>
 
                 {/* Overdue */}
-                <div className="relative overflow-hidden bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl p-5 sm:p-6 rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios transition-transform hover:-translate-y-1 duration-300">
+                <div className="relative overflow-hidden bg-white/70 dark:bg-ink2/30 backdrop-blur-2xl p-5 sm:p-6 rounded-[1.75rem] border border-white/80 dark:border-white/10 shadow-ios transition-transform hover:-translate-y-1 duration-300 group">
                     <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#F38C80] to-[#B5483B]" />
-                    <div className="flex items-center gap-3 mb-4">
+                    <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-expense/5 rounded-full blur-xl group-hover:bg-expense/10 transition-colors"></div>
+                    <div className="flex items-center gap-3 mb-4 relative z-10">
                         <StatIcon tone="expense" icon={<Icons.AlertCircle size={16} />} />
                         <p className="text-[10px] sm:text-[11px] font-mono uppercase font-semibold tracking-wider text-[#B5483B] dark:text-[#F38C80]">Overdue Bills</p>
                     </div>
-                    <p className="font-display text-[1.7rem] sm:text-3xl font-bold text-expense dark:text-[#F38C80]">
+                    <p className="relative z-10 font-display text-[1.7rem] sm:text-3xl font-bold text-expense dark:text-[#F38C80]">
                         {overdueCount} <span className="text-[15px] font-body font-medium opacity-80">mga bill</span>
                     </p>
                 </div>
 
                 {/* Paid */}
-                <div className="relative overflow-hidden bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl p-5 sm:p-6 rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios transition-transform hover:-translate-y-1 duration-300">
+                <div className="relative overflow-hidden bg-white/70 dark:bg-ink2/30 backdrop-blur-2xl p-5 sm:p-6 rounded-[1.75rem] border border-white/80 dark:border-white/10 shadow-ios transition-transform hover:-translate-y-1 duration-300 group">
                     <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#2F8E6C] to-[#1F6F54]" />
-                    <div className="flex items-center gap-3 mb-4">
+                    <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-peso/5 rounded-full blur-xl group-hover:bg-peso/10 transition-colors"></div>
+                    <div className="flex items-center gap-3 mb-4 relative z-10">
                         <StatIcon tone="peso" icon={<Icons.Check size={18} />} />
                         <p className="text-[10px] sm:text-[11px] font-mono uppercase font-semibold tracking-wider text-[#1F6F54] dark:text-[#52C8A1]">Bayad na (Paid)</p>
                     </div>
-                    <p className="font-display text-[1.7rem] sm:text-3xl font-bold text-peso dark:text-[#52C8A1]">
+                    <p className="relative z-10 font-display text-[1.7rem] sm:text-3xl font-bold text-peso dark:text-[#52C8A1]">
                         {paidCount} <span className="text-[15px] font-body font-medium opacity-80">naitala</span>
                     </p>
                 </div>
             </div>
 
             {/* Add Bill Form */}
-            <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios p-5 sm:p-7">
-                <div className="flex items-center gap-3 mb-6">
-                    <span className="w-10 h-10 rounded-[14px] bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center shrink-0">
+            <div className="bg-white/70 dark:bg-ink2/40 backdrop-blur-2xl rounded-[1.75rem] border border-white/80 dark:border-white/10 shadow-ios p-5 sm:p-7 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-[6px] bg-gradient-to-r from-pesoLight to-peso" />
+                <div className="flex items-center gap-3 mb-6 mt-1">
+                    <span className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-[#E6F3EF] to-[#D5EBE3] dark:from-[#1F6F54]/30 dark:to-[#1F6F54]/10 shadow-sm border border-white/40 dark:border-white/5 text-peso dark:text-pesoLight flex items-center justify-center shrink-0">
                         <Icons.Pencil size={18} />
                     </span>
                     <div>
@@ -335,7 +319,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                     </div>
                 </div>
 
-                <form onSubmit={handleAddBill} className="flex flex-col gap-3 sm:gap-3.5">
+                <form onSubmit={handleAddBill} className="flex flex-col gap-3 sm:gap-3.5 relative z-10">
 
                     <FieldWrap icon={<Icons.Pencil size={16} className="text-ink2/40 dark:text-paper/40 shrink-0" />}>
                         <label htmlFor="bill-title" className="sr-only">Pangalan ng bill</label>
@@ -345,12 +329,11 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                             placeholder="Pangalan ng Bill (Hal: Kuryente)"
                             value={title}
                             onChange={e => setTitle(e.target.value)}
-                            className="w-full min-w-0 bg-transparent py-3.5 text-[15px] text-ink dark:text-paper placeholder:text-ink2/30 dark:placeholder:text-paper/30 focus:outline-none"
+                            className="w-full min-w-0 bg-transparent py-3.5 text-[15px] font-medium text-ink dark:text-paper placeholder:text-ink2/30 dark:placeholder:text-paper/30 focus:outline-none"
                         />
                     </FieldWrap>
 
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-3.5">
-
                         <FieldWrap className="sm:w-[150px]" icon={<span className="text-ink2/40 dark:text-paper/40 font-mono text-[15px] shrink-0">₱</span>}>
                             <label htmlFor="bill-amount" className="sr-only">Halaga</label>
                             <input
@@ -372,7 +355,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                                 type="date"
                                 value={dueDate}
                                 onChange={e => setDueDate(e.target.value)}
-                                className="w-full min-w-0 bg-transparent py-3.5 text-[14px] font-mono font-medium text-ink dark:text-paper focus:outline-none appearance-none"
+                                className="w-full min-w-0 bg-transparent py-3.5 text-[14px] font-mono font-semibold text-ink dark:text-paper focus:outline-none appearance-none"
                             />
                         </FieldWrap>
 
@@ -383,13 +366,15 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                                 id="bill-category"
                                 value={category}
                                 onChange={e => setCategory(e.target.value)}
-                                className="w-full min-w-0 bg-transparent py-3.5 text-[14px] text-ink dark:text-paper focus:outline-none appearance-none pr-2"
+                                className="w-full min-w-0 bg-transparent py-3.5 text-[14px] font-medium text-ink dark:text-paper focus:outline-none appearance-none pr-2 cursor-pointer"
                             >
                                 <option value="Bills" className="bg-paper dark:bg-ink dark:text-paper">Bills</option>
                                 <option value="Kuryente" className="bg-paper dark:bg-ink dark:text-paper">Kuryente</option>
                                 <option value="Tubig" className="bg-paper dark:bg-ink dark:text-paper">Tubig</option>
                                 <option value="Internet" className="bg-paper dark:bg-ink dark:text-paper">Internet</option>
                                 <option value="Rent / Bahay" className="bg-paper dark:bg-ink dark:text-paper">Rent / Bahay</option>
+                                <option value="Credit Card" className="bg-paper dark:bg-ink dark:text-paper">Credit Card</option>
+                                <option value="Utang/Loan" className="bg-paper dark:bg-ink dark:text-paper">Utang/Loan</option>
                                 <option value="Iba pa" className="bg-paper dark:bg-ink dark:text-paper">Iba pa</option>
                             </select>
                             <SelectChevron />
@@ -409,11 +394,14 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
             </div>
 
             {/* Bills List */}
-            <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios overflow-hidden p-6 sm:p-8">
-                <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
-                    <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper">Listahan ng mga Bills</h3>
+            <div className="bg-white/70 dark:bg-ink2/40 backdrop-blur-3xl rounded-[1.75rem] border border-white/80 dark:border-white/10 shadow-ios overflow-hidden p-6 sm:p-8">
+                <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-2 h-6 rounded-full bg-peso dark:bg-pesoLight"></div>
+                        <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper">Listahan ng mga Bills</h3>
+                    </div>
                     {!loading && bills.length > 0 && (
-                        <span className="text-[11px] font-mono font-medium bg-black/5 dark:bg-white/10 px-2.5 py-1 rounded-full text-ink2/60 dark:text-paper/50">
+                        <span className="text-[11px] font-mono font-medium bg-black/5 dark:bg-white/10 border border-black/5 dark:border-white/5 px-3 py-1.5 rounded-lg text-ink2/60 dark:text-paper/50">
                             {paidCount}/{bills.length} bayad na
                         </span>
                     )}
@@ -421,15 +409,19 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
 
                 {/* Modern Progress Bar */}
                 {!loading && bills.length > 0 && (
-                    <div
-                        role="progressbar"
-                        aria-label="Porsyento ng mga bills na bayad na"
-                        aria-valuenow={paidPct}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        className="h-1.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden mb-6"
-                    >
-                        <div className="h-full rounded-full bg-[#1F6F54] transition-all duration-700 ease-out" style={{ width: `${paidPct}%` }} />
+                    <div className="mb-7 relative">
+                        <div
+                            role="progressbar"
+                            aria-label="Porsyento ng mga bills na bayad na"
+                            aria-valuenow={paidPct}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            className="h-2 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden shadow-inner"
+                        >
+                            <div className="h-full rounded-full bg-gradient-to-r from-pesoLight to-peso transition-all duration-1000 ease-out relative" style={{ width: `${paidPct}%` }}>
+                                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 w-full h-full animate-[shimmer_2s_infinite]"></div>
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -438,7 +430,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                         <Icons.Loader size={24} className="spin" />
                     </div>
                 ) : bills.length === 0 ? (
-                    <div className="py-12 flex flex-col items-center justify-center gap-4 text-center">
+                    <div className="py-12 flex flex-col items-center justify-center gap-4 text-center bg-black/[0.02] dark:bg-white/[0.02] rounded-2xl border border-dashed border-black/10 dark:border-white/10">
                         <div aria-hidden="true" className="w-16 h-16 rounded-2xl bg-gradient-to-br from-paperDim to-paperDim/50 dark:from-ink2/60 dark:to-ink2/20 border border-dashed border-line dark:border-white/15 flex items-center justify-center">
                             <Icons.Inbox size={26} className="text-ink2/30 dark:text-paper/25" />
                         </div>
@@ -451,9 +443,6 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                             const isOverdue = bill.status === "Overdue";
                             const dueBadge = getDueBadge(bill);
 
-                            // At-a-glance urgency, same "scan bar" language as the expense list:
-                            // green once paid, red if overdue, gold if due within the next 3 days,
-                            // quiet neutral otherwise.
                             const rowAccent = isPaid
                                 ? "bg-[#1F6F54] dark:bg-[#52C8A1]"
                                 : isOverdue
@@ -463,7 +452,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                                         : "bg-ink2/15 dark:bg-paper/15";
 
                             return (
-                                <div key={bill.id} className="relative overflow-hidden group flex items-center justify-between gap-3 pl-5 pr-3.5 sm:pl-6 sm:pr-4 py-3.5 sm:py-4 bg-white/40 dark:bg-white/[0.03] rounded-2xl transition-all duration-300 hover:bg-white/70 dark:hover:bg-white/10 hover:shadow-sm">
+                                <div key={bill.id} className={`relative overflow-hidden group flex items-center justify-between gap-3 pl-5 pr-3.5 sm:pl-6 sm:pr-4 py-3.5 sm:py-4 bg-white/60 dark:bg-white/[0.03] rounded-2xl transition-all duration-300 border hover:shadow-sm ${isPaid ? 'border-black/5 dark:border-white/5 opacity-70 hover:opacity-100' : 'border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-white/10'}`}>
 
                                     <div
                                         className={`absolute left-1.5 top-1/2 -translate-y-1/2 h-[55%] w-[3px] rounded-full transition-opacity duration-300 ${rowAccent} opacity-30 group-hover:opacity-100`}
@@ -481,7 +470,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                                             className={`w-6 h-6 sm:w-[1.65rem] sm:h-[1.65rem] rounded-full flex items-center justify-center shrink-0 transition-all duration-300 active:scale-90 ${
                                                 isPaid
                                                     ? 'bg-[#1F6F54] border-2 border-[#1F6F54] text-white shadow-sm'
-                                                    : 'bg-transparent border-2 border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/40'
+                                                    : 'bg-white/50 dark:bg-transparent border-2 border-black/15 dark:border-white/20 hover:border-black/30 dark:hover:border-white/40'
                                             }`}
                                         >
                                             <Icons.Check size={14} className={`transition-opacity duration-300 ${isPaid ? 'opacity-100' : 'opacity-0'}`} />
@@ -492,19 +481,19 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                                                 {bill.title}
                                             </p>
                                             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                                                <span className={`text-[9px] sm:text-[10px] font-mono font-semibold tracking-wide px-2 py-0.5 rounded-full uppercase ${isPaid ? 'bg-black/5 dark:bg-white/5 text-ink2/30 dark:text-paper/20' : 'bg-ink/[0.04] dark:bg-white/10 text-ink2/70 dark:text-paper/70'}`}>
+                                                <span className={`text-[9px] sm:text-[10px] font-mono font-semibold tracking-wide px-2 py-0.5 rounded-md uppercase border ${isPaid ? 'bg-black/5 dark:bg-white/5 text-ink2/30 dark:text-paper/20 border-transparent' : 'bg-white dark:bg-black/20 text-ink2/70 dark:text-paper/70 border-black/5 dark:border-white/10'}`}>
                                                     {bill.category}
                                                 </span>
                                                 <span className={`text-[10px] sm:text-[11px] font-medium ${isPaid ? 'text-ink2/30 dark:text-paper/20' : 'text-ink2/50 dark:text-paper/40'}`}>
                                                     Due: {formatDueDate(bill.dueDate)}
                                                 </span>
                                                 {isOverdue && !isPaid && (
-                                                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#FAEDE9] dark:bg-[#B5483B]/20 text-[#B5483B] dark:text-[#F38C80] uppercase">
+                                                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#FAEDE9] dark:bg-[#B5483B]/20 text-[#B5483B] dark:text-[#F38C80] border border-[#B5483B]/10 dark:border-[#F38C80]/20 uppercase">
                                                         Overdue
                                                     </span>
                                                 )}
-                                                {dueBadge && (
-                                                    <span className={`text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-md uppercase ${dueBadge.tone}`}>
+                                                {dueBadge && !isPaid && (
+                                                    <span className={`text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-md uppercase border ${dueBadge.tone}`}>
                                                         {dueBadge.label}
                                                     </span>
                                                 )}
@@ -513,7 +502,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                                     </div>
 
                                     <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                                        <span className={`font-mono font-bold tabular-nums text-[15px] sm:text-base tracking-tight transition-colors duration-300 ${isPaid ? 'text-ink2/30 dark:text-paper/20' : 'text-ink dark:text-paper'}`}>
+                                        <span className={`font-mono font-bold tabular-nums text-[15px] sm:text-[17px] tracking-tight transition-colors duration-300 ${isPaid ? 'text-ink2/30 dark:text-paper/20' : 'text-ink dark:text-paper'}`}>
                                             ₱{window.peso(bill.amount)}
                                         </span>
                                         <button
@@ -530,6 +519,9 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                     </div>
                 )}
             </div>
+            <style>{`
+                @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+            `}</style>
         </div>
     );
 };

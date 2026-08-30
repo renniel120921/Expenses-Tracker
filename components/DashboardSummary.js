@@ -99,12 +99,12 @@ function AnimatedAmount({ value, className }) {
 // itself is hidden from assistive tech to avoid a redundant announcement.
 function IconChip({ icon, tone }) {
     const tones = {
-        peso: "bg-[#E6F3EF] text-[#1F6F54] dark:bg-[#1F6F54]/20 dark:text-[#52C8A1]",
-        expense: "bg-[#FAEDE9] text-[#B5483B] dark:bg-[#B5483B]/20 dark:text-[#F38C80]",
-        gold: "bg-[#FDF6E3] text-[#C9932E] dark:bg-[#C9932E]/20 dark:text-[#E8C071]",
+        peso: "bg-gradient-to-br from-[#E6F3EF] to-[#D5EBE3] text-[#1F6F54] dark:from-[#1F6F54]/30 dark:to-[#1F6F54]/10 dark:text-[#52C8A1]",
+        expense: "bg-gradient-to-br from-[#FAEDE9] to-[#F5DBD5] text-[#B5483B] dark:from-[#B5483B]/30 dark:to-[#B5483B]/10 dark:text-[#F38C80]",
+        gold: "bg-gradient-to-br from-[#FDF6E3] to-[#FCEABB] text-[#C9932E] dark:from-[#C9932E]/30 dark:to-[#C9932E]/10 dark:text-[#E8C071]",
     };
     return (
-        <span aria-hidden="true" className={`w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 ${tones[tone] || tones.peso}`}>
+        <span aria-hidden="true" className={`w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 shadow-sm border border-white/20 dark:border-white/5 ${tones[tone] || tones.peso}`}>
             {icon}
         </span>
     );
@@ -145,10 +145,10 @@ function DeltaChip({ pct, invert = false }) {
         <span
             title="kumpara sa nakaraang buwan"
             aria-label={`${Math.abs(pct)}% na ${directionWord} kumpara sa nakaraang buwan`}
-            className={`inline-flex items-center gap-1 text-[10.5px] font-mono font-bold px-2 py-1 rounded-lg shrink-0 transition-colors ${
+            className={`inline-flex items-center gap-1 text-[10.5px] font-mono font-bold px-2 py-1 rounded-lg shrink-0 transition-colors shadow-sm border border-white/20 dark:border-white/5 ${
                 isGood
-                    ? "text-[#1F6F54] bg-[#E6F3EF] dark:text-[#52C8A1] dark:bg-[#1F6F54]/20"
-                    : "text-[#B5483B] bg-[#FAEDE9] dark:text-[#F38C80] dark:bg-[#B5483B]/20"
+                    ? "text-[#1F6F54] bg-gradient-to-r from-[#E6F3EF] to-[#D5EBE3] dark:text-[#52C8A1] dark:from-[#1F6F54]/30 dark:to-[#1F6F54]/10"
+                    : "text-[#B5483B] bg-gradient-to-r from-[#FAEDE9] to-[#F5DBD5] dark:text-[#F38C80] dark:from-[#B5483B]/30 dark:to-[#B5483B]/10"
             }`}
         >
             <TrendGlyph up={positive} />
@@ -183,9 +183,11 @@ function BudgetEditor({ uid, budget }) {
         return (
             <button
                 onClick={() => setEditing(true)}
-                className="inline-flex items-center gap-2 text-[12px] font-semibold text-peso dark:text-pesoLight px-2.5 py-1.5 -ml-2.5 rounded-xl hover:bg-peso/10 dark:hover:bg-pesoLight/15 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50"
+                className="inline-flex items-center gap-2 text-[12px] font-semibold text-peso dark:text-pesoLight px-3 py-2 -ml-3 rounded-xl hover:bg-peso/10 dark:hover:bg-pesoLight/15 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50"
             >
-                <Icons.Pencil size={13} />
+                <span className="bg-peso/10 dark:bg-pesoLight/20 p-1.5 rounded-lg text-peso dark:text-pesoLight">
+                    <Icons.Pencil size={12} />
+                </span>
                 {budget ? "Baguhin ang budget" : "Magtakda ng buwanang budget"}
             </button>
         );
@@ -198,17 +200,17 @@ function BudgetEditor({ uid, budget }) {
                 type="number" inputMode="decimal" autoFocus value={value}
                 onChange={e => setValue(e.target.value)}
                 placeholder="₱0.00"
-                className="w-28 bg-white/60 dark:bg-black/20 ring-1 ring-black/5 dark:ring-white/10 rounded-xl px-3 py-1.5 text-[13px] font-mono font-semibold text-ink dark:text-paper focus:outline-none focus:bg-white dark:focus:bg-ink focus:ring-2 focus:ring-peso/40 transition-all duration-200"
+                className="w-32 bg-white/80 dark:bg-black/40 ring-1 ring-black/10 dark:ring-white/20 rounded-xl px-4 py-2 text-[13px] font-mono font-semibold text-ink dark:text-paper focus:outline-none focus:bg-white dark:focus:bg-ink focus:ring-2 focus:ring-peso/50 transition-all duration-200 shadow-inner"
             />
             <button
                 type="submit" disabled={saving} title="Save"
-                className="w-8 h-8 inline-flex items-center justify-center rounded-xl bg-peso/15 text-peso dark:bg-pesoLight/20 dark:text-pesoLight disabled:opacity-50 active:scale-95 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50"
+                className="w-9 h-9 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-peso to-pesoLight text-white disabled:opacity-50 active:scale-95 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 shadow-md hover:shadow-lg"
             >
                 {saving ? <Icons.Loader size={14} className="spin" /> : <CheckGlyph size={14} />}
             </button>
             <button
                 type="button" onClick={() => setEditing(false)} title="Cancel"
-                className="w-8 h-8 inline-flex items-center justify-center rounded-xl text-ink2/50 dark:text-paper/40 hover:bg-black/5 dark:hover:bg-white/10 hover:text-ink2/80 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50"
+                className="w-9 h-9 inline-flex items-center justify-center rounded-xl bg-white/60 dark:bg-white/10 text-ink2/60 dark:text-paper/60 hover:bg-black/5 dark:hover:bg-white/20 hover:text-ink2/90 dark:hover:text-paper transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 shadow-sm border border-black/5 dark:border-white/5"
             >
                 <XGlyph size={14} />
             </button>
@@ -285,29 +287,29 @@ function SmartSummary({ uid, entries, budget }) {
             <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
 
                 {/* Income Card */}
-                <div className="relative overflow-hidden summary-row-in summary-card bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios p-5 sm:p-6" style={{ animationDelay: "0ms" }}>
-                    <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#2F8E6C] to-[#1F6F54]" />
-                    <div className="flex items-start justify-between gap-2.5 mb-4 sm:mb-5">
+                <div className="relative overflow-hidden summary-row-in summary-card bg-white/70 dark:bg-ink2/40 backdrop-blur-2xl rounded-[1.75rem] border border-white/80 dark:border-white/10 shadow-ios p-5 sm:p-6" style={{ animationDelay: "0ms" }}>
+                    <div className="absolute top-0 left-0 right-0 h-[6px] bg-gradient-to-r from-[#2F8E6C] to-[#1F6F54]" />
+                    <div className="flex items-start justify-between gap-2.5 mb-4 sm:mb-5 mt-1">
                         <div className="flex items-center gap-3">
                             <IconChip tone="peso" icon={<Icons.TrendUp size={16} />} />
-                            <p className="text-[10px] sm:text-[11px] font-mono font-semibold tracking-wider uppercase text-ink2/50 dark:text-paper/50">Kita Ngayon</p>
+                            <p className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wider uppercase text-ink2/60 dark:text-paper/60">Kita Ngayon</p>
                         </div>
                         <DeltaChip pct={incomeDelta} />
                     </div>
-                    <AnimatedAmount value={income} className="font-mono text-[1.7rem] sm:text-3xl font-bold tracking-tight text-ink dark:text-paper" />
+                    <AnimatedAmount value={income} className="font-mono text-[1.8rem] sm:text-[2rem] font-bold tracking-tight text-ink dark:text-paper" />
                 </div>
 
                 {/* Expense Card */}
-                <div className="relative overflow-hidden summary-row-in summary-card bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios p-5 sm:p-6" style={{ animationDelay: "60ms" }}>
-                    <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#F38C80] to-[#B5483B]" />
-                    <div className="flex items-start justify-between gap-2.5 mb-4 sm:mb-5">
+                <div className="relative overflow-hidden summary-row-in summary-card bg-white/70 dark:bg-ink2/40 backdrop-blur-2xl rounded-[1.75rem] border border-white/80 dark:border-white/10 shadow-ios p-5 sm:p-6" style={{ animationDelay: "60ms" }}>
+                    <div className="absolute top-0 left-0 right-0 h-[6px] bg-gradient-to-r from-[#F38C80] to-[#B5483B]" />
+                    <div className="flex items-start justify-between gap-2.5 mb-4 sm:mb-5 mt-1">
                         <div className="flex items-center gap-3">
                             <IconChip tone="expense" icon={<Icons.TrendDown size={16} />} />
-                            <p className="text-[10px] sm:text-[11px] font-mono font-semibold tracking-wider uppercase text-ink2/50 dark:text-paper/50">Gastos Ngayon</p>
+                            <p className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wider uppercase text-ink2/60 dark:text-paper/60">Gastos Ngayon</p>
                         </div>
                         <DeltaChip pct={spentDelta} invert />
                     </div>
-                    <AnimatedAmount value={spent} className="font-mono text-[1.7rem] sm:text-3xl font-bold tracking-tight text-ink dark:text-paper" />
+                    <AnimatedAmount value={spent} className="font-mono text-[1.8rem] sm:text-[2rem] font-bold tracking-tight text-ink dark:text-paper" />
                 </div>
 
                 {/* Remaining / Budget Card — gains a quiet gold ring once nearingBudget kicks in,
@@ -317,88 +319,102 @@ function SmartSummary({ uid, entries, budget }) {
                     overBudget
                         ? "bg-expense/10 border-expense/30 budget-glow"
                         : nearingBudget
-                            ? "bg-white/60 dark:bg-ink2/30 border-white/60 dark:border-white/10 ring-1 ring-gold/25 dark:ring-[#E8C071]/25"
-                            : "bg-white/60 dark:bg-ink2/30 border-white/60 dark:border-white/10"
+                            ? "bg-white/70 dark:bg-ink2/40 border-white/80 dark:border-white/10 ring-2 ring-gold/30 dark:ring-[#E8C071]/30"
+                            : "bg-white/70 dark:bg-ink2/40 border-white/80 dark:border-white/10"
                 }`} style={{ animationDelay: "120ms" }}>
-                    <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${overBudget ? "from-[#F38C80] to-[#B5483B]" : "from-[#E8C071] to-[#C9932E]"}`} />
+                    <div className={`absolute top-0 left-0 right-0 h-[6px] bg-gradient-to-r ${overBudget ? "from-[#F38C80] to-[#B5483B]" : "from-[#E8C071] to-[#C9932E]"}`} />
 
-                    <div className="flex items-start gap-3 mb-4 sm:mb-5">
+                    <div className="flex items-start gap-3 mb-4 sm:mb-5 mt-1">
                         <IconChip tone={overBudget ? "expense" : "gold"} icon={<Icons.Wallet size={16} />} />
-                        <p className={`text-[10px] sm:text-[11px] font-mono font-semibold tracking-wider uppercase pt-3 ${overBudget ? "text-[#B5483B] dark:text-[#F38C80]" : "text-ink2/50 dark:text-paper/50"}`}>
+                        <p className={`text-[10px] sm:text-[11px] font-mono font-bold tracking-wider uppercase pt-3 ${overBudget ? "text-[#B5483B] dark:text-[#F38C80]" : "text-ink2/60 dark:text-paper/60"}`}>
                             {remainingLabel}
                         </p>
                     </div>
 
-                    <AnimatedAmount value={remaining} className={`font-mono text-[1.7rem] sm:text-3xl font-bold tracking-tight ${overBudget ? "text-expense dark:text-[#F38C80]" : "text-ink dark:text-paper"}`} />
+                    <AnimatedAmount value={remaining} className={`font-mono text-[1.8rem] sm:text-[2rem] font-bold tracking-tight ${overBudget ? "text-expense dark:text-[#F38C80]" : "text-ink dark:text-paper"}`} />
 
                     {budgetPct != null && (
-                        <div className="mt-4 sm:mt-5">
+                        <div className="mt-5">
                             <div
                                 role="progressbar"
                                 aria-label="Porsyento ng buwanang budget na nagastos na"
                                 aria-valuenow={budgetPct}
                                 aria-valuemin={0}
                                 aria-valuemax={100}
-                                className="h-2 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden"
+                                className="h-2.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden shadow-inner"
                             >
                                 <div
-                                    className={`bar-fill h-full rounded-full ${overBudget ? "bg-expense" : nearingBudget ? "bg-gold" : "bg-peso"}`}
-                                    style={{ width: `${budgetPct}%` }}
+                                    className={`bar-fill h-full rounded-full transition-all duration-1000 ease-out ${overBudget ? "bg-gradient-to-r from-[#F38C80] to-[#B5483B]" : nearingBudget ? "bg-gradient-to-r from-[#FCEABB] to-[#C9932E]" : "bg-gradient-to-r from-[#2F8E6C] to-[#1F6F54]"}`}
+                                    style={{ width: `${Math.min(100, budgetPct)}%` }}
                                 />
                             </div>
-                            <p role="status" aria-live="polite" className={`text-[11px] mt-2 font-mono font-medium ${overBudget ? "text-expense dark:text-[#F38C80]" : nearingBudget ? "text-[#C9932E] dark:text-[#E8C071]" : "text-ink2/60 dark:text-paper/50"}`}>
-                                {budgetPct}% ng budget nagastos na{nearingBudget ? " — dahan dahan lang" : ""}
-                            </p>
+                            <div className="flex justify-between items-center mt-2.5">
+                                <p role="status" aria-live="polite" className={`text-[11px] font-mono font-bold ${overBudget ? "text-expense dark:text-[#F38C80]" : nearingBudget ? "text-[#C9932E] dark:text-[#E8C071]" : "text-ink2/60 dark:text-paper/50"}`}>
+                                    {budgetPct}% nagastos{nearingBudget ? " — hinay-hinay lang" : ""}
+                                </p>
+                                <span className="text-[10px] font-mono text-ink2/40 dark:text-paper/30 font-medium">100%</span>
+                            </div>
                         </div>
                     )}
 
-                    <div className="mt-3.5">
+                    <div className="mt-4">
                         <BudgetEditor uid={uid} budget={budget} />
                     </div>
                 </div>
             </div>
 
             {/* Breakdown Section */}
-            <div className="summary-card bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios p-6 sm:p-8">
-                <div className="flex items-end justify-between gap-3 mb-5 sm:mb-6 flex-wrap">
-                    <p className="text-[11px] sm:text-xs font-mono tracking-[0.2em] font-semibold uppercase text-peso dark:text-pesoLight">Breakdown ng Gastos</p>
+            <div className="summary-card bg-white/70 dark:bg-ink2/40 backdrop-blur-3xl rounded-[1.75rem] border border-white/80 dark:border-white/10 shadow-ios p-6 sm:p-8">
+                <div className="flex items-end justify-between gap-3 mb-6 sm:mb-7 flex-wrap">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-2 h-6 rounded-full bg-peso dark:bg-pesoLight"></div>
+                        <h3 className="text-[14px] sm:text-[16px] font-display tracking-[0.1em] font-bold uppercase text-ink dark:text-paper">Breakdown ng Gastos</h3>
+                    </div>
                     {byCategory.length > 0 && (
-                        <p className="text-[11px] sm:text-xs text-ink2/50 dark:text-paper/40 font-mono font-medium">
-                            <span className="font-bold text-ink2/70 dark:text-paper/70">{byCategory.length}</span> kategorya · ₱{window.peso(spent)}
+                        <p className="text-[11.5px] sm:text-xs text-ink2/60 dark:text-paper/50 font-mono font-medium bg-black/5 dark:bg-white/10 px-3 py-1.5 rounded-lg border border-black/5 dark:border-white/5">
+                            <span className="font-bold text-ink dark:text-paper">{byCategory.length}</span> kategorya · ₱{window.peso(spent)}
                         </p>
                     )}
                 </div>
 
                 {byCategory.length === 0 ? (
-                    <div className="py-6 flex flex-col items-center justify-center gap-3 text-ink2/40 dark:text-paper/30">
-                        <Icons.Wallet size={24} className="opacity-50" aria-hidden="true" />
-                        <p className="text-[13px] font-medium text-center">Wala pang gastos ngayong buwan.</p>
+                    <div className="py-10 flex flex-col items-center justify-center gap-4 text-ink2/40 dark:text-paper/30 bg-black/[0.02] dark:bg-white/[0.02] rounded-2xl border border-dashed border-black/10 dark:border-white/10">
+                        <Icons.Wallet size={28} className="opacity-40" aria-hidden="true" />
+                        <p className="text-[14px] font-medium text-center">Wala pang gastos ngayong buwan.</p>
                     </div>
                 ) : (
-                    <div className="space-y-3">
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                         {byCategory.map((c, i) => {
                             const pct = spent ? Math.round((c.amount / spent) * 100) : 0;
+                            const isHighest = i === 0;
+                            const catColor = window.CATEGORY_COLOR[c.label] || "#1F6F54";
+
                             return (
-                                <div key={c.label} className="summary-row-in bg-white/40 dark:bg-white/[0.03] p-4 rounded-2xl hover:bg-white/70 dark:hover:bg-white/[0.06] transition-colors" style={{ animationDelay: `${i * 50}ms` }}>
-                                    <div className="flex justify-between items-center text-sm mb-3">
-                                        <span className="font-semibold text-[13.5px] sm:text-[15px] text-ink dark:text-paper flex items-center gap-2">
-                                            {c.label}
-                                            {i === 0 && (
-                                                <span className="text-[9px] font-mono font-bold tracking-wider uppercase text-[#C9932E] dark:text-[#E8C071] bg-[#FDF6E3] dark:bg-[#C9932E]/15 rounded-full px-2 py-0.5">
-                                                    Pinakamalaki
-                                                </span>
-                                            )}
-                                        </span>
+                                <div key={c.label} className={`summary-row-in bg-white/60 dark:bg-black/20 p-4 sm:p-5 rounded-2xl hover:bg-white/90 dark:hover:bg-black/40 transition-colors border shadow-sm ${isHighest ? 'border-gold/30 dark:border-[#E8C071]/30 ring-1 ring-gold/10 dark:ring-[#E8C071]/10' : 'border-black/5 dark:border-white/5'}`} style={{ animationDelay: `${i * 50}ms` }}>
+                                    <div className="flex justify-between items-center text-sm mb-3.5">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="w-3 h-3 rounded-full shadow-inner" style={{ backgroundColor: catColor }}></div>
+                                            <span className="font-bold text-[14px] sm:text-[15px] text-ink dark:text-paper flex items-center gap-2">
+                                                {c.label}
+                                                {isHighest && (
+                                                    <span className="text-[9px] font-mono font-bold tracking-wider uppercase text-[#C9932E] dark:text-[#E8C071] bg-[#FDF6E3] dark:bg-[#C9932E]/15 rounded-md px-1.5 py-0.5 border border-gold/20 dark:border-[#E8C071]/20">
+                                                        Top
+                                                    </span>
+                                                )}
+                                            </span>
+                                        </div>
                                         <span className="font-mono font-bold text-ink dark:text-paper text-sm sm:text-base">
-                                            ₱{window.peso(c.amount)} <span className="text-[11px] font-medium text-ink2/40 dark:text-paper/40 ml-1">{pct}%</span>
+                                            ₱{window.peso(c.amount)} <span className="text-[11.5px] font-semibold text-ink2/50 dark:text-paper/50 ml-1.5 bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded-md">{pct}%</span>
                                         </span>
                                     </div>
                                     {/* Decorative — the amount and % just above already say this in text */}
-                                    <div aria-hidden="true" className="h-1.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
+                                    <div aria-hidden="true" className="h-2 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden shadow-inner">
                                         <div
-                                            className="bar-fill h-full rounded-full transition-all duration-700 ease-out"
-                                            style={{ width: `${pct}%`, backgroundColor: window.CATEGORY_COLOR[c.label] || "#1F6F54" }}
-                                        ></div>
+                                            className="bar-fill h-full rounded-full transition-all duration-1000 ease-out relative"
+                                            style={{ width: `${pct}%`, backgroundColor: catColor }}
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 w-full h-full animate-[shimmer_2s_infinite]"></div>
+                                        </div>
                                     </div>
                                 </div>
                             );
@@ -406,6 +422,12 @@ function SmartSummary({ uid, entries, budget }) {
                     </div>
                 )}
             </div>
+            <style>{`
+                @keyframes shimmer {
+                    0% { transform: translateX(-100%); }
+                    100% { transform: translateX(100%); }
+                }
+            `}</style>
         </div>
     );
 }

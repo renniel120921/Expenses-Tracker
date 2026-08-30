@@ -11,7 +11,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <script>
         if (localStorage.getItem('tipid_theme') === 'dark' || (!('tipid_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -28,18 +28,18 @@
             theme: {
                 extend: {
                     colors: {
-                        paper: '#F1F4EF', paperDim: '#E9EDE6', ink: '#15231C', ink2: '#33443A',
+                        paper: '#F8F9F7',
+                        paperDim: '#E9EDE6', ink: '#15231C', ink2: '#33443A',
                         peso: '#1F6F54', pesoLight: '#2F8E6C', pesoDeep: '#123D2E',
-                        gold: '#C9932E', expense: '#B5483B', line: '#D3DAD0',
+                        gold: '#C9932E', expense: '#B5483B', line: '#E2E8E4',
                     },
                     fontFamily: {
                         display: ['"Fraunces"', 'serif'],
                         body: ['"Inter"', 'sans-serif'],
-                        mono: ['"IBM Plex Mono"', 'monospace'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
                     },
                     boxShadow: {
-                        'ios': '0 2px 10px rgba(18,61,46,0.06), 0 16px 32px -12px rgba(18,61,46,0.15)',
-                        'iosLg': '0 24px 48px -12px rgba(18,61,46,0.25)',
+                        'ios': '0 2px 10px rgba(18,61,46,0.04), 0 16px 32px -12px rgba(18,61,46,0.1)',
                     }
                 }
             }
@@ -58,57 +58,27 @@
     <style>
         :root {
             --sat: env(safe-area-inset-top, 0px);
-            --sar: env(safe-area-inset-right, 0px);
             --sab: env(safe-area-inset-bottom, 0px);
-            --sal: env(safe-area-inset-left, 0px);
             --ease-ios: cubic-bezier(0.22, 1, 0.36, 1);
-            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        html { background: #F1F4EF; transition: background-color 0.3s var(--ease-ios); }
+        html { background: #F8F9F7; transition: background-color 0.3s var(--ease-ios); }
         html.dark { background: #111A15; color: #F1F4EF; }
+        body { min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
 
-        body { font-feature-settings: "tnum" 1, "lnum" 1; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
-        ::selection { background: #C9932E33; color: #15231C; }
-        :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .spin { animation: spin 0.85s linear infinite; }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .slide-in { animation: slideInRight 0.4s var(--ease-ios) both; }
 
         @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-up { animation: fadeUp 0.7s var(--ease-ios) both; }
+        .fade-up { animation: fadeUp 0.6s var(--ease-ios) both; }
 
-        @keyframes logoBreathe {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50%      { transform: scale(1.08); opacity: 0.85; }
-        }
-        .logo-breathe { animation: logoBreathe 1.7s ease-in-out infinite; }
-
-        @keyframes haloPulse {
-            0%   { transform: scale(0.9); opacity: 0.35; }
-            70%  { opacity: 0; }
-            100% { transform: scale(1.7); opacity: 0; }
-        }
-        .halo-pulse { animation: haloPulse 2s var(--ease-ios) infinite; }
-
-        @keyframes heroFloat {
-            0%, 100% { transform: translate(0, 0); }
-            50%      { transform: translate(0, -10px); }
-        }
-        .hero-float { animation: heroFloat 6s ease-in-out infinite; }
-
-        .tap-scale { transition: transform 0.15s var(--ease-spring); }
-        .tap-scale:active { transform: scale(0.94); }
-
-        .ios-toggle-knob { transition: transform 0.35s var(--ease-spring); }
+        .spin { animation: spin 0.85s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .swal2-popup.tipid-swal { border-radius: 24px !important; font-family: 'Inter', sans-serif !important; }
-
-        @media (prefers-reduced-motion: reduce) {
-            .spin, .fade-up, .logo-breathe, .halo-pulse, .hero-float, .tap-scale {
-                animation: none !important; transition: none !important;
-            }
-        }
     </style>
 </head>
 <body class="bg-paper dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
@@ -128,30 +98,65 @@
             );
         }
 
+        // FULL ICONS DICTIONARY COMPLETED TO PREVENT NAVBAR CRASHES
         window.Icons = {
+            User: (p) => <Icon {...p} path={<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>} />,
+            Users: (p) => <Icon {...p} path={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
+            Lock: (p) => <Icon {...p} path={<><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>} />,
+            Bell: (p) => <Icon {...p} path={<><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>} />,
+            Globe: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></>} />,
+            Info: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>} />,
+            SunMoon: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></>} />,
+            Target: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></>} />,
+            HelpCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></>} />,
+            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />,
+            ChevronRight: (p) => <Icon {...p} path={<><path d="m9 18 6-6-6-6"/></>} />,
+            ChevronLeft: (p) => <Icon {...p} path={<><path d="m15 18-6-6 6-6"/></>} />,
+            Wallet: (p) => <Icon {...p} path={<><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></>} />,
+            Home: (p) => <Icon {...p} path={<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>} />,
+            List: (p) => <Icon {...p} path={<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>} />,
+            Loader: (p) => <Icon {...p} path={<><path d="M12 2a10 10 0 0 1 10 10"/></>} />,
+            Category: (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
             Sun: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>} />,
             Moon: (p) => <Icon {...p} path={<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>} />,
-            User: (p) => <Icon {...p} path={<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>} />,
-            Target: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></>} />,
-            Wallet: (p) => <Icon {...p} path={<><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></>} />,
-            Star: (p) => <Icon {...p} path={<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>} />,
-            Check: (p) => <Icon {...p} path={<><polyline points="20 6 9 17 4 12"/></>} />,
-            Home: (p) => <Icon {...p} path={<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>} />,
+            Trash: (p) => <Icon {...p} path={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></>} />,
+            Plus: (p) => <Icon {...p} path={<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>} />,
+            Pencil: (p) => <Icon {...p} path={<><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></>} />,
+            Calendar: (p) => <Icon {...p} path={<><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>} />,
+            AlertCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />,
+            Check: (p) => <Icon {...p} path={<><polyline points="20 6 9 17 4 12"/></>} strokeWidth={3} />,
+            Inbox: (p) => <Icon {...p} path={<><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></>} />,
+            Zap: (p) => <Icon {...p} path={<><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></>} />,
+            Clock: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>} />,
             Chart: (p) => <Icon {...p} path={<><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></>} />,
-            List: (p) => <Icon {...p} path={<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>} />,
-            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />,
-            Camera: (p) => <Icon {...p} path={<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></>} />,
+            TrendUp: (p) => <Icon {...p} path={<><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>} />,
+            TrendDown: (p) => <Icon {...p} path={<><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></>} />,
+            Eye: (p) => <Icon {...p} path={<><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></>} />,
+            EyeOff: (p) => <Icon {...p} path={<><path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.94 3.71M6.16 6.16A18.6 18.6 0 0 0 1 11s4 7 11 7a10.9 10.9 0 0 0 5.64-1.56M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></>} />,
+            Sparkle: (p) => <Icon {...p} path={<><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M17.7 6.3l-2.8 2.8M9.1 14.9l-2.8 2.8"/></>} />,
             X: (p) => <Icon {...p} path={<><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>} />,
-            Info: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>} />
+            ShoppingBag: (p) => <Icon {...p} path={<><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></>} />,
+            Menu: (p) => <Icon {...p} path={<><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></>} />,
+            Grid: (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
+            Receipt: (p) => <Icon {...p} path={<><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z"/><path d="M16 14h-8"/><path d="M16 10h-8"/></>} />,
+            Chip: (p) => (<svg width={p.size||24} height={p.size||24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={p.className}><rect x="4" y="4" width="16" height="16" rx="4" /><line x1="4" y1="9" x2="9" y2="9" /><line x1="4" y1="15" x2="9" y2="15" /><line x1="15" y1="9" x2="20" y2="9" /><line x1="15" y1="15" x2="20" y2="15" /><line x1="9" y1="4" x2="9" y2="20" /><line x1="15" y1="4" x2="15" y2="20" /></svg>),
+            Contactless: (p) => (<svg width={p.size||24} height={p.size||24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M8.5 21c-2.4-3.8-2.4-14.2 0-18" /><path d="M12.5 18c-1.6-2.5-1.6-9.5 0-12" /><path d="M16.5 15c-.8-1.2-.8-4.8 0-6" /></svg>),
+            // NEW ICONS for the additional features below
+            Download: (p) => <Icon {...p} path={<><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></>} />,
+            Star: (p) => <Icon {...p} path={<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>} />,
+            MessageSquare: (p) => <Icon {...p} path={<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>} />,
+            FileText: (p) => <Icon {...p} path={<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></>} />,
+            ShieldAlert: (p) => <Icon {...p} path={<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />,
+            Coins: (p) => <Icon {...p} path={<><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></>} />,
         };
 
-        window.Logo = function Logo({ size = 30 }) {
+        window.Logo = function Logo({ size = 30, className = "" }) {
             const [broken, setBroken] = React.useState(false);
             if (!broken) {
                 return <img src="/assets/logo.svg" alt="Tipid logo" width={size} height={size}
-                            onError={() => setBroken(true)} style={{ width: size, height: size }} className="rounded-md" />;
+                            onError={() => setBroken(true)} className={`rounded-md ${className}`} style={{ width: size, height: size }} />;
             }
-            return <span style={{ width: size, height: size }} className="rounded-md bg-ink text-paper flex items-center justify-center font-display font-semibold">₱</span>;
+            return <span style={{ width: size, height: size }} className={`rounded-md bg-ink text-paper flex items-center justify-center font-display font-semibold ${className}`}>₱</span>;
         }
 
         window.useAuthReady = function() {
@@ -183,253 +188,221 @@
     <script type="text/babel" src="./components/navbar.js"></script>
 
     <script type="text/babel">
-        function AmbientBackground() {
-            return (
-                <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div className="absolute -top-24 -right-16 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
-                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-gold/10 dark:bg-gold/5 rounded-full blur-[100px]" />
-                </div>
-            );
-        }
 
-        function SectionHeader({ title, subtitle }) {
-            return (
-                <div className="mb-4 ml-1">
-                    <h2 className="font-display text-[1.35rem] sm:text-[1.5rem] font-semibold text-ink dark:text-paper tracking-tight leading-tight">
-                        {title}
-                    </h2>
-                    {subtitle && (
-                        <p className="text-[12.5px] text-ink2/60 dark:text-paper/50 mt-1.5 leading-relaxed pr-4">{subtitle}</p>
-                    )}
-                </div>
-            );
-        }
+        // ---- UI COMPONENTS ---- //
 
-        // A single row inside a SettingsGroup — label above, bare (unboxed) input below.
-        // This is the core "feels like an app, not a webpage" change: instead of every
-        // field living in its own bordered box (a web-form pattern), rows sit flush
-        // inside one continuous grouped card with hairline dividers between them —
-        // the same pattern iOS/Android Settings screens use.
-        function SettingsRow({ label, children }) {
+        function MenuSection({ title, children }) {
             return (
-                <div className="px-5 sm:px-6 py-4">
-                    <label className="block text-[10.5px] font-mono font-semibold uppercase tracking-widest text-ink2/50 dark:text-paper/40 mb-1.5">{label}</label>
-                    {children}
-                </div>
-            );
-        }
-
-        // A grouped card: quiet header outside, hairline-divided rows inside.
-        // No gradient accent bar on top — that read as a decorative "landing page
-        // card" rather than part of an app chrome.
-        function SettingsGroup({ title, subtitle, children }) {
-            return (
-                <div>
-                    <SectionHeader title={title} subtitle={subtitle} />
-                    <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.5rem] border border-black/5 dark:border-white/10 shadow-ios overflow-hidden divide-y divide-black/5 dark:divide-white/10">
+                <div className="mb-7">
+                    <h3 className="text-[13px] font-semibold text-ink2/50 dark:text-paper/40 px-4 mb-2">{title}</h3>
+                    <div className="bg-white dark:bg-[#1A2620] rounded-2xl shadow-ios overflow-hidden border border-line dark:border-white/5">
                         {children}
                     </div>
                 </div>
             );
         }
 
-        // Slim, right-aligned save affordance instead of a full-width shouty CTA —
-        // disabled until something actually changed, with an inline spinner while saving.
-        function GroupSaveRow({ label, savingLabel, saving, disabled, tone = "peso" }) {
-            const toneClasses = tone === "gold"
-                ? "bg-gold text-[#111A15] hover:shadow-md hover:shadow-gold/25"
-                : "bg-peso text-white hover:shadow-md hover:shadow-peso/25";
+        function MenuItem({ icon, label, trailing, onClick, isDestructive, hideChevron, isLast }) {
             return (
-                <div className="px-5 sm:px-6 py-3.5 flex justify-end bg-black/[0.015] dark:bg-white/[0.02]">
-                    <button
-                        type="submit"
-                        disabled={disabled || saving}
-                        className={`tap-scale inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[13.5px] font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 disabled:opacity-35 disabled:cursor-not-allowed disabled:shadow-none ${toneClasses}`}
-                    >
-                        {saving && <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full spin" />}
-                        {saving ? savingLabel : label}
-                    </button>
+                <button
+                    onClick={onClick}
+                    className={`w-full flex items-center justify-between px-4 py-4 bg-transparent hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors ${!isLast ? 'border-b border-line dark:border-white/5' : ''}`}
+                >
+                    <div className="flex items-center gap-3.5">
+                        <span className={`flex items-center justify-center ${isDestructive ? 'text-expense' : 'text-ink2/60 dark:text-paper/60'}`}>
+                            {icon}
+                        </span>
+                        <span className={`text-[15px] font-medium ${isDestructive ? 'text-expense' : 'text-ink dark:text-paper'}`}>
+                            {label}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {trailing && <span className="text-[13px] text-ink2/40 dark:text-paper/40">{trailing}</span>}
+                        {!hideChevron && <window.Icons.ChevronRight size={18} className="text-ink2/30 dark:text-paper/30" />}
+                    </div>
+                </button>
+            );
+        }
+
+        // Sub-page layout container
+        function SubPage({ title, onBack, children }) {
+            return (
+                <div className="fixed inset-0 z-50 bg-paper dark:bg-ink flex flex-col slide-in">
+                    <div className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+16px)] pb-4 border-b border-line dark:border-white/10 bg-white dark:bg-[#1A2620]">
+                        <button onClick={onBack} className="p-2 -ml-2 text-peso dark:text-pesoLight flex items-center gap-1 active:opacity-50 transition-opacity">
+                            <window.Icons.ChevronLeft size={22} />
+                            <span className="text-[15px] font-medium">Bumalik</span>
+                        </button>
+                        <h2 className="font-semibold text-ink dark:text-paper absolute left-1/2 -translate-x-1/2">{title}</h2>
+                        <div className="w-16"></div> {/* Spacer for centering */}
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-5">
+                        <div className="max-w-[600px] mx-auto w-full">
+                            {children}
+                        </div>
+                    </div>
                 </div>
             );
         }
 
-        function ProfileHeroCard({ user, displayName, email, initial, onPhotoSelected, onRemovePhoto, uploadingPhoto }) {
-            const firstName = displayName ? displayName.trim().split(/\s+/)[0] : "";
-            const fileInputRef = React.useRef(null);
-
+        // Input Field Component for Sub-pages
+        function InputField({ label, icon, type = "text", value, onChange, placeholder, disabled }) {
             return (
-                <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-6 sm:p-8 shadow-iosLg ring-1 ring-white/15 mb-8 flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-6">
-                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/10 rounded-full blur-[50px] pointer-events-none" />
-                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-gold/15 rounded-full blur-[60px] pointer-events-none" />
-
-                    <div className="relative z-10 shrink-0">
+                <div className="mb-4">
+                    <label className="block text-[12px] font-semibold text-ink2/60 dark:text-paper/60 mb-2 pl-1">{label}</label>
+                    <div className="flex items-center gap-3 bg-white dark:bg-[#1A2620] ring-1 ring-line dark:ring-white/10 rounded-xl px-4 focus-within:ring-2 focus-within:ring-peso/50 transition-all">
+                        {icon && <span className="text-ink2/40 dark:text-paper/40">{icon}</span>}
                         <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                                const file = e.target.files && e.target.files[0];
-                                if (file) onPhotoSelected(file);
-                                e.target.value = "";
-                            }}
+                            type={type}
+                            value={value}
+                            onChange={onChange}
+                            placeholder={placeholder}
+                            disabled={disabled}
+                            className="w-full bg-transparent py-3.5 text-[15px] font-medium text-ink dark:text-paper placeholder-ink2/30 focus:outline-none disabled:opacity-50"
                         />
-
-                        <div className="relative w-24 h-24 sm:w-28 sm:h-28">
-                            <div className="w-full h-full rounded-full bg-white/10 border-4 border-white/20 flex items-center justify-center overflow-hidden shadow-inner backdrop-blur-md">
-                                {user.photoURL
-                                    ? <img src={user.photoURL} alt={displayName || "Profile photo"} className="w-full h-full object-cover" />
-                                    : <span className="text-4xl sm:text-5xl font-display font-bold">{initial}</span>}
-                            </div>
-
-                            {uploadingPhoto && (
-                                <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
-                                    <span className="w-6 h-6 border-2 border-white/40 border-t-white rounded-full spin" />
-                                </div>
-                            )}
-
-                            <button
-                                type="button"
-                                onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                                disabled={uploadingPhoto}
-                                aria-label="Palitan ang profile photo"
-                                className="tap-scale absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-gold text-[#111A15] flex items-center justify-center shadow-md ring-2 ring-[#1A614A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-50"
-                            >
-                                <window.Icons.Camera size={14} strokeWidth={2.4} />
-                            </button>
-
-                            {user.photoURL && !uploadingPhoto && (
-                                <button
-                                    type="button"
-                                    onClick={onRemovePhoto}
-                                    aria-label="Alisin ang profile photo"
-                                    className="tap-scale absolute -top-1 -right-1 w-6 h-6 rounded-full bg-expense text-white flex items-center justify-center shadow-md ring-2 ring-[#1A614A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                                >
-                                    <window.Icons.X size={12} strokeWidth={2.6} />
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="relative z-10 text-center sm:text-left flex-1 mt-2 sm:mt-4">
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/15 border border-white/10 text-white mb-3 backdrop-blur-sm">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#52C8A1] animate-pulse" />
-                            <span className="text-[9px] font-bold uppercase tracking-widest text-paper/90">Tipid Buddy User</span>
-                        </div>
-                        <h1 className="font-display text-[1.75rem] sm:text-4xl font-bold text-white tracking-tight leading-tight mb-1">
-                            {firstName ? `Kumusta, ${firstName}!` : "Kumusta!"}
-                        </h1>
-                        <p className="text-[13px] sm:text-sm font-medium text-white/70">{email}</p>
                     </div>
                 </div>
             );
         }
 
-        // Loads the Firebase modules needed for auth + storage writes on demand
-        // (dynamic import, so it works fine from this non-module script and reuses
-        // the browser's module cache — no re-initialization of the app).
-        // Also hands back auth.currentUser, the *live* Firebase user object. This
-        // matters because after any updateProfile() call, this page's own `user`
-        // React state gets replaced with a plain spread copy for rendering — which
-        // is NOT a real Firebase User and can't be passed to updateProfile() again.
-        // Reading auth.currentUser instead sidesteps that entirely.
+        // Selectable row list, used by Default Wallet / Language sub-pages
+        function OptionList({ options, value, onSelect }) {
+            return (
+                <div className="bg-white dark:bg-[#1A2620] rounded-2xl shadow-sm border border-line dark:border-white/5 overflow-hidden">
+                    {options.map((opt, i) => (
+                        <button
+                            key={opt.value}
+                            onClick={() => onSelect(opt.value)}
+                            className={`w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors ${i !== options.length - 1 ? 'border-b border-line dark:border-white/5' : ''}`}
+                        >
+                            <span className="text-[15px] font-medium text-ink dark:text-paper">{opt.label}</span>
+                            {value === opt.value && <window.Icons.Check size={18} className="text-peso dark:text-pesoLight" />}
+                        </button>
+                    ))}
+                </div>
+            );
+        }
+
+        const COMMON_WALLETS = ["Cash", "GCash", "Maya", "ShopeePay", "GrabPay", "BDO", "BPI", "Iba pa"];
+
         async function getFirebaseHandles() {
-            const [{ app }, authMod, storageMod] = await Promise.all([
+            const [{ app }, authMod] = await Promise.all([
                 import("./firebase.js"),
                 import("https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js"),
-                import("https://www.gstatic.com/firebasejs/10.13.0/firebase-storage.js"),
             ]);
             const auth = authMod.getAuth(app);
-            return { app, auth, authMod, storageMod };
+            return { app, auth, authMod };
         }
 
-        const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
-
+        // --- MAIN APP COMPONENT --- //
         function ProfileApp() {
             const authReady = window.useAuthReady();
             const dataReady = window.useDataReady();
 
+            // States
             const [user, setUser] = React.useState(undefined);
+            const [activeMenu, setActiveMenu] = React.useState(null); // null = main menu
+            const [isDark, setIsDark] = React.useState(() => document.documentElement.classList.contains('dark'));
+
+            // Form States
             const [displayName, setDisplayName] = React.useState("");
-            const [savedDisplayName, setSavedDisplayName] = React.useState("");
             const [savingProfile, setSavingProfile] = React.useState(false);
-            const [uploadingPhoto, setUploadingPhoto] = React.useState(false);
 
             const [budgetInput, setBudgetInput] = React.useState("");
             const [goalName, setGoalName] = React.useState("");
             const [goalAmount, setGoalAmount] = React.useState("");
-            const [savedBudget, setSavedBudget] = React.useState("");
-            const [savedGoalName, setSavedGoalName] = React.useState("");
-            const [savedGoalAmount, setSavedGoalAmount] = React.useState("");
             const [savingGoals, setSavingGoals] = React.useState(false);
 
-            const [isDark, setIsDark] = React.useState(() => document.documentElement.classList.contains('dark'));
+            // NEW: additional preference states (local-only, mirror the existing Theme pattern)
+            const [lang, setLang] = React.useState(() => localStorage.getItem('tipid_lang') || 'tl');
+            const [defaultWallet, setDefaultWallet] = React.useState(() => localStorage.getItem('tipid_default_wallet') || 'Cash');
+            const [hideCentavos, setHideCentavos] = React.useState(() => localStorage.getItem('tipid_hide_centavos') === '1');
 
-            const toggleDarkMode = () => {
-                if (isDark) {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('tipid_theme', 'light');
-                    setIsDark(false);
-                } else {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('tipid_theme', 'dark');
-                    setIsDark(true);
-                }
-            };
+            // NEW: data export / danger zone states
+            const [exporting, setExporting] = React.useState(false);
+            const [feedbackText, setFeedbackText] = React.useState("");
+            const [sendingFeedback, setSendingFeedback] = React.useState(false);
+            const [deleteConfirmText, setDeleteConfirmText] = React.useState("");
+            const [deletingAccount, setDeletingAccount] = React.useState(false);
 
+            // Fetch Auth
             React.useEffect(() => {
                 if (!authReady) return;
                 return window.TipidAuth.onChange((u) => {
                     setUser(u || null);
-                    if (u) {
-                        setDisplayName(u.displayName || "");
-                        setSavedDisplayName(u.displayName || "");
-                    }
+                    if (u) setDisplayName(u.displayName || "");
                 });
             }, [authReady]);
 
+            // Redirect if not logged in
             React.useEffect(() => {
                 if (user === null) window.location.href = "login.html";
             }, [user]);
 
+            // Fetch Budget Data
             React.useEffect(() => {
                 if (!dataReady || !user) return;
                 return window.TipidData.subscribeBudget(
                     user.uid,
-                    (b) => {
-                        const val = b ? b.toString() : "";
-                        setBudgetInput(val);
-                        setSavedBudget(val);
-                    },
+                    (b) => setBudgetInput(b ? b.toString() : ""),
                     (err) => console.error(err)
                 );
             }, [dataReady, user]);
 
+            // Fetch Local Goals Data
             React.useEffect(() => {
-                const savedGoalName = localStorage.getItem('tipid_goal_name');
-                const savedGoalAmount = localStorage.getItem('tipid_goal_amount') || localStorage.getItem('tipid_goal');
-
-                if (savedGoalName) { setGoalName(savedGoalName); setSavedGoalName(savedGoalName); }
-                if (savedGoalAmount) { setGoalAmount(savedGoalAmount); setSavedGoalAmount(savedGoalAmount); }
+                setGoalName(localStorage.getItem('tipid_goal_name') || "");
+                setGoalAmount(localStorage.getItem('tipid_goal_amount') || localStorage.getItem('tipid_goal') || "");
             }, []);
 
             if (user === undefined || user === null) {
                 return (
                     <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
-                        <div className="glass-panel flex flex-col items-center gap-5 rounded-[32px] px-10 py-10 shadow-ios">
-                            <div className="relative flex items-center justify-center">
-                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/25 halo-pulse" />
-                                <div className="relative logo-breathe">
-                                    <window.Logo size={44} />
-                                </div>
-                            </div>
-                            <p className="text-[11px] font-mono font-semibold tracking-widest uppercase text-ink2 dark:text-paper/60 text-center">
-                                Loading Profile
-                            </p>
-                        </div>
+                        <window.Icons.Loader size={32} className="spin text-peso" />
                     </div>
                 );
             }
+
+            const initial = displayName ? displayName.charAt(0).toUpperCase() : (user.email.charAt(0).toUpperCase());
+
+            // Derived, read-only account facts (from the Firebase user object already on hand)
+            const providerId = user.providerData && user.providerData[0] ? user.providerData[0].providerId : "password";
+            const providerLabel = providerId.includes("google") ? "Google" : providerId.includes("facebook") ? "Facebook" : "Email";
+            const memberSince = user.metadata && user.metadata.creationTime
+                ? new Date(user.metadata.creationTime).toLocaleDateString("en-PH", { year: "numeric", month: "long" })
+                : null;
+
+            // Actions
+            const toggleDarkMode = () => {
+                const newMode = !isDark;
+                if (newMode) {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('tipid_theme', 'dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('tipid_theme', 'light');
+                }
+                setIsDark(newMode);
+            };
+
+            const handleLogout = async () => {
+                Swal.fire({
+                    title: 'Log out?',
+                    text: 'Sigurado ka bang gusto mong mag-log out?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#B5483B',
+                    cancelButtonColor: '#33443A',
+                    confirmButtonText: 'Oo, Log out',
+                    cancelButtonText: 'Kanselahin',
+                    customClass: { popup: 'tipid-swal' }
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        await window.TipidAuth.logOut();
+                        window.location.href = "login.html";
+                    }
+                });
+            };
 
             const handleUpdateProfile = async (e) => {
                 e.preventDefault();
@@ -440,10 +413,8 @@
                     const liveUser = auth.currentUser || user;
                     await authMod.updateProfile(liveUser, { displayName: displayName.trim() });
                     setUser({ ...user, displayName: displayName.trim() });
-                    setSavedDisplayName(displayName.trim());
                     swalSuccess("Tagumpay", "Na-update na ang iyong pangalan.");
                 } catch (err) {
-                    console.error(err);
                     swalError("Hindi ma-update ang profile. Subukan ulit.");
                 } finally {
                     setSavingProfile(false);
@@ -454,256 +425,505 @@
                 e.preventDefault();
                 const amt = parseFloat(budgetInput);
                 const targetAmt = parseFloat(goalAmount);
-
                 if (isNaN(amt) || amt <= 0) return swalError("Maglagay ng tamang halaga para sa budget.");
 
                 setSavingGoals(true);
                 try {
                     await window.TipidData.setBudget(user.uid, amt);
-                    setSavedBudget(budgetInput);
-
-                    if (goalName.trim()) {
-                        localStorage.setItem('tipid_goal_name', goalName.trim());
-                        setSavedGoalName(goalName.trim());
-                    }
+                    if (goalName.trim()) localStorage.setItem('tipid_goal_name', goalName.trim());
                     if (!isNaN(targetAmt) && targetAmt > 0) {
                         localStorage.setItem('tipid_goal_amount', targetAmt.toString());
                         localStorage.setItem('tipid_goal', targetAmt.toString());
-                        setSavedGoalAmount(targetAmt.toString());
                     }
-
-                    swalSuccess("Tagumpay", "Na-update na ang iyong Financial Goals at Budget.");
+                    swalSuccess("Tagumpay", "Na-update na ang iyong Financial Goals.");
                 } catch (err) {
-                    console.error(err);
                     swalError("Hindi ma-save. Subukan ulit.");
                 } finally {
                     setSavingGoals(false);
                 }
             };
 
-            // Validates the file, shows an instant local preview, then uploads to
-            // Firebase Storage at avatars/{uid} and points the auth profile's
-            // photoURL at the result. Requires Firebase Storage to be enabled on
-            // the project, with rules that let a user write to their own
-            // avatars/{uid} path.
-            const handlePhotoSelected = async (file) => {
-                if (!file.type || !file.type.startsWith("image/")) {
-                    return swalError("Pumili ng image file lang (JPG, PNG, atbp.).");
-                }
-                if (file.size > MAX_PHOTO_BYTES) {
-                    return swalError("Masyadong malaki ang file. 5MB pababa lang ang pwede.");
-                }
-
-                const previousPhotoURL = user.photoURL || null;
-                const previewUrl = URL.createObjectURL(file);
-                setUser((u) => ({ ...u, photoURL: previewUrl }));
-                setUploadingPhoto(true);
-
-                try {
-                    const { app, auth, authMod, storageMod } = await getFirebaseHandles();
-                    const liveUser = auth.currentUser || user;
-                    const storage = storageMod.getStorage(app);
-                    const fileRef = storageMod.ref(storage, `avatars/${liveUser.uid}`);
-
-                    await storageMod.uploadBytes(fileRef, file, { contentType: file.type });
-                    const url = await storageMod.getDownloadURL(fileRef);
-                    await authMod.updateProfile(liveUser, { photoURL: url });
-
-                    setUser((u) => ({ ...u, photoURL: url }));
-                    swalSuccess("Tagumpay", "Na-update na ang iyong profile photo.");
-                } catch (err) {
-                    console.error(err);
-                    setUser((u) => ({ ...u, photoURL: previousPhotoURL }));
-                    swalError("Hindi ma-upload ang larawan. Siguraduhing naka-enable ang Firebase Storage sa iyong project, at subukan ulit.");
-                } finally {
-                    URL.revokeObjectURL(previewUrl);
-                    setUploadingPhoto(false);
-                }
+            // NEW: persist simple local-only preferences (mirrors the existing toggleDarkMode pattern)
+            const handleSelectLang = (val) => {
+                setLang(val);
+                localStorage.setItem('tipid_lang', val);
+            };
+            const handleSelectDefaultWallet = (val) => {
+                setDefaultWallet(val);
+                localStorage.setItem('tipid_default_wallet', val);
+                setActiveMenu(null);
+            };
+            const toggleHideCentavos = () => {
+                const next = !hideCentavos;
+                setHideCentavos(next);
+                localStorage.setItem('tipid_hide_centavos', next ? '1' : '0');
             };
 
-            const handleRemovePhoto = async () => {
-                const result = await Swal.fire({
+            // NEW: export all of the user's entries as a CSV file — one-shot read via the
+            // existing TipidData.subscribeEntries contract (unsubscribes as soon as data arrives).
+            const handleExportData = () => {
+                if (!window.TipidData || !window.TipidData.subscribeEntries) {
+                    return swalError("Hindi available ang data export sa ngayon.");
+                }
+                setExporting(true);
+                let unsub = () => {};
+                unsub = window.TipidData.subscribeEntries(
+                    user.uid,
+                    (list) => {
+                        unsub();
+                        setExporting(false);
+                        if (!list || list.length === 0) {
+                            return Swal.fire({ icon: "info", title: "Wala pang datos", text: "Wala ka pang naitatalang gastos o kita.", confirmButtonColor: "#1F6F54", customClass: { popup: "tipid-swal" } });
+                        }
+                        const header = ["date", "type", "category", "method", "amount", "note"];
+                        const rows = list.map(e => header.map(k => {
+                            const v = e[k] !== undefined && e[k] !== null ? String(e[k]).replace(/"/g, '""') : "";
+                            return `"${v}"`;
+                        }).join(","));
+                        const csv = [header.join(","), ...rows].join("\n");
+                        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `tipid-entries-${new Date().toISOString().slice(0, 10)}.csv`;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        URL.revokeObjectURL(url);
+                        swalSuccess("Na-export!", "Na-download na ang iyong datos bilang CSV.");
+                    },
+                    () => { unsub(); setExporting(false); swalError("Hindi na-export ang datos. Subukan ulit."); }
+                );
+            };
+
+            // NEW: clear only the app's local-storage preferences (does not touch cloud data)
+            const handleClearLocalPrefs = () => {
+                Swal.fire({
+                    title: "I-clear ang lokal na preferences?",
+                    text: "Mabubura ang iyong naka-save na Goal, Default Wallet, at Display settings sa device na ito. Hindi maaapektuhan ang iyong datos sa cloud.",
                     icon: "warning",
-                    title: "Alisin ang photo?",
-                    text: "Babalik sa unang letra ng iyong pangalan ang icon mo.",
                     showCancelButton: true,
-                    confirmButtonText: "Oo, alisin",
-                    cancelButtonText: "Kanselahin",
                     confirmButtonColor: "#B5483B",
-                    customClass: { popup: "tipid-swal" },
+                    cancelButtonColor: "#33443A",
+                    confirmButtonText: "Oo, i-clear",
+                    cancelButtonText: "Kanselahin",
+                    customClass: { popup: "tipid-swal" }
+                }).then((result) => {
+                    if (!result.isConfirmed) return;
+                    ["tipid_goal_name", "tipid_goal_amount", "tipid_goal", "tipid_default_wallet", "tipid_hide_centavos", "tipid_lang"].forEach(k => localStorage.removeItem(k));
+                    setGoalName(""); setGoalAmount(""); setDefaultWallet("Cash"); setHideCentavos(false); setLang("tl");
+                    swalSuccess("Nabura na", "Na-reset na ang mga lokal na preferences.");
                 });
-                if (!result.isConfirmed) return;
+            };
 
-                const previousPhotoURL = user.photoURL || null;
-                setUser((u) => ({ ...u, photoURL: null }));
-
+            // NEW: feedback (no backend endpoint exists yet, so this is stored locally and
+            // acknowledged — swap the localStorage write for a real API/Firestore call
+            // once a feedback collection exists).
+            const handleSendFeedback = (e) => {
+                e.preventDefault();
+                if (!feedbackText.trim()) return swalError("Maglagay muna ng mensahe.");
+                setSendingFeedback(true);
                 try {
-                    const { app, auth, authMod, storageMod } = await getFirebaseHandles();
-                    const liveUser = auth.currentUser || user;
-                    const storage = storageMod.getStorage(app);
-                    const fileRef = storageMod.ref(storage, `avatars/${liveUser.uid}`);
-
-                    await storageMod.deleteObject(fileRef).catch(() => {
-                        // Fine if there was never a stored file (e.g. the URL came
-                        // from Google sign-in rather than our own upload) — the
-                        // photoURL update below is what actually matters.
-                    });
-                    await authMod.updateProfile(liveUser, { photoURL: null });
-                    swalSuccess("Tagumpay", "Naalis na ang profile photo.");
-                } catch (err) {
-                    console.error(err);
-                    setUser((u) => ({ ...u, photoURL: previousPhotoURL }));
-                    swalError("Hindi maalis ang larawan. Subukan ulit.");
+                    const key = "tipid_feedback_log";
+                    const existing = JSON.parse(localStorage.getItem(key) || "[]");
+                    existing.push({ text: feedbackText.trim(), at: new Date().toISOString() });
+                    localStorage.setItem(key, JSON.stringify(existing.slice(-20)));
+                    setFeedbackText("");
+                    swalSuccess("Salamat!", "Natanggap ang iyong feedback.");
+                } finally {
+                    setSendingFeedback(false);
                 }
             };
 
-            const handleLogout = async () => {
-                await window.TipidAuth.logOut();
-                window.location.href = "login.html";
+            // NEW: delete account — reuses the same dynamic-import pattern as handleUpdateProfile
+            const handleDeleteAccount = async () => {
+                if (deleteConfirmText.trim().toUpperCase() !== "DELETE") {
+                    return swalError('I-type ang salitang "DELETE" para kumpirmahin.');
+                }
+                setDeletingAccount(true);
+                try {
+                    const { auth, authMod } = await getFirebaseHandles();
+                    const liveUser = auth.currentUser || user;
+                    await authMod.deleteUser(liveUser);
+                    window.location.href = "login.html";
+                } catch (err) {
+                    if (err && err.code === "auth/requires-recent-login") {
+                        swalError("Kailangan mo munang mag-log out at mag-log in ulit bago tanggalin ang account, para sa seguridad.");
+                    } else {
+                        swalError("Hindi natanggal ang account. Subukan ulit.");
+                    }
+                } finally {
+                    setDeletingAccount(false);
+                }
             };
 
-            const initial = displayName ? displayName.charAt(0).toUpperCase() : (user.email.charAt(0).toUpperCase());
+            // ---- RENDER SUB-PAGES ---- //
 
-            return (
-                <div className="min-h-dvh relative flex flex-col">
-                    <AmbientBackground />
-                    <window.Navbar user={user} onLogout={handleLogout} activeTab="account" />
-
-                    <main
-                        className="max-w-[700px] w-full mx-auto px-5 sm:px-8 pt-[6.5rem] md:pt-10 pb-[12rem] space-y-8 flex-1"
-                        style={{
-                            paddingLeft: 'max(1.25rem, calc(var(--sal) + 1.25rem))',
-                            paddingRight: 'max(1.25rem, calc(var(--sar) + 1.25rem))',
-                            paddingBottom: 'calc(12rem + var(--sab))',
-                        }}
-                    >
-                        <div className="fade-up" style={{ animationDelay: '0ms' }}>
-                            <ProfileHeroCard
-                                user={user}
-                                displayName={displayName}
-                                email={user.email}
-                                initial={initial}
-                                onPhotoSelected={handlePhotoSelected}
-                                onRemovePhoto={handleRemovePhoto}
-                                uploadingPhoto={uploadingPhoto}
+            if (activeMenu === 'profile') {
+                return (
+                    <SubPage title="Manage Profile" onBack={() => setActiveMenu(null)}>
+                        <form onSubmit={handleUpdateProfile} className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5">
+                            <InputField
+                                label="Display Name"
+                                icon={<window.Icons.User size={18} />}
+                                value={displayName}
+                                onChange={e => setDisplayName(e.target.value)}
+                                placeholder="Pangalan mo"
                             />
+                            <InputField
+                                label="Email Address"
+                                icon={<window.Icons.Globe size={18} />}
+                                value={user.email}
+                                disabled={true}
+                            />
+                            <button type="submit" disabled={savingProfile} className="w-full mt-4 bg-peso hover:bg-pesoLight text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-50">
+                                {savingProfile ? "Nagsa-save..." : "I-save ang Profile"}
+                            </button>
+                        </form>
+                    </SubPage>
+                );
+            }
+
+            if (activeMenu === 'goals') {
+                return (
+                    <SubPage title="Financial Goals" onBack={() => setActiveMenu(null)}>
+                        <form onSubmit={handleUpdatePreferences} className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5">
+                            <p className="text-[13px] text-ink2/60 dark:text-paper/60 mb-6">I-set ang iyong buwanang limitasyon sa paggastos at ang pinag-iipunan mo.</p>
+                            <InputField
+                                label="Buwanang Budget Limit (₱)"
+                                icon={<window.Icons.Wallet size={18} />}
+                                type="number"
+                                value={budgetInput}
+                                onChange={e => setBudgetInput(e.target.value)}
+                                placeholder="Hal: 10000"
+                            />
+                            <InputField
+                                label="Pangalan ng Pinag-iipunan"
+                                icon={<window.Icons.Target size={18} />}
+                                value={goalName}
+                                onChange={e => setGoalName(e.target.value)}
+                                placeholder="Hal: Emergency Fund, Bagong Phone"
+                            />
+                            <InputField
+                                label="Target Amount (₱)"
+                                icon={<span className="font-mono text-[16px]">₱</span>}
+                                type="number"
+                                value={goalAmount}
+                                onChange={e => setGoalAmount(e.target.value)}
+                                placeholder="Hal: 50000"
+                            />
+                            <button type="submit" disabled={savingGoals} className="w-full mt-4 bg-gold hover:bg-[#D4A03A] text-ink font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-50">
+                                {savingGoals ? "Nagsa-save..." : "I-save ang Goals"}
+                            </button>
+                        </form>
+                    </SubPage>
+                );
+            }
+
+            if (activeMenu === 'security') {
+                return (
+                    <SubPage title="Password & Security" onBack={() => setActiveMenu(null)}>
+                        <div className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5 text-center">
+                            <div className="w-16 h-16 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 text-ink2/40 dark:text-paper/40">
+                                <window.Icons.Lock size={28} />
+                            </div>
+                            <h3 className="font-semibold text-[16px] text-ink dark:text-paper mb-2">I-secure ang iyong Account</h3>
+                            <p className="text-[13px] text-ink2/60 dark:text-paper/60 mb-6">Kung gumamit ka ng Google sa pag-login, hindi mo na kailangang mag-alala sa password. Kung gumamit ka ng email, maaari kang mag-request ng password reset.</p>
+                            <button onClick={() => swalSuccess('Email Sent', 'Kunwari ay nagpadala kami ng reset link sa iyong email!')} className="w-full bg-black/5 dark:bg-white/10 text-ink dark:text-paper font-semibold py-3.5 rounded-xl hover:bg-black/10 dark:hover:bg-white/20 transition-colors">
+                                Magpadala ng Reset Link
+                            </button>
                         </div>
+                    </SubPage>
+                );
+            }
 
-                        <div className="fade-up" style={{ animationDelay: '60ms' }}>
-                            <form onSubmit={handleUpdateProfile}>
-                                <SettingsGroup title="Personal Information">
-                                    <SettingsRow label="Display Name">
-                                        <div className="flex items-center gap-2.5">
-                                            <window.Icons.User size={16} className="text-ink2/35 dark:text-paper/35 shrink-0" />
-                                            <input
-                                                type="text"
-                                                value={displayName}
-                                                onChange={e => setDisplayName(e.target.value)}
-                                                placeholder="Ang iyong pangalan"
-                                                className="w-full bg-transparent py-1 text-[15px] focus:outline-none font-medium text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30"
-                                            />
-                                        </div>
-                                    </SettingsRow>
-                                    <GroupSaveRow
-                                        label="I-save"
-                                        savingLabel="Sinesave…"
-                                        saving={savingProfile}
-                                        disabled={!displayName.trim() || displayName.trim() === (savedDisplayName || "").trim()}
-                                    />
-                                </SettingsGroup>
-                            </form>
+            if (activeMenu === 'notifications') {
+                return (
+                    <SubPage title="Notifications" onBack={() => setActiveMenu(null)}>
+                        <div className="bg-white dark:bg-[#1A2620] p-2 rounded-2xl shadow-sm border border-line dark:border-white/5 divide-y divide-line dark:divide-white/5">
+                            <div className="flex items-center justify-between p-4">
+                                <div>
+                                    <p className="font-medium text-[15px] text-ink dark:text-paper">Daily Reminders</p>
+                                    <p className="text-[12px] text-ink2/50 dark:text-paper/50 mt-0.5">Paalala para mag-log ng gastos araw-araw</p>
+                                </div>
+                                <div className="w-12 h-7 bg-peso rounded-full relative shadow-inner"><div className="absolute right-1 top-1 w-5 h-5 bg-white rounded-full shadow-sm"></div></div>
+                            </div>
+                            <div className="flex items-center justify-between p-4">
+                                <div>
+                                    <p className="font-medium text-[15px] text-ink dark:text-paper">Overbudget Alerts</p>
+                                    <p className="text-[12px] text-ink2/50 dark:text-paper/50 mt-0.5">I-notify ka kapag malapit na maubos ang budget</p>
+                                </div>
+                                <div className="w-12 h-7 bg-peso rounded-full relative shadow-inner"><div className="absolute right-1 top-1 w-5 h-5 bg-white rounded-full shadow-sm"></div></div>
+                            </div>
                         </div>
+                    </SubPage>
+                );
+            }
 
-                        <div className="fade-up" style={{ animationDelay: '120ms' }}>
-                            <form onSubmit={handleUpdatePreferences}>
-                                <SettingsGroup
-                                    title="Financial Goals"
-                                    subtitle="Bigyan ng pangalan ang pinag-iipunan mo para mas ganahan kang magtipid araw-araw."
-                                >
-                                    <SettingsRow label="Buwanang Budget Limit (₱)">
-                                        <div className="flex items-center gap-2.5">
-                                            <window.Icons.Wallet size={16} className="text-ink2/35 dark:text-paper/35 shrink-0" />
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                value={budgetInput}
-                                                onChange={e => setBudgetInput(e.target.value)}
-                                                placeholder="e.g. 10000"
-                                                className="w-full bg-transparent py-1 text-[15px] font-mono focus:outline-none font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30"
-                                            />
-                                        </div>
-                                    </SettingsRow>
-                                    <SettingsRow label="Ano ang pinag-iipunan mo?">
-                                        <div className="flex items-center gap-2.5">
-                                            <window.Icons.Star size={16} className="text-ink2/35 dark:text-paper/35 shrink-0" />
-                                            <input
-                                                type="text"
-                                                value={goalName}
-                                                onChange={e => setGoalName(e.target.value)}
-                                                placeholder="Hal: Emergency Fund, Pambili ng Motor"
-                                                className="w-full bg-transparent py-1 text-[15px] focus:outline-none font-medium text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30"
-                                            />
-                                        </div>
-                                    </SettingsRow>
-                                    <SettingsRow label="Target Amount (₱)">
-                                        <div className="flex items-center gap-2.5">
-                                            <window.Icons.Target size={16} className="text-ink2/35 dark:text-paper/35 shrink-0" />
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                value={goalAmount}
-                                                onChange={e => setGoalAmount(e.target.value)}
-                                                placeholder="e.g. 50000"
-                                                className="w-full bg-transparent py-1 text-[15px] font-mono focus:outline-none font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30"
-                                            />
-                                        </div>
-                                    </SettingsRow>
-                                    <GroupSaveRow
-                                        label="I-save"
-                                        savingLabel="Sinesave…"
-                                        saving={savingGoals}
-                                        tone="gold"
-                                        disabled={
-                                            budgetInput === savedBudget &&
-                                            goalName === savedGoalName &&
-                                            goalAmount === savedGoalAmount
-                                        }
-                                    />
-                                </SettingsGroup>
-                            </form>
+            if (activeMenu === 'about') {
+                return (
+                    <SubPage title="About Us" onBack={() => setActiveMenu(null)}>
+                        <div className="bg-white dark:bg-[#1A2620] p-8 rounded-2xl shadow-sm border border-line dark:border-white/5 text-center">
+                            <window.Logo size={64} className="mx-auto mb-4" />
+                            <h2 className="font-display font-bold text-2xl text-ink dark:text-paper mb-1">Tipid Buddy</h2>
+                            <p className="text-[12px] font-mono text-ink2/50 dark:text-paper/40 mb-6">Version 1.0.0</p>
+                            <p className="text-[14px] text-ink2/70 dark:text-paper/70 leading-relaxed mb-6">
+                                Ang Tipid ay isang personal na expense tracker na ginawa para sa mga Pilipino. Tinutulungan ka nitong subaybayan ang iyong pera, i-manage ang mga utang, at maabot ang iyong financial goals nang libre at walang ads.
+                            </p>
+                            <p className="text-[12px] text-ink2/40 dark:text-paper/40">© 2026 Tipid App. All rights reserved.</p>
+                        </div>
+                    </SubPage>
+                );
+            }
 
-                            <div className="flex items-start gap-2.5 mt-3 px-2 text-[12px] text-ink2/55 dark:text-paper/45 leading-relaxed">
-                                <window.Icons.Info size={14} className="shrink-0 mt-[2px] opacity-70" />
-                                <span>Mas madaling iwasan ang tuksong gumastos kapag malinaw kung para saan ka nagtitipid — makikita mo agad kung gaano na kalapit ang target mo.</span>
+            if (activeMenu === 'help') {
+                return (
+                    <SubPage title="Help Center" onBack={() => setActiveMenu(null)}>
+                        <h3 className="font-semibold text-ink dark:text-paper mb-4 px-1">Frequently Asked Questions</h3>
+                        <div className="space-y-3">
+                            <div className="bg-white dark:bg-[#1A2620] p-5 rounded-2xl border border-line dark:border-white/5">
+                                <p className="font-medium text-[14px] text-ink dark:text-paper mb-2">Paano magdagdag ng wallet?</p>
+                                <p className="text-[13px] text-ink2/60 dark:text-paper/60 leading-relaxed">Pumunta sa Home Dashboard, i-scroll sa "Aking mga Wallet" section, at i-click ang Plus (+) icon sa pinakadulo ng mga cards.</p>
+                            </div>
+                            <div className="bg-white dark:bg-[#1A2620] p-5 rounded-2xl border border-line dark:border-white/5">
+                                <p className="font-medium text-[14px] text-ink dark:text-paper mb-2">Paano mag-edit ng maling gastos?</p>
+                                <p className="text-[13px] text-ink2/60 dark:text-paper/60 leading-relaxed">Hanapin ang maling entry sa 'Kasaysayan' sa Home, i-swipe o i-tap ang delete (trash) icon, at i-log na lang ulit ang tamang halaga.</p>
+                            </div>
+                            <div className="bg-white dark:bg-[#1A2620] p-5 rounded-2xl border border-line dark:border-white/5">
+                                <p className="font-medium text-[14px] text-ink dark:text-paper mb-2">Kailangan ba ng internet para magamit ang app?</p>
+                                <p className="text-[13px] text-ink2/60 dark:text-paper/60 leading-relaxed">Kailangan ng internet para mag-save sa cloud, pero kapag naka-install ang app sa phone mo, pwede mo itong buksan kahit offline.</p>
+                            </div>
+                            <div className="bg-white dark:bg-[#1A2620] p-5 rounded-2xl border border-line dark:border-white/5">
+                                <p className="font-medium text-[14px] text-ink dark:text-paper mb-2">Paano ma-export ang datos ko?</p>
+                                <p className="text-[13px] text-ink2/60 dark:text-paper/60 leading-relaxed">Pumunta sa Profile → Data & Backup → Export My Data. Ide-download ito bilang CSV file na pwede mong buksan sa Excel o Google Sheets.</p>
+                            </div>
+                        </div>
+                    </SubPage>
+                );
+            }
+
+            // NEW: Language sub-page (cosmetic preference toggle, same shape as Theme)
+            if (activeMenu === 'language') {
+                return (
+                    <SubPage title="Language" onBack={() => setActiveMenu(null)}>
+                        <p className="text-[13px] text-ink2/60 dark:text-paper/60 mb-4 px-1">Piliin ang wika ng mga label at button sa app.</p>
+                        <OptionList
+                            value={lang}
+                            onSelect={handleSelectLang}
+                            options={[
+                                { value: "tl", label: "Tagalog" },
+                                { value: "en", label: "English" },
+                            ]}
+                        />
+                    </SubPage>
+                );
+            }
+
+            // NEW: Default Wallet sub-page
+            if (activeMenu === 'defaultWallet') {
+                return (
+                    <SubPage title="Default Wallet" onBack={() => setActiveMenu(null)}>
+                        <p className="text-[13px] text-ink2/60 dark:text-paper/60 mb-4 px-1">Ito ang paraan ng bayad na paunang napipili tuwing magdadagdag ka ng gastos.</p>
+                        <OptionList
+                            value={defaultWallet}
+                            onSelect={handleSelectDefaultWallet}
+                            options={COMMON_WALLETS.map(w => ({ value: w, label: w }))}
+                        />
+                    </SubPage>
+                );
+            }
+
+            // NEW: Data & Backup sub-page
+            if (activeMenu === 'data') {
+                return (
+                    <SubPage title="Data & Backup" onBack={() => setActiveMenu(null)}>
+                        <div className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5 mb-4">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="w-11 h-11 rounded-full bg-peso/10 dark:bg-pesoLight/10 flex items-center justify-center text-peso dark:text-pesoLight shrink-0">
+                                    <window.Icons.Download size={20} />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-[15px] text-ink dark:text-paper">Export My Data</h3>
+                                    <p className="text-[12px] text-ink2/50 dark:text-paper/50">I-download ang lahat ng entries mo bilang CSV</p>
+                                </div>
+                            </div>
+                            <button onClick={handleExportData} disabled={exporting} className="w-full bg-peso hover:bg-pesoLight text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+                                {exporting ? <><window.Icons.Loader size={16} className="spin" /> Ini-export...</> : "I-export bilang CSV"}
+                            </button>
+                        </div>
+                        <div className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="w-11 h-11 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink2/60 dark:text-paper/60 shrink-0">
+                                    <window.Icons.Trash size={20} />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-[15px] text-ink dark:text-paper">Clear Local Preferences</h3>
+                                    <p className="text-[12px] text-ink2/50 dark:text-paper/50">Bura ang naka-save na Goal, Default Wallet, atbp. sa device na ito</p>
+                                </div>
+                            </div>
+                            <button onClick={handleClearLocalPrefs} className="w-full bg-black/5 dark:bg-white/10 text-ink dark:text-paper font-semibold py-3.5 rounded-xl hover:bg-black/10 dark:hover:bg-white/20 transition-colors">
+                                I-clear ang Local Preferences
+                            </button>
+                        </div>
+                    </SubPage>
+                );
+            }
+
+            // NEW: Feedback sub-page
+            if (activeMenu === 'feedback') {
+                return (
+                    <SubPage title="Send Feedback" onBack={() => setActiveMenu(null)}>
+                        <form onSubmit={handleSendFeedback} className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5">
+                            <p className="text-[13px] text-ink2/60 dark:text-paper/60 mb-4">May suggestion, bug, o reaction ka ba? Sabihin mo dito.</p>
+                            <label className="block text-[12px] font-semibold text-ink2/60 dark:text-paper/60 mb-2 pl-1">Iyong Mensahe</label>
+                            <textarea
+                                value={feedbackText}
+                                onChange={e => setFeedbackText(e.target.value)}
+                                placeholder="Isulat dito ang iyong feedback..."
+                                rows={5}
+                                className="w-full bg-white dark:bg-[#1A2620] ring-1 ring-line dark:ring-white/10 rounded-xl px-4 py-3.5 text-[15px] font-medium text-ink dark:text-paper placeholder-ink2/30 focus:outline-none focus:ring-2 focus:ring-peso/50 transition-all resize-none mb-4"
+                            />
+                            <button type="submit" disabled={sendingFeedback} className="w-full bg-peso hover:bg-pesoLight text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-50">
+                                {sendingFeedback ? "Ipinapadala..." : "Ipadala ang Feedback"}
+                            </button>
+                        </form>
+                    </SubPage>
+                );
+            }
+
+            // NEW: Terms & Privacy sub-page (static placeholder copy)
+            if (activeMenu === 'terms') {
+                return (
+                    <SubPage title="Terms & Privacy" onBack={() => setActiveMenu(null)}>
+                        <div className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5 space-y-5">
+                            <div>
+                                <h3 className="font-semibold text-[15px] text-ink dark:text-paper mb-1.5">Paggamit ng App</h3>
+                                <p className="text-[13px] text-ink2/60 dark:text-paper/60 leading-relaxed">Ang Tipid ay libreng gamitin para sa personal na pagsubaybay ng gastos. Ikaw ang may pananagutan sa katumpakan ng datos na iyong ilalagay.</p>
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-[15px] text-ink dark:text-paper mb-1.5">Privacy</h3>
+                                <p className="text-[13px] text-ink2/60 dark:text-paper/60 leading-relaxed">Ang iyong mga entry, budget, at profile ay naka-store sa ilalim ng iyong account at hindi ibinabahagi sa ibang user.</p>
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-[15px] text-ink dark:text-paper mb-1.5">Pagbabago</h3>
+                                <p className="text-[13px] text-ink2/60 dark:text-paper/60 leading-relaxed">Maaaring magbago ang mga tuntuning ito paminsan-minsan. Palaging susuriin ang pahinang ito para sa pinakabagong bersyon.</p>
+                            </div>
+                        </div>
+                    </SubPage>
+                );
+            }
+
+            // NEW: Delete Account sub-page (danger zone)
+            if (activeMenu === 'deleteAccount') {
+                return (
+                    <SubPage title="Delete Account" onBack={() => setActiveMenu(null)}>
+                        <div className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-expense/20 text-center">
+                            <div className="w-16 h-16 bg-expense/10 rounded-full flex items-center justify-center mx-auto mb-4 text-expense">
+                                <window.Icons.ShieldAlert size={28} />
+                            </div>
+                            <h3 className="font-semibold text-[16px] text-ink dark:text-paper mb-2">Permanenteng aalisin ang account mo</h3>
+                            <p className="text-[13px] text-ink2/60 dark:text-paper/60 mb-6 leading-relaxed">Hindi na mababawi ang aksyong ito. Kung kailan lang ka nag-login, maaaring hilingin sa iyong mag-log out at mag-log in muna bago ito ituloy.</p>
+                            <InputField
+                                label='I-type ang "DELETE" para kumpirmahin'
+                                value={deleteConfirmText}
+                                onChange={e => setDeleteConfirmText(e.target.value)}
+                                placeholder="DELETE"
+                            />
+                            <button
+                                onClick={handleDeleteAccount}
+                                disabled={deletingAccount || deleteConfirmText.trim().toUpperCase() !== "DELETE"}
+                                className="w-full bg-expense hover:bg-[#9C3C31] text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-40"
+                            >
+                                {deletingAccount ? "Tinatanggal..." : "Permanenteng Tanggalin ang Account"}
+                            </button>
+                        </div>
+                    </SubPage>
+                );
+            }
+
+            // ---- MAIN MENU LIST (Matches Reference Image, extended with more sections) ---- //
+            return (
+                <div className="min-h-dvh flex flex-col pb-[6rem]">
+                    {/* FIX: Binago ang paddingTop (pt) para malampasan ang fixed Top Navbar */}
+                    <div className="flex-1 max-w-[600px] w-full mx-auto px-4 sm:px-6 pt-[6.5rem] md:pt-[7.5rem]">
+
+                        {/* Static Profile Header Card */}
+                        <div className="bg-white dark:bg-[#1A2620] rounded-3xl p-5 shadow-sm border border-line dark:border-white/5 mb-8 fade-up">
+                            <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center overflow-hidden shrink-0 ring-1 ring-black/5 dark:ring-white/10">
+                                    {user.photoURL
+                                        ? <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                                        : <span className="text-2xl font-display font-bold text-ink dark:text-paper">{initial}</span>
+                                    }
+                                </div>
+                                <div className="min-w-0">
+                                    <h1 className="font-bold text-[18px] text-ink dark:text-paper truncate">{displayName || "User"}</h1>
+                                    <p className="text-[13px] font-medium text-ink2/50 dark:text-paper/40 truncate">{user.email}</p>
+                                </div>
+                            </div>
+                            {/* NEW: quick facts row — derived straight from the Firebase user object */}
+                            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-line dark:border-white/5">
+                                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-peso/10 dark:bg-pesoLight/10 text-peso dark:text-pesoLight">
+                                    <window.Icons.Lock size={11} /> {providerLabel}
+                                </span>
+                                {memberSince && (
+                                    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-black/5 dark:bg-white/10 text-ink2/60 dark:text-paper/60">
+                                        <window.Icons.Calendar size={11} /> Miyembro simula {memberSince}
+                                    </span>
+                                )}
                             </div>
                         </div>
 
-                        <div className="fade-up mb-10" style={{ animationDelay: '180ms' }}>
-                            <SettingsGroup title="Appearance">
-                                <div className="px-5 sm:px-6 py-4 flex items-center justify-between">
-                                    <div className="flex items-center gap-3.5">
-                                        <div className="w-9 h-9 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink dark:text-paper shrink-0">
-                                            {isDark ? <window.Icons.Moon size={18} /> : <window.Icons.Sun size={18} />}
-                                        </div>
-                                        <span className="text-[15px] font-semibold text-ink dark:text-paper">Dark Mode</span>
-                                    </div>
+                        {/* Settings Lists */}
+                        <div className="fade-up" style={{animationDelay: "60ms"}}>
+                            <MenuSection title="Account">
+                                <MenuItem icon={<window.Icons.User size={20} />} label="Manage Profile" onClick={() => setActiveMenu('profile')} />
+                                <MenuItem icon={<window.Icons.Lock size={20} />} label="Password & Security" onClick={() => setActiveMenu('security')} />
+                                <MenuItem icon={<window.Icons.Bell size={20} />} label="Notifications" onClick={() => setActiveMenu('notifications')} />
+                                <MenuItem icon={<window.Icons.Globe size={20} />} label="Language" trailing={lang === 'en' ? 'English' : 'Tagalog'} onClick={() => setActiveMenu('language')} isLast={true} />
+                            </MenuSection>
 
-                                    <button
-                                        onClick={toggleDarkMode}
-                                        aria-label="Toggle Dark Mode"
-                                        className={`tap-scale w-[52px] h-[30px] rounded-full transition-colors duration-300 relative flex items-center shadow-inner border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 ${
-                                            isDark ? 'bg-[#1F6F54] border-[#1F6F54]' : 'bg-black/10 border-black/5'
-                                        }`}
-                                    >
-                                        <div className={`w-[24px] h-[24px] bg-white rounded-full absolute shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-                                            isDark ? 'translate-x-[25px]' : 'translate-x-[2px]'
-                                        }`}></div>
-                                    </button>
-                                </div>
-                            </SettingsGroup>
+                            <MenuSection title="Preferences">
+                                <MenuItem icon={<window.Icons.Info size={20} />} label="About Us" onClick={() => setActiveMenu('about')} />
+                                <MenuItem
+                                    icon={<window.Icons.SunMoon size={20} />}
+                                    label="Theme"
+                                    trailing={isDark ? "Dark" : "Light"}
+                                    onClick={toggleDarkMode}
+                                />
+                                <MenuItem icon={<window.Icons.Target size={20} />} label="Financial Goals" onClick={() => setActiveMenu('goals')} />
+                                <MenuItem icon={<window.Icons.Wallet size={20} />} label="Default Wallet" trailing={defaultWallet} onClick={() => setActiveMenu('defaultWallet')} />
+                                <MenuItem
+                                    icon={<window.Icons.Coins size={20} />}
+                                    label="Peso Display"
+                                    trailing={hideCentavos ? "Walang Sentimo" : "May Sentimo"}
+                                    onClick={toggleHideCentavos}
+                                    isLast={true}
+                                />
+                            </MenuSection>
+
+                            {/* NEW SECTION: Data & Backup */}
+                            <MenuSection title="Data & Backup">
+                                <MenuItem icon={<window.Icons.Download size={20} />} label="Export My Data" onClick={() => setActiveMenu('data')} />
+                                <MenuItem icon={<window.Icons.Trash size={20} />} label="Clear Local Preferences" onClick={handleClearLocalPrefs} isLast={true} />
+                            </MenuSection>
+
+                            <MenuSection title="Support">
+                                <MenuItem icon={<window.Icons.HelpCircle size={20} />} label="Help Center" onClick={() => setActiveMenu('help')} />
+                                <MenuItem icon={<window.Icons.MessageSquare size={20} />} label="Send Feedback" onClick={() => setActiveMenu('feedback')} />
+                                <MenuItem icon={<window.Icons.Star size={20} />} label="Rate Tipid" onClick={() => swalSuccess("Salamat! 🎉", "Coming soon ang link sa App Store/Play Store.")} />
+                                <MenuItem icon={<window.Icons.FileText size={20} />} label="Terms & Privacy" onClick={() => setActiveMenu('terms')} isLast={true} />
+                            </MenuSection>
+
+                            {/* NEW SECTION: Danger Zone, kept visually separate from Log Out */}
+                            <MenuSection title="Danger Zone">
+                                <MenuItem icon={<window.Icons.LogOut size={20} />} label="Log Out" isDestructive={true} hideChevron={true} onClick={handleLogout} />
+                                <MenuItem icon={<window.Icons.ShieldAlert size={20} />} label="Delete Account" isDestructive={true} onClick={() => setActiveMenu('deleteAccount')} isLast={true} />
+                            </MenuSection>
                         </div>
+                    </div>
 
-                    </main>
+                    <window.Navbar user={user} activeTab="account" />
                 </div>
             );
         }
@@ -716,48 +936,11 @@
                 ReactDOM.createRoot(document.getElementById("root")).render(<ProfileApp />);
                 return;
             }
-            if (attempt > 100) {
-                document.getElementById("root").innerHTML =
-                    `<div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:Inter,sans-serif;text-align:center;color:#15231C;">
-                        <div>
-                            <p style="font-weight:600;margin-bottom:0.5rem;">Failed to load: ${missingNames.join(", ")}</p>
-                            <p style="font-size:0.875rem;opacity:0.7;">Check the file path (Network tab) and ensure component exports match.</p>
-                        </div>
-                    </div>`;
-                return;
-            }
+            if (attempt > 100) return;
             setTimeout(() => mountWhenComponentsReady(attempt + 1), 30);
         }
 
         mountWhenComponentsReady();
-    </script>
-
-    <!-- PWA Service Worker Registration & Auto-Update Alert -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').then(registration => {
-                    registration.addEventListener('updatefound', () => {
-                        const newWorker = registration.installing;
-                        newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                Swal.fire({
-                                    title: "May Bagong Update! 🎉",
-                                    text: "May in-add kaming bagong features sa Tipid App. I-refresh ang app para magamit ito.",
-                                    icon: "info",
-                                    confirmButtonText: "I-update Ngayon",
-                                    confirmButtonColor: "#1F6F54",
-                                    allowOutsideClick: false,
-                                    customClass: { popup: "tipid-swal" }
-                                }).then(() => {
-                                    window.location.reload();
-                                });
-                            }
-                        });
-                    });
-                }).catch(err => console.error("Service Worker registration failed:", err));
-            });
-        }
     </script>
 </body>
 </html>
