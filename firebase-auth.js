@@ -4,6 +4,8 @@
 import { app } from "./firebase.js";
 import {
   getAuth,
+  setPersistence,
+  browserLocalPersistence,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
@@ -15,6 +17,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
 const auth = getAuth(app);
+
+// Keep the user logged in locally even when offline or restarting the app
+setPersistence(auth, browserLocalPersistence).catch((err) => {
+  console.warn("[TipidAuth] Failed to set auth persistence:", err);
+});
+
 const googleProvider = new GoogleAuthProvider();
 
 // Dev aid only — Firebase Auth itself still enforces its own domain/HTTPS

@@ -156,8 +156,14 @@
             box-shadow: 0 10px 25px -5px rgba(18, 61, 46, 0.25);
         }
 
+        @keyframes mascotFloat {
+            0%, 100% { transform: translate3d(0, 0, 0) rotate(-1deg); }
+            50% { transform: translate3d(0, -7px, 0) rotate(1deg); }
+        }
+        .mascot-float-key { animation: mascotFloat 4.8s ease-in-out infinite; }
+
         @media (prefers-reduced-motion: reduce) {
-            .spin, .row-in, .bar-fill, .fade-up, .banner-in, .logo-breathe, .halo-pulse, .hero-float, .tipid-mascot-img, .speech-bubble {
+            .spin, .row-in, .bar-fill, .fade-up, .banner-in, .logo-breathe, .halo-pulse, .hero-float, .tipid-mascot-img, .speech-bubble, .mascot-float-key {
                 animation: none !important;
                 transition: none !important;
             }
@@ -183,7 +189,6 @@
             );
         }
 
-        // FULL SET OF ICONS TO PREVENT REACT ERROR #130
         window.Icons = {
             Plus: (p) => <Icon {...p} path={<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>} />,
             Trash: (p) => <Icon {...p} path={<><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></>} />,
@@ -224,7 +229,7 @@
                 </svg>
             )
         };
-        const Icons = window.Icons; // Ensures Icons is strictly available in Babel scope
+        const Icons = window.Icons;
 
         window.Logo = function Logo({ size = 30 }) {
             const [broken, setBroken] = React.useState(false);
@@ -277,12 +282,14 @@
         }
     </script>
 
+    <!-- Components -->
     <script type="text/babel" src="./components/navbar.js"></script>
     <script type="text/babel" src="./components/DashboardSummary.js"></script>
     <script type="text/babel" src="./components/ExpenseChart.js"></script>
     <script type="text/babel" src="./components/ExpenseForm.js"></script>
     <script type="text/babel" src="./components/ExpenseItem.js"></script>
     <script type="text/babel" src="./components/ExpenseList.js"></script>
+    <script type="text/babel" src="./components/OnboardingModal.js"></script>
 
     <script type="text/babel">
         function AmbientBackground() {
@@ -726,6 +733,7 @@
             const [budget, setBudgetState] = React.useState(null);
             const [loadingEntries, setLoadingEntries] = React.useState(true);
             const [dataError, setDataError] = React.useState("");
+            const [showOnboarding, setShowOnboarding] = React.useState(false);
 
             React.useEffect(() => {
                 if (!authReady) return;
@@ -735,6 +743,12 @@
 
             React.useEffect(() => {
                 if (user === null) window.location.href = "login.html";
+                if (user && user.uid) {
+                    const hasCompleted = localStorage.getItem(`tipid_onboarded_${user.uid}`);
+                    if (!hasCompleted) {
+                        setShowOnboarding(true);
+                    }
+                }
             }, [user]);
 
             React.useEffect(() => {
@@ -788,6 +802,8 @@
                     <AmbientBackground />
 
                     <window.Navbar user={user} onLogout={logout} activeTab="home" />
+
+                    {showOnboarding && <window.OnboardingModal uid={user.uid} onComplete={() => setShowOnboarding(false)} />}
 
                     <main
                         className="max-w-[1000px] mx-auto w-full px-5 sm:px-8 pt-[6.5rem] md:pt-10 pb-36 md:pb-20 space-y-9 sm:space-y-12"
@@ -850,6 +866,7 @@
             if (typeof window.AddEntryForm !== "function") missingNames.push("AddEntryForm");
             if (typeof window.EntryList !== "function") missingNames.push("EntryList");
             if (typeof window.ExpenseItem !== "function") missingNames.push("ExpenseItem");
+            if (typeof window.OnboardingModal !== "function") missingNames.push("OnboardingModal");
 
             if (missingNames.length === 0) {
                 ReactDOM.createRoot(document.getElementById("root")).render(<Dashboard />);
