@@ -13,7 +13,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Global Dark Mode Script Initializer -->
     <script>
         if (localStorage.getItem('tipid_theme') === 'dark' || (!('tipid_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
@@ -58,6 +57,10 @@
 
     <style>
         :root {
+            --sat: env(safe-area-inset-top, 0px);
+            --sar: env(safe-area-inset-right, 0px);
+            --sab: env(safe-area-inset-bottom, 0px);
+            --sal: env(safe-area-inset-left, 0px);
             --ease-ios: cubic-bezier(0.22, 1, 0.36, 1);
             --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
@@ -94,7 +97,6 @@
         }
         .hero-float { animation: heroFloat 6s ease-in-out infinite; }
 
-        /* Premium Top Edge Gradient for Cards */
         .premium-edge {
             -webkit-mask-image: linear-gradient(to right, black, black);
             mask-image: linear-gradient(to right, black, black);
@@ -103,7 +105,6 @@
         .tap-scale { transition: transform 0.15s var(--ease-spring); }
         .tap-scale:active { transform: scale(0.94); }
 
-        /* iOS-style spring for the dark mode toggle knob */
         .ios-toggle-knob { transition: transform 0.35s var(--ease-spring); }
 
         .swal2-popup.tipid-swal { border-radius: 24px !important; font-family: 'Inter', sans-serif !important; }
@@ -132,7 +133,6 @@
         window.useEffect = React.useEffect;
         window.useMemo = React.useMemo;
 
-        // --- COMPREHENSIVE GLOBAL ICONS ---
         function Icon({ path, size = 20, className = "", strokeWidth = 2.2 }) {
             return (
                 <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -216,7 +216,6 @@
             );
         }
 
-        // Reusable Field Wrapper for Modern Inputs
         function FieldWrap({ icon, children }) {
             return (
                 <div className="flex items-center gap-3 bg-white/60 dark:bg-black/20 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-4 focus-within:ring-2 focus-within:ring-peso/40 focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200">
@@ -238,13 +237,6 @@
                     {mascotOk && (
                         <div className="absolute right-0 bottom-0 w-[120px] sm:w-[160px] h-full pointer-events-none z-0 overflow-visible hidden sm:block">
                             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-20 h-20 bg-white/15 blur-2xl rounded-full"></div>
-                            <img
-                                src="/assets/profile_mascot.png"
-                                alt="Tipid Buddy waving hello"
-                                onError={() => setMascotOk(false)}
-                                className="absolute bottom-[-8px] right-0 w-full object-contain profile-mascot-img"
-                                draggable="false"
-                            />
                         </div>
                     )}
 
@@ -273,7 +265,6 @@
             const [user, setUser] = React.useState(undefined);
             const [displayName, setDisplayName] = React.useState("");
 
-            // Financial Preferences State
             const [budgetInput, setBudgetInput] = React.useState("");
             const [goalName, setGoalName] = React.useState("");
             const [goalAmount, setGoalAmount] = React.useState("");
@@ -304,7 +295,6 @@
                 if (user === null) window.location.href = "login.html";
             }, [user]);
 
-            // Fetch Budget from Firestore
             React.useEffect(() => {
                 if (!dataReady || !user) return;
                 return window.TipidData.subscribeBudget(
@@ -314,10 +304,9 @@
                 );
             }, [dataReady, user]);
 
-            // Fetch Goal Data from LocalStorage
             React.useEffect(() => {
                 const savedGoalName = localStorage.getItem('tipid_goal_name');
-                const savedGoalAmount = localStorage.getItem('tipid_goal_amount') || localStorage.getItem('tipid_goal'); // Fallback to old key
+                const savedGoalAmount = localStorage.getItem('tipid_goal_amount') || localStorage.getItem('tipid_goal');
 
                 if (savedGoalName) setGoalName(savedGoalName);
                 if (savedGoalAmount) setGoalAmount(savedGoalAmount);
@@ -360,16 +349,14 @@
                 if (isNaN(amt) || amt <= 0) return swalError("Maglagay ng tamang halaga para sa budget.");
 
                 try {
-                    // Save to Firestore (Budget)
                     await window.TipidData.setBudget(user.uid, amt);
 
-                    // Save to LocalStorage (Goals)
                     if (goalName.trim()) {
                         localStorage.setItem('tipid_goal_name', goalName.trim());
                     }
                     if (!isNaN(targetAmt) && targetAmt > 0) {
                         localStorage.setItem('tipid_goal_amount', targetAmt.toString());
-                        localStorage.setItem('tipid_goal', targetAmt.toString()); // Keep old key for backward compatibility
+                        localStorage.setItem('tipid_goal', targetAmt.toString());
                     }
 
                     swalSuccess("Tagumpay", "Na-update na ang iyong Financial Goals at Budget.");
@@ -389,19 +376,17 @@
                     <window.Navbar user={user} onLogout={handleLogout} activeTab="account" />
 
                     <main
-                        className="max-w-[700px] w-full mx-auto px-5 sm:px-8 pt-[6.5rem] md:pt-10 pb-36 md:pb-20 space-y-8 flex-1"
+                        className="max-w-[700px] w-full mx-auto px-5 sm:px-8 pt-[6.5rem] md:pt-10 pb-[12rem] space-y-8 flex-1"
                         style={{
                             paddingLeft: 'max(1.25rem, calc(var(--sal) + 1.25rem))',
                             paddingRight: 'max(1.25rem, calc(var(--sar) + 1.25rem))',
-                            paddingBottom: 'calc(8rem + var(--sab))',
+                            paddingBottom: 'calc(12rem + var(--sab))',
                         }}
                     >
-                        {/* Hero Section */}
                         <div className="fade-up" style={{ animationDelay: '0ms' }}>
                             <ProfileHeroCard displayName={displayName} email={user.email} initial={initial} />
                         </div>
 
-                        {/* Personal Information Form */}
                         <div className="fade-up" style={{ animationDelay: '60ms' }}>
                             <SectionHeader title="Personal Information" />
                             <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios overflow-hidden relative">
@@ -426,7 +411,6 @@
                             </div>
                         </div>
 
-                        {/* Financial Goals & Settings Card */}
                         <div className="fade-up" style={{ animationDelay: '120ms' }}>
                             <SectionHeader
                                 title="Financial Goals"
@@ -438,7 +422,6 @@
 
                                 <form onSubmit={handleUpdatePreferences} className="p-5 sm:p-7 flex flex-col gap-6 mt-1">
 
-                                    {/* Monthly Budget Input */}
                                     <div className="flex flex-col gap-2">
                                         <label className="text-[11px] font-mono font-semibold uppercase tracking-widest text-ink2/60 dark:text-paper/50 px-1">Buwanang Budget Limit (₱)</label>
                                         <FieldWrap icon={<window.Icons.Wallet size={18} className="text-ink2/40 dark:text-paper/40" />}>
@@ -455,7 +438,6 @@
 
                                     <hr className="border-black/5 dark:border-white/10" />
 
-                                    {/* Goal Description/Name */}
                                     <div className="flex flex-col gap-2">
                                         <label className="text-[11px] font-mono font-semibold uppercase tracking-widest text-ink2/60 dark:text-paper/50 px-1">Ano ang pinag-iipunan mo?</label>
                                         <FieldWrap icon={<window.Icons.Star size={18} className="text-ink2/40 dark:text-paper/40" />}>
@@ -469,7 +451,6 @@
                                         </FieldWrap>
                                     </div>
 
-                                    {/* Savings Goal Amount Input */}
                                     <div className="flex flex-col gap-2">
                                         <label className="text-[11px] font-mono font-semibold uppercase tracking-widest text-ink2/60 dark:text-paper/50 px-1">Target Amount (₱)</label>
                                         <FieldWrap icon={<window.Icons.Target size={18} className="text-ink2/40 dark:text-paper/40" />}>
@@ -484,7 +465,6 @@
                                         </FieldWrap>
                                     </div>
 
-                                    {/* Educational Content / Benefits embedded nicely inside the form card */}
                                     <div className="bg-[#FDF6E3] dark:bg-[#C9932E]/10 rounded-[1.25rem] border border-[#C9932E]/20 dark:border-[#C9932E]/30 p-5 mt-2">
                                         <h3 className="font-semibold text-[#C9932E] dark:text-[#E8C071] text-sm mb-3">Bakit mahalaga na may Goal?</h3>
                                         <ul className="space-y-2.5 text-[12.5px] text-[#8C641A] dark:text-[#E8C071]/80 leading-relaxed">
@@ -506,8 +486,7 @@
                             </div>
                         </div>
 
-                        {/* Appearance Card */}
-                        <div className="fade-up" style={{ animationDelay: '180ms' }}>
+                        <div className="fade-up mb-10" style={{ animationDelay: '180ms' }}>
                             <SectionHeader title="Appearance" />
                             <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios overflow-hidden p-5 sm:p-7 flex items-center justify-between transition-all">
                                 <div className="flex items-center gap-4">
@@ -517,7 +496,6 @@
                                     <span className="text-[15px] font-semibold text-ink dark:text-paper">Dark Mode</span>
                                 </div>
 
-                                {/* Premium iOS Toggle Switch */}
                                 <button
                                     onClick={toggleDarkMode}
                                     aria-label="Toggle Dark Mode"
