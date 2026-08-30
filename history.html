@@ -76,10 +76,11 @@
             --ease-ios: cubic-bezier(0.22, 1, 0.36, 1);
             --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
             --page-bg: #F1F4EF;
+            --paper-line: rgba(21, 35, 28, 0.06);
         }
 
         html { background: #F1F4EF; transition: background-color 0.3s var(--ease-ios); }
-        html.dark { background: #111A15; color: #F1F4EF; --page-bg: #111A15; }
+        html.dark { background: #111A15; color: #F1F4EF; --page-bg: #111A15; --paper-line: rgba(241, 244, 239, 0.06); }
 
         body { font-feature-settings: "tnum" 1, "lnum" 1; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
         ::selection { background: #C9932E33; color: #15231C; }
@@ -126,7 +127,7 @@
 
         .tipid-swal { border-radius: 28px !important; font-family: 'Inter', sans-serif !important; }
 
-        /* --- Resibo perforation: torn-receipt seam under the hero card, on-brand with Tipid's perf-edge motif --- */
+        /* --- Resibo perforation: torn-receipt seam under the hero card --- */
         .receipt-edge { position: relative; }
         .receipt-edge::after {
             content: "";
@@ -140,6 +141,64 @@
             background-repeat: repeat-x;
             pointer-events: none;
             z-index: 5;
+        }
+
+        /* --- ENHANCEMENT: signature element for History — the entry list
+             now sits inside a literal "receipt", reinforcing the idea that
+             this page is a paper trail of past transactions. Same
+             perforation trick, mirrored top and bottom, plus a faint
+             thermal-paper ruling in the background. Purely a wrapper: the
+             actual EntryList component and its data are untouched. --- */
+        .receipt-frame { position: relative; padding-top: 14px; }
+        .receipt-frame::before {
+            content: "";
+            position: absolute;
+            left: 0; right: 0; top: 5px;
+            height: 18px;
+            background-image: radial-gradient(circle at 9px 9px, var(--page-bg) 9px, transparent 9.5px);
+            background-size: 18px 18px;
+            background-repeat: repeat-x;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .receipt-paper {
+            background:
+                repeating-linear-gradient(
+                    180deg,
+                    transparent, transparent 27px,
+                    var(--paper-line) 27px, var(--paper-line) 28px
+                ),
+                rgba(255,255,255,0.55);
+            border: 1px solid rgba(21,35,28,0.06);
+            box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, var(--tw-shadow, 0 0 #0000);
+        }
+        html.dark .receipt-paper {
+            background:
+                repeating-linear-gradient(
+                    180deg,
+                    transparent, transparent 27px,
+                    var(--paper-line) 27px, var(--paper-line) 28px
+                ),
+                rgba(24,38,31,0.4);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        /* --- "Printing" loading state: a thermal line sweeping down a
+             receipt strip, replacing the generic spinner-only loader on
+             this page specifically. --- */
+        @keyframes printSweep {
+            0%   { top: 6%; opacity: 0; }
+            12%  { opacity: 1; }
+            88%  { opacity: 1; }
+            100% { top: 94%; opacity: 0; }
+        }
+        .print-sweep {
+            position: absolute; left: 8%; right: 8%; height: 2px;
+            background: linear-gradient(90deg, transparent, #1F6F54, transparent);
+            animation: printSweep 1.6s var(--ease-ios) infinite;
+        }
+        html.dark .print-sweep {
+            background: linear-gradient(90deg, transparent, #52C8A1, transparent);
         }
 
         /* --- Mascot Animations --- */
@@ -157,7 +216,7 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
-            .fade-up, .spin, .logo-breathe, .halo-pulse, .hero-float, .tap-scale, .history-mascot-img, .speech-bubble {
+            .fade-up, .spin, .logo-breathe, .halo-pulse, .hero-float, .tap-scale, .history-mascot-img, .speech-bubble, .print-sweep {
                 animation: none !important; transition: none !important;
             }
         }
@@ -201,7 +260,8 @@
             Home: (p) => <Icon {...p} path={<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>} />,
             Chart: (p) => <Icon {...p} path={<><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></>} />,
             List: (p) => <Icon {...p} path={<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>} />,
-            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />
+            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />,
+            Receipt: (p) => <Icon {...p} path={<><path d="M4 2h16v20l-3-2-2 2-2-2-2 2-2-2-2 2-3-2V2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></>} />
         };
 
         window.Logo = function Logo({ size = 30 }) {
@@ -222,12 +282,15 @@
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
                     <div className="absolute -top-24 -right-16 w-[380px] h-[380px] bg-peso/[0.07] dark:bg-pesoLight/[0.07] rounded-full blur-[90px]" />
                     <div className="absolute bottom-0 -left-24 w-[400px] h-[400px] bg-[#C9932E]/[0.07] dark:bg-[#C9932E]/[0.04] rounded-full blur-[100px]" />
+                    <div className="absolute top-[40%] left-[55%] w-[300px] h-[300px] bg-[#1F6F54]/[0.04] dark:bg-[#52C8A1]/[0.04] rounded-full blur-[110px]" />
                 </div>
             );
         }
 
         /* --- MODERN HISTORY HERO CARD (matched to the Bills Center / Analytics hero) --- */
         function HistoryHeroCard({ darkMode, toggleDarkMode }) {
+            const todayLabel = React.useMemo(() => new Date().toLocaleDateString("en-PH", { weekday: "long", year: "numeric", month: "long", day: "numeric" }), []);
+
             return (
                 <div className="relative receipt-edge mb-6 sm:mb-8">
                 <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-5 sm:p-7 shadow-iosLg ring-1 ring-white/15 min-h-[220px] sm:min-h-[240px] flex flex-col justify-between">
@@ -268,14 +331,17 @@
                     <div className="relative z-10 flex flex-col h-full gap-4 sm:gap-6 max-w-[55%] sm:max-w-[60%]">
                         <div className="mt-2 sm:mt-4">
                             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/15 border border-white/10 text-white mb-3 backdrop-blur-sm">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#FFD700] animate-pulse" />
-                                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-paper/90">Tipid Buddy</span>
+                                <window.Icons.Receipt size={11} className="text-paper/90" />
+                                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-paper/90">Digital na Resibo</span>
                             </div>
-                            <h1 className="font-display text-[1.6rem] sm:text-[2.5rem] font-bold tracking-tight leading-[1.1] mb-2 sm:mb-3">
+                            <h1 className="font-display text-[1.7rem] sm:text-[2.6rem] font-semibold tracking-tight leading-[1.05] mb-2 sm:mb-3">
                                 Kasaysayan
                             </h1>
                             <p className="text-[11px] sm:text-[13px] font-medium text-white/80 leading-relaxed pr-2">
                                 Balikan ang mga nakaraang gastos at kita para mas madaling makita ang spending habits mo.
+                            </p>
+                            <p className="text-[9.5px] sm:text-[10.5px] font-mono uppercase tracking-widest text-white/45 mt-3 sm:mt-4">
+                                {todayLabel}
                             </p>
                         </div>
                     </div>
@@ -304,6 +370,41 @@
                 return () => window.removeEventListener("tipid-data-ready", h);
             }, []);
             return ready;
+        }
+
+        // --- ENHANCEMENT: signature "receipt" frame wrapping the entry
+        // list. Purely presentational — receives the same children the
+        // page already renders and adds no data logic of its own.
+        function ReceiptFrame({ children }) {
+            return (
+                <div className="receipt-frame">
+                    <div className="receipt-paper receipt-edge rounded-[1.5rem] sm:rounded-[1.75rem] shadow-ios px-1 sm:px-2 pt-3 pb-5">
+                        {children}
+                    </div>
+                </div>
+            );
+        }
+
+        // --- ENHANCEMENT: "printing" loader replacing the plain spinner
+        // on this page — a thermal line sweeping down a receipt strip,
+        // reinforcing the same motif as the loading state.
+        function PrintingLoader() {
+            return (
+                <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
+                    <div className="glass-panel flex flex-col items-center gap-5 rounded-[32px] px-10 py-10 shadow-ios">
+                        <div className="relative w-20 h-24 rounded-[10px] bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 overflow-hidden shadow-inner">
+                            <div className="print-sweep" />
+                            <div className="absolute inset-x-3 top-3 h-1 rounded bg-black/[0.06] dark:bg-white/10" />
+                            <div className="absolute inset-x-3 top-6 h-1 rounded bg-black/[0.06] dark:bg-white/10 w-2/3" />
+                            <div className="absolute inset-x-3 top-9 h-1 rounded bg-black/[0.06] dark:bg-white/10" />
+                            <div className="absolute inset-x-3 top-12 h-1 rounded bg-black/[0.06] dark:bg-white/10 w-1/2" />
+                        </div>
+                        <p className="text-[11px] font-mono font-semibold tracking-widest uppercase text-ink2 dark:text-paper/60 text-center">
+                            Nire-recall ang Kasaysayan
+                        </p>
+                    </div>
+                </div>
+            );
         }
 
         function HistoryApp() {
@@ -355,21 +456,7 @@
             }, [dataReady, user]);
 
             if (user === undefined || user === null) {
-                return (
-                    <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
-                        <div className="glass-panel flex flex-col items-center gap-5 rounded-[32px] px-10 py-10 shadow-ios">
-                            <div className="relative flex items-center justify-center">
-                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/25 halo-pulse" />
-                                <div className="relative logo-breathe">
-                                    <window.Logo size={44} />
-                                </div>
-                            </div>
-                            <p className="text-[11px] font-mono font-semibold tracking-widest uppercase text-ink2 dark:text-paper/60 text-center">
-                                Loading History
-                            </p>
-                        </div>
-                    </div>
-                );
+                return <PrintingLoader />;
             }
 
             const logout = async () => {
@@ -408,7 +495,9 @@
                         )}
 
                         <div className="fade-up" style={{ animationDelay: "90ms" }}>
-                            <AppEntryList uid={user.uid} entries={entries} loading={loadingEntries} />
+                            <ReceiptFrame>
+                                <AppEntryList uid={user.uid} entries={entries} loading={loadingEntries} />
+                            </ReceiptFrame>
                         </div>
                     </main>
                 </div>

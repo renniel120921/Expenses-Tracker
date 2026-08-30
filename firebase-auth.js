@@ -18,9 +18,13 @@ import {
 
 const auth = getAuth(app);
 
-// Keep the user logged in locally even when offline or restarting the app
-setPersistence(auth, browserLocalPersistence).catch((err) => {
-  console.warn("[TipidAuth] Failed to set auth persistence:", err);
+// Keep the user logged in locally even when offline or restarting the app.
+// IMPORTANT: this must finish (or at least be attempted) BEFORE any page
+// trusts onAuthStateChanged/onChange, otherwise a page that checks auth
+// state immediately on load can race ahead of persistence actually being
+// set. `persistenceReady` lets callers await that instead of guessing.
+const persistenceReady = setPersistence(auth, browserLocalPersistence).catch((err) => {
+  console.warn("[TipidAuth] Failed to set auth persistence — falling back to Firebase's default (session may not survive a full app/browser restart):", err);
 });
 
 const googleProvider = new GoogleAuthProvider();
@@ -335,6 +339,38 @@ window.TipidAuth = {
   },
 
   friendlyError,
+
+  // Resolves once persistence has been (attempted to be) set. Pages that
+  // check login state the moment they load — e.g. "if no user, redirect to
+  // login.html" — should `await window.TipidAuth.ready` first so they don't
+  // race ahead of Firebase restoring the saved session.
+  ready: persistenceReady,
 };
+
+// ---------------------------------------------------------------------------
+// One-time restore diagnostic
+// ---------------------------------------------------------------------------
+// Logs what Firebase actually finds on the very first auth check after a
+// fresh page load (e.g. right after closing and reopening the app). This is
+// here to tell apart two different bugs that look identical to a user:
+//   - console shows "NO saved session found" -> Firebase itself lost the
+//     session (something is clearing IndexedDB/localStorage between visits —
+//     a service worker doing a blanket storage wipe, private/incognito mode,
+//     or a browser "clear data on close" setting). Not something this file
+//     can fix on its own.
+//   - console shows "restored session for <email>" -> Firebase DID keep you
+//     logged in, so if the app still shows the login page, the bug is in
+//     that page's own script (e.g. dashboard.html deciding you're logged
+//     out before this fires) — not in firebase-auth.js.
+let loggedFirstRestore = false;
+onAuthStateChanged(auth, (user) => {
+  if (loggedFirstRestore) return;
+  loggedFirstRestore = true;
+  if (user) {
+    console.info(`[TipidAuth] Restored session on load for ${user.email || user.uid} — Firebase kept you logged in.`);
+  } else {
+    console.info("[TipidAuth] NO saved session found on load — Firebase does not think you're logged in.");
+  }
+});
 
 window.dispatchEvent(new Event("tipid-auth-ready"));

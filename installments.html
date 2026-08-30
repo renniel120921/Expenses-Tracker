@@ -136,7 +136,10 @@
                     <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-gold/[0.12] rounded-full blur-[60px]" />
 
                     <div className="absolute top-5 right-5 sm:top-6 sm:right-6 z-30">
-                        <button onClick={toggleDarkMode} className="tap-scale w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 hover:bg-white/20 ring-1 ring-white/20 flex items-center justify-center text-white backdrop-blur-md transition-colors">
+                        {/* FIX: was missing aria-label — the Utang and Scanner
+                            pages both have it on their dark mode toggle,
+                            this one didn't. */}
+                        <button onClick={toggleDarkMode} aria-label="Toggle Dark Mode" className="tap-scale w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 hover:bg-white/20 ring-1 ring-white/20 flex items-center justify-center text-white backdrop-blur-md transition-colors">
                             {darkMode ? <window.Icons.Sun size={17} /> : <window.Icons.Moon size={17} />}
                         </button>
                     </div>
@@ -161,6 +164,116 @@
                             </h1>
                             <p className="text-[11px] sm:text-[13px] font-medium text-white/80 leading-relaxed pr-2">
                                 I-monitor ang iyong SPayLater, Home Credit, o motor para makita mong umuusad ang bayad mo.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // ---- ENHANCEMENT: page-level "at a glance" summary ------------
+        // Reads the same localStorage key InstallmentTracker writes to and
+        // rolls everything up: total monthly obligation across all active
+        // hulugan, total remaining balance, and the single nearest due
+        // date so the user doesn't have to scan every card to know what's
+        // coming up soonest. Polls once a second so it stays in sync while
+        // the user adds/pays installments below — no changes to
+        // InstallmentTracker.js required.
+
+        function addMonths(date, months) {
+            const d = new Date(date);
+            d.setMonth(d.getMonth() + months);
+            return d;
+        }
+
+        function formatDatePH(date) {
+            if (!date) return "—";
+            const d = (date instanceof Date) ? date : new Date(date);
+            if (isNaN(d.getTime())) return "—";
+            return d.toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" });
+        }
+
+        function resolveStartDate(item) {
+            if (item.startDate) return new Date(item.startDate);
+            const fromId = Number(item.id);
+            return isNaN(fromId) ? new Date() : new Date(fromId);
+        }
+
+        function computeInstallmentsSummary(uid) {
+            const saved = localStorage.getItem(`tipid_installments_${uid}`);
+            const items = saved ? JSON.parse(saved) : [];
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let totalMonthly = 0;
+            let totalRemaining = 0;
+            let nearestDue = null;
+            let overdueCount = 0;
+            let activeCount = 0;
+
+            items.forEach(item => {
+                const isDone = item.paidMonths >= item.terms;
+                if (isDone) return;
+
+                activeCount += 1;
+                totalMonthly += item.monthly;
+
+                const downpayment = item.downpayment || 0;
+                const paidSoFar = downpayment + (item.paidMonths * item.monthly);
+                totalRemaining += (item.totalAmount - paidSoFar);
+
+                const startD = resolveStartDate(item);
+                const dueDate = addMonths(startD, item.paidMonths + 1);
+
+                if (dueDate < today) overdueCount += 1;
+                if (!nearestDue || dueDate < nearestDue) nearestDue = dueDate;
+            });
+
+            return { totalMonthly, totalRemaining, nearestDue, overdueCount, activeCount };
+        }
+
+        function InstallmentsSummaryCard({ uid }) {
+            const [summary, setSummary] = React.useState(() => computeInstallmentsSummary(uid));
+
+            React.useEffect(() => {
+                const interval = setInterval(() => {
+                    setSummary(computeInstallmentsSummary(uid));
+                }, 1000);
+                return () => clearInterval(interval);
+            }, [uid]);
+
+            if (summary.activeCount === 0) return null;
+
+            return (
+                <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios p-5 sm:p-7 mb-6 sm:mb-8 fade-up">
+                    <div className="flex items-center gap-3 mb-5">
+                        <span className="w-10 h-10 rounded-[14px] bg-[#E6F3EF] dark:bg-[#1F6F54]/20 text-[#1F6F54] dark:text-[#52C8A1] flex items-center justify-center shrink-0">
+                            <window.Icons.Wallet size={19} strokeWidth={2.3} />
+                        </span>
+                        <div>
+                            <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper leading-tight">Buod ng Lahat ng Hulugan</h3>
+                            <span className="text-[11px] font-mono text-ink2/50 dark:text-paper/40">{summary.activeCount} aktibong hulugan</span>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="bg-gradient-to-br from-[#E6F3EF] to-[#D5EBE3] dark:from-[#1F6F54]/20 dark:to-[#1F6F54]/10 p-5 rounded-2xl border border-[#1F6F54]/10 dark:border-[#52C8A1]/20">
+                            <p className="text-[10px] font-mono uppercase font-semibold tracking-wider text-[#1F6F54] dark:text-[#52C8A1] mb-1.5">Buwanang Bayarin</p>
+                            <p className="font-mono text-2xl font-bold tracking-tight text-[#1F6F54] dark:text-[#52C8A1]">₱{window.peso(summary.totalMonthly)}</p>
+                        </div>
+
+                        <div className="bg-black/[0.03] dark:bg-white/[0.04] p-5 rounded-2xl border border-black/5 dark:border-white/5">
+                            <p className="text-[10px] font-mono uppercase font-semibold tracking-wider text-ink2/60 dark:text-paper/50 mb-1.5">Kabuuang Natitira</p>
+                            <p className="font-mono text-2xl font-bold tracking-tight text-ink dark:text-paper">₱{window.peso(summary.totalRemaining)}</p>
+                        </div>
+
+                        <div className={`p-5 rounded-2xl border ${summary.overdueCount > 0 ? 'bg-[#FAEDE9] dark:bg-[#B5483B]/15 border-[#B5483B]/10 dark:border-[#F38C80]/20' : 'bg-black/[0.03] dark:bg-white/[0.04] border-black/5 dark:border-white/5'}`}>
+                            <p className={`text-[10px] font-mono uppercase font-semibold tracking-wider mb-1.5 ${summary.overdueCount > 0 ? 'text-[#B5483B] dark:text-[#F38C80]' : 'text-ink2/60 dark:text-paper/50'}`}>
+                                {summary.overdueCount > 0 ? `${summary.overdueCount} Overdue` : "Susunod na Due"}
+                            </p>
+                            <p className={`font-mono text-lg sm:text-xl font-bold tracking-tight ${summary.overdueCount > 0 ? 'text-[#B5483B] dark:text-[#F38C80]' : 'text-ink dark:text-paper'}`}>
+                                {formatDatePH(summary.nearestDue)}
                             </p>
                         </div>
                     </div>
@@ -278,6 +391,7 @@
                         <div className="fade-up">
                             <InstallmentsHeroCard darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
                         </div>
+                        <InstallmentsSummaryCard uid={user.uid} />
                         <AppInstallments uid={user.uid} />
                         <TipsSection />
                     </main>

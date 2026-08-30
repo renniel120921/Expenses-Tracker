@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Smart Palengke — Tipid</title>
+    <title>Tipid Smart Palengke</title>
     <meta name="theme-color" content="#1F6F54">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -90,6 +90,8 @@
         @keyframes haloPulse { 0% { transform: scale(0.9); opacity: 0.35; } 70% { opacity: 0; } 100% { transform: scale(1.6); opacity: 0; } }
         .halo-pulse { animation: haloPulse 1.9s var(--ease-ios) infinite; }
 
+        @keyframes logoBreathe { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }
+
         @keyframes heroFloat { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -10px); } }
         .hero-float { animation: heroFloat 6s ease-in-out infinite; }
 
@@ -106,8 +108,10 @@
 
         .speech-bubble { animation: fadeUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both; box-shadow: 0 10px 25px -5px rgba(18, 61, 46, 0.25); }
 
+        .tip-fade { animation: fadeIn 0.45s var(--ease-ios) both; }
+
         @media (prefers-reduced-motion: reduce) {
-            .fade-up, .spin, .halo-pulse, .hero-float, .tap-scale, .grocery-mascot-img, .speech-bubble { animation: none !important; transition: none !important; }
+            .fade-up, .spin, .halo-pulse, .hero-float, .tap-scale, .grocery-mascot-img, .speech-bubble, .tip-fade { animation: none !important; transition: none !important; }
         }
     </style>
 </head>
@@ -136,7 +140,14 @@
             Plus: (p) => <Icon {...p} path={<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>} />,
             Check: (p) => <Icon {...p} path={<><polyline points="20 6 9 17 4 12"/></>} strokeWidth={3} />,
             Loader: (p) => <Icon {...p} path={<><path d="M12 2a10 10 0 0 1 10 10"/></>} />,
-            Info: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>} />
+            Info: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>} />,
+            Sparkle: (p) => <Icon {...p} path={<><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M17.7 6.3l-2.8 2.8M9.1 14.9l-2.8 2.8"/></>} />,
+            Clock: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></>} />,
+            Leaf: (p) => <Icon {...p} path={<><path d="M11 20A7 7 0 0 1 4 13a1 1 0 0 1 1-1c4 0 8 2 10 6a1 1 0 0 1-1 1c-1 0-2-.2-3-.6"/><path d="M4 13c0-6 4-10 10-10 1 0 5 0 6 1s1 5 1 6c0 6-4 10-10 10"/></>} />,
+            Coins: (p) => <Icon {...p} path={<><circle cx="9" cy="9" r="6"/><path d="M14.5 8.5a6 6 0 1 1 0 9.9"/></>} />,
+            Bag: (p) => <Icon {...p} path={<><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></>} />,
+            ChevronLeft: (p) => <Icon {...p} path={<><polyline points="15 18 9 12 15 6"/></>} />,
+            ChevronRight: (p) => <Icon {...p} path={<><polyline points="9 18 15 12 9 6"/></>} />
         };
 
         window.Logo = function Logo({ size = 30 }) {
@@ -166,6 +177,7 @@
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
                     <div className="absolute -top-24 -right-16 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
                     <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-[#C9932E]/10 dark:bg-[#C9932E]/5 rounded-full blur-[100px]" />
+                    <div className="absolute top-[42%] left-[58%] w-[240px] h-[240px] bg-expense/[0.05] dark:bg-expense/[0.04] rounded-full blur-[110px]" />
                 </div>
             );
         }
@@ -199,7 +211,7 @@
                     <div className="relative z-10 flex flex-col h-full gap-5 sm:gap-6 max-w-[70%] sm:max-w-[60%]">
                         <div className="mt-2 sm:mt-4">
                             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/15 border border-white/10 text-white mb-3 backdrop-blur-sm">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#FFD700] animate-pulse" />
+                                <window.Icons.Sparkle size={10} strokeWidth={2.4} className="text-[#FFD700]" />
                                 <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-paper/90">Smart Grocery</span>
                             </div>
                             <h1 className="font-display text-[1.6rem] sm:text-[2.25rem] font-bold tracking-tight leading-[1.1] mb-2 sm:mb-3">
@@ -209,6 +221,113 @@
                                 I-lista ang mga bibilhin at bantayan ang running total para hindi over-budget.
                             </p>
                         </div>
+                    </div>
+                </div>
+            );
+        }
+
+        /* --- NEW: PALENGKE TIPS CARD ---
+           Self-contained rotating tips carousel. Doesn't depend on GroceryList's
+           internal state, so it's safe to add without touching that component. */
+        window.PALENGKE_TIPS = [
+            {
+                icon: "Clock",
+                title: "Mas maaga, mas sariwa",
+                text: "Pumunta bago mag-alas-otso ng umaga para sa pinakasariwang isda at gulay, bago maubos ang magagandang piraso."
+            },
+            {
+                icon: "Leaf",
+                title: "Tingnan ang sariwa",
+                text: "Sa isda, dapat malinaw ang mata at matigas ang katawan. Sa gulay, iwasan ang malambot o may batik na parte."
+            },
+            {
+                icon: "Coins",
+                title: "Magdala ng barya",
+                text: "Karamihan sa mga tindera ay mahirap magsukli ng malaking bill. Magdala ng barya at maliliit na denomination."
+            },
+            {
+                icon: "Bag",
+                title: "Sariling bag, tipid sa plastic",
+                text: "Magdala ng sariling eco bag o bayong. Mas madali ring buhatin at mas malinis kaysa sa maraming plastic bag."
+            },
+            {
+                icon: "Sparkle",
+                title: "Ikumpara bago bumili",
+                text: "Maglakad-lakad muna sa dalawa o tatlong tindahan bago bumili, lalo na sa isda at karne. Malaki ang pagkakaiba ng presyo."
+            },
+            {
+                icon: "Info",
+                title: "Sundan ang listahan",
+                text: "I-check ang mga item sa listahan habang binibili para hindi ka makaligtaan o makadoble ng bili."
+            }
+        ];
+
+        function PalengkeTips() {
+            const tips = window.PALENGKE_TIPS;
+            const [index, setIndex] = React.useState(0);
+            const [paused, setPaused] = React.useState(false);
+
+            React.useEffect(() => {
+                if (paused) return;
+                const t = setInterval(() => setIndex(i => (i + 1) % tips.length), 6000);
+                return () => clearInterval(t);
+            }, [paused, tips.length]);
+
+            const tip = tips[index];
+            const TipIcon = window.Icons[tip.icon] || window.Icons.Info;
+
+            const goTo = (i) => setIndex(((i % tips.length) + tips.length) % tips.length);
+
+            return (
+                <div
+                    className="fade-up glass-panel rounded-[1.5rem] p-4 sm:p-5 shadow-ios mb-6 sm:mb-8"
+                    onMouseEnter={() => setPaused(true)}
+                    onMouseLeave={() => setPaused(false)}
+                >
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                            <span className="w-4 h-[3px] rounded-full bg-peso dark:bg-pesoLight" />
+                            <h2 className="font-display text-[1.05rem] font-semibold text-ink dark:text-paper tracking-tight">
+                                Palengke Tips
+                            </h2>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={() => goTo(index - 1)}
+                                aria-label="Nakaraang tip"
+                                className="tap-scale w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink2 dark:text-paper/70 hover:bg-black/10 dark:hover:bg-white/20 transition-colors"
+                            >
+                                <window.Icons.ChevronLeft size={14} />
+                            </button>
+                            <button
+                                onClick={() => goTo(index + 1)}
+                                aria-label="Susunod na tip"
+                                className="tap-scale w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink2 dark:text-paper/70 hover:bg-black/10 dark:hover:bg-white/20 transition-colors"
+                            >
+                                <window.Icons.ChevronRight size={14} />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div key={index} className="tip-fade flex items-start gap-3">
+                        <div className="shrink-0 w-10 h-10 rounded-2xl bg-[#E6F3EF] dark:bg-[#1F6F54]/20 text-[#1F6F54] dark:text-[#52C8A1] flex items-center justify-center">
+                            <TipIcon size={18} />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[13.5px] font-semibold text-ink dark:text-paper mb-0.5">{tip.title}</p>
+                            <p className="text-[12.5px] text-ink2/70 dark:text-paper/60 leading-relaxed">{tip.text}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-1.5 mt-4">
+                        {tips.map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => goTo(i)}
+                                aria-label={`Tip ${i + 1}`}
+                                className={`h-1.5 rounded-full transition-all duration-300 ${i === index ? "w-5 bg-peso dark:bg-pesoLight" : "w-1.5 bg-black/10 dark:bg-white/15"}`}
+                            />
+                        ))}
                     </div>
                 </div>
             );
@@ -306,6 +425,7 @@
                         <div className="fade-up">
                             <GroceryHeroCard darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
                         </div>
+                        <PalengkeTips />
                         <AppGroceryList uid={user.uid} />
                     </main>
                 </div>

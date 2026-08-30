@@ -97,11 +97,6 @@
         }
         .hero-float { animation: heroFloat 6s ease-in-out infinite; }
 
-        .premium-edge {
-            -webkit-mask-image: linear-gradient(to right, black, black);
-            mask-image: linear-gradient(to right, black, black);
-        }
-
         .tap-scale { transition: transform 0.15s var(--ease-spring); }
         .tap-scale:active { transform: scale(0.94); }
 
@@ -109,17 +104,8 @@
 
         .swal2-popup.tipid-swal { border-radius: 24px !important; font-family: 'Inter', sans-serif !important; }
 
-        @keyframes mascotHover {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
-        }
-        .profile-mascot-img {
-            animation: mascotHover 4s ease-in-out infinite;
-            filter: drop-shadow(0 15px 25px rgba(18,61,46,0.35));
-        }
-
         @media (prefers-reduced-motion: reduce) {
-            .spin, .fade-up, .logo-breathe, .halo-pulse, .hero-float, .tap-scale, .profile-mascot-img {
+            .spin, .fade-up, .logo-breathe, .halo-pulse, .hero-float, .tap-scale {
                 animation: none !important; transition: none !important;
             }
         }
@@ -153,7 +139,10 @@
             Home: (p) => <Icon {...p} path={<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>} />,
             Chart: (p) => <Icon {...p} path={<><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></>} />,
             List: (p) => <Icon {...p} path={<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>} />,
-            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />
+            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />,
+            Camera: (p) => <Icon {...p} path={<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></>} />,
+            X: (p) => <Icon {...p} path={<><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>} />,
+            Info: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>} />
         };
 
         window.Logo = function Logo({ size = 30 }) {
@@ -216,32 +205,110 @@
             );
         }
 
-        function FieldWrap({ icon, children }) {
+        // A single row inside a SettingsGroup — label above, bare (unboxed) input below.
+        // This is the core "feels like an app, not a webpage" change: instead of every
+        // field living in its own bordered box (a web-form pattern), rows sit flush
+        // inside one continuous grouped card with hairline dividers between them —
+        // the same pattern iOS/Android Settings screens use.
+        function SettingsRow({ label, children }) {
             return (
-                <div className="flex items-center gap-3 bg-white/60 dark:bg-black/20 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-4 focus-within:ring-2 focus-within:ring-peso/40 focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200">
-                    {icon}
+                <div className="px-5 sm:px-6 py-4">
+                    <label className="block text-[10.5px] font-mono font-semibold uppercase tracking-widest text-ink2/50 dark:text-paper/40 mb-1.5">{label}</label>
                     {children}
                 </div>
             );
         }
 
-        function ProfileHeroCard({ displayName, email, initial }) {
-            const [mascotOk, setMascotOk] = React.useState(true);
+        // A grouped card: quiet header outside, hairline-divided rows inside.
+        // No gradient accent bar on top — that read as a decorative "landing page
+        // card" rather than part of an app chrome.
+        function SettingsGroup({ title, subtitle, children }) {
+            return (
+                <div>
+                    <SectionHeader title={title} subtitle={subtitle} />
+                    <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.5rem] border border-black/5 dark:border-white/10 shadow-ios overflow-hidden divide-y divide-black/5 dark:divide-white/10">
+                        {children}
+                    </div>
+                </div>
+            );
+        }
+
+        // Slim, right-aligned save affordance instead of a full-width shouty CTA —
+        // disabled until something actually changed, with an inline spinner while saving.
+        function GroupSaveRow({ label, savingLabel, saving, disabled, tone = "peso" }) {
+            const toneClasses = tone === "gold"
+                ? "bg-gold text-[#111A15] hover:shadow-md hover:shadow-gold/25"
+                : "bg-peso text-white hover:shadow-md hover:shadow-peso/25";
+            return (
+                <div className="px-5 sm:px-6 py-3.5 flex justify-end bg-black/[0.015] dark:bg-white/[0.02]">
+                    <button
+                        type="submit"
+                        disabled={disabled || saving}
+                        className={`tap-scale inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[13.5px] font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 disabled:opacity-35 disabled:cursor-not-allowed disabled:shadow-none ${toneClasses}`}
+                    >
+                        {saving && <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full spin" />}
+                        {saving ? savingLabel : label}
+                    </button>
+                </div>
+            );
+        }
+
+        function ProfileHeroCard({ user, displayName, email, initial, onPhotoSelected, onRemovePhoto, uploadingPhoto }) {
             const firstName = displayName ? displayName.trim().split(/\s+/)[0] : "";
+            const fileInputRef = React.useRef(null);
 
             return (
                 <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-6 sm:p-8 shadow-iosLg ring-1 ring-white/15 mb-8 flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-6">
                     <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/10 rounded-full blur-[50px] pointer-events-none" />
                     <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-gold/15 rounded-full blur-[60px] pointer-events-none" />
 
-                    {mascotOk && (
-                        <div className="absolute right-0 bottom-0 w-[120px] sm:w-[160px] h-full pointer-events-none z-0 overflow-visible hidden sm:block">
-                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-20 h-20 bg-white/15 blur-2xl rounded-full"></div>
-                        </div>
-                    )}
+                    <div className="relative z-10 shrink-0">
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                                const file = e.target.files && e.target.files[0];
+                                if (file) onPhotoSelected(file);
+                                e.target.value = "";
+                            }}
+                        />
 
-                    <div className="relative z-10 w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white/10 border-4 border-white/20 flex items-center justify-center text-4xl sm:text-5xl font-display font-bold shadow-inner shrink-0 backdrop-blur-md">
-                        {initial}
+                        <div className="relative w-24 h-24 sm:w-28 sm:h-28">
+                            <div className="w-full h-full rounded-full bg-white/10 border-4 border-white/20 flex items-center justify-center overflow-hidden shadow-inner backdrop-blur-md">
+                                {user.photoURL
+                                    ? <img src={user.photoURL} alt={displayName || "Profile photo"} className="w-full h-full object-cover" />
+                                    : <span className="text-4xl sm:text-5xl font-display font-bold">{initial}</span>}
+                            </div>
+
+                            {uploadingPhoto && (
+                                <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+                                    <span className="w-6 h-6 border-2 border-white/40 border-t-white rounded-full spin" />
+                                </div>
+                            )}
+
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                                disabled={uploadingPhoto}
+                                aria-label="Palitan ang profile photo"
+                                className="tap-scale absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-gold text-[#111A15] flex items-center justify-center shadow-md ring-2 ring-[#1A614A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-50"
+                            >
+                                <window.Icons.Camera size={14} strokeWidth={2.4} />
+                            </button>
+
+                            {user.photoURL && !uploadingPhoto && (
+                                <button
+                                    type="button"
+                                    onClick={onRemovePhoto}
+                                    aria-label="Alisin ang profile photo"
+                                    className="tap-scale absolute -top-1 -right-1 w-6 h-6 rounded-full bg-expense text-white flex items-center justify-center shadow-md ring-2 ring-[#1A614A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                                >
+                                    <window.Icons.X size={12} strokeWidth={2.6} />
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     <div className="relative z-10 text-center sm:text-left flex-1 mt-2 sm:mt-4">
@@ -258,16 +325,43 @@
             );
         }
 
+        // Loads the Firebase modules needed for auth + storage writes on demand
+        // (dynamic import, so it works fine from this non-module script and reuses
+        // the browser's module cache — no re-initialization of the app).
+        // Also hands back auth.currentUser, the *live* Firebase user object. This
+        // matters because after any updateProfile() call, this page's own `user`
+        // React state gets replaced with a plain spread copy for rendering — which
+        // is NOT a real Firebase User and can't be passed to updateProfile() again.
+        // Reading auth.currentUser instead sidesteps that entirely.
+        async function getFirebaseHandles() {
+            const [{ app }, authMod, storageMod] = await Promise.all([
+                import("./firebase.js"),
+                import("https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js"),
+                import("https://www.gstatic.com/firebasejs/10.13.0/firebase-storage.js"),
+            ]);
+            const auth = authMod.getAuth(app);
+            return { app, auth, authMod, storageMod };
+        }
+
+        const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+
         function ProfileApp() {
             const authReady = window.useAuthReady();
             const dataReady = window.useDataReady();
 
             const [user, setUser] = React.useState(undefined);
             const [displayName, setDisplayName] = React.useState("");
+            const [savedDisplayName, setSavedDisplayName] = React.useState("");
+            const [savingProfile, setSavingProfile] = React.useState(false);
+            const [uploadingPhoto, setUploadingPhoto] = React.useState(false);
 
             const [budgetInput, setBudgetInput] = React.useState("");
             const [goalName, setGoalName] = React.useState("");
             const [goalAmount, setGoalAmount] = React.useState("");
+            const [savedBudget, setSavedBudget] = React.useState("");
+            const [savedGoalName, setSavedGoalName] = React.useState("");
+            const [savedGoalAmount, setSavedGoalAmount] = React.useState("");
+            const [savingGoals, setSavingGoals] = React.useState(false);
 
             const [isDark, setIsDark] = React.useState(() => document.documentElement.classList.contains('dark'));
 
@@ -287,7 +381,10 @@
                 if (!authReady) return;
                 return window.TipidAuth.onChange((u) => {
                     setUser(u || null);
-                    if (u) setDisplayName(u.displayName || "");
+                    if (u) {
+                        setDisplayName(u.displayName || "");
+                        setSavedDisplayName(u.displayName || "");
+                    }
                 });
             }, [authReady]);
 
@@ -299,7 +396,11 @@
                 if (!dataReady || !user) return;
                 return window.TipidData.subscribeBudget(
                     user.uid,
-                    (b) => setBudgetInput(b ? b.toString() : ""),
+                    (b) => {
+                        const val = b ? b.toString() : "";
+                        setBudgetInput(val);
+                        setSavedBudget(val);
+                    },
                     (err) => console.error(err)
                 );
             }, [dataReady, user]);
@@ -308,8 +409,8 @@
                 const savedGoalName = localStorage.getItem('tipid_goal_name');
                 const savedGoalAmount = localStorage.getItem('tipid_goal_amount') || localStorage.getItem('tipid_goal');
 
-                if (savedGoalName) setGoalName(savedGoalName);
-                if (savedGoalAmount) setGoalAmount(savedGoalAmount);
+                if (savedGoalName) { setGoalName(savedGoalName); setSavedGoalName(savedGoalName); }
+                if (savedGoalAmount) { setGoalAmount(savedGoalAmount); setSavedGoalAmount(savedGoalAmount); }
             }, []);
 
             if (user === undefined || user === null) {
@@ -333,12 +434,20 @@
             const handleUpdateProfile = async (e) => {
                 e.preventDefault();
                 if (!displayName.trim()) return swalError("Paki-lagay ang iyong pangalan.");
+                setSavingProfile(true);
                 try {
-                    const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js");
-                    await updateProfile(user, { displayName: displayName.trim() });
+                    const { auth, authMod } = await getFirebaseHandles();
+                    const liveUser = auth.currentUser || user;
+                    await authMod.updateProfile(liveUser, { displayName: displayName.trim() });
                     setUser({ ...user, displayName: displayName.trim() });
+                    setSavedDisplayName(displayName.trim());
                     swalSuccess("Tagumpay", "Na-update na ang iyong pangalan.");
-                } catch (err) { swalError("Hindi ma-update ang profile. Subukan ulit."); }
+                } catch (err) {
+                    console.error(err);
+                    swalError("Hindi ma-update ang profile. Subukan ulit.");
+                } finally {
+                    setSavingProfile(false);
+                }
             };
 
             const handleUpdatePreferences = async (e) => {
@@ -348,19 +457,104 @@
 
                 if (isNaN(amt) || amt <= 0) return swalError("Maglagay ng tamang halaga para sa budget.");
 
+                setSavingGoals(true);
                 try {
                     await window.TipidData.setBudget(user.uid, amt);
+                    setSavedBudget(budgetInput);
 
                     if (goalName.trim()) {
                         localStorage.setItem('tipid_goal_name', goalName.trim());
+                        setSavedGoalName(goalName.trim());
                     }
                     if (!isNaN(targetAmt) && targetAmt > 0) {
                         localStorage.setItem('tipid_goal_amount', targetAmt.toString());
                         localStorage.setItem('tipid_goal', targetAmt.toString());
+                        setSavedGoalAmount(targetAmt.toString());
                     }
 
                     swalSuccess("Tagumpay", "Na-update na ang iyong Financial Goals at Budget.");
-                } catch (err) { swalError("Hindi ma-save. Subukan ulit."); }
+                } catch (err) {
+                    console.error(err);
+                    swalError("Hindi ma-save. Subukan ulit.");
+                } finally {
+                    setSavingGoals(false);
+                }
+            };
+
+            // Validates the file, shows an instant local preview, then uploads to
+            // Firebase Storage at avatars/{uid} and points the auth profile's
+            // photoURL at the result. Requires Firebase Storage to be enabled on
+            // the project, with rules that let a user write to their own
+            // avatars/{uid} path.
+            const handlePhotoSelected = async (file) => {
+                if (!file.type || !file.type.startsWith("image/")) {
+                    return swalError("Pumili ng image file lang (JPG, PNG, atbp.).");
+                }
+                if (file.size > MAX_PHOTO_BYTES) {
+                    return swalError("Masyadong malaki ang file. 5MB pababa lang ang pwede.");
+                }
+
+                const previousPhotoURL = user.photoURL || null;
+                const previewUrl = URL.createObjectURL(file);
+                setUser((u) => ({ ...u, photoURL: previewUrl }));
+                setUploadingPhoto(true);
+
+                try {
+                    const { app, auth, authMod, storageMod } = await getFirebaseHandles();
+                    const liveUser = auth.currentUser || user;
+                    const storage = storageMod.getStorage(app);
+                    const fileRef = storageMod.ref(storage, `avatars/${liveUser.uid}`);
+
+                    await storageMod.uploadBytes(fileRef, file, { contentType: file.type });
+                    const url = await storageMod.getDownloadURL(fileRef);
+                    await authMod.updateProfile(liveUser, { photoURL: url });
+
+                    setUser((u) => ({ ...u, photoURL: url }));
+                    swalSuccess("Tagumpay", "Na-update na ang iyong profile photo.");
+                } catch (err) {
+                    console.error(err);
+                    setUser((u) => ({ ...u, photoURL: previousPhotoURL }));
+                    swalError("Hindi ma-upload ang larawan. Siguraduhing naka-enable ang Firebase Storage sa iyong project, at subukan ulit.");
+                } finally {
+                    URL.revokeObjectURL(previewUrl);
+                    setUploadingPhoto(false);
+                }
+            };
+
+            const handleRemovePhoto = async () => {
+                const result = await Swal.fire({
+                    icon: "warning",
+                    title: "Alisin ang photo?",
+                    text: "Babalik sa unang letra ng iyong pangalan ang icon mo.",
+                    showCancelButton: true,
+                    confirmButtonText: "Oo, alisin",
+                    cancelButtonText: "Kanselahin",
+                    confirmButtonColor: "#B5483B",
+                    customClass: { popup: "tipid-swal" },
+                });
+                if (!result.isConfirmed) return;
+
+                const previousPhotoURL = user.photoURL || null;
+                setUser((u) => ({ ...u, photoURL: null }));
+
+                try {
+                    const { app, auth, authMod, storageMod } = await getFirebaseHandles();
+                    const liveUser = auth.currentUser || user;
+                    const storage = storageMod.getStorage(app);
+                    const fileRef = storageMod.ref(storage, `avatars/${liveUser.uid}`);
+
+                    await storageMod.deleteObject(fileRef).catch(() => {
+                        // Fine if there was never a stored file (e.g. the URL came
+                        // from Google sign-in rather than our own upload) — the
+                        // photoURL update below is what actually matters.
+                    });
+                    await authMod.updateProfile(liveUser, { photoURL: null });
+                    swalSuccess("Tagumpay", "Naalis na ang profile photo.");
+                } catch (err) {
+                    console.error(err);
+                    setUser((u) => ({ ...u, photoURL: previousPhotoURL }));
+                    swalError("Hindi maalis ang larawan. Subukan ulit.");
+                }
             };
 
             const handleLogout = async () => {
@@ -384,130 +578,129 @@
                         }}
                     >
                         <div className="fade-up" style={{ animationDelay: '0ms' }}>
-                            <ProfileHeroCard displayName={displayName} email={user.email} initial={initial} />
+                            <ProfileHeroCard
+                                user={user}
+                                displayName={displayName}
+                                email={user.email}
+                                initial={initial}
+                                onPhotoSelected={handlePhotoSelected}
+                                onRemovePhoto={handleRemovePhoto}
+                                uploadingPhoto={uploadingPhoto}
+                            />
                         </div>
 
                         <div className="fade-up" style={{ animationDelay: '60ms' }}>
-                            <SectionHeader title="Personal Information" />
-                            <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios overflow-hidden relative">
-                                <div className="premium-edge absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-peso/80 to-pesoLight/80" />
-                                <form onSubmit={handleUpdateProfile} className="p-5 sm:p-7 flex flex-col gap-5 mt-1">
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-[11px] font-mono font-semibold uppercase tracking-widest text-ink2/60 dark:text-paper/50 px-1">Display Name</label>
-                                        <FieldWrap icon={<window.Icons.User size={18} className="text-ink2/40 dark:text-paper/40" />}>
+                            <form onSubmit={handleUpdateProfile}>
+                                <SettingsGroup title="Personal Information">
+                                    <SettingsRow label="Display Name">
+                                        <div className="flex items-center gap-2.5">
+                                            <window.Icons.User size={16} className="text-ink2/35 dark:text-paper/35 shrink-0" />
                                             <input
                                                 type="text"
                                                 value={displayName}
                                                 onChange={e => setDisplayName(e.target.value)}
                                                 placeholder="Ang iyong pangalan"
-                                                className="w-full bg-transparent py-3.5 text-[15px] focus:outline-none font-medium text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30"
+                                                className="w-full bg-transparent py-1 text-[15px] focus:outline-none font-medium text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30"
                                             />
-                                        </FieldWrap>
-                                    </div>
-                                    <button type="submit" className="tap-scale w-full bg-gradient-to-r from-peso to-pesoLight hover:shadow-lg hover:shadow-peso/20 text-white py-3.5 rounded-[14px] text-[15px] font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 active:scale-[0.98]">
-                                        I-update ang Pangalan
-                                    </button>
-                                </form>
-                            </div>
+                                        </div>
+                                    </SettingsRow>
+                                    <GroupSaveRow
+                                        label="I-save"
+                                        savingLabel="Sinesave…"
+                                        saving={savingProfile}
+                                        disabled={!displayName.trim() || displayName.trim() === (savedDisplayName || "").trim()}
+                                    />
+                                </SettingsGroup>
+                            </form>
                         </div>
 
                         <div className="fade-up" style={{ animationDelay: '120ms' }}>
-                            <SectionHeader
-                                title="Financial Goals"
-                                subtitle="Bigyan ng pangalan ang pinag-iipunan mo para mas ganahan kang magtipid araw-araw."
-                            />
-
-                            <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios overflow-hidden relative">
-                                <div className="premium-edge absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#C9932E]/80 to-[#E8C071]/80" />
-
-                                <form onSubmit={handleUpdatePreferences} className="p-5 sm:p-7 flex flex-col gap-6 mt-1">
-
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-[11px] font-mono font-semibold uppercase tracking-widest text-ink2/60 dark:text-paper/50 px-1">Buwanang Budget Limit (₱)</label>
-                                        <FieldWrap icon={<window.Icons.Wallet size={18} className="text-ink2/40 dark:text-paper/40" />}>
+                            <form onSubmit={handleUpdatePreferences}>
+                                <SettingsGroup
+                                    title="Financial Goals"
+                                    subtitle="Bigyan ng pangalan ang pinag-iipunan mo para mas ganahan kang magtipid araw-araw."
+                                >
+                                    <SettingsRow label="Buwanang Budget Limit (₱)">
+                                        <div className="flex items-center gap-2.5">
+                                            <window.Icons.Wallet size={16} className="text-ink2/35 dark:text-paper/35 shrink-0" />
                                             <input
                                                 type="number"
                                                 step="0.01"
                                                 value={budgetInput}
                                                 onChange={e => setBudgetInput(e.target.value)}
                                                 placeholder="e.g. 10000"
-                                                className="w-full bg-transparent py-3.5 text-[15px] font-mono focus:outline-none font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30"
+                                                className="w-full bg-transparent py-1 text-[15px] font-mono focus:outline-none font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30"
                                             />
-                                        </FieldWrap>
-                                    </div>
-
-                                    <hr className="border-black/5 dark:border-white/10" />
-
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-[11px] font-mono font-semibold uppercase tracking-widest text-ink2/60 dark:text-paper/50 px-1">Ano ang pinag-iipunan mo?</label>
-                                        <FieldWrap icon={<window.Icons.Star size={18} className="text-ink2/40 dark:text-paper/40" />}>
+                                        </div>
+                                    </SettingsRow>
+                                    <SettingsRow label="Ano ang pinag-iipunan mo?">
+                                        <div className="flex items-center gap-2.5">
+                                            <window.Icons.Star size={16} className="text-ink2/35 dark:text-paper/35 shrink-0" />
                                             <input
                                                 type="text"
                                                 value={goalName}
                                                 onChange={e => setGoalName(e.target.value)}
                                                 placeholder="Hal: Emergency Fund, Pambili ng Motor"
-                                                className="w-full bg-transparent py-3.5 text-[15px] focus:outline-none font-medium text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30"
+                                                className="w-full bg-transparent py-1 text-[15px] focus:outline-none font-medium text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30"
                                             />
-                                        </FieldWrap>
-                                    </div>
-
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-[11px] font-mono font-semibold uppercase tracking-widest text-ink2/60 dark:text-paper/50 px-1">Target Amount (₱)</label>
-                                        <FieldWrap icon={<window.Icons.Target size={18} className="text-ink2/40 dark:text-paper/40" />}>
+                                        </div>
+                                    </SettingsRow>
+                                    <SettingsRow label="Target Amount (₱)">
+                                        <div className="flex items-center gap-2.5">
+                                            <window.Icons.Target size={16} className="text-ink2/35 dark:text-paper/35 shrink-0" />
                                             <input
                                                 type="number"
                                                 step="0.01"
                                                 value={goalAmount}
                                                 onChange={e => setGoalAmount(e.target.value)}
                                                 placeholder="e.g. 50000"
-                                                className="w-full bg-transparent py-3.5 text-[15px] font-mono focus:outline-none font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30"
+                                                className="w-full bg-transparent py-1 text-[15px] font-mono focus:outline-none font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30"
                                             />
-                                        </FieldWrap>
-                                    </div>
+                                        </div>
+                                    </SettingsRow>
+                                    <GroupSaveRow
+                                        label="I-save"
+                                        savingLabel="Sinesave…"
+                                        saving={savingGoals}
+                                        tone="gold"
+                                        disabled={
+                                            budgetInput === savedBudget &&
+                                            goalName === savedGoalName &&
+                                            goalAmount === savedGoalAmount
+                                        }
+                                    />
+                                </SettingsGroup>
+                            </form>
 
-                                    <div className="bg-[#FDF6E3] dark:bg-[#C9932E]/10 rounded-[1.25rem] border border-[#C9932E]/20 dark:border-[#C9932E]/30 p-5 mt-2">
-                                        <h3 className="font-semibold text-[#C9932E] dark:text-[#E8C071] text-sm mb-3">Bakit mahalaga na may Goal?</h3>
-                                        <ul className="space-y-2.5 text-[12.5px] text-[#8C641A] dark:text-[#E8C071]/80 leading-relaxed">
-                                            <li className="flex items-start gap-2.5">
-                                                <window.Icons.Check size={16} className="shrink-0 mt-[1.5px] opacity-80" />
-                                                <span><strong>Inspirasyon:</strong> Mas madaling iwasan ang tuksong gumastos (at um-order online) kung malinaw kung para saan ka nagtitipid.</span>
-                                            </li>
-                                            <li className="flex items-start gap-2.5">
-                                                <window.Icons.Check size={16} className="shrink-0 mt-[1.5px] opacity-80" />
-                                                <span><strong>Disiplina:</strong> Kapag nakikita mo ang target mo, mas ginaganahan kang palakihin ang iyong "Ipon" fund araw-araw.</span>
-                                            </li>
-                                        </ul>
-                                    </div>
-
-                                    <button type="submit" className="tap-scale w-full bg-gradient-to-r from-gold to-[#E8C071] hover:shadow-lg hover:shadow-gold/20 text-[#111A15] py-3.5 rounded-[14px] text-[15px] font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 active:scale-[0.98]">
-                                        I-save ang Goals
-                                    </button>
-                                </form>
+                            <div className="flex items-start gap-2.5 mt-3 px-2 text-[12px] text-ink2/55 dark:text-paper/45 leading-relaxed">
+                                <window.Icons.Info size={14} className="shrink-0 mt-[2px] opacity-70" />
+                                <span>Mas madaling iwasan ang tuksong gumastos kapag malinaw kung para saan ka nagtitipid — makikita mo agad kung gaano na kalapit ang target mo.</span>
                             </div>
                         </div>
 
                         <div className="fade-up mb-10" style={{ animationDelay: '180ms' }}>
-                            <SectionHeader title="Appearance" />
-                            <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios overflow-hidden p-5 sm:p-7 flex items-center justify-between transition-all">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-11 h-11 rounded-[14px] bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink dark:text-paper shrink-0">
-                                        {isDark ? <window.Icons.Moon size={20} /> : <window.Icons.Sun size={20} />}
+                            <SettingsGroup title="Appearance">
+                                <div className="px-5 sm:px-6 py-4 flex items-center justify-between">
+                                    <div className="flex items-center gap-3.5">
+                                        <div className="w-9 h-9 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink dark:text-paper shrink-0">
+                                            {isDark ? <window.Icons.Moon size={18} /> : <window.Icons.Sun size={18} />}
+                                        </div>
+                                        <span className="text-[15px] font-semibold text-ink dark:text-paper">Dark Mode</span>
                                     </div>
-                                    <span className="text-[15px] font-semibold text-ink dark:text-paper">Dark Mode</span>
-                                </div>
 
-                                <button
-                                    onClick={toggleDarkMode}
-                                    aria-label="Toggle Dark Mode"
-                                    className={`tap-scale w-[52px] h-[30px] rounded-full transition-colors duration-300 relative flex items-center shadow-inner border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 ${
-                                        isDark ? 'bg-[#1F6F54] border-[#1F6F54]' : 'bg-black/10 border-black/5'
-                                    }`}
-                                >
-                                    <div className={`w-[24px] h-[24px] bg-white rounded-full absolute shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-                                        isDark ? 'translate-x-[25px]' : 'translate-x-[2px]'
-                                    }`}></div>
-                                </button>
-                            </div>
+                                    <button
+                                        onClick={toggleDarkMode}
+                                        aria-label="Toggle Dark Mode"
+                                        className={`tap-scale w-[52px] h-[30px] rounded-full transition-colors duration-300 relative flex items-center shadow-inner border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 ${
+                                            isDark ? 'bg-[#1F6F54] border-[#1F6F54]' : 'bg-black/10 border-black/5'
+                                        }`}
+                                    >
+                                        <div className={`w-[24px] h-[24px] bg-white rounded-full absolute shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+                                            isDark ? 'translate-x-[25px]' : 'translate-x-[2px]'
+                                        }`}></div>
+                                    </button>
+                                </div>
+                            </SettingsGroup>
                         </div>
 
                     </main>
