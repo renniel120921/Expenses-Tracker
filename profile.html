@@ -25,7 +25,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class', // Enables dark mode toggling
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -60,18 +60,18 @@
         :root {
             --ease-ios: cubic-bezier(0.22, 1, 0.36, 1);
             --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-            --page-bg: #F1F4EF;
         }
 
-        /* Base Dark Mode overrides */
         html { background: #F1F4EF; transition: background-color 0.3s var(--ease-ios); }
-        html.dark { background: #111A15; color: #F1F4EF; --page-bg: #111A15; }
+        html.dark { background: #111A15; color: #F1F4EF; }
 
         body { font-feature-settings: "tnum" 1, "lnum" 1; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
         ::selection { background: #C9932E33; color: #15231C; }
         :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
+
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.85s linear infinite; }
+
         @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
         .fade-up { animation: fadeUp 0.7s var(--ease-ios) both; }
 
@@ -94,21 +94,19 @@
         }
         .hero-float { animation: heroFloat 6s ease-in-out infinite; }
 
-        /* --- Resibo perforation: torn-receipt seam under the hero card, on-brand with Tipid's perf-edge motif --- */
-        .receipt-edge { position: relative; }
-        .receipt-edge::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: -9px;
-            height: 18px;
-            background-image: radial-gradient(circle at 9px 9px, var(--page-bg) 9px, transparent 9.5px);
-            background-size: 18px 18px;
-            background-repeat: repeat-x;
-            pointer-events: none;
-            z-index: 5;
+        /* Premium Top Edge Gradient for Cards */
+        .premium-edge {
+            -webkit-mask-image: linear-gradient(to right, black, black);
+            mask-image: linear-gradient(to right, black, black);
         }
+
+        .tap-scale { transition: transform 0.15s var(--ease-spring); }
+        .tap-scale:active { transform: scale(0.94); }
+
+        /* iOS-style spring for the dark mode toggle knob */
+        .ios-toggle-knob { transition: transform 0.35s var(--ease-spring); }
+
+        .swal2-popup.tipid-swal { border-radius: 24px !important; font-family: 'Inter', sans-serif !important; }
 
         @keyframes mascotHover {
             0%, 100% { transform: translateY(0); }
@@ -118,37 +116,12 @@
             animation: mascotHover 4s ease-in-out infinite;
             filter: drop-shadow(0 15px 25px rgba(18,61,46,0.35));
         }
-        .speech-bubble {
-            animation: fadeUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
-            box-shadow: 0 10px 25px -5px rgba(18, 61, 46, 0.25);
-        }
-
-        /* iOS-style spring for the dark mode toggle knob */
-        .ios-toggle-knob { transition: transform 0.35s var(--ease-spring); }
-
-        .glass-panel {
-            background: rgba(255,255,255,0.6);
-            backdrop-filter: blur(20px) saturate(160%);
-            -webkit-backdrop-filter: blur(20px) saturate(160%);
-            border: 1px solid rgba(255,255,255,0.55);
-        }
-        html.dark .glass-panel { background: rgba(24,38,31,0.55); border: 1px solid rgba(255,255,255,0.08); }
-
-        .tap-scale { transition: transform 0.18s var(--ease-spring); }
-        .tap-scale:active { transform: scale(0.94); }
 
         @media (prefers-reduced-motion: reduce) {
-            .spin, .fade-up, .logo-breathe, .halo-pulse, .hero-float, .ios-toggle-knob, .tap-scale, .profile-mascot-img, .speech-bubble {
-                animation: none !important;
-                transition: none !important;
+            .spin, .fade-up, .logo-breathe, .halo-pulse, .hero-float, .tap-scale, .profile-mascot-img {
+                animation: none !important; transition: none !important;
             }
         }
-
-        .swal2-popup.tipid-swal { border-radius: 20px !important; font-family: 'Inter', sans-serif; }
-        .tipid-swal .swal2-title { font-family: 'Fraunces', serif; color: #15231C; }
-        .tipid-swal .swal2-html-container { color: #33443A; }
-        .tipid-swal .swal2-confirm { border-radius: 999px !important; padding: 0.65em 1.6em !important; font-weight: 600 !important; box-shadow: none !important; }
-        .tipid-swal .swal2-cancel { border-radius: 999px !important; padding: 0.65em 1.6em !important; font-weight: 600 !important; }
     </style>
 </head>
 <body class="bg-paper dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
@@ -159,27 +132,27 @@
         window.useEffect = React.useEffect;
         window.useMemo = React.useMemo;
 
-        function Icon({ path, size = 20, className = "", strokeWidth = 2 }) {
-            return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>{path}</svg>;
+        // --- COMPREHENSIVE GLOBAL ICONS ---
+        function Icon({ path, size = 20, className = "", strokeWidth = 2.2 }) {
+            return (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
+                    {path}
+                </svg>
+            );
         }
 
         window.Icons = {
-            Plus: (p) => <Icon {...p} path={<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>} />,
-            Trash: (p) => <Icon {...p} path={<><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></>} />,
-            Loader: (p) => <Icon {...p} path={<><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></>} />,
-            AlertCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />,
-            Inbox: (p) => <Icon {...p} path={<><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></>} />,
-            Pencil: (p) => <Icon {...p} path={<><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></>} />,
-            TrendUp: (p) => <Icon {...p} path={<><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>} />,
-            TrendDown: (p) => <Icon {...p} path={<><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></>} />,
+            Sun: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>} />,
+            Moon: (p) => <Icon {...p} path={<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>} />,
+            User: (p) => <Icon {...p} path={<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>} />,
+            Target: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></>} />,
             Wallet: (p) => <Icon {...p} path={<><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></>} />,
+            Star: (p) => <Icon {...p} path={<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>} />,
+            Check: (p) => <Icon {...p} path={<><polyline points="20 6 9 17 4 12"/></>} />,
             Home: (p) => <Icon {...p} path={<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>} />,
             Chart: (p) => <Icon {...p} path={<><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></>} />,
             List: (p) => <Icon {...p} path={<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>} />,
-            Category: (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
-            User: (p) => <Icon {...p} path={<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>} />,
-            Target: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></>} />,
-            Moon: (p) => <Icon {...p} path={<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>} />,
             LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />
         };
 
@@ -224,51 +197,46 @@
         function AmbientBackground() {
             return (
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div className="absolute -top-24 -right-16 w-[360px] h-[360px] bg-peso/[0.07] dark:bg-pesoLight/[0.07] rounded-full blur-[90px]" />
-                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-gold/[0.07] dark:bg-gold/[0.04] rounded-full blur-[100px]" />
+                    <div className="absolute -top-24 -right-16 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
+                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-gold/10 dark:bg-gold/5 rounded-full blur-[100px]" />
                 </div>
             );
         }
 
-        // Same reusable header shape used on dashboard.html, bills.html,
-        // chart.html, and history.html — bold Fraunces title + short
-        // subtitle. No leading icon here since each card below already has
-        // its own icon; keeps this page's rhythm the same as the rest of
-        // the app without repeating the icon twice.
         function SectionHeader({ title, subtitle }) {
             return (
-                <div className="mb-3 ml-1">
-                    <h2 className="font-display text-lg font-semibold text-ink dark:text-paper tracking-tight leading-tight">
+                <div className="mb-4 ml-1">
+                    <h2 className="font-display text-[1.35rem] sm:text-[1.5rem] font-semibold text-ink dark:text-paper tracking-tight leading-tight">
                         {title}
                     </h2>
                     {subtitle && (
-                        <p className="text-xs text-ink2/50 dark:text-paper/40 mt-0.5">{subtitle}</p>
+                        <p className="text-[12.5px] text-ink2/60 dark:text-paper/50 mt-1.5 leading-relaxed pr-4">{subtitle}</p>
                     )}
                 </div>
             );
         }
 
-        /* --- MODERN PROFILE HERO CARD (matched to Bills Center / Analytics / Kasaysayan) ---
-           No dark-mode icon toggle here on purpose — the Appearance card
-           below already owns that control, so this stays the identity
-           moment: avatar, greeting, email, and Buddy saying hi. The mascot
-           image is optional and hides itself gracefully if the asset
-           hasn't been added yet, same pattern as window.Logo's fallback. */
+        // Reusable Field Wrapper for Modern Inputs
+        function FieldWrap({ icon, children }) {
+            return (
+                <div className="flex items-center gap-3 bg-white/60 dark:bg-black/20 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-4 focus-within:ring-2 focus-within:ring-peso/40 focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200">
+                    {icon}
+                    {children}
+                </div>
+            );
+        }
+
         function ProfileHeroCard({ displayName, email, initial }) {
             const [mascotOk, setMascotOk] = React.useState(true);
             const firstName = displayName ? displayName.trim().split(/\s+/)[0] : "";
 
             return (
-                <div className="relative receipt-edge mb-6 sm:mb-8">
-                <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-5 sm:p-7 shadow-iosLg ring-1 ring-white/15 min-h-[190px] sm:min-h-[210px] flex flex-col justify-between">
+                <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-6 sm:p-8 shadow-iosLg ring-1 ring-white/15 mb-8 flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-6">
+                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/10 rounded-full blur-[50px] pointer-events-none" />
+                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-gold/15 rounded-full blur-[60px] pointer-events-none" />
 
-                    {/* Ambient Glows Inside Card */}
-                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/[0.08] rounded-full blur-[50px] hero-float" />
-                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-gold/[0.12] rounded-full blur-[60px]" />
-
-                    {/* Mascot Container (self-hides if /assets/profile_mascot.png isn't there yet) */}
                     {mascotOk && (
-                        <div className="absolute right-0 bottom-0 w-[120px] sm:w-[160px] h-full pointer-events-none z-0 overflow-visible">
+                        <div className="absolute right-0 bottom-0 w-[120px] sm:w-[160px] h-full pointer-events-none z-0 overflow-visible hidden sm:block">
                             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-20 h-20 bg-white/15 blur-2xl rounded-full"></div>
                             <img
                                 src="/assets/profile_mascot.png"
@@ -277,37 +245,23 @@
                                 className="absolute bottom-[-8px] right-0 w-full object-contain profile-mascot-img"
                                 draggable="false"
                             />
-                            <div className="speech-bubble absolute top-[12%] right-[55%] sm:right-[65%] bg-paper text-ink rounded-2xl px-3 py-2 text-[10px] sm:text-xs font-medium leading-tight w-max max-w-[110px] sm:max-w-[130px] border border-white/50">
-                                <strong className="block font-bold text-[#1F6F54] mb-0.5">Kumusta!</strong>
-                                Ito ang lugar mo. 💚
-                                <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-paper rotate-45 border-r border-b border-white/50"></div>
-                            </div>
                         </div>
                     )}
 
-                    {/* Main Content */}
-                    <div className="relative z-10 flex flex-col h-full gap-4 max-w-[75%] sm:max-w-[62%]">
-                        <div className="mt-2 sm:mt-3">
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/15 border border-white/10 text-white mb-3 backdrop-blur-sm">
-                                <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
-                                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-paper/90">Tipid Buddy</span>
-                            </div>
-
-                            <div className="flex items-center gap-3 mb-2 sm:mb-3">
-                                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/15 border-2 border-white/40 flex items-center justify-center text-paper font-display font-semibold text-lg backdrop-blur-sm shrink-0">
-                                    {initial}
-                                </div>
-                                <h1 className="font-display text-[1.35rem] sm:text-[2rem] font-bold tracking-tight leading-[1.1]">
-                                    {firstName ? `Kumusta, ${firstName}!` : "Kumusta!"}
-                                </h1>
-                            </div>
-
-                            <p className="text-[11px] sm:text-[13px] font-medium text-white/80 leading-relaxed break-all pr-2">
-                                {email}
-                            </p>
-                        </div>
+                    <div className="relative z-10 w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white/10 border-4 border-white/20 flex items-center justify-center text-4xl sm:text-5xl font-display font-bold shadow-inner shrink-0 backdrop-blur-md">
+                        {initial}
                     </div>
-                </div>
+
+                    <div className="relative z-10 text-center sm:text-left flex-1 mt-2 sm:mt-4">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/15 border border-white/10 text-white mb-3 backdrop-blur-sm">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#52C8A1] animate-pulse" />
+                            <span className="text-[9px] font-bold uppercase tracking-widest text-paper/90">Tipid Buddy User</span>
+                        </div>
+                        <h1 className="font-display text-[1.75rem] sm:text-4xl font-bold text-white tracking-tight leading-tight mb-1">
+                            {firstName ? `Kumusta, ${firstName}!` : "Kumusta!"}
+                        </h1>
+                        <p className="text-[13px] sm:text-sm font-medium text-white/70">{email}</p>
+                    </div>
                 </div>
             );
         }
@@ -318,12 +272,14 @@
 
             const [user, setUser] = React.useState(undefined);
             const [displayName, setDisplayName] = React.useState("");
+
+            // Financial Preferences State
             const [budgetInput, setBudgetInput] = React.useState("");
-            const [goalInput, setGoalInput] = React.useState("");
+            const [goalName, setGoalName] = React.useState("");
+            const [goalAmount, setGoalAmount] = React.useState("");
 
             const [isDark, setIsDark] = React.useState(() => document.documentElement.classList.contains('dark'));
 
-            // Toggle Dark Mode Function
             const toggleDarkMode = () => {
                 if (isDark) {
                     document.documentElement.classList.remove('dark');
@@ -348,6 +304,7 @@
                 if (user === null) window.location.href = "login.html";
             }, [user]);
 
+            // Fetch Budget from Firestore
             React.useEffect(() => {
                 if (!dataReady || !user) return;
                 return window.TipidData.subscribeBudget(
@@ -357,23 +314,27 @@
                 );
             }, [dataReady, user]);
 
+            // Fetch Goal Data from LocalStorage
             React.useEffect(() => {
-                const savedGoal = localStorage.getItem('tipid_goal');
-                if (savedGoal) setGoalInput(savedGoal);
+                const savedGoalName = localStorage.getItem('tipid_goal_name');
+                const savedGoalAmount = localStorage.getItem('tipid_goal_amount') || localStorage.getItem('tipid_goal'); // Fallback to old key
+
+                if (savedGoalName) setGoalName(savedGoalName);
+                if (savedGoalAmount) setGoalAmount(savedGoalAmount);
             }, []);
 
             if (user === undefined || user === null) {
                 return (
                     <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
-                        <div className="glass-panel flex flex-col items-center gap-4 rounded-[28px] px-10 py-9 shadow-sm">
+                        <div className="glass-panel flex flex-col items-center gap-5 rounded-[32px] px-10 py-10 shadow-ios">
                             <div className="relative flex items-center justify-center">
-                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/20 halo-pulse" />
+                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/25 halo-pulse" />
                                 <div className="relative logo-breathe">
-                                    <window.Logo size={40} />
+                                    <window.Logo size={44} />
                                 </div>
                             </div>
-                            <p className="text-xs font-mono tracking-[0.2em] uppercase text-ink2 dark:text-paper/50 text-center">
-                                Loading your profile
+                            <p className="text-[11px] font-mono font-semibold tracking-widest uppercase text-ink2 dark:text-paper/60 text-center">
+                                Loading Profile
                             </p>
                         </div>
                     </div>
@@ -394,16 +355,24 @@
             const handleUpdatePreferences = async (e) => {
                 e.preventDefault();
                 const amt = parseFloat(budgetInput);
-                const target = parseFloat(goalInput);
+                const targetAmt = parseFloat(goalAmount);
 
                 if (isNaN(amt) || amt <= 0) return swalError("Maglagay ng tamang halaga para sa budget.");
 
                 try {
+                    // Save to Firestore (Budget)
                     await window.TipidData.setBudget(user.uid, amt);
-                    if (!isNaN(target) && target > 0) {
-                        localStorage.setItem('tipid_goal', target.toString());
+
+                    // Save to LocalStorage (Goals)
+                    if (goalName.trim()) {
+                        localStorage.setItem('tipid_goal_name', goalName.trim());
                     }
-                    swalSuccess("Tagumpay", "Na-update na ang iyong Preferences at Goal.");
+                    if (!isNaN(targetAmt) && targetAmt > 0) {
+                        localStorage.setItem('tipid_goal_amount', targetAmt.toString());
+                        localStorage.setItem('tipid_goal', targetAmt.toString()); // Keep old key for backward compatibility
+                    }
+
+                    swalSuccess("Tagumpay", "Na-update na ang iyong Financial Goals at Budget.");
                 } catch (err) { swalError("Hindi ma-save. Subukan ulit."); }
             };
 
@@ -415,75 +384,151 @@
             const initial = displayName ? displayName.charAt(0).toUpperCase() : (user.email.charAt(0).toUpperCase());
 
             return (
-                <div className="min-h-dvh relative">
+                <div className="min-h-dvh relative flex flex-col">
                     <AmbientBackground />
-                    <Navbar user={user} onLogout={handleLogout} activeTab="profile" />
+                    <window.Navbar user={user} onLogout={handleLogout} activeTab="account" />
 
-                    {/* Generous, safe-area aware padding so content never sits under the notch or bottom nav */}
                     <main
-                        className="max-w-2xl mx-auto px-5 sm:px-8 pt-32 md:pt-14 pb-40 md:pb-20 space-y-10 md:space-y-14"
+                        className="max-w-[700px] w-full mx-auto px-5 sm:px-8 pt-[6.5rem] md:pt-10 pb-36 md:pb-20 space-y-8 flex-1"
                         style={{
-                            paddingLeft: 'max(1.25rem, calc(env(safe-area-inset-left) + 1.25rem))',
-                            paddingRight: 'max(1.25rem, calc(env(safe-area-inset-right) + 1.25rem))',
-                            paddingBottom: 'calc(10rem + env(safe-area-inset-bottom))',
+                            paddingLeft: 'max(1.25rem, calc(var(--sal) + 1.25rem))',
+                            paddingRight: 'max(1.25rem, calc(var(--sar) + 1.25rem))',
+                            paddingBottom: 'calc(8rem + var(--sab))',
                         }}
                     >
-
-                        {/* Identity hero — replaces the old plain centered avatar block */}
+                        {/* Hero Section */}
                         <div className="fade-up" style={{ animationDelay: '0ms' }}>
                             <ProfileHeroCard displayName={displayName} email={user.email} initial={initial} />
                         </div>
 
-                        {/* Appearance Card */}
-                        <div className="fade-up" style={{ animationDelay: '90ms' }}>
-                            <SectionHeader title="Appearance" subtitle="I-adjust ang itsura ng app." />
-                            <div className="bg-white/85 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.75rem] border border-line/50 dark:border-white/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_14px_28px_-16px_rgba(21,35,28,0.18)] overflow-hidden p-5 sm:p-6 flex items-center justify-between transition-all">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-ink dark:bg-paper flex items-center justify-center text-paper dark:text-ink shadow-sm">
-                                        <Icons.Moon size={18} />
+                        {/* Personal Information Form */}
+                        <div className="fade-up" style={{ animationDelay: '60ms' }}>
+                            <SectionHeader title="Personal Information" />
+                            <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios overflow-hidden relative">
+                                <div className="premium-edge absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-peso/80 to-pesoLight/80" />
+                                <form onSubmit={handleUpdateProfile} className="p-5 sm:p-7 flex flex-col gap-5 mt-1">
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-[11px] font-mono font-semibold uppercase tracking-widest text-ink2/60 dark:text-paper/50 px-1">Display Name</label>
+                                        <FieldWrap icon={<window.Icons.User size={18} className="text-ink2/40 dark:text-paper/40" />}>
+                                            <input
+                                                type="text"
+                                                value={displayName}
+                                                onChange={e => setDisplayName(e.target.value)}
+                                                placeholder="Ang iyong pangalan"
+                                                className="w-full bg-transparent py-3.5 text-[15px] focus:outline-none font-medium text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30"
+                                            />
+                                        </FieldWrap>
                                     </div>
-                                    <span className="text-base font-medium">Dark Mode</span>
-                                </div>
-
-                                {/* iOS Toggle Switch */}
-                                <button
-                                    onClick={toggleDarkMode}
-                                    className={`tap-scale w-14 h-7 rounded-full transition-colors duration-300 relative flex items-center shadow-inner ${isDark ? 'bg-peso' : 'bg-line/80'}`}
-                                >
-                                    <div className={`ios-toggle-knob w-6 h-6 bg-white rounded-full absolute shadow-md ${isDark ? 'translate-x-7' : 'translate-x-0.5'}`}></div>
-                                </button>
+                                    <button type="submit" className="tap-scale w-full bg-gradient-to-r from-peso to-pesoLight hover:shadow-lg hover:shadow-peso/20 text-white py-3.5 rounded-[14px] text-[15px] font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 active:scale-[0.98]">
+                                        I-update ang Pangalan
+                                    </button>
+                                </form>
                             </div>
                         </div>
 
                         {/* Financial Goals & Settings Card */}
-                        <div className="fade-up" style={{ animationDelay: '180ms' }}>
-                            <SectionHeader title="Financial Settings" subtitle="Para sa mas magandang pagpaplano ng pera mo." />
-                            <div className="bg-white/85 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.75rem] border border-line/50 dark:border-white/10 shadow-[0_1px_2px_rgba(21,35,28,0.04),0_14px_28px_-16px_rgba(21,35,28,0.18)] overflow-hidden">
-                                <form onSubmit={handleUpdatePreferences} className="p-6 sm:p-7 flex flex-col gap-6">
+                        <div className="fade-up" style={{ animationDelay: '120ms' }}>
+                            <SectionHeader
+                                title="Financial Goals"
+                                subtitle="Bigyan ng pangalan ang pinag-iipunan mo para mas ganahan kang magtipid araw-araw."
+                            />
+
+                            <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios overflow-hidden relative">
+                                <div className="premium-edge absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#C9932E]/80 to-[#E8C071]/80" />
+
+                                <form onSubmit={handleUpdatePreferences} className="p-5 sm:p-7 flex flex-col gap-6 mt-1">
 
                                     {/* Monthly Budget Input */}
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-xs font-semibold uppercase tracking-wider text-ink2/60 dark:text-paper/60">Buwanang Budget (₱)</label>
-                                        <div className="flex-1 flex items-center gap-3 bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3.5 focus-within:ring-2 focus-within:ring-peso/40 focus-within:border-peso/40 shadow-inner transition-all duration-200">
-                                            <Icons.Wallet size={18} className="text-ink2/50 dark:text-paper/50" />
-                                            <input type="number" step="0.01" value={budgetInput} onChange={e => setBudgetInput(e.target.value)} placeholder="e.g. 10000" className="w-full bg-transparent text-base focus:outline-none font-medium text-ink dark:text-paper" />
-                                        </div>
+                                        <label className="text-[11px] font-mono font-semibold uppercase tracking-widest text-ink2/60 dark:text-paper/50 px-1">Buwanang Budget Limit (₱)</label>
+                                        <FieldWrap icon={<window.Icons.Wallet size={18} className="text-ink2/40 dark:text-paper/40" />}>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                value={budgetInput}
+                                                onChange={e => setBudgetInput(e.target.value)}
+                                                placeholder="e.g. 10000"
+                                                className="w-full bg-transparent py-3.5 text-[15px] font-mono focus:outline-none font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30"
+                                            />
+                                        </FieldWrap>
                                     </div>
 
-                                    {/* Savings Goal Input */}
+                                    <hr className="border-black/5 dark:border-white/10" />
+
+                                    {/* Goal Description/Name */}
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-xs font-semibold uppercase tracking-wider text-ink2/60 dark:text-paper/60">Ipon Target (₱)</label>
-                                        <div className="flex-1 flex items-center gap-3 bg-paper/50 dark:bg-ink2/40 border border-line dark:border-ink2/50 rounded-2xl px-4 py-3.5 focus-within:ring-2 focus-within:ring-peso/40 focus-within:border-peso/40 shadow-inner transition-all duration-200">
-                                            <Icons.Target size={18} className="text-ink2/50 dark:text-paper/50" />
-                                            <input type="number" step="0.01" value={goalInput} onChange={e => setGoalInput(e.target.value)} placeholder="e.g. 5000" className="w-full bg-transparent text-base focus:outline-none font-medium text-ink dark:text-paper" />
-                                        </div>
-                                        <p className="text-[11px] text-ink2/50 dark:text-paper/50 mt-1 ml-1 leading-relaxed">Set a target to track your "Ipon" category progress.</p>
+                                        <label className="text-[11px] font-mono font-semibold uppercase tracking-widest text-ink2/60 dark:text-paper/50 px-1">Ano ang pinag-iipunan mo?</label>
+                                        <FieldWrap icon={<window.Icons.Star size={18} className="text-ink2/40 dark:text-paper/40" />}>
+                                            <input
+                                                type="text"
+                                                value={goalName}
+                                                onChange={e => setGoalName(e.target.value)}
+                                                placeholder="Hal: Emergency Fund, Pambili ng Motor"
+                                                className="w-full bg-transparent py-3.5 text-[15px] focus:outline-none font-medium text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30"
+                                            />
+                                        </FieldWrap>
                                     </div>
 
-                                    <button type="submit" className="tap-scale w-full bg-peso hover:bg-pesoLight text-paper py-3.5 rounded-2xl text-base font-semibold transition-colors mt-4 shadow-[0_10px_24px_-10px_rgba(18,61,46,0.5)]">
-                                        I-save ang mga Setting
+                                    {/* Savings Goal Amount Input */}
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-[11px] font-mono font-semibold uppercase tracking-widest text-ink2/60 dark:text-paper/50 px-1">Target Amount (₱)</label>
+                                        <FieldWrap icon={<window.Icons.Target size={18} className="text-ink2/40 dark:text-paper/40" />}>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                value={goalAmount}
+                                                onChange={e => setGoalAmount(e.target.value)}
+                                                placeholder="e.g. 50000"
+                                                className="w-full bg-transparent py-3.5 text-[15px] font-mono focus:outline-none font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30"
+                                            />
+                                        </FieldWrap>
+                                    </div>
+
+                                    {/* Educational Content / Benefits embedded nicely inside the form card */}
+                                    <div className="bg-[#FDF6E3] dark:bg-[#C9932E]/10 rounded-[1.25rem] border border-[#C9932E]/20 dark:border-[#C9932E]/30 p-5 mt-2">
+                                        <h3 className="font-semibold text-[#C9932E] dark:text-[#E8C071] text-sm mb-3">Bakit mahalaga na may Goal?</h3>
+                                        <ul className="space-y-2.5 text-[12.5px] text-[#8C641A] dark:text-[#E8C071]/80 leading-relaxed">
+                                            <li className="flex items-start gap-2.5">
+                                                <window.Icons.Check size={16} className="shrink-0 mt-[1.5px] opacity-80" />
+                                                <span><strong>Inspirasyon:</strong> Mas madaling iwasan ang tuksong gumastos (at um-order online) kung malinaw kung para saan ka nagtitipid.</span>
+                                            </li>
+                                            <li className="flex items-start gap-2.5">
+                                                <window.Icons.Check size={16} className="shrink-0 mt-[1.5px] opacity-80" />
+                                                <span><strong>Disiplina:</strong> Kapag nakikita mo ang target mo, mas ginaganahan kang palakihin ang iyong "Ipon" fund araw-araw.</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <button type="submit" className="tap-scale w-full bg-gradient-to-r from-gold to-[#E8C071] hover:shadow-lg hover:shadow-gold/20 text-[#111A15] py-3.5 rounded-[14px] text-[15px] font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 active:scale-[0.98]">
+                                        I-save ang Goals
                                     </button>
                                 </form>
+                            </div>
+                        </div>
+
+                        {/* Appearance Card */}
+                        <div className="fade-up" style={{ animationDelay: '180ms' }}>
+                            <SectionHeader title="Appearance" />
+                            <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios overflow-hidden p-5 sm:p-7 flex items-center justify-between transition-all">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-11 h-11 rounded-[14px] bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink dark:text-paper shrink-0">
+                                        {isDark ? <window.Icons.Moon size={20} /> : <window.Icons.Sun size={20} />}
+                                    </div>
+                                    <span className="text-[15px] font-semibold text-ink dark:text-paper">Dark Mode</span>
+                                </div>
+
+                                {/* Premium iOS Toggle Switch */}
+                                <button
+                                    onClick={toggleDarkMode}
+                                    aria-label="Toggle Dark Mode"
+                                    className={`tap-scale w-[52px] h-[30px] rounded-full transition-colors duration-300 relative flex items-center shadow-inner border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 ${
+                                        isDark ? 'bg-[#1F6F54] border-[#1F6F54]' : 'bg-black/10 border-black/5'
+                                    }`}
+                                >
+                                    <div className={`w-[24px] h-[24px] bg-white rounded-full absolute shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+                                        isDark ? 'translate-x-[25px]' : 'translate-x-[2px]'
+                                    }`}></div>
+                                </button>
                             </div>
                         </div>
 
@@ -492,21 +537,39 @@
             );
         }
 
-        ReactDOM.createRoot(document.getElementById("root")).render(<ProfileApp />);
+        function mountWhenComponentsReady(attempt = 0) {
+            const missingNames = [];
+            if (typeof window.Navbar !== "function") missingNames.push("Navbar");
+
+            if (missingNames.length === 0) {
+                ReactDOM.createRoot(document.getElementById("root")).render(<ProfileApp />);
+                return;
+            }
+            if (attempt > 100) {
+                document.getElementById("root").innerHTML =
+                    `<div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:Inter,sans-serif;text-align:center;color:#15231C;">
+                        <div>
+                            <p style="font-weight:600;margin-bottom:0.5rem;">Failed to load: ${missingNames.join(", ")}</p>
+                            <p style="font-size:0.875rem;opacity:0.7;">Check the file path (Network tab) and ensure component exports match.</p>
+                        </div>
+                    </div>`;
+                return;
+            }
+            setTimeout(() => mountWhenComponentsReady(attempt + 1), 30);
+        }
+
+        mountWhenComponentsReady();
     </script>
+
     <!-- PWA Service Worker Registration & Auto-Update Alert -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').then(registration => {
-
-                    // Makikinig ang app kung may dina-download na bagong update (bagong CACHE_VERSION)
                     registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing;
                         newWorker.addEventListener('statechange', () => {
-                            // Kapag tapos na i-download ang bagong update
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                // Premium UX: Magpapakita ng magandang prompt imbes na biglang i-refresh ang screen
                                 Swal.fire({
                                     title: "May Bagong Update! 🎉",
                                     text: "May in-add kaming bagong features sa Tipid App. I-refresh ang app para magamit ito.",
@@ -516,13 +579,11 @@
                                     allowOutsideClick: false,
                                     customClass: { popup: "tipid-swal" }
                                 }).then(() => {
-                                    // Ire-reload ang app at makikita na ang bagong features
                                     window.location.reload();
                                 });
                             }
                         });
                     });
-
                 }).catch(err => console.error("Service Worker registration failed:", err));
             });
         }

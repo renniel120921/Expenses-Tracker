@@ -44,8 +44,10 @@ function TrendGlyph({ up, size = 12 }) {
     );
 }
 
-function ExpenseChart({ entries }) {
+window.ExpenseChart = function ExpenseChart({ entries }) {
     const { useState, useMemo, useEffect, useRef } = window;
+    const peso = window.peso; // Ensure we grab the global formatter
+
     const [view, setView] = useState("category"); // 'category', 'flow'
     const [dateFilter, setDateFilter] = useState("thisMonth"); // 'all', 'thisMonth', 'lastMonth'
 
@@ -80,16 +82,22 @@ function ExpenseChart({ entries }) {
         });
     }, [entries, dateFilter]);
 
-    // 2. Compute analytics based on FILTERED entries
+    // 2. Compute analytics based on FILTERED entries (Added Guilt Tracker Logic)
     const analytics = useMemo(() => {
         const expenses = filteredEntries.filter(e => e.type === "expense");
         const incomes = filteredEntries.filter(e => e.type === "income");
 
-        const totalExpense = expenses.reduce((sum, e) => sum + e.amount, 0);
-        const totalIncome = incomes.reduce((sum, e) => sum + e.amount, 0);
+        const totalExpense = expenses.reduce((sum, e) => sum + (Number(e.amount)||0), 0);
+        const totalIncome = incomes.reduce((sum, e) => sum + (Number(e.amount)||0), 0);
+
+        // Guilt Tracker Computation
+        // Kung lumang data na walang spendType, ituturing itong "need" para hindi masira ang chart
+        const needsTotal = expenses.filter(e => e.spendType === "need" || !e.spendType).reduce((sum, e) => sum + (Number(e.amount)||0), 0);
+        const luhoTotal = expenses.filter(e => e.spendType === "luho").reduce((sum, e) => sum + (Number(e.amount)||0), 0);
+        const luhoPct = totalExpense > 0 ? Math.round((luhoTotal / totalExpense) * 100) : 0;
 
         const catGroup = expenses.reduce((acc, e) => {
-            acc[e.category] = (acc[e.category] || 0) + e.amount;
+            acc[e.category] = (acc[e.category] || 0) + (Number(e.amount)||0);
             return acc;
         }, {});
 
@@ -99,7 +107,7 @@ function ExpenseChart({ entries }) {
 
         const net = totalIncome - totalExpense;
 
-        return { totalExpense, totalIncome, categories, catLabels, catColors, net };
+        return { totalExpense, totalIncome, categories, catLabels, catColors, net, needsTotal, luhoTotal, luhoPct };
     }, [filteredEntries]);
 
     // Category breakdown re-shaped for the custom legend
@@ -117,8 +125,7 @@ function ExpenseChart({ entries }) {
 
     const hasCategoryData = analytics.catLabels.length > 0;
 
-    // Plain-language chart description for screen readers — a <canvas> has no accessible
-    // content on its own, so this is the only thing that lets non-visual users read the data.
+    // Plain-language chart description for screen readers
     const chartSummary = useMemo(() => {
         if (view === "category") {
             if (!hasCategoryData) return "Walang gastos na naitala sa napiling panahon.";
@@ -128,7 +135,7 @@ function ExpenseChart({ entries }) {
             return `Doughnut chart ng gastos ayon sa kategorya. Kabuuang gastos: ₱${peso(analytics.totalExpense)}. Pangunahing kategorya: ${top}.`;
         }
         return `Bar chart ng cash flow. Kita: ₱${peso(analytics.totalIncome)}. Gastos: ₱${peso(analytics.totalExpense)}. ${analytics.net >= 0 ? "Natitira" : "Kulang"}: ₱${peso(Math.abs(analytics.net))}.`;
-    }, [view, hasCategoryData, sortedCategories, analytics]);
+    }, [view, hasCategoryData, sortedCategories, analytics, peso]);
 
     // 3. Render Chart
     useEffect(() => {
@@ -207,7 +214,7 @@ function ExpenseChart({ entries }) {
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
                 <div className="flex items-center gap-3">
                     <span className="w-10 h-10 rounded-[14px] bg-gold/10 dark:bg-gold/15 text-gold dark:text-[#F3A536] flex items-center justify-center shrink-0">
-                        <Icons.Chart size={18} />
+                        <window.Icons.Chart size={18} />
                     </span>
                     <div>
                         <h2 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper tracking-tight leading-tight">Analytics</h2>
@@ -239,7 +246,34 @@ function ExpenseChart({ entries }) {
                 </div>
             </div>
 
-            {/* Quick Stat Chips — pop softly whenever the date filter changes, so a refreshed total reads as "live" */}
+            {/* NEW: GUILT TRACKER BAR */}
+            {chartLoaded && filteredEntries.length > 0 && analytics.totalExpense > 0 && (
+                <div key={`guilt-${dateFilter}`} className="stat-pop mb-6 bg-white/40 dark:bg-black/10 rounded-[1.25rem] p-4 sm:p-5 border border-black/5 dark:border-white/5 shadow-sm">
+                    <div className="flex justify-between items-end mb-3">
+                        <div>
+                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-black/5 dark:bg-white/10 mb-2">
+                                <span className="text-[9px] font-bold uppercase tracking-widest text-ink/70 dark:text-paper/70">Guilt Tracker</span>
+                            </div>
+                            <h3 className="font-display text-[1.1rem] font-semibold text-ink dark:text-paper leading-none">Need vs Luho</h3>
+                        </div>
+                        <div className="text-right">
+                            <span className="font-mono text-2xl font-bold text-[#B5483B] dark:text-[#F38C80] leading-none block mb-0.5">{analytics.luhoPct}%</span>
+                            <p className="text-[10px] font-medium text-ink2/60 dark:text-paper/50">napunta sa Luho</p>
+                        </div>
+                    </div>
+
+                    <div className="h-2 w-full rounded-full bg-[#1F6F54] dark:bg-[#52C8A1] overflow-hidden flex">
+                        <div className="h-full bg-[#B5483B] dark:bg-[#F38C80] transition-all duration-1000 ease-out" style={{ width: `${analytics.luhoPct}%` }}></div>
+                    </div>
+
+                    <div className="flex justify-between mt-2.5 text-[11px] font-mono font-medium">
+                        <span className="text-[#B5483B] dark:text-[#F38C80]">Luho: ₱{peso(analytics.luhoTotal)}</span>
+                        <span className="text-[#1F6F54] dark:text-[#52C8A1]">Need: ₱{peso(analytics.needsTotal)}</span>
+                    </div>
+                </div>
+            )}
+
+            {/* Quick Stat Chips — pop softly whenever the date filter changes */}
             <div key={`stats-${dateFilter}`} className="stat-pop flex items-center gap-2.5 sm:gap-4 mb-6 flex-wrap">
                 <div className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#E6F3EF] dark:bg-[#1F6F54]/15">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#2F8E6C]"></span>
@@ -273,7 +307,7 @@ function ExpenseChart({ entries }) {
                         view === "category" ? 'bg-white dark:bg-ink2 text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink dark:hover:text-paper'
                     }`}
                 >
-                    <Icons.Category size={14} /> Kategorya
+                    <window.Icons.Category size={14} /> Kategorya
                 </button>
                 <button
                     onClick={() => setView("flow")}
@@ -282,18 +316,18 @@ function ExpenseChart({ entries }) {
                         view === "flow" ? 'bg-white dark:bg-ink2 text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink dark:hover:text-paper'
                     }`}
                 >
-                    <Icons.Chart size={14} /> Cash Flow
+                    <window.Icons.Chart size={14} /> Cash Flow
                 </button>
             </div>
 
             {/* Chart Area */}
             <div className="relative w-full">
-                {/* Screen-reader-only data summary — announces itself when the filter/view changes */}
+                {/* Screen-reader-only data summary */}
                 <p className="sr-only" aria-live="polite">{chartSummary}</p>
 
                 {!chartLoaded && (
                     <div className="h-56 flex flex-col items-center justify-center gap-3 text-center bg-white/40 dark:bg-black/10 rounded-2xl">
-                        <Icons.AlertCircle size={22} className="text-expense" />
+                        <window.Icons.AlertCircle size={22} className="text-expense" />
                         <p className="text-[13px] text-expense font-medium">Hindi ma-load ang chart library.<br/>Paki-refresh ang pahina.</p>
                     </div>
                 )}
@@ -303,7 +337,7 @@ function ExpenseChart({ entries }) {
                         <div className="relative flex items-center justify-center w-14 h-14">
                             <div className="absolute inset-0 bg-peso/10 dark:bg-pesoLight/10 rounded-full animate-ping opacity-75" style={{ animationDuration: '3s' }} />
                             <span className="relative z-10 w-14 h-14 rounded-2xl bg-gradient-to-br from-paperDim to-paperDim/50 dark:from-ink2/60 dark:to-ink2/20 border border-dashed border-line dark:border-white/15 flex items-center justify-center">
-                                <Icons.Inbox size={24} className="text-peso/60 dark:text-pesoLight/60" />
+                                <window.Icons.Inbox size={24} className="text-peso/60 dark:text-pesoLight/60" />
                             </span>
                         </div>
                         <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/50">Walang data sa panahong ito.</p>
@@ -313,7 +347,7 @@ function ExpenseChart({ entries }) {
                 {chartLoaded && filteredEntries.length > 0 && view === "category" && !hasCategoryData && (
                     <div className="h-56 flex flex-col items-center justify-center gap-4 text-center bg-white/40 dark:bg-black/10 rounded-2xl">
                         <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-paperDim to-paperDim/50 dark:from-ink2/60 dark:to-ink2/20 border border-dashed border-line dark:border-white/15 flex items-center justify-center">
-                            <Icons.Inbox size={24} className="text-ink2/40 dark:text-paper/30" />
+                            <window.Icons.Inbox size={24} className="text-ink2/40 dark:text-paper/30" />
                         </div>
                         <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/50">Walang gastos na naitala sa panahong ito.</p>
                     </div>
@@ -337,10 +371,8 @@ function ExpenseChart({ entries }) {
                                     <div className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: c.color }}></div>
                                     <span className="text-[13px] font-medium text-ink2/80 dark:text-paper/80 flex-1 min-w-0 truncate">{c.label}</span>
 
-                                    {/* Share of total, so the bar's length isn't the only way to read it */}
                                     <span className="text-[10px] font-mono text-ink2/40 dark:text-paper/40 w-7 text-right shrink-0">{c.pct.toFixed(0)}%</span>
 
-                                    {/* Progress Bar (Visible on all screens now, adapted sizes) */}
                                     <div className="w-12 sm:w-20 h-1.5 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden shrink-0">
                                         <div className="h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${c.pct}%`, backgroundColor: c.color }}></div>
                                     </div>

@@ -1,6 +1,6 @@
 // components/ExpenseItem.js
 
-function ExpenseItem({ item, entry, uid }) {
+window.ExpenseItem = function ExpenseItem({ item, entry, uid }) {
     // Babasahin niya ang data kung 'item' man o 'entry' ang ginamit ng parent component
     const data = item || entry;
 
@@ -103,7 +103,7 @@ function ExpenseItem({ item, entry, uid }) {
                 <div
                     className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center shrink-0 bg-gradient-to-br ${accent.tint} ${accent.fg} ring-1 ring-inset ring-black/[0.03] dark:ring-white/10 transition-transform duration-300 ease-out group-hover:scale-105`}
                 >
-                    {isIncome ? <Icons.TrendUp size={20} /> : <Icons.TrendDown size={20} />}
+                    {isIncome ? <window.Icons.TrendUp size={20} /> : <window.Icons.TrendDown size={20} />}
                 </div>
 
                 <div className="min-w-0 flex-1 pr-2">
@@ -111,10 +111,23 @@ function ExpenseItem({ item, entry, uid }) {
                         {data.desc}
                     </p>
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+
+                        {/* NEW: Guilt Tracker Tag (Need vs Luho) */}
+                        {data.spendType && !isIncome && (
+                            <span className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold tracking-widest px-2 py-0.5 rounded uppercase ${
+                                data.spendType === 'luho'
+                                    ? 'bg-[#FAEDE9] text-[#B5483B] ring-1 ring-[#B5483B]/20 dark:bg-[#B5483B]/20 dark:text-[#F38C80] dark:ring-[#F38C80]/30'
+                                    : 'bg-[#E6F3EF] text-[#1F6F54] ring-1 ring-[#1F6F54]/20 dark:bg-[#1F6F54]/20 dark:text-[#52C8A1] dark:ring-[#52C8A1]/30'
+                            }`}>
+                                {data.spendType === 'luho' ? '🛍️ Luho' : '✅ Need'}
+                            </span>
+                        )}
+
                         <span className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-mono font-semibold tracking-wide px-2.5 py-1 rounded-full bg-ink/[0.04] dark:bg-white/10 text-ink2/70 dark:text-paper/70 uppercase">
                             <span className={`w-1.5 h-1.5 rounded-full ${accent.bg}`} aria-hidden="true"></span>
                             {data.category}
                         </span>
+
                         <span className="text-[10px] sm:text-[11px] font-medium text-ink2/40 dark:text-paper/40">
                             {dateStr}
                         </span>
@@ -137,7 +150,7 @@ function ExpenseItem({ item, entry, uid }) {
                     aria-label="Burahin ang entry"
                     className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 p-2 sm:p-2.5 rounded-full text-ink2/30 hover:text-expense hover:bg-expense/10 hover:scale-105 dark:text-paper/30 dark:hover:text-[#F38C80] dark:hover:bg-[#B5483B]/20 active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-expense/40 shrink-0"
                 >
-                    <Icons.Trash size={18} strokeWidth={2.2} />
+                    <window.Icons.Trash size={18} strokeWidth={2.2} />
                 </button>
             </div>
 

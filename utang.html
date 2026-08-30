@@ -12,7 +12,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
     <!-- Global Dark Mode Script Initializer -->
     <script>
@@ -38,7 +38,7 @@
                     fontFamily: {
                         display: ['"Fraunces"', 'serif'],
                         body: ['"Inter"', 'sans-serif'],
-                        mono: ['"IBM Plex Mono"', 'monospace'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
                     },
                     boxShadow: {
                         'ios': '0 2px 10px rgba(18,61,46,0.06), 0 16px 32px -12px rgba(18,61,46,0.15)',
@@ -79,63 +79,58 @@
         html { background: #F1F4EF; transition: background-color 0.3s var(--ease-ios); }
         html.dark { background: #111A15; color: #F1F4EF; }
 
-        body { font-feature-settings: "tnum" 1, "lnum" 1; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
-        ::selection { background: #C9932E33; color: #15231C; }
-        :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
+        body { font-family: 'Inter', sans-serif; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
 
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-up { animation: fadeUp 0.7s var(--ease-ios) both; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-up { animation: fadeIn 0.6s var(--ease-ios) both; }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .spin { animation: spin 0.85s linear infinite; }
+        .spin { animation: spin 0.9s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        @keyframes haloPulse {
-            0%   { transform: scale(0.9); opacity: 0.3; }
-            70%  { opacity: 0; }
-            100% { transform: scale(1.5); opacity: 0; }
-        }
-        .halo-pulse { animation: haloPulse 2.4s var(--ease-ios) infinite; }
+        @keyframes haloPulse { 0% { transform: scale(0.9); opacity: 0.35; } 70% { opacity: 0; } 100% { transform: scale(1.6); opacity: 0; } }
+        .halo-pulse { animation: haloPulse 1.9s var(--ease-ios) infinite; }
 
-        @keyframes heroFloat {
-            0%, 100% { transform: translate(0, 0); }
-            50%      { transform: translate(0, -6px); }
-        }
-        .hero-float { animation: heroFloat 7s ease-in-out infinite; }
+        @keyframes heroFloat { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -10px); } }
+        .hero-float { animation: heroFloat 6s ease-in-out infinite; }
 
-        .glass-panel {
-            background: rgba(255,255,255,0.7);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.8);
-        }
-        html.dark .glass-panel {
-            background: rgba(24,38,31,0.55);
-            border: 1px solid rgba(255,255,255,0.08);
-        }
+        .glass-panel { background: rgba(255,255,255,0.65); backdrop-filter: blur(20px) saturate(160%); border: 1px solid rgba(255,255,255,0.55); }
+        html.dark .glass-panel { background: rgba(24,38,31,0.55); border: 1px solid rgba(255,255,255,0.08); }
 
         .tap-scale { transition: transform 0.15s var(--ease-spring); }
         .tap-scale:active { transform: scale(0.92); }
 
-        .tipid-swal { border-radius: 28px !important; font-family: 'Inter', sans-serif !important; }
+        /* Custom SweetAlert styling */
+        .tipid-swal { border-radius: 1.5rem !important; font-family: 'Inter', sans-serif !important; }
+
+        /* --- Modern Premium Mascot Hover --- */
+        @keyframes mascotHover {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .utang-mascot-img {
+            animation: mascotHover 4s ease-in-out infinite;
+            filter: drop-shadow(0 15px 25px rgba(18,61,46,0.35));
+        }
+        .speech-bubble {
+            animation: fadeUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
+            box-shadow: 0 10px 25px -5px rgba(18, 61, 46, 0.25);
+        }
 
         @media (prefers-reduced-motion: reduce) {
-            .fade-up, .spin, .halo-pulse, .hero-float, .tap-scale {
-                animation: none !important; transition: none !important;
-            }
+            .fade-up, .spin, .halo-pulse, .hero-float, .tap-scale, .utang-mascot-img, .speech-bubble { animation: none !important; transition: none !important; }
         }
     </style>
 </head>
-<body class="bg-paper dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
+<body class="bg-paper dark:bg-ink text-ink dark:text-paper min-h-screen flex flex-col transition-colors duration-300">
 
     <div id="root"></div>
 
     <script type="text/babel">
+        // --- GLOBAL SETUP ---
         window.useState = React.useState;
         window.useEffect = React.useEffect;
         window.useMemo = React.useMemo;
-        window.useRef = React.useRef;
 
-        // --- COMPREHENSIVE GLOBAL ICONS (Fixes React Error #130) ---
         function Icon({ path, size = 20, className = "", strokeWidth = 2.2 }) {
             return (
                 <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -145,6 +140,7 @@
             );
         }
 
+        // FULL SET OF ICONS TO AVOID REACT ERROR #130
         window.Icons = {
             Sun: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>} />,
             Moon: (p) => <Icon {...p} path={<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>} />,
@@ -158,6 +154,10 @@
             Check: (p) => <Icon {...p} path={<><polyline points="20 6 9 17 4 12"/></>} strokeWidth={3} />,
             Inbox: (p) => <Icon {...p} path={<><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></>} />,
             Loader: (p) => <Icon {...p} path={<><path d="M12 2a10 10 0 0 1 10 10"/></>} />,
+            Info: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>} />,
+            Shield: (p) => <Icon {...p} path={<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>} />,
+            Users: (p) => <Icon {...p} path={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
+            Clock: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>} />
         };
 
         window.Logo = function Logo({ size = 30 }) {
@@ -169,56 +169,89 @@
             return <span style={{ width: size, height: size }} className="rounded-md bg-ink text-paper flex items-center justify-center font-display font-semibold">₱</span>;
         }
 
-        window.peso = function peso(n) {
-            return (n || 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
+        window.peso = (num) => {
+            if (isNaN(num)) return "0.00";
+            return Number(num).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
 
+        window.useAuthReady = function useAuthReady() {
+            const [ready, setReady] = React.useState(!!window.TipidAuth);
+            React.useEffect(() => {
+                if (window.TipidAuth) { setReady(true); return; }
+                const h = () => setReady(true);
+                window.addEventListener("tipid-auth-ready", h, { once: true });
+                return () => window.removeEventListener("tipid-auth-ready", h);
+            }, []);
+            return ready;
+        }
+    </script>
+
+    <script type="text/babel">
         function AmbientBackground() {
             return (
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div className="absolute -top-24 -right-16 w-[320px] h-[320px] bg-peso/[0.07] dark:bg-pesoLight/[0.07] rounded-full blur-[100px]" />
-                    <div className="absolute top-[40%] -left-24 w-[260px] h-[260px] bg-[#C9932E]/[0.07] dark:bg-[#C9932E]/[0.04] rounded-full blur-[110px]" />
+                    <div className="absolute -top-24 -right-16 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
+                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-gold/10 dark:bg-gold/5 rounded-full blur-[100px]" />
                 </div>
             );
         }
 
-        /* --- UTANG HERO CARD --- */
+        /* --- MODERN UTANG HERO CARD --- */
         function UtangHeroCard({ darkMode, toggleDarkMode }) {
+            const [mascotOk, setMascotOk] = React.useState(true);
+
             return (
-                <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-5 sm:p-7 shadow-iosLg ring-1 ring-white/15 min-h-[180px] sm:min-h-[200px] flex flex-col justify-between mb-6 sm:mb-8">
+                <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-5 sm:p-7 shadow-iosLg ring-1 ring-white/15 min-h-[200px] sm:min-h-[230px] flex flex-col justify-between mb-6 sm:mb-8">
 
                     {/* Ambient Glows Inside Card */}
-                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/[0.08] rounded-full blur-[50px] hero-float" />
-                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-[#FFD700]/[0.08] rounded-full blur-[60px]" />
+                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/10 rounded-full blur-[50px] hero-float" />
+                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-[#FFD700]/10 rounded-full blur-[60px]" />
 
                     {/* Dark Mode Toggle */}
                     <div className="absolute top-5 right-5 sm:top-6 sm:right-6 z-30">
                         <button
                             onClick={toggleDarkMode}
                             aria-label="Toggle Dark Mode"
-                            className="tap-scale w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 hover:bg-white/20 ring-1 ring-white/20 flex items-center justify-center text-white backdrop-blur-md transition-colors"
+                            className="tap-scale w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/20 hover:bg-white/30 border border-white/20 flex items-center justify-center text-white shadow-sm backdrop-blur-md transition-colors"
                         >
-                            {darkMode ? <window.Icons.Sun size={17} /> : <window.Icons.Moon size={17} />}
+                            {darkMode ? <window.Icons.Sun size={18} /> : <window.Icons.Moon size={18} />}
                         </button>
                     </div>
 
-                    {/* Icon badge (no external asset dependency) */}
-                    <div className="absolute right-6 sm:right-8 bottom-6 sm:bottom-8 w-20 h-20 sm:w-24 sm:h-24 rounded-[1.5rem] bg-white/10 border border-white/15 flex items-center justify-center text-white/70 hero-float">
-                        <window.Icons.Wallet size={34} strokeWidth={1.8} />
-                    </div>
+                    {/* Mascot Container */}
+                    {mascotOk && (
+                        <div className="absolute right-0 bottom-0 w-[130px] sm:w-[170px] h-full pointer-events-none z-0 overflow-visible hidden sm:block">
+                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-24 h-24 bg-white/15 blur-2xl rounded-full"></div>
+                            <img
+                                src="/assets/utang_mascot.png"
+                                alt="Tipid Buddy Utang Tracker"
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "/assets/history_mascot.png"; // Fallback if utang_mascot doesn't exist
+                                }}
+                                className="absolute bottom-[-10px] sm:bottom-[-15px] right-0 w-full object-contain utang-mascot-img"
+                                draggable="false"
+                            />
+                            {/* Speech Bubble */}
+                            <div className="speech-bubble absolute top-[15%] right-[60%] sm:right-[70%] bg-paper text-ink rounded-2xl px-3 py-2 text-[10px] sm:text-xs font-semibold leading-tight w-max max-w-[120px] sm:max-w-[140px] border border-white/50">
+                                Lista mo 'yan!<br/>Para iwas limot. ✍️
+                                <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-paper rotate-45 border-r border-b border-white/50"></div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Main Content */}
-                    <div className="relative z-10 flex flex-col h-full gap-5 sm:gap-6 max-w-[70%] sm:max-w-[65%]">
-                        <div>
+                    <div className="relative z-10 flex flex-col h-full gap-5 sm:gap-6 max-w-[70%] sm:max-w-[60%]">
+                        <div className="mt-2 sm:mt-4">
                             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/15 border border-white/10 text-white mb-3 backdrop-blur-sm">
                                 <span className="w-1.5 h-1.5 rounded-full bg-[#FFD700] animate-pulse" />
-                                <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-paper/90">Utang Tracker</span>
+                                <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-paper/90">Personal Ledger</span>
                             </div>
-                            <h1 className="font-display text-[1.5rem] sm:text-[2.25rem] font-bold tracking-tight leading-[1.1] mb-2 sm:mb-3">
+                            <h1 className="font-display text-[1.6rem] sm:text-[2.25rem] font-bold tracking-tight leading-[1.1] mb-2 sm:mb-3">
                                 Utang Tracker
                             </h1>
                             <p className="text-[11px] sm:text-[13px] font-medium text-white/80 leading-relaxed pr-2">
-                                Subaybayan kung sino may utang sa'yo at kung kanino ka may utang.
+                                Subaybayan kung sino ang may utang sa'yo at kung magkano pa ang utang mo sa iba.
                             </p>
                         </div>
                     </div>
@@ -226,20 +259,61 @@
             );
         }
 
-        function UtangPage() {
-            const { useState, useEffect } = React;
-            const [user, setUser] = useState(null);
-            const [utangList, setUtangList] = useState([]);
-            const [loading, setLoading] = useState(true);
-            const [authChecking, setAuthChecking] = useState(true);
-            const [componentsReady, setComponentsReady] = useState(false);
+        /* --- NEW: TIPS SECTION --- */
+        function UtangTipsSection() {
+            return (
+                <div className="mt-8 sm:mt-10 fade-up" style={{ animationDelay: "150ms" }}>
+                    <div className="flex items-center gap-2.5 mb-4 px-1">
+                        <window.Icons.Info size={20} className="text-peso dark:text-pesoLight" />
+                        <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper tracking-tight">Tipid Hacks: Utang Edition</h3>
+                    </div>
 
-            const [darkMode, setDarkMode] = useState(() => {
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {/* Tip 1 */}
+                        <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-xl p-5 rounded-[1.25rem] border border-white/60 dark:border-white/5 shadow-sm transition-transform hover:-translate-y-1 duration-300">
+                            <div className="w-10 h-10 rounded-full bg-[#FAEDE9] dark:bg-[#B5483B]/20 text-[#B5483B] dark:text-[#F38C80] flex items-center justify-center mb-3">
+                                <window.Icons.Shield size={18} />
+                            </div>
+                            <h4 className="font-semibold text-[13px] text-ink dark:text-paper mb-1.5">Set Boundaries</h4>
+                            <p className="text-[11.5px] text-ink2/70 dark:text-paper/60 leading-relaxed">Okay lang humindi kung wala talagang extra. Unahin ang sariling budget at emergency fund bago magpautang.</p>
+                        </div>
+
+                        {/* Tip 2 */}
+                        <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-xl p-5 rounded-[1.25rem] border border-white/60 dark:border-white/5 shadow-sm transition-transform hover:-translate-y-1 duration-300">
+                            <div className="w-10 h-10 rounded-full bg-[#FDF6E3] dark:bg-[#C9932E]/20 text-[#C9932E] dark:text-[#E8C071] flex items-center justify-center mb-3">
+                                <window.Icons.Clock size={18} />
+                            </div>
+                            <h4 className="font-semibold text-[13px] text-ink dark:text-paper mb-1.5">Kusang Magbayad</h4>
+                            <p className="text-[11.5px] text-ink2/70 dark:text-paper/60 leading-relaxed">Bayaran ang utang sa pinangakong araw bago pa singilin. Nakakasira ng tiwala at pagkakaibigan ang pagtatago.</p>
+                        </div>
+
+                        {/* Tip 3 */}
+                        <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-xl p-5 rounded-[1.25rem] border border-white/60 dark:border-white/5 shadow-sm transition-transform hover:-translate-y-1 duration-300">
+                            <div className="w-10 h-10 rounded-full bg-[#E6F3EF] dark:bg-[#1F6F54]/20 text-[#1F6F54] dark:text-[#52C8A1] flex items-center justify-center mb-3">
+                                <window.Icons.Users size={18} />
+                            </div>
+                            <h4 className="font-semibold text-[13px] text-ink dark:text-paper mb-1.5">Iwas Kalimutan sa KKB</h4>
+                            <p className="text-[11.5px] text-ink2/70 dark:text-paper/60 leading-relaxed">Kung may ambagan o Kanya-Kanyang Bayad (KKB), i-lista agad dito sa tracker para walang nagkakalimutan pagkatapos kumain.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function UtangPage() {
+            const authReady = window.useAuthReady();
+            const [user, setUser] = React.useState(null);
+            const [utangList, setUtangList] = React.useState([]);
+            const [loading, setLoading] = React.useState(true);
+            const [authChecking, setAuthChecking] = React.useState(true);
+            const [componentsReady, setComponentsReady] = React.useState(false);
+
+            const [darkMode, setDarkMode] = React.useState(() => {
                 return localStorage.getItem("tipid_theme") === "dark" ||
                     (!localStorage.getItem("tipid_theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
             });
 
-            useEffect(() => {
+            React.useEffect(() => {
                 if (darkMode) {
                     document.documentElement.classList.add('dark');
                     localStorage.setItem("tipid_theme", "dark");
@@ -251,7 +325,7 @@
 
             const toggleDarkMode = () => setDarkMode(!darkMode);
 
-            useEffect(() => {
+            React.useEffect(() => {
                 const interval = setInterval(() => {
                     if (window.UtangTracker && window.Navbar) {
                         setComponentsReady(true);
@@ -261,7 +335,7 @@
                 return () => clearInterval(interval);
             }, []);
 
-            useEffect(() => {
+            React.useEffect(() => {
                 let unsub = null;
                 let isMounted = true;
 
@@ -298,13 +372,12 @@
                 }
             };
 
-            useEffect(() => {
+            React.useEffect(() => {
                 if (!user) return;
-
                 let unsubUtang = null;
 
                 const loadUtang = () => {
-                    if (window.TipidData) {
+                    if (window.TipidData && window.TipidData.subscribeUtang) {
                         unsubUtang = window.TipidData.subscribeUtang(
                             user.uid,
                             (data) => {
@@ -333,8 +406,10 @@
                     <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
                         <div className="glass-panel flex flex-col items-center gap-5 rounded-[32px] px-10 py-10 shadow-ios">
                             <div className="relative flex items-center justify-center">
-                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/20 halo-pulse" />
-                                <window.Logo size={40} />
+                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/25 halo-pulse" />
+                                <div className="relative animate-[logoBreathe_1.7s_ease-in-out_infinite]">
+                                    <window.Logo size={44} />
+                                </div>
                             </div>
                             <p className="text-[11px] font-mono font-semibold tracking-widest uppercase text-ink2 dark:text-paper/60 text-center">
                                 Loading Utang
@@ -368,6 +443,9 @@
                         <div className="fade-up" style={{ animationDelay: "60ms" }}>
                             <AppUtangTracker uid={user.uid} utangList={utangList} loading={loading} />
                         </div>
+
+                        {/* Injected Educational Tips */}
+                        <UtangTipsSection />
                     </main>
                 </div>
             );
