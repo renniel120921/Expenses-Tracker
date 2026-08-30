@@ -13,6 +13,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
+    <!-- ENHANCEMENT: preconnect + preload the OCR engine so the first scan
+         doesn't have to wait for the script to download before it can start. -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js">
+
     <script>
         if (localStorage.getItem('tipid_theme') === 'dark' || (!('tipid_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
@@ -94,7 +99,6 @@
             X: (p) => <Icon {...p} path={<><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>} />,
             Category: (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
             AlertCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />,
-            // NEW ICONS PARA SA CAMERA AT UPLOAD
             Camera: (p) => <Icon {...p} path={<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></>} />,
             Image: (p) => <Icon {...p} path={<><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></>} />
         };
@@ -125,11 +129,67 @@
             );
         }
 
+        // ENHANCEMENT: hero card matching the visual language used on the
+        // other Tipid pages (e.g. Utang Tracker), plus the dark mode toggle
+        // that this page was previously missing entirely.
+        function ScannerHeroCard({ darkMode, toggleDarkMode }) {
+            return (
+                <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-5 sm:p-7 shadow-iosLg ring-1 ring-white/15 min-h-[170px] sm:min-h-[190px] flex flex-col justify-between mb-6 sm:mb-8">
+                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/10 rounded-full blur-[50px] hero-float" />
+                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-gold/10 rounded-full blur-[60px]" />
+
+                    <div className="absolute top-5 right-5 sm:top-6 sm:right-6 z-30">
+                        <button
+                            onClick={toggleDarkMode}
+                            aria-label="Toggle Dark Mode"
+                            className="tap-scale w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/20 hover:bg-white/30 border border-white/20 flex items-center justify-center text-white shadow-sm backdrop-blur-md transition-colors"
+                        >
+                            {darkMode ? <window.Icons.Sun size={18} /> : <window.Icons.Moon size={18} />}
+                        </button>
+                    </div>
+
+                    <div className="relative z-10 flex flex-col h-full gap-4 sm:gap-5 max-w-[75%] sm:max-w-[65%]">
+                        <div className="mt-2 sm:mt-4">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/15 border border-white/10 text-white mb-3 backdrop-blur-sm">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#FFD700] animate-pulse" />
+                                <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-paper/90">Auto-Detect</span>
+                            </div>
+                            <h1 className="font-display text-[1.5rem] sm:text-[2rem] font-bold tracking-tight leading-[1.1] mb-2 sm:mb-3">
+                                AI Receipt Scanner
+                            </h1>
+                            <p className="text-[11px] sm:text-[13px] font-medium text-white/80 leading-relaxed pr-2">
+                                I-scan ang resibo mo at automatic na kukunin ang halaga at kategorya.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
         function ScannerPage() {
             const authReady = window.useAuthReady();
             const [user, setUser] = React.useState(null);
             const [authChecking, setAuthChecking] = React.useState(true);
             const [componentsReady, setComponentsReady] = React.useState(false);
+
+            // ENHANCEMENT: dark mode state + persistence, matching the
+            // pattern already used on the Utang Tracker page.
+            const [darkMode, setDarkMode] = React.useState(() => {
+                return localStorage.getItem("tipid_theme") === "dark" ||
+                    (!localStorage.getItem("tipid_theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+            });
+
+            React.useEffect(() => {
+                if (darkMode) {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem("tipid_theme", "dark");
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem("tipid_theme", "light");
+                }
+            }, [darkMode]);
+
+            const toggleDarkMode = () => setDarkMode(!darkMode);
 
             React.useEffect(() => {
                 const interval = setInterval(() => {
@@ -188,6 +248,10 @@
                         style={{ paddingLeft: 'max(1.25rem, calc(var(--sal) + 1.25rem))', paddingRight: 'max(1.25rem, calc(var(--sar) + 1.25rem))', paddingBottom: 'calc(8rem + var(--sab))' }}>
 
                         <div className="fade-up">
+                            <ScannerHeroCard darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+                        </div>
+
+                        <div className="fade-up" style={{ animationDelay: "60ms" }}>
                             <AppScanner uid={user.uid} />
                         </div>
                     </main>

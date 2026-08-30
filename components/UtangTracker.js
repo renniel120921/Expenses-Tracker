@@ -1,5 +1,21 @@
 // components/UtangTracker.js
 
+// FIX: FieldWrap moved OUTSIDE of UtangTracker so it's not redefined on every
+// render. When a component function is declared inside another component's
+// body, React sees a *new* component type on every re-render (even if the
+// code looks identical), so it unmounts and remounts the DOM nodes inside it
+// — including the <input>. That's what was stealing focus / closing the
+// keyboard after every keystroke, since Firestore's subscribeUtang() updates
+// trigger a re-render of UtangTracker while you type.
+function FieldWrap({ icon, children, className = "" }) {
+    return (
+        <div className={`flex items-center gap-2.5 bg-white/60 dark:bg-black/20 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-3.5 focus-within:ring-2 focus-within:ring-peso/40 focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200 ${className}`}>
+            {icon}
+            {children}
+        </div>
+    );
+}
+
 window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
     const { useState, useMemo, useRef } = React;
 
@@ -132,13 +148,6 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
         { id: "i_owe", label: "Inutang Ko" },
         { id: "settled", label: "Bayad Na" },
     ];
-
-    const FieldWrap = ({ icon, children, className = "" }) => (
-        <div className={`flex items-center gap-2.5 bg-white/60 dark:bg-black/20 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-3.5 focus-within:ring-2 focus-within:ring-peso/40 focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200 ${className}`}>
-            {icon}
-            {children}
-        </div>
-    );
 
     return (
         <div className="space-y-6 sm:space-y-8">
