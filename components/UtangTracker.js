@@ -1,7 +1,7 @@
 // components/UtangTracker.js
 
 window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
-    const { useState, useMemo } = React;
+    const { useState, useMemo, useRef } = React;
 
     // ---- form state ----
     const [name, setName] = useState("");
@@ -13,6 +13,9 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
 
     // ---- filter tabs ----
     const [filter, setFilter] = useState("all"); // all | owed_to_me | i_owe | settled
+
+    // Ref to lock focus and prevent typing disruption during real-time syncs
+    const inputRef = useRef(null);
 
     const handleAdd = async (e) => {
         e.preventDefault();
@@ -206,6 +209,7 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
                     <div className="flex flex-col sm:flex-row gap-3.5">
                         <FieldWrap className="sm:flex-1" icon={<span className="text-ink2/40 dark:text-paper/40 shrink-0"><window.Icons.Pencil size={15} strokeWidth={2.3} /></span>}>
                             <input
+                                ref={inputRef}
                                 type="text"
                                 placeholder="Pangalan"
                                 value={name}
