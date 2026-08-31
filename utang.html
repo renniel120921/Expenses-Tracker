@@ -107,6 +107,12 @@
             box-shadow: 0 10px 25px -5px rgba(18, 61, 46, 0.25);
         }
 
+        /* Hero grain: quiet material texture instead of decorative blur blobs */
+        .grain-overlay {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            mix-blend-mode: overlay;
+        }
+
         @media (prefers-reduced-motion: reduce) {
             .fade-up, .spin, .halo-pulse, .hero-float, .tap-scale, .utang-mascot-img, .speech-bubble { animation: none !important; transition: none !important; }
         }
@@ -176,93 +182,94 @@
     </script>
 
     <script type="text/babel">
+        /* Quiet, single point of ambient color — restraint over decoration */
         function AmbientBackground() {
             return (
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div className="absolute -top-24 -right-16 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
-                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-gold/10 dark:bg-gold/5 rounded-full blur-[100px]" />
+                    <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[640px] h-[320px] bg-peso/5 dark:bg-pesoLight/[0.06] rounded-full blur-[130px]" />
                 </div>
             );
         }
 
-        function UtangHeroCard({ darkMode, toggleDarkMode }) {
-            const [mascotOk, setMascotOk] = React.useState(true);
+        /* --- UTANG HERO: a quiet statement card, not a decorated banner --- */
+        function UtangHeroCard({ darkMode, toggleDarkMode, utangCount, loading }) {
+            const countLabel = utangCount === 1 ? "utang na nakalista" : "mga utang na nakalista";
 
             return (
-                <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-5 sm:p-7 shadow-iosLg ring-1 ring-white/15 min-h-[200px] sm:min-h-[230px] flex flex-col justify-between mb-6 sm:mb-8">
-                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/10 rounded-full blur-[50px] hero-float" />
-                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-[#FFD700]/10 rounded-full blur-[60px]" />
+                <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-b from-pesoDeep to-[#0E2A20] text-paper shadow-iosLg ring-1 ring-black/5 dark:ring-white/10 mb-6 sm:mb-8">
+                    {/* subtle material grain — texture instead of glow blobs */}
+                    <div className="absolute inset-0 grain-overlay opacity-[0.05] pointer-events-none" />
 
+                    {/* Dark Mode Toggle */}
                     <div className="absolute top-5 right-5 sm:top-6 sm:right-6 z-30">
                         <button
                             onClick={toggleDarkMode}
-                            aria-label="Toggle Dark Mode"
-                            className="tap-scale w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/20 hover:bg-white/30 border border-white/20 flex items-center justify-center text-white shadow-sm backdrop-blur-md transition-colors"
+                            aria-label="Toggle dark mode"
+                            className="tap-scale w-10 h-10 rounded-full bg-white/10 hover:bg-white/15 border border-white/15 flex items-center justify-center text-white/90 backdrop-blur-md transition-colors outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                         >
-                            {darkMode ? <window.Icons.Sun size={18} /> : <window.Icons.Moon size={18} />}
+                            {darkMode ? <window.Icons.Sun size={17} /> : <window.Icons.Moon size={17} />}
                         </button>
                     </div>
 
-                    {mascotOk && (
-                        <div className="absolute right-0 bottom-0 w-[130px] sm:w-[170px] h-full pointer-events-none z-0 overflow-visible hidden sm:block">
-                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-24 h-24 bg-white/15 blur-2xl rounded-full"></div>
-                            <div className="speech-bubble absolute top-[15%] right-[60%] sm:right-[70%] bg-paper text-ink rounded-2xl px-3 py-2 text-[10px] sm:text-xs font-semibold leading-tight w-max max-w-[120px] sm:max-w-[140px] border border-white/50">
-                                Lista mo 'yan!<br/>Para iwas limot. ✍️
-                                <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-paper rotate-45 border-r border-b border-white/50"></div>
-                            </div>
-                        </div>
-                    )}
+                    {/* Main Content */}
+                    <div className="relative z-10 px-6 sm:px-8 pt-7 sm:pt-8 pb-6 sm:pb-7 max-w-[75%] sm:max-w-[65%]">
+                        <h1 className="font-display text-[1.75rem] sm:text-[2.35rem] font-semibold tracking-tight leading-[1.08] mb-2.5">
+                            Utang Tracker
+                        </h1>
+                        <p className="text-[12.5px] sm:text-[13.5px] text-paper/70 leading-relaxed">
+                            Subaybayan kung sino ang may utang sa'yo at kung magkano pa ang utang mo sa iba.
+                        </p>
+                    </div>
 
-                    <div className="relative z-10 flex flex-col h-full gap-5 sm:gap-6 max-w-[70%] sm:max-w-[60%]">
-                        <div className="mt-2 sm:mt-4">
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/15 border border-white/10 text-white mb-3 backdrop-blur-sm">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#FFD700] animate-pulse" />
-                                <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-paper/90">Personal Ledger</span>
-                            </div>
-                            <h1 className="font-display text-[1.6rem] sm:text-[2.25rem] font-bold tracking-tight leading-[1.1] mb-2 sm:mb-3">
-                                Utang Tracker
-                            </h1>
-                            <p className="text-[11px] sm:text-[13px] font-medium text-white/80 leading-relaxed pr-2">
-                                Subaybayan kung sino ang may utang sa'yo at kung magkano pa ang utang mo sa iba.
-                            </p>
-                        </div>
+                    {/* Stat row — real data, not decoration */}
+                    <div className="relative z-10 flex items-baseline gap-2 px-6 sm:px-8 pb-6 sm:pb-7 border-t border-white/10 mx-6 sm:mx-8 pt-4">
+                        <span className="font-mono text-xl sm:text-2xl font-semibold tabular-nums">
+                            {loading ? "–" : utangCount}
+                        </span>
+                        <span className="text-[11.5px] text-paper/60">{loading ? "kinukuha..." : countLabel}</span>
                     </div>
                 </div>
             );
         }
 
+        /* --- TIPS: one panel, divided rows — not identical stacked cards --- */
         function UtangTipsSection() {
+            const tips = [
+                {
+                    icon: <window.Icons.Shield size={16} />,
+                    title: "Magtakda ng limitasyon",
+                    body: "Okay lang tumanggi kung wala talagang extra — unahin ang sariling budget at emergency fund bago magpautang.",
+                },
+                {
+                    icon: <window.Icons.Clock size={16} />,
+                    title: "Kusang magbayad",
+                    body: "Bayaran ang utang sa napagkasunduang araw bago pa singilin — nakakasira ng tiwala ang pagtatago.",
+                },
+                {
+                    icon: <window.Icons.Users size={16} />,
+                    title: "Iwas kalimutan sa KKB",
+                    body: "Kung may ambagan o kanya-kanyang bayad, i-lista agad dito para walang makakalimot pagkatapos.",
+                },
+            ];
+
             return (
-                <div className="mt-8 sm:mt-10 fade-up" style={{ animationDelay: "150ms" }}>
-                    <div className="flex items-center gap-2.5 mb-4 px-1">
-                        <window.Icons.Info size={20} className="text-peso dark:text-pesoLight" />
-                        <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper tracking-tight">Tipid Hacks: Utang Edition</h3>
-                    </div>
+                <div className="mt-8 sm:mt-10 fade-up" style={{ animationDelay: "120ms" }}>
+                    <h3 className="font-display text-[1.05rem] font-semibold text-ink dark:text-paper tracking-tight mb-3 px-1">
+                        Tipid hacks para sa utang
+                    </h3>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-xl p-5 rounded-[1.25rem] border border-white/60 dark:border-white/5 shadow-sm transition-transform hover:-translate-y-1 duration-300">
-                            <div className="w-10 h-10 rounded-full bg-[#FAEDE9] dark:bg-[#B5483B]/20 text-[#B5483B] dark:text-[#F38C80] flex items-center justify-center mb-3">
-                                <window.Icons.Shield size={18} />
+                    <div className="bg-white/60 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.5rem] border border-white/60 dark:border-white/5 shadow-sm divide-y divide-line/60 dark:divide-white/5 overflow-hidden">
+                        {tips.map((tip, i) => (
+                            <div key={i} className="flex items-start gap-3.5 px-5 py-4">
+                                <div className="mt-0.5 shrink-0 w-8 h-8 rounded-full bg-peso/10 dark:bg-pesoLight/10 text-peso dark:text-pesoLight flex items-center justify-center">
+                                    {tip.icon}
+                                </div>
+                                <div>
+                                    <p className="font-medium text-[13px] text-ink dark:text-paper mb-0.5">{tip.title}</p>
+                                    <p className="text-[12px] text-ink2/70 dark:text-paper/60 leading-relaxed">{tip.body}</p>
+                                </div>
                             </div>
-                            <h4 className="font-semibold text-[13px] text-ink dark:text-paper mb-1.5">Set Boundaries</h4>
-                            <p className="text-[11.5px] text-ink2/70 dark:text-paper/60 leading-relaxed">Okay lang humindi kung wala talagang extra. Unahin ang sariling budget at emergency fund bago magpautang.</p>
-                        </div>
-
-                        <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-xl p-5 rounded-[1.25rem] border border-white/60 dark:border-white/5 shadow-sm transition-transform hover:-translate-y-1 duration-300">
-                            <div className="w-10 h-10 rounded-full bg-[#FDF6E3] dark:bg-[#C9932E]/20 text-[#C9932E] dark:text-[#E8C071] flex items-center justify-center mb-3">
-                                <window.Icons.Clock size={18} />
-                            </div>
-                            <h4 className="font-semibold text-[13px] text-ink dark:text-paper mb-1.5">Kusang Magbayad</h4>
-                            <p className="text-[11.5px] text-ink2/70 dark:text-paper/60 leading-relaxed">Bayaran ang utang sa pinangakong araw bago pa singilin. Nakakasira ng tiwala at pagkakaibigan ang pagtatago.</p>
-                        </div>
-
-                        <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-xl p-5 rounded-[1.25rem] border border-white/60 dark:border-white/5 shadow-sm transition-transform hover:-translate-y-1 duration-300">
-                            <div className="w-10 h-10 rounded-full bg-[#E6F3EF] dark:bg-[#1F6F54]/20 text-[#1F6F54] dark:text-[#52C8A1] flex items-center justify-center mb-3">
-                                <window.Icons.Users size={18} />
-                            </div>
-                            <h4 className="font-semibold text-[13px] text-ink dark:text-paper mb-1.5">Iwas Kalimutan sa KKB</h4>
-                            <p className="text-[11.5px] text-ink2/70 dark:text-paper/60 leading-relaxed">Kung may ambagan o Kanya-Kanyang Bayad (KKB), i-lista agad dito sa tracker para walang nagkakalimutan pagkatapos kumain.</p>
-                        </div>
+                        ))}
                     </div>
                 </div>
             );
@@ -377,15 +384,13 @@
             if (authChecking || !componentsReady) {
                 return (
                     <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
-                        <div className="glass-panel flex flex-col items-center gap-5 rounded-[32px] px-10 py-10 shadow-ios">
-                            <div className="relative flex items-center justify-center">
-                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/25 halo-pulse" />
-                                <div className="relative animate-[logoBreathe_1.7s_ease-in-out_infinite]">
-                                    <window.Logo size={44} />
-                                </div>
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="relative flex items-center justify-center w-14 h-14">
+                                <span className="absolute inset-0 rounded-full bg-peso/20 dark:bg-pesoLight/20 halo-pulse" />
+                                <window.Logo size={38} />
                             </div>
-                            <p className="text-[11px] font-mono font-semibold tracking-widest uppercase text-ink2 dark:text-paper/60 text-center">
-                                Loading Utang
+                            <p className="text-[11px] font-mono text-ink2/60 dark:text-paper/50">
+                                Naglo-load...
                             </p>
                         </div>
                     </div>
@@ -410,7 +415,12 @@
                         }}
                     >
                         <div className="fade-up">
-                            <UtangHeroCard darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+                            <UtangHeroCard
+                                darkMode={darkMode}
+                                toggleDarkMode={toggleDarkMode}
+                                utangCount={utangList.length}
+                                loading={loading}
+                            />
                         </div>
 
                         <div className="fade-up" style={{ animationDelay: "60ms" }}>

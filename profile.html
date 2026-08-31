@@ -78,7 +78,13 @@
         .spin { animation: spin 0.85s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        :focus-visible { outline: 2px solid #1F6F54; outline-offset: 2px; border-radius: 6px; }
+        html.dark :focus-visible { outline-color: #52C8A1; }
+
         .swal2-popup.tipid-swal { border-radius: 24px !important; font-family: 'Inter', sans-serif !important; }
+
+        .toggle-track { transition: background-color 0.2s var(--ease-ios); }
+        .toggle-knob { transition: transform 0.2s var(--ease-spring, cubic-bezier(0.34,1.56,0.64,1)); }
     </style>
 </head>
 <body class="bg-paper dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
@@ -141,7 +147,6 @@
             Receipt: (p) => <Icon {...p} path={<><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z"/><path d="M16 14h-8"/><path d="M16 10h-8"/></>} />,
             Chip: (p) => (<svg width={p.size||24} height={p.size||24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={p.className}><rect x="4" y="4" width="16" height="16" rx="4" /><line x1="4" y1="9" x2="9" y2="9" /><line x1="4" y1="15" x2="9" y2="15" /><line x1="15" y1="9" x2="20" y2="9" /><line x1="15" y1="15" x2="20" y2="15" /><line x1="9" y1="4" x2="9" y2="20" /><line x1="15" y1="4" x2="15" y2="20" /></svg>),
             Contactless: (p) => (<svg width={p.size||24} height={p.size||24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M8.5 21c-2.4-3.8-2.4-14.2 0-18" /><path d="M12.5 18c-1.6-2.5-1.6-9.5 0-12" /><path d="M16.5 15c-.8-1.2-.8-4.8 0-6" /></svg>),
-            // NEW ICONS for the additional features below
             Download: (p) => <Icon {...p} path={<><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></>} />,
             Star: (p) => <Icon {...p} path={<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>} />,
             MessageSquare: (p) => <Icon {...p} path={<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>} />,
@@ -183,6 +188,77 @@
 
         function swalSuccess(title, text) { return Swal.fire({ icon: "success", title, text, confirmButtonText: "Sige", confirmButtonColor: "#1F6F54", customClass: { popup: "tipid-swal" }}); }
         function swalError(text) { return Swal.fire({ icon: "error", title: "Error", text, confirmButtonText: "Sige", confirmButtonColor: "#B5483B", customClass: { popup: "tipid-swal" }}); }
+
+        // --- Minimal i18n for this page's own chrome (menu, section titles,
+        // sub-page headers). Selecting a language here previously only wrote
+        // to localStorage with no visible effect — this dictionary is what
+        // actually makes that selection change what's on screen. It covers
+        // the navigational shell; the long-form body copy inside each
+        // sub-page (FAQ answers, About text, Terms) is intentionally left
+        // as Tagalog for now — translating that too is a bigger follow-up
+        // if wanted, since it's a lot of prose rather than short labels.
+        window.TIPID_TRANSLATIONS = {
+            tl: {
+                back: "Bumalik",
+                sectionAccount: "Account",
+                sectionPreferences: "Preferences",
+                sectionData: "Data & Backup",
+                sectionSupport: "Support",
+                sectionDanger: "Danger Zone",
+                menuManageProfile: "Manage Profile",
+                menuPasswordSecurity: "Password & Security",
+                menuNotifications: "Notifications",
+                menuLanguage: "Language",
+                menuAboutUs: "About Us",
+                menuTheme: "Theme",
+                menuFinancialGoals: "Financial Goals",
+                menuDefaultWallet: "Default Wallet",
+                menuPesoDisplay: "Peso Display",
+                menuExportData: "Export My Data",
+                menuClearPrefs: "Clear Local Preferences",
+                menuHelpCenter: "Help Center",
+                menuSendFeedback: "Send Feedback",
+                menuRateTipid: "Rate Tipid",
+                menuTermsPrivacy: "Terms & Privacy",
+                menuLogOut: "Log Out",
+                menuDeleteAccount: "Delete Account",
+                themeDark: "Dark",
+                themeLight: "Light",
+                pesoHidden: "Walang Sentimo",
+                pesoShown: "May Sentimo",
+                memberSince: "Miyembro simula",
+            },
+            en: {
+                back: "Back",
+                sectionAccount: "Account",
+                sectionPreferences: "Preferences",
+                sectionData: "Data & Backup",
+                sectionSupport: "Support",
+                sectionDanger: "Danger Zone",
+                menuManageProfile: "Manage Profile",
+                menuPasswordSecurity: "Password & Security",
+                menuNotifications: "Notifications",
+                menuLanguage: "Language",
+                menuAboutUs: "About Us",
+                menuTheme: "Theme",
+                menuFinancialGoals: "Financial Goals",
+                menuDefaultWallet: "Default Wallet",
+                menuPesoDisplay: "Peso Display",
+                menuExportData: "Export My Data",
+                menuClearPrefs: "Clear Local Preferences",
+                menuHelpCenter: "Help Center",
+                menuSendFeedback: "Send Feedback",
+                menuRateTipid: "Rate Tipid",
+                menuTermsPrivacy: "Terms & Privacy",
+                menuLogOut: "Log Out",
+                menuDeleteAccount: "Delete Account",
+                themeDark: "Dark",
+                themeLight: "Light",
+                pesoHidden: "No Centavos",
+                pesoShown: "With Centavos",
+                memberSince: "Member since",
+            },
+        };
     </script>
 
     <script type="text/babel" src="./components/navbar.js"></script>
@@ -224,14 +300,30 @@
             );
         }
 
+        // A real interactive switch (was a static div before — decorative,
+        // always "on", no click handler). Used by the Notifications sub-page.
+        function Switch({ checked, onChange, label }) {
+            return (
+                <button
+                    role="switch"
+                    aria-checked={checked}
+                    aria-label={label}
+                    onClick={onChange}
+                    className={`toggle-track w-12 h-7 rounded-full relative shadow-inner shrink-0 ${checked ? 'bg-peso dark:bg-pesoLight' : 'bg-black/15 dark:bg-white/15'}`}
+                >
+                    <div className={`toggle-knob absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm ${checked ? 'translate-x-[22px]' : 'translate-x-1'}`}></div>
+                </button>
+            );
+        }
+
         // Sub-page layout container
-        function SubPage({ title, onBack, children }) {
+        function SubPage({ title, onBack, children, backLabel = "Bumalik" }) {
             return (
                 <div className="fixed inset-0 z-50 bg-paper dark:bg-ink flex flex-col slide-in">
                     <div className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+16px)] pb-4 border-b border-line dark:border-white/10 bg-white dark:bg-[#1A2620]">
                         <button onClick={onBack} className="p-2 -ml-2 text-peso dark:text-pesoLight flex items-center gap-1 active:opacity-50 transition-opacity">
                             <window.Icons.ChevronLeft size={22} />
-                            <span className="text-[15px] font-medium">Bumalik</span>
+                            <span className="text-[15px] font-medium">{backLabel}</span>
                         </button>
                         <h2 className="font-semibold text-ink dark:text-paper absolute left-1/2 -translate-x-1/2">{title}</h2>
                         <div className="w-16"></div> {/* Spacer for centering */}
@@ -313,17 +405,26 @@
             const [goalAmount, setGoalAmount] = React.useState("");
             const [savingGoals, setSavingGoals] = React.useState(false);
 
-            // NEW: additional preference states (local-only, mirror the existing Theme pattern)
+            // Preference states (local-only, mirror the existing Theme pattern)
             const [lang, setLang] = React.useState(() => localStorage.getItem('tipid_lang') || 'tl');
             const [defaultWallet, setDefaultWallet] = React.useState(() => localStorage.getItem('tipid_default_wallet') || 'Cash');
             const [hideCentavos, setHideCentavos] = React.useState(() => localStorage.getItem('tipid_hide_centavos') === '1');
 
-            // NEW: data export / danger zone states
+            // Notification preferences — previously rendered as always-on
+            // decorative switches with no click handler. Now real, local-only
+            // toggles (no push backend exists yet, so this just gates whether
+            // this device's reminder/alert logic — once built — should fire).
+            const [notifDaily, setNotifDaily] = React.useState(() => localStorage.getItem('tipid_notif_daily') !== '0');
+            const [notifOverbudget, setNotifOverbudget] = React.useState(() => localStorage.getItem('tipid_notif_overbudget') !== '0');
+
+            // Data export / danger zone states
             const [exporting, setExporting] = React.useState(false);
             const [feedbackText, setFeedbackText] = React.useState("");
             const [sendingFeedback, setSendingFeedback] = React.useState(false);
             const [deleteConfirmText, setDeleteConfirmText] = React.useState("");
             const [deletingAccount, setDeletingAccount] = React.useState(false);
+
+            const t = window.TIPID_TRANSLATIONS[lang] || window.TIPID_TRANSLATIONS.tl;
 
             // Fetch Auth
             React.useEffect(() => {
@@ -443,7 +544,9 @@
                 }
             };
 
-            // NEW: persist simple local-only preferences (mirrors the existing toggleDarkMode pattern)
+            // Persist simple local-only preferences (mirrors the existing toggleDarkMode pattern).
+            // `lang` change is what makes `t` above resolve a different dictionary on re-render —
+            // that's what actually makes language selection visible now.
             const handleSelectLang = (val) => {
                 setLang(val);
                 localStorage.setItem('tipid_lang', val);
@@ -453,13 +556,26 @@
                 localStorage.setItem('tipid_default_wallet', val);
                 setActiveMenu(null);
             };
+            // This flag is read by window.peso() on the other pages (Utang,
+            // Chart, History, Hulugan) to decide whether to show centavos —
+            // toggling it here now actually changes how amounts render there.
             const toggleHideCentavos = () => {
                 const next = !hideCentavos;
                 setHideCentavos(next);
                 localStorage.setItem('tipid_hide_centavos', next ? '1' : '0');
             };
+            const toggleNotifDaily = () => {
+                const next = !notifDaily;
+                setNotifDaily(next);
+                localStorage.setItem('tipid_notif_daily', next ? '1' : '0');
+            };
+            const toggleNotifOverbudget = () => {
+                const next = !notifOverbudget;
+                setNotifOverbudget(next);
+                localStorage.setItem('tipid_notif_overbudget', next ? '1' : '0');
+            };
 
-            // NEW: export all of the user's entries as a CSV file — one-shot read via the
+            // Export all of the user's entries as a CSV file — one-shot read via the
             // existing TipidData.subscribeEntries contract (unsubscribes as soon as data arrives).
             const handleExportData = () => {
                 if (!window.TipidData || !window.TipidData.subscribeEntries) {
@@ -496,7 +612,7 @@
                 );
             };
 
-            // NEW: clear only the app's local-storage preferences (does not touch cloud data)
+            // Clear only the app's local-storage preferences (does not touch cloud data)
             const handleClearLocalPrefs = () => {
                 Swal.fire({
                     title: "I-clear ang lokal na preferences?",
@@ -510,13 +626,14 @@
                     customClass: { popup: "tipid-swal" }
                 }).then((result) => {
                     if (!result.isConfirmed) return;
-                    ["tipid_goal_name", "tipid_goal_amount", "tipid_goal", "tipid_default_wallet", "tipid_hide_centavos", "tipid_lang"].forEach(k => localStorage.removeItem(k));
+                    ["tipid_goal_name", "tipid_goal_amount", "tipid_goal", "tipid_default_wallet", "tipid_hide_centavos", "tipid_lang", "tipid_notif_daily", "tipid_notif_overbudget"].forEach(k => localStorage.removeItem(k));
                     setGoalName(""); setGoalAmount(""); setDefaultWallet("Cash"); setHideCentavos(false); setLang("tl");
+                    setNotifDaily(true); setNotifOverbudget(true);
                     swalSuccess("Nabura na", "Na-reset na ang mga lokal na preferences.");
                 });
             };
 
-            // NEW: feedback (no backend endpoint exists yet, so this is stored locally and
+            // Feedback (no backend endpoint exists yet, so this is stored locally and
             // acknowledged — swap the localStorage write for a real API/Firestore call
             // once a feedback collection exists).
             const handleSendFeedback = (e) => {
@@ -535,7 +652,7 @@
                 }
             };
 
-            // NEW: delete account — reuses the same dynamic-import pattern as handleUpdateProfile
+            // Delete account — reuses the same dynamic-import pattern as handleUpdateProfile
             const handleDeleteAccount = async () => {
                 if (deleteConfirmText.trim().toUpperCase() !== "DELETE") {
                     return swalError('I-type ang salitang "DELETE" para kumpirmahin.');
@@ -561,7 +678,7 @@
 
             if (activeMenu === 'profile') {
                 return (
-                    <SubPage title="Manage Profile" onBack={() => setActiveMenu(null)}>
+                    <SubPage title={t.menuManageProfile} backLabel={t.back} onBack={() => setActiveMenu(null)}>
                         <form onSubmit={handleUpdateProfile} className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5">
                             <InputField
                                 label="Display Name"
@@ -586,7 +703,7 @@
 
             if (activeMenu === 'goals') {
                 return (
-                    <SubPage title="Financial Goals" onBack={() => setActiveMenu(null)}>
+                    <SubPage title={t.menuFinancialGoals} backLabel={t.back} onBack={() => setActiveMenu(null)}>
                         <form onSubmit={handleUpdatePreferences} className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5">
                             <p className="text-[13px] text-ink2/60 dark:text-paper/60 mb-6">I-set ang iyong buwanang limitasyon sa paggastos at ang pinag-iipunan mo.</p>
                             <InputField
@@ -622,7 +739,7 @@
 
             if (activeMenu === 'security') {
                 return (
-                    <SubPage title="Password & Security" onBack={() => setActiveMenu(null)}>
+                    <SubPage title={t.menuPasswordSecurity} backLabel={t.back} onBack={() => setActiveMenu(null)}>
                         <div className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5 text-center">
                             <div className="w-16 h-16 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 text-ink2/40 dark:text-paper/40">
                                 <window.Icons.Lock size={28} />
@@ -639,21 +756,21 @@
 
             if (activeMenu === 'notifications') {
                 return (
-                    <SubPage title="Notifications" onBack={() => setActiveMenu(null)}>
+                    <SubPage title={t.menuNotifications} backLabel={t.back} onBack={() => setActiveMenu(null)}>
                         <div className="bg-white dark:bg-[#1A2620] p-2 rounded-2xl shadow-sm border border-line dark:border-white/5 divide-y divide-line dark:divide-white/5">
                             <div className="flex items-center justify-between p-4">
                                 <div>
                                     <p className="font-medium text-[15px] text-ink dark:text-paper">Daily Reminders</p>
                                     <p className="text-[12px] text-ink2/50 dark:text-paper/50 mt-0.5">Paalala para mag-log ng gastos araw-araw</p>
                                 </div>
-                                <div className="w-12 h-7 bg-peso rounded-full relative shadow-inner"><div className="absolute right-1 top-1 w-5 h-5 bg-white rounded-full shadow-sm"></div></div>
+                                <Switch checked={notifDaily} onChange={toggleNotifDaily} label="Daily Reminders" />
                             </div>
                             <div className="flex items-center justify-between p-4">
                                 <div>
                                     <p className="font-medium text-[15px] text-ink dark:text-paper">Overbudget Alerts</p>
                                     <p className="text-[12px] text-ink2/50 dark:text-paper/50 mt-0.5">I-notify ka kapag malapit na maubos ang budget</p>
                                 </div>
-                                <div className="w-12 h-7 bg-peso rounded-full relative shadow-inner"><div className="absolute right-1 top-1 w-5 h-5 bg-white rounded-full shadow-sm"></div></div>
+                                <Switch checked={notifOverbudget} onChange={toggleNotifOverbudget} label="Overbudget Alerts" />
                             </div>
                         </div>
                     </SubPage>
@@ -662,7 +779,7 @@
 
             if (activeMenu === 'about') {
                 return (
-                    <SubPage title="About Us" onBack={() => setActiveMenu(null)}>
+                    <SubPage title={t.menuAboutUs} backLabel={t.back} onBack={() => setActiveMenu(null)}>
                         <div className="bg-white dark:bg-[#1A2620] p-8 rounded-2xl shadow-sm border border-line dark:border-white/5 text-center">
                             <window.Logo size={64} className="mx-auto mb-4" />
                             <h2 className="font-display font-bold text-2xl text-ink dark:text-paper mb-1">Tipid Buddy</h2>
@@ -678,7 +795,7 @@
 
             if (activeMenu === 'help') {
                 return (
-                    <SubPage title="Help Center" onBack={() => setActiveMenu(null)}>
+                    <SubPage title={t.menuHelpCenter} backLabel={t.back} onBack={() => setActiveMenu(null)}>
                         <h3 className="font-semibold text-ink dark:text-paper mb-4 px-1">Frequently Asked Questions</h3>
                         <div className="space-y-3">
                             <div className="bg-white dark:bg-[#1A2620] p-5 rounded-2xl border border-line dark:border-white/5">
@@ -702,10 +819,10 @@
                 );
             }
 
-            // NEW: Language sub-page (cosmetic preference toggle, same shape as Theme)
+            // Language sub-page (cosmetic preference toggle, same shape as Theme)
             if (activeMenu === 'language') {
                 return (
-                    <SubPage title="Language" onBack={() => setActiveMenu(null)}>
+                    <SubPage title={t.menuLanguage} backLabel={t.back} onBack={() => setActiveMenu(null)}>
                         <p className="text-[13px] text-ink2/60 dark:text-paper/60 mb-4 px-1">Piliin ang wika ng mga label at button sa app.</p>
                         <OptionList
                             value={lang}
@@ -719,10 +836,10 @@
                 );
             }
 
-            // NEW: Default Wallet sub-page
+            // Default Wallet sub-page
             if (activeMenu === 'defaultWallet') {
                 return (
-                    <SubPage title="Default Wallet" onBack={() => setActiveMenu(null)}>
+                    <SubPage title={t.menuDefaultWallet} backLabel={t.back} onBack={() => setActiveMenu(null)}>
                         <p className="text-[13px] text-ink2/60 dark:text-paper/60 mb-4 px-1">Ito ang paraan ng bayad na paunang napipili tuwing magdadagdag ka ng gastos.</p>
                         <OptionList
                             value={defaultWallet}
@@ -733,10 +850,10 @@
                 );
             }
 
-            // NEW: Data & Backup sub-page
+            // Data & Backup sub-page
             if (activeMenu === 'data') {
                 return (
-                    <SubPage title="Data & Backup" onBack={() => setActiveMenu(null)}>
+                    <SubPage title={t.menuExportData} backLabel={t.back} onBack={() => setActiveMenu(null)}>
                         <div className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5 mb-4">
                             <div className="flex items-center gap-3 mb-3">
                                 <div className="w-11 h-11 rounded-full bg-peso/10 dark:bg-pesoLight/10 flex items-center justify-center text-peso dark:text-pesoLight shrink-0">
@@ -769,10 +886,10 @@
                 );
             }
 
-            // NEW: Feedback sub-page
+            // Feedback sub-page
             if (activeMenu === 'feedback') {
                 return (
-                    <SubPage title="Send Feedback" onBack={() => setActiveMenu(null)}>
+                    <SubPage title={t.menuSendFeedback} backLabel={t.back} onBack={() => setActiveMenu(null)}>
                         <form onSubmit={handleSendFeedback} className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5">
                             <p className="text-[13px] text-ink2/60 dark:text-paper/60 mb-4">May suggestion, bug, o reaction ka ba? Sabihin mo dito.</p>
                             <label className="block text-[12px] font-semibold text-ink2/60 dark:text-paper/60 mb-2 pl-1">Iyong Mensahe</label>
@@ -791,10 +908,10 @@
                 );
             }
 
-            // NEW: Terms & Privacy sub-page (static placeholder copy)
+            // Terms & Privacy sub-page (static placeholder copy)
             if (activeMenu === 'terms') {
                 return (
-                    <SubPage title="Terms & Privacy" onBack={() => setActiveMenu(null)}>
+                    <SubPage title={t.menuTermsPrivacy} backLabel={t.back} onBack={() => setActiveMenu(null)}>
                         <div className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5 space-y-5">
                             <div>
                                 <h3 className="font-semibold text-[15px] text-ink dark:text-paper mb-1.5">Paggamit ng App</h3>
@@ -813,10 +930,10 @@
                 );
             }
 
-            // NEW: Delete Account sub-page (danger zone)
+            // Delete Account sub-page (danger zone)
             if (activeMenu === 'deleteAccount') {
                 return (
-                    <SubPage title="Delete Account" onBack={() => setActiveMenu(null)}>
+                    <SubPage title={t.menuDeleteAccount} backLabel={t.back} onBack={() => setActiveMenu(null)}>
                         <div className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-expense/20 text-center">
                             <div className="w-16 h-16 bg-expense/10 rounded-full flex items-center justify-center mx-auto mb-4 text-expense">
                                 <window.Icons.ShieldAlert size={28} />
@@ -841,10 +958,9 @@
                 );
             }
 
-            // ---- MAIN MENU LIST (Matches Reference Image, extended with more sections) ---- //
+            // ---- MAIN MENU LIST ---- //
             return (
                 <div className="min-h-dvh flex flex-col pb-[6rem]">
-                    {/* FIX: Binago ang paddingTop (pt) para malampasan ang fixed Top Navbar */}
                     <div className="flex-1 max-w-[600px] w-full mx-auto px-4 sm:px-6 pt-[6.5rem] md:pt-[7.5rem]">
 
                         {/* Static Profile Header Card */}
@@ -861,14 +977,14 @@
                                     <p className="text-[13px] font-medium text-ink2/50 dark:text-paper/40 truncate">{user.email}</p>
                                 </div>
                             </div>
-                            {/* NEW: quick facts row — derived straight from the Firebase user object */}
+                            {/* Quick facts row — derived straight from the Firebase user object */}
                             <div className="flex items-center gap-2 mt-4 pt-4 border-t border-line dark:border-white/5">
                                 <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-peso/10 dark:bg-pesoLight/10 text-peso dark:text-pesoLight">
                                     <window.Icons.Lock size={11} /> {providerLabel}
                                 </span>
                                 {memberSince && (
                                     <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-black/5 dark:bg-white/10 text-ink2/60 dark:text-paper/60">
-                                        <window.Icons.Calendar size={11} /> Miyembro simula {memberSince}
+                                        <window.Icons.Calendar size={11} /> {t.memberSince} {memberSince}
                                     </span>
                                 )}
                             </div>
@@ -876,49 +992,47 @@
 
                         {/* Settings Lists */}
                         <div className="fade-up" style={{animationDelay: "60ms"}}>
-                            <MenuSection title="Account">
-                                <MenuItem icon={<window.Icons.User size={20} />} label="Manage Profile" onClick={() => setActiveMenu('profile')} />
-                                <MenuItem icon={<window.Icons.Lock size={20} />} label="Password & Security" onClick={() => setActiveMenu('security')} />
-                                <MenuItem icon={<window.Icons.Bell size={20} />} label="Notifications" onClick={() => setActiveMenu('notifications')} />
-                                <MenuItem icon={<window.Icons.Globe size={20} />} label="Language" trailing={lang === 'en' ? 'English' : 'Tagalog'} onClick={() => setActiveMenu('language')} isLast={true} />
+                            <MenuSection title={t.sectionAccount}>
+                                <MenuItem icon={<window.Icons.User size={20} />} label={t.menuManageProfile} onClick={() => setActiveMenu('profile')} />
+                                <MenuItem icon={<window.Icons.Lock size={20} />} label={t.menuPasswordSecurity} onClick={() => setActiveMenu('security')} />
+                                <MenuItem icon={<window.Icons.Bell size={20} />} label={t.menuNotifications} onClick={() => setActiveMenu('notifications')} />
+                                <MenuItem icon={<window.Icons.Globe size={20} />} label={t.menuLanguage} trailing={lang === 'en' ? 'English' : 'Tagalog'} onClick={() => setActiveMenu('language')} isLast={true} />
                             </MenuSection>
 
-                            <MenuSection title="Preferences">
-                                <MenuItem icon={<window.Icons.Info size={20} />} label="About Us" onClick={() => setActiveMenu('about')} />
+                            <MenuSection title={t.sectionPreferences}>
+                                <MenuItem icon={<window.Icons.Info size={20} />} label={t.menuAboutUs} onClick={() => setActiveMenu('about')} />
                                 <MenuItem
                                     icon={<window.Icons.SunMoon size={20} />}
-                                    label="Theme"
-                                    trailing={isDark ? "Dark" : "Light"}
+                                    label={t.menuTheme}
+                                    trailing={isDark ? t.themeDark : t.themeLight}
                                     onClick={toggleDarkMode}
                                 />
-                                <MenuItem icon={<window.Icons.Target size={20} />} label="Financial Goals" onClick={() => setActiveMenu('goals')} />
-                                <MenuItem icon={<window.Icons.Wallet size={20} />} label="Default Wallet" trailing={defaultWallet} onClick={() => setActiveMenu('defaultWallet')} />
+                                <MenuItem icon={<window.Icons.Target size={20} />} label={t.menuFinancialGoals} onClick={() => setActiveMenu('goals')} />
+                                <MenuItem icon={<window.Icons.Wallet size={20} />} label={t.menuDefaultWallet} trailing={defaultWallet} onClick={() => setActiveMenu('defaultWallet')} />
                                 <MenuItem
                                     icon={<window.Icons.Coins size={20} />}
-                                    label="Peso Display"
-                                    trailing={hideCentavos ? "Walang Sentimo" : "May Sentimo"}
+                                    label={t.menuPesoDisplay}
+                                    trailing={hideCentavos ? t.pesoHidden : t.pesoShown}
                                     onClick={toggleHideCentavos}
                                     isLast={true}
                                 />
                             </MenuSection>
 
-                            {/* NEW SECTION: Data & Backup */}
-                            <MenuSection title="Data & Backup">
-                                <MenuItem icon={<window.Icons.Download size={20} />} label="Export My Data" onClick={() => setActiveMenu('data')} />
-                                <MenuItem icon={<window.Icons.Trash size={20} />} label="Clear Local Preferences" onClick={handleClearLocalPrefs} isLast={true} />
+                            <MenuSection title={t.sectionData}>
+                                <MenuItem icon={<window.Icons.Download size={20} />} label={t.menuExportData} onClick={() => setActiveMenu('data')} />
+                                <MenuItem icon={<window.Icons.Trash size={20} />} label={t.menuClearPrefs} onClick={handleClearLocalPrefs} isLast={true} />
                             </MenuSection>
 
-                            <MenuSection title="Support">
-                                <MenuItem icon={<window.Icons.HelpCircle size={20} />} label="Help Center" onClick={() => setActiveMenu('help')} />
-                                <MenuItem icon={<window.Icons.MessageSquare size={20} />} label="Send Feedback" onClick={() => setActiveMenu('feedback')} />
-                                <MenuItem icon={<window.Icons.Star size={20} />} label="Rate Tipid" onClick={() => swalSuccess("Salamat! 🎉", "Coming soon ang link sa App Store/Play Store.")} />
-                                <MenuItem icon={<window.Icons.FileText size={20} />} label="Terms & Privacy" onClick={() => setActiveMenu('terms')} isLast={true} />
+                            <MenuSection title={t.sectionSupport}>
+                                <MenuItem icon={<window.Icons.HelpCircle size={20} />} label={t.menuHelpCenter} onClick={() => setActiveMenu('help')} />
+                                <MenuItem icon={<window.Icons.MessageSquare size={20} />} label={t.menuSendFeedback} onClick={() => setActiveMenu('feedback')} />
+                                <MenuItem icon={<window.Icons.Star size={20} />} label={t.menuRateTipid} onClick={() => swalSuccess("Salamat! 🎉", "Coming soon ang link sa App Store/Play Store.")} />
+                                <MenuItem icon={<window.Icons.FileText size={20} />} label={t.menuTermsPrivacy} onClick={() => setActiveMenu('terms')} isLast={true} />
                             </MenuSection>
 
-                            {/* NEW SECTION: Danger Zone, kept visually separate from Log Out */}
-                            <MenuSection title="Danger Zone">
-                                <MenuItem icon={<window.Icons.LogOut size={20} />} label="Log Out" isDestructive={true} hideChevron={true} onClick={handleLogout} />
-                                <MenuItem icon={<window.Icons.ShieldAlert size={20} />} label="Delete Account" isDestructive={true} onClick={() => setActiveMenu('deleteAccount')} isLast={true} />
+                            <MenuSection title={t.sectionDanger}>
+                                <MenuItem icon={<window.Icons.LogOut size={20} />} label={t.menuLogOut} isDestructive={true} hideChevron={true} onClick={handleLogout} />
+                                <MenuItem icon={<window.Icons.ShieldAlert size={20} />} label={t.menuDeleteAccount} isDestructive={true} onClick={() => setActiveMenu('deleteAccount')} isLast={true} />
                             </MenuSection>
                         </div>
                     </div>

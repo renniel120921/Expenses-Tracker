@@ -84,6 +84,7 @@
         body { font-feature-settings: "tnum" 1, "lnum" 1; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
         ::selection { background: #C9932E33; color: #15231C; }
         :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
+        html.dark :focus-visible { outline-color: #52C8A1; }
 
         @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
         .fade-up { animation: fadeUp 0.7s var(--ease-ios) both; }
@@ -271,8 +272,10 @@
             );
         }
 
-        /* --- MODERN ANALYTICS HERO CARD (matched to the Bills Center hero, with its own resibo signature) --- */
-        function AnalyticsHeroCard({ darkMode, toggleDarkMode }) {
+        /* --- ANALYTICS HERO CARD ---
+           No dark mode toggle here — that control lives on profile.html only,
+           and this page just reflects whatever theme is already set. */
+        function AnalyticsHeroCard() {
             return (
                 <div className="relative receipt-edge mb-6 sm:mb-8">
                 <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-5 sm:p-7 shadow-iosLg ring-1 ring-white/15 min-h-[220px] sm:min-h-[240px] flex flex-col justify-between">
@@ -280,22 +283,6 @@
                     {/* Ambient Glows Inside Card */}
                     <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/[0.08] rounded-full blur-[50px] hero-float" />
                     <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-gold/[0.12] rounded-full blur-[60px]" />
-
-                    {/* Dark Mode Toggle — crossfades the icon instead of hard-swapping it */}
-                    <div className="absolute top-5 right-5 sm:top-6 sm:right-6 z-30">
-                        <button
-                            onClick={toggleDarkMode}
-                            aria-label="Toggle Dark Mode"
-                            className="tap-scale relative w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 hover:bg-white/20 ring-1 ring-white/20 flex items-center justify-center text-white shadow-sm backdrop-blur-md transition-colors overflow-hidden"
-                        >
-                            <span className={`absolute transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${darkMode ? "opacity-0 -rotate-90 scale-50" : "opacity-100 rotate-0 scale-100"}`}>
-                                <window.Icons.Sun size={18} />
-                            </span>
-                            <span className={`absolute transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${darkMode ? "opacity-100 rotate-0 scale-100" : "opacity-0 rotate-90 scale-50"}`}>
-                                <window.Icons.Moon size={18} />
-                            </span>
-                        </button>
-                    </div>
 
                     {/* Mascot Container */}
                     <div className="absolute right-0 bottom-0 w-[140px] sm:w-[190px] h-full pointer-events-none z-0 overflow-visible">
@@ -315,11 +302,11 @@
                     </div>
 
                     {/* Main Content */}
-                    <div className="relative z-10 flex flex-col h-full gap-4 sm:gap-6 max-w-[55%] sm:max-w-[60%]">
+                    <div className="relative z-10 flex flex-col h-full gap-4 sm:gap-6 max-w-[60%] sm:max-w-[62%]">
                         <div className="mt-2 sm:mt-4">
                             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/15 border border-white/10 text-white mb-3 backdrop-blur-sm">
                                 <span className="w-1.5 h-1.5 rounded-full bg-gold shadow-[0_0_0_2px_rgba(201,147,46,0.3)] animate-pulse" />
-                                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-paper/90">Tipid Buddy</span>
+                                <span className="text-[10.5px] font-medium text-paper/85">Tipid Buddy</span>
                             </div>
                             <h1 className="font-display text-[1.6rem] sm:text-[2.5rem] font-bold tracking-tight leading-[1.1] mb-2 sm:mb-3">
                                 Analytics
@@ -343,7 +330,7 @@
                         <window.Icons.Chart size={17} />
                     </div>
                     <div className="min-w-0">
-                        <p className="text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-widest text-ink2/50 dark:text-paper/40">Breakdown</p>
+                        <p className="text-[10.5px] font-medium text-ink2/55 dark:text-paper/45">Breakdown</p>
                         <h2 className="font-display text-[1.1rem] sm:text-[1.35rem] font-semibold text-ink dark:text-paper tracking-tight leading-tight">
                             Saan napupunta ang pera mo
                         </h2>
@@ -380,22 +367,19 @@
             const [user, setUser] = React.useState(undefined);
             const [entries, setEntries] = React.useState([]);
 
-            const [darkMode, setDarkMode] = React.useState(() => {
-                return localStorage.getItem("tipid_theme") === "dark" ||
-                    (!localStorage.getItem("tipid_theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
-            });
-
+            // Theme is read-only on this page — the toggle lives on profile.html.
+            // We just reflect whatever's saved there, and pick up live changes
+            // if the person flips it on another tab.
             React.useEffect(() => {
-                if (darkMode) {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem("tipid_theme", "dark");
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem("tipid_theme", "light");
-                }
-            }, [darkMode]);
-
-            const toggleDarkMode = () => setDarkMode(!darkMode);
+                const applyTheme = () => {
+                    const isDark = localStorage.getItem("tipid_theme") === "dark" ||
+                        (!localStorage.getItem("tipid_theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+                    document.documentElement.classList.toggle("dark", isDark);
+                };
+                applyTheme();
+                window.addEventListener("storage", applyTheme);
+                return () => window.removeEventListener("storage", applyTheme);
+            }, []);
 
             React.useEffect(() => {
                 if (!authReady) return;
@@ -425,8 +409,8 @@
                                     <window.Logo size={44} />
                                 </div>
                             </div>
-                            <p className="text-[11px] font-mono font-semibold tracking-widest uppercase text-ink2 dark:text-paper/60 text-center">
-                                Loading Chart
+                            <p className="text-[11px] font-mono font-medium tracking-wide text-ink2 dark:text-paper/60 text-center">
+                                Loading chart
                             </p>
                             <div className="flex items-center gap-1.5">
                                 <span className="tipid-dot w-1.5 h-1.5 rounded-full bg-peso/70 dark:bg-pesoLight/70" style={{ animationDelay: "0ms" }} />
@@ -458,7 +442,7 @@
                         }}
                     >
                         <div className="fade-up" style={{ animationDelay: "0ms" }}>
-                            <AnalyticsHeroCard darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+                            <AnalyticsHeroCard />
                         </div>
 
                         <div className="fade-up" style={{ animationDelay: "70ms" }}>
