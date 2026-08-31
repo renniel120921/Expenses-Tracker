@@ -24,6 +24,74 @@ const ReceiptRow = ({ label, value, valueClass = "" }) => (
     </div>
 );
 
+// Same bank/e-wallet catalog used on the dashboard and the Hulugan tracker —
+// duplicated here (rather than assuming window.SUPPORTED_WALLETS already
+// exists) because this page can be opened on its own without dashboard.html
+// ever having loaded its inline script.
+const WALLET_META = window.SUPPORTED_WALLETS || [
+    { id: "Cash", name: "Cash", type: "cash", color: "from-[#1F6F54] to-[#123D2E]", text: "CASH", font: "font-display tracking-[0.15em]", textStyle: "text-white" },
+    { id: "GCash", name: "GCash", type: "ewallet", color: "from-[#0052FE] to-[#004ADB]", text: "GCash", font: "font-sans italic font-extrabold tracking-tighter", textStyle: "text-white" },
+    { id: "Maya", name: "Maya", type: "ewallet", color: "from-[#0A0A0A] via-[#171717] to-[#242424]", text: "maya", font: "font-sans font-black tracking-widest lowercase", textStyle: "text-white" },
+    { id: "ShopeePay", name: "ShopeePay", type: "ewallet", color: "from-[#EE4D2D] to-[#D8390F]", text: "ShopeePay", font: "font-sans font-extrabold tracking-tight", textStyle: "text-white" },
+    { id: "GrabPay", name: "GrabPay", type: "ewallet", color: "from-[#00B14F] to-[#009344]", text: "GrabPay", font: "font-sans font-extrabold tracking-tight", textStyle: "text-white" },
+    { id: "Atome", name: "Atome Card", type: "credit", color: "from-[#FFDE00] to-[#D4B300]", text: "atome", font: "font-sans font-black lowercase tracking-widest", textStyle: "text-[#111]" },
+    { id: "MariBank", name: "MariBank", type: "digital", color: "from-[#EE4D2D] to-[#D8390F]", text: "MariBank", font: "font-sans font-bold tracking-tight", textStyle: "text-white" },
+    { id: "SeaBank", name: "SeaBank", type: "digital", color: "from-[#FF6E00] to-[#E65A00]", text: "SeaBank", font: "font-sans font-bold", textStyle: "text-white" },
+    { id: "GoTyme", name: "GoTyme Bank", type: "digital", color: "from-[#0052FF] to-[#00238A]", text: "GoTyme", font: "font-sans font-bold tracking-tight", textStyle: "text-white" },
+    { id: "Tonik", name: "Tonik Bank", type: "digital", color: "from-[#FF4D85] to-[#E6004F]", text: "tonik", font: "font-sans font-black lowercase tracking-tight", textStyle: "text-white" },
+    { id: "UNO", name: "UNO Digital Bank", type: "digital", color: "from-[#E63946] to-[#8E0000]", text: "UNO", font: "font-sans font-black tracking-[0.2em] uppercase", textStyle: "text-white" },
+    { id: "UnionDigital", name: "UnionDigital Bank", type: "digital", color: "from-[#FF6B00] to-[#C24700]", text: "UnionDigital", font: "font-sans font-bold tracking-tight", textStyle: "text-white" },
+    { id: "CIMB", name: "CIMB Bank", type: "digital", color: "from-[#E3000F] to-[#8E0000]", text: "CIMB", font: "font-sans font-black tracking-widest", textStyle: "text-white" },
+    { id: "DiskarTech", name: "DiskarTech", type: "ewallet", color: "from-[#00A5E3] to-[#0067C7]", text: "DiskarTech", font: "font-sans font-bold tracking-tight", textStyle: "text-white" },
+    { id: "BDO", name: "BDO Unibank", type: "bank", color: "from-[#002A86] to-[#00133D]", text: "BDO", font: "font-sans font-black tracking-[0.15em]", textStyle: "text-white" },
+    { id: "BPI", name: "BPI", type: "bank", color: "from-[#B30000] to-[#5C0000]", text: "BPI", font: "font-sans font-black tracking-[0.2em]", textStyle: "text-white" },
+    { id: "Metrobank", name: "Metrobank", type: "bank", color: "from-[#0033A0] to-[#001444]", text: "Metrobank", font: "font-sans font-bold tracking-tight", textStyle: "text-white" },
+    { id: "PNB", name: "PNB", type: "bank", color: "from-[#004A99] to-[#001D44]", text: "PNB", font: "font-sans font-black tracking-[0.2em]", textStyle: "text-white" },
+    { id: "SecurityBank", name: "Security Bank", type: "bank", color: "from-[#005EB8] to-[#002C56]", text: "SecurityBank", font: "font-sans font-bold tracking-tight", textStyle: "text-white" },
+    { id: "UnionBank", name: "UnionBank", type: "bank", color: "from-[#EA5B0C] to-[#8A2E00]", text: "UnionBank", font: "font-sans font-bold tracking-tight", textStyle: "text-white" },
+    { id: "RCBC", name: "RCBC", type: "bank", color: "from-[#003DA5] to-[#001444]", text: "RCBC", font: "font-sans font-black tracking-[0.2em]", textStyle: "text-white" },
+    { id: "ChinaBank", name: "China Bank", type: "bank", color: "from-[#C8102E] to-[#6E0000]", text: "China Bank", font: "font-serif font-bold", textStyle: "text-white" },
+    { id: "EastWest", name: "EastWest Bank", type: "bank", color: "from-[#4B145E] to-[#1F0527]", text: "EastWest", font: "font-sans font-bold tracking-tight", textStyle: "text-white" },
+    { id: "LandBank", name: "Land Bank", type: "bank", color: "from-[#005B33] to-[#00281A]", text: "LANDBANK", font: "font-sans font-black tracking-tight", textStyle: "text-white" },
+    { id: "PayPal", name: "PayPal", type: "ewallet", color: "from-[#003087] to-[#0067B4]", text: "PayPal", font: "font-sans italic font-bold tracking-tight", textStyle: "text-white" },
+];
+
+function walletMeta(id) {
+    return WALLET_META.find(w => w.id === id) || { id, name: id, type: "bank", text: id, font: "font-sans font-bold tracking-tight", textStyle: "text-white", color: "from-ink2 to-ink" };
+}
+
+// A small, realistic-looking mini "card" for picking which wallet pays for a
+// logged expense — same brand colors/typography as the real card on the
+// dashboard, shrunk down into a tappable chip.
+const MiniWalletChip = ({ id, meta, active, onClick }) => {
+    const showChip = meta.type === "bank" || meta.type === "credit";
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            aria-pressed={active}
+            className={`relative shrink-0 w-[6.5rem] h-[3.75rem] rounded-[12px] bg-gradient-to-br ${meta.color} p-2.5 flex flex-col justify-between overflow-hidden text-left transition-all duration-200 ${
+                active ? 'ring-2 ring-peso ring-offset-2 ring-offset-white dark:ring-offset-ink2 shadow-md scale-[1.02]' : 'ring-1 ring-black/5 dark:ring-white/10 opacity-75 hover:opacity-100 shadow-sm'
+            }`}
+        >
+            <span className="absolute -right-4 -top-5 w-14 h-14 bg-white/15 rounded-full blur-md pointer-events-none" />
+            {showChip ? (
+                <span className="w-4 h-3 rounded-[3px] bg-gradient-to-br from-[#E6D070] to-[#947A26] shadow-inner shrink-0" />
+            ) : (
+                <span className="w-2 h-2 rounded-full bg-white/40 shrink-0" />
+            )}
+            <span className={`relative z-10 ${meta.font} text-[12px] leading-none ${meta.textStyle} truncate drop-shadow-sm`}>
+                {meta.text}
+            </span>
+            {active && (
+                <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-white flex items-center justify-center z-10 shadow">
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#1F6F54" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+            )}
+        </button>
+    );
+};
+
 window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entriesProp, loading: entriesLoading }) {
     const { useState, useEffect, useRef, useMemo } = React;
 
@@ -60,6 +128,58 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
     const [expNote, setExpNote] = useState("");
     const [expCategory, setExpCategory] = useState(CATEGORIES[CATEGORIES.length - 1] || "Iba pa");
     const [loggingExpense, setLoggingExpense] = useState(false);
+
+    // The user's actual configured wallets/cards — same "wallets" map the
+    // dashboard reads from and writes to. Letting the user pick one here
+    // (instead of always logging as "Cash") means the expense entry carries
+    // the real method, so that wallet's balance on the dashboard reflects it
+    // automatically — no separate deduction logic needed, it's the same
+    // entries collection the dashboard already sums up per method.
+    const [baseBalances, setBaseBalances] = useState({ Cash: 0 });
+    const [expMethod, setExpMethod] = useState("Cash");
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                if (uid && window.FirestoreAPI && window.db) {
+                    const { doc, getDoc } = window.FirestoreAPI;
+                    const snap = await getDoc(doc(window.db, "users", uid));
+                    if (!cancelled && snap.exists() && snap.data().wallets) {
+                        const wallets = snap.data().wallets;
+                        setBaseBalances(wallets.Cash !== undefined ? wallets : { Cash: 0, ...wallets });
+                    }
+                }
+            } catch (err) {
+                // Keep the Cash-only fallback — this field is a convenience,
+                // the rest of the tracker doesn't depend on it.
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [uid]);
+
+    const walletIds = useMemo(() => Object.keys(baseBalances), [baseBalances]);
+
+    // Running balance per wallet: base balance (set on the dashboard) plus
+    // every income/expense entry tagged with that method, exactly like the
+    // dashboard computes it — so what the user sees here always matches
+    // what they'd see there.
+    const walletBalances = useMemo(() => {
+        const balances = {};
+        Object.keys(baseBalances).forEach(k => balances[k] = parseFloat(baseBalances[k]) || 0);
+        entries.forEach(e => {
+            const m = e.method || "Cash";
+            const amt = parseFloat(e.amount) || 0;
+            if (balances[m] === undefined) balances[m] = 0;
+            if (e.type === "income") balances[m] += amt;
+            else balances[m] -= amt;
+        });
+        return balances;
+    }, [entries, baseBalances]);
+
+    useEffect(() => {
+        if (!walletIds.includes(expMethod)) setExpMethod(walletIds[0] || "Cash");
+    }, [walletIds]);
 
     const [dismissedBanner, setDismissedBanner] = useState(false);
     const [toasts, setToasts] = useState([]);
@@ -302,13 +422,24 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
         const amt = parseFloat(expAmount);
         if (!amt || amt <= 0 || !uid || !window.TipidData) return;
 
+        const currentBalance = walletBalances[expMethod] || 0;
+        if (amt > currentBalance) {
+            return Swal.fire({
+                icon: 'error',
+                title: 'Kulang ang Balanse',
+                html: `Hindi mo pwedeng gamitin ang <b>${walletMeta(expMethod).name}</b> dahil <b>₱${window.peso(currentBalance)}</b> na lang ang laman nito.`,
+                confirmButtonColor: '#B5483B',
+                customClass: { popup: 'tipid-swal' }
+            });
+        }
+
         try {
             setLoggingExpense(true);
             await window.TipidData.addExpense(uid, {
                 desc: expNote.trim() || expCategory,
                 amount: amt,
                 category: expCategory,
-                method: "Cash"
+                method: expMethod
             });
             setExpAmount(""); setExpNote("");
             pushToast("Na-log ang gastos mo.", "success");
@@ -780,6 +911,25 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                         </FieldWrap>
                     </div>
 
+                    {/* Bayad Gamit — pick the real wallet/card this expense comes out of.
+                        Logging it with that method means the wallet's balance on the
+                        dashboard is automatically reduced, since it reads from the
+                        same entries collection this write goes into. */}
+                    <div className="flex flex-col gap-2">
+                        <p className="text-[10px] font-mono font-bold text-ink2/45 dark:text-paper/40 uppercase tracking-widest px-1">Bayad Gamit</p>
+                        <div className="flex overflow-x-auto gap-2.5 pb-1 -mx-1 px-1" style={{ scrollbarWidth: "none" }}>
+                            {walletIds.map(id => {
+                                const meta = walletMeta(id);
+                                return (
+                                    <MiniWalletChip key={id} id={id} meta={meta} active={expMethod === id} onClick={() => setExpMethod(id)} />
+                                );
+                            })}
+                        </div>
+                        <p className="text-[10.5px] text-ink2/45 dark:text-paper/40 px-1">
+                            Balanse ng {walletMeta(expMethod).name}: <span className="font-mono font-semibold text-ink dark:text-paper">₱{window.peso(walletBalances[expMethod] || 0)}</span>
+                        </p>
+                    </div>
+
                     <div className="flex flex-wrap gap-2.5 px-1 mt-1">
                         {CATEGORIES.filter(c => c !== "Kita").map(c => {
                             const meta = getCategoryMeta(c);
@@ -829,6 +979,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                     <ul className="space-y-3">
                         {todaysExpenses.map(exp => {
                             const meta = getCategoryMeta(exp.category);
+                            const expWallet = walletMeta(exp.method || "Cash");
                             return (
                                 <li key={exp.id} className="group flex items-center gap-4 bg-white/50 dark:bg-black/20 hover:bg-white/80 dark:hover:bg-black/40 border border-black/5 dark:border-white/5 rounded-[1.25rem] px-5 py-4 transition-all duration-200 shadow-sm">
                                     <div
@@ -841,7 +992,13 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                                     </div>
                                     <span className="flex-1 min-w-0 flex flex-col justify-center">
                                         <span className="font-mono font-bold text-[16px] text-ink dark:text-paper leading-none">₱{window.peso(exp.amount)}</span>
-                                        <span className="text-[12px] font-medium text-ink2/60 dark:text-paper/50 truncate mt-1.5">{exp.desc || exp.category}</span>
+                                        <span className="text-[12px] font-medium text-ink2/60 dark:text-paper/50 truncate mt-1.5 flex items-center gap-1.5">
+                                            {exp.desc || exp.category}
+                                            <span className="inline-flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 text-ink2/60 dark:text-paper/50 shrink-0">
+                                                <span className={`w-1.5 h-1.5 rounded-full bg-gradient-to-br ${expWallet.color}`} />
+                                                {expWallet.name}
+                                            </span>
+                                        </span>
                                     </span>
                                     <button
                                         onClick={() => handleDeleteExpense(exp.id)}
