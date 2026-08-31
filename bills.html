@@ -346,13 +346,7 @@
                 checkAuth();
                 return () => { isMounted = false; if (typeof unsub === "function") unsub(); };
             }, []);
-
-                return () => {
-                    isMounted = false;
-                    if (typeof unsub === "function") unsub();
-                };
-            }, []);
-
+            
             const handleLogout = async () => {
                 try {
                     await window.TipidAuth.logOut();
