@@ -1,3 +1,29 @@
+// Hoisted outside the component: these only depend on props, never on component
+// state. Defining them inside the component body would recreate a new function
+// reference every render, which makes React treat them as a different component
+// type on each keystroke — unmounting and remounting the underlying <input>, so
+// it loses focus after every character. Keeping them here fixes that.
+const FieldWrap = ({ icon, children, className = "" }) => (
+    <div className={`flex items-center gap-3 bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200 ${className}`}>
+        {icon}
+        {children}
+    </div>
+);
+
+const StatChip = ({ label, value, accent }) => (
+    <div className="flex-1 min-w-[7.5rem] max-w-full bento-card rounded-2xl p-4 shadow-sm border border-black/5 dark:border-white/5 min-w-0">
+        <p className="text-[9px] font-mono uppercase font-bold tracking-widest text-ink2/50 dark:text-paper/40 mb-1">{label}</p>
+        <p className={`font-mono text-[15px] sm:text-[16px] font-bold tracking-tight truncate ${accent || "text-ink dark:text-paper"}`} title={value}>{value}</p>
+    </div>
+);
+
+const ReceiptRow = ({ label, value, valueClass = "" }) => (
+    <div className="flex items-baseline justify-between gap-3 py-2 border-b border-dashed border-ink/15 dark:border-paper/15 last:border-b-0">
+        <span className="text-[12px] text-ink2/70 dark:text-paper/60 leading-snug">{label}</span>
+        <span className={`font-mono text-[13px] font-bold text-right shrink-0 ${valueClass || "text-ink dark:text-paper"}`}>{value}</span>
+    </div>
+);
+
 window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entriesProp, loading: entriesLoading }) {
     const { useState, useEffect, useRef, useMemo } = React;
 
@@ -332,13 +358,6 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
     const RING_C = 2 * Math.PI * RING_R;
     const ringOffset = RING_C * (1 - spendRatio);
 
-    const FieldWrap = ({ icon, children, className = "" }) => (
-        <div className={`flex items-center gap-3 bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200 ${className}`}>
-            {icon}
-            {children}
-        </div>
-    );
-
     const fieldIcon = {
         salary: <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 shrink-0 text-ink2/40 dark:text-paper/40" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-1" /><path d="M18 12a2 2 0 0 0 0 4h4v-4Z" /></svg>,
         bills: <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 shrink-0 text-ink2/40 dark:text-paper/40" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" /><path d="M14 2v6h6" /><path d="M9 13h6" /><path d="M9 17h6" /></svg>,
@@ -348,27 +367,10 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
 
     const QUICK_AMOUNTS = [20, 50, 100, 200];
 
-    const StatChip = ({ label, value, accent }) => (
-        <div className="flex-1 min-w-[7.5rem] max-w-full bento-card rounded-2xl p-4 shadow-sm border border-black/5 dark:border-white/5 min-w-0">
-            <p className="text-[9px] font-mono uppercase font-bold tracking-widest text-ink2/50 dark:text-paper/40 mb-1">{label}</p>
-            <p className={`font-mono text-[15px] sm:text-[16px] font-bold tracking-tight truncate ${accent || "text-ink dark:text-paper"}`} title={value}>{value}</p>
-        </div>
-    );
-
     // ---------- Weekly Resibo (receipt-style insights) ----------
-    const ReceiptRow = ({ label, value, valueClass = "" }) => (
-        <div className="flex items-baseline justify-between gap-3 py-2 border-b border-dashed border-ink/15 dark:border-paper/15 last:border-b-0">
-            <span className="text-[12px] text-ink2/70 dark:text-paper/60 leading-snug">{label}</span>
-            <span className={`font-mono text-[13px] font-bold text-right shrink-0 ${valueClass || "text-ink dark:text-paper"}`}>{value}</span>
-        </div>
-    );
-
     const maxBar = Math.max(dailySafe, ...dailyHistory.map(d => d.total), 1);
 
-    const WeeklyResibo = () => {
-        if (!loaded || !isConfigured) return null;
-
-        return (
+    const weeklyResiboSection = (!loaded || !isConfigured) ? null : (
             <section className="fade-up" style={{ animationDelay: "60ms" }} aria-labelledby="resibo-heading">
                 <div className="relative">
                     <div
@@ -464,8 +466,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                     />
                 </div>
             </section>
-        );
-    };
+    );
     // --------------------------------------------------------------
 
     return (
@@ -562,13 +563,14 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                 ) : editOpen ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 mb-8 fade-up">
                         <div>
-                            <label className="block text-[12px] font-semibold text-ink2/60 dark:text-paper/50 mb-2 px-1">
+                            <label className="block text-[12px] font-semibold text-ink dark:text-paper mb-1 px-1">
                                 Sahod / Kita
                             </label>
+                            <p className="text-[11px] text-ink2/55 dark:text-paper/45 mb-2 px-1 leading-snug">Kabuuang pera na matatanggap mo sa araw na ito — sahod, padala, o kita.</p>
                             <FieldWrap icon={fieldIcon.salary}>
                                 <input
                                     type="number"
-                                    placeholder="0.00"
+                                    placeholder="hal. 15000"
                                     value={salary}
                                     onChange={e => setSalary(e.target.value)}
                                     className="w-full min-w-0 bg-transparent py-3.5 text-[15px] font-mono font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
@@ -576,13 +578,14 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                             </FieldWrap>
                         </div>
                         <div>
-                            <label className="block text-[12px] font-semibold text-ink2/60 dark:text-paper/50 mb-2 px-1">
+                            <label className="block text-[12px] font-semibold text-ink dark:text-paper mb-1 px-1">
                                 Fixed na Bills
                             </label>
+                            <p className="text-[11px] text-ink2/55 dark:text-paper/45 mb-2 px-1 leading-snug">Mga dapat bayaran bago gumastos ng baon — upa, kuryente, load, hulugan.</p>
                             <FieldWrap icon={fieldIcon.bills}>
                                 <input
                                     type="number"
-                                    placeholder="0.00"
+                                    placeholder="hal. 3000"
                                     value={bills}
                                     onChange={e => setBills(e.target.value)}
                                     className="w-full min-w-0 bg-transparent py-3.5 text-[15px] font-mono font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
@@ -590,13 +593,14 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                             </FieldWrap>
                         </div>
                         <div>
-                            <label className="block text-[12px] font-semibold text-ink2/60 dark:text-paper/50 mb-2 px-1">
-                                Layunin sa Ipon
+                            <label className="block text-[12px] font-semibold text-ink dark:text-paper mb-1 px-1">
+                                Ilalaan sa Ipon
                             </label>
+                            <p className="text-[11px] text-ink2/55 dark:text-paper/45 mb-2 px-1 leading-snug">Magkano ang gusto mong itabi bago hatiin ang natitira sa baon. Kung wala munang itatabi, puwedeng iwan na 0.</p>
                             <FieldWrap icon={fieldIcon.savings}>
                                 <input
                                     type="number"
-                                    placeholder="0.00"
+                                    placeholder="hal. 1000 (o 0 kung wala)"
                                     value={savings}
                                     onChange={e => setSavings(e.target.value)}
                                     className="w-full min-w-0 bg-transparent py-3.5 text-[15px] font-mono font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
@@ -604,8 +608,8 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                             </FieldWrap>
                         </div>
                         <div>
-                            <div className="flex items-center justify-between px-1 mb-2">
-                                <label className="block text-[12px] font-semibold text-ink2/60 dark:text-paper/50">
+                            <div className="flex items-center justify-between px-1 mb-1">
+                                <label className="block text-[12px] font-semibold text-ink dark:text-paper">
                                     Susunod na Payday
                                 </label>
                                 {paydayDate && (
@@ -614,6 +618,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                                     </span>
                                 )}
                             </div>
+                            <p className="text-[11px] text-ink2/55 dark:text-paper/45 mb-2 px-1 leading-snug">Kailan mo matatanggap ang susunod na sahod o padala. Dito hahatiin ang badyet mo araw-araw.</p>
                             <FieldWrap icon={fieldIcon.payday}>
                                 <input
                                     type="date"
@@ -689,7 +694,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                 </div>
             </div>
 
-            <WeeklyResibo />
+            {weeklyResiboSection}
 
             {/* Today's real spending */}
             <div className="bento-card rounded-[2rem] p-6 sm:p-8">
