@@ -327,21 +327,25 @@
 
                 const checkAuth = () => {
                     if (window.TipidAuth) {
-                        unsub = window.TipidAuth.onChange((currentUser) => {
+                        window.TipidAuth.ready.then(() => {
                             if (!isMounted) return;
-                            if (!currentUser) {
-                                window.location.href = "./login.html";
-                            } else {
-                                setUser(currentUser);
-                                setAuthChecking(false);
-                            }
+                            unsub = window.TipidAuth.onChange((currentUser) => {
+                                if (!isMounted) return;
+                                if (!currentUser) {
+                                    window.location.href = "./login.html";
+                                } else {
+                                    setUser(currentUser);
+                                    setAuthChecking(false);
+                                }
+                            });
                         });
                     } else {
                         setTimeout(checkAuth, 50);
                     }
                 };
-
                 checkAuth();
+                return () => { isMounted = false; if (typeof unsub === "function") unsub(); };
+            }, []);
 
                 return () => {
                     isMounted = false;

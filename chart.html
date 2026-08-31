@@ -383,9 +383,20 @@
 
             React.useEffect(() => {
                 if (!authReady) return;
-                return window.TipidAuth.onChange((u) => setUser(u || null));
-            }, [authReady]);
+                let unsubscribe;
+                let cancelled = false;
 
+                window.TipidAuth.ready.then(() => {
+                    if (cancelled) return;
+                    unsubscribe = window.TipidAuth.onChange((u) => setUser(u || null));
+                });
+
+                return () => {
+                    cancelled = true;
+                    if (unsubscribe) unsubscribe();
+                };
+            }, [authReady]);
+            
             React.useEffect(() => {
                 if (user === null) window.location.href = "login.html";
             }, [user]);
