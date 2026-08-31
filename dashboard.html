@@ -11,8 +11,10 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Premium Typography: Fraunces (Editorial), Inter (UI), JetBrains Mono (Operational Data) -->
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+    <!-- Global Dark Mode Script Initializer -->
     <script>
         if (localStorage.getItem('tipid_theme') === 'dark' || (!('tipid_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
@@ -63,9 +65,12 @@
 
     <style>
         :root {
-            --sat: env(safe-area-inset-top, 0px); --sar: env(safe-area-inset-right, 0px);
-            --sab: env(safe-area-inset-bottom, 0px); --sal: env(safe-area-inset-left, 0px);
-            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1); --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --sat: env(safe-area-inset-top, 0px);
+            --sar: env(safe-area-inset-right, 0px);
+            --sab: env(safe-area-inset-bottom, 0px);
+            --sal: env(safe-area-inset-left, 0px);
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         html { background: #F4F7F4; transition: background-color 0.5s var(--ease-out-expo); }
         html.dark { background: #070B09; color: #F4F7F4; }
@@ -77,52 +82,126 @@
         ::selection { background: #1F6F5440; color: #101C15; }
         html.dark ::selection { background: #52C8A140; color: #F4F7F4; }
         :focus-visible { outline: 2px solid #1F6F54; outline-offset: 4px; border-radius: 8px; }
+
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.85s linear infinite; }
-        @keyframes fadeUpBento { from { opacity: 0; transform: translateY(30px) scale(0.97); filter: blur(4px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
+
+        /* Premium Operational Animations */
+        @keyframes fadeUpBento {
+            from { opacity: 0; transform: translateY(30px) scale(0.97); filter: blur(4px); }
+            to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
         .fade-up-bento { animation: fadeUpBento 0.9s var(--ease-out-expo) both; }
+
         @keyframes breatheGlow { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.15); filter: brightness(1.2); } }
         .breathe-glow { animation: breatheGlow 5s ease-in-out infinite; }
+
         @keyframes dataSweep { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
-        .data-sweep { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); background-size: 200% 100%; animation: dataSweep 3s infinite linear; }
+        .data-sweep {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background-size: 200% 100%;
+            animation: dataSweep 3s infinite linear;
+        }
+
         @keyframes mascotHover { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-8px) rotate(1deg); } }
         .tipid-mascot-img { animation: mascotHover 5s ease-in-out infinite; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.4)); }
+
         .bar-fill { transition: width 1.2s var(--ease-out-expo); }
         .tipid-swal { border-radius: 28px !important; font-family: 'Inter', sans-serif !important; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 24px 48px -12px rgba(0,0,0,0.25) !important; }
         .tipid-swal textarea { font-family: 'Inter', sans-serif !important; border-radius: 12px; }
-        .bento-card { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(32px) saturate(200%); -webkit-backdrop-filter: blur(32px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.9); box-shadow: var(--tw-shadow-bento); transition: all 0.4s var(--ease-out-expo); }
+
+        /* Bento & Glassmorphism System */
+        .bento-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(32px) saturate(200%);
+            -webkit-backdrop-filter: blur(32px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: var(--tw-shadow-bento);
+            transition: all 0.4s var(--ease-out-expo);
+        }
         .bento-card:hover { transform: translateY(-4px); box-shadow: var(--tw-shadow-bentoHover); }
-        html.dark .bento-card { background: rgba(20, 30, 24, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: var(--tw-shadow-bentoDark); }
+
+        html.dark .bento-card {
+            background: rgba(20, 30, 24, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: var(--tw-shadow-bentoDark);
+        }
         html.dark .bento-card:hover { box-shadow: var(--tw-shadow-bentoDarkHover); }
-        .hero-command { background: linear-gradient(145deg, #164C38 0%, #0E2E22 100%); box-shadow: var(--tw-shadow-glass), 0 20px 40px -10px rgba(22, 76, 56, 0.4); position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.15); }
+
+        /* Hero Command Center */
+        .hero-command {
+            background: linear-gradient(145deg, #164C38 0%, #0E2E22 100%);
+            box-shadow: var(--tw-shadow-glass), 0 20px 40px -10px rgba(22, 76, 56, 0.4);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
         html.dark .hero-command { background: linear-gradient(145deg, #113629 0%, #081711 100%); box-shadow: var(--tw-shadow-bentoDark); border: 1px solid rgba(255,255,255,0.08); }
-        .hero-mesh { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 0% 0%, rgba(82, 200, 161, 0.25) 0%, transparent 45%), radial-gradient(circle at 100% 100%, rgba(212, 175, 55, 0.15) 0%, transparent 50%); mix-blend-mode: screen; }
-        .action-btn { background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.9); box-shadow: var(--tw-shadow-action); transition: all 0.3s var(--ease-spring); }
+
+        .hero-mesh {
+            position: absolute; inset: 0; pointer-events: none;
+            background:
+                radial-gradient(circle at 0% 0%, rgba(82, 200, 161, 0.25) 0%, transparent 45%),
+                radial-gradient(circle at 100% 100%, rgba(212, 175, 55, 0.15) 0%, transparent 50%);
+            mix-blend-mode: screen;
+        }
+
+        /* Interactive Hardware Buttons */
+        .action-btn {
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.9);
+            box-shadow: var(--tw-shadow-action);
+            transition: all 0.3s var(--ease-spring);
+        }
         .action-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 24px -6px rgba(18, 61, 46, 0.15), inset 0 1px 0 rgba(255,255,255,1); }
         .action-btn:active { transform: translateY(1px) scale(0.96); box-shadow: 0 2px 8px -2px rgba(18, 61, 46, 0.1); }
+
         html.dark .action-btn { background: rgba(30,45,35,0.6); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 8px 20px -4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05); }
         html.dark .action-btn:hover { background: rgba(40,55,45,0.8); box-shadow: 0 12px 24px -6px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1); }
+
+        /* Digital Wallet Holographics */
         .wallet-card { aspect-ratio: 1.586 / 1; transform-style: preserve-3d; perspective: 1200px; }
-        .holo-foil { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.5s ease; background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.5) 45%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.5) 55%, transparent 80%); background-size: 250% 250%; mix-blend-mode: color-dodge; }
+        .holo-foil {
+            position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.5s ease;
+            background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.5) 45%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.5) 55%, transparent 80%);
+            background-size: 250% 250%; mix-blend-mode: color-dodge;
+        }
         .wallet-card:hover .holo-foil { opacity: 1; animation: shine 2.5s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
         @keyframes shine { 0% { background-position: 200% 200%; } 100% { background-position: -100% -100%; } }
-        .chip-emboss { background: linear-gradient(135deg, #E6D070, #947A26); box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), 0 2px 6px rgba(0,0,0,0.4); border-radius: 6px; position: relative; overflow: hidden; }
-        .chip-emboss::after { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.15) 4px, rgba(0,0,0,0.15) 5px); }
+
+        .chip-emboss {
+            background: linear-gradient(135deg, #E6D070, #947A26);
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), 0 2px 6px rgba(0,0,0,0.4);
+            border-radius: 6px; position: relative; overflow: hidden;
+        }
+        .chip-emboss::after {
+            content: ''; position: absolute; inset: 0;
+            background-image: repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.15) 4px, rgba(0,0,0,0.15) 5px);
+        }
+
         .tap-scale { transition: transform 0.2s var(--ease-spring); }
         .tap-scale:active { transform: scale(0.94); }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scroll::-webkit-scrollbar { display: none; }
         .is-dragging { cursor: grabbing !important; user-select: none; }
         .scroll-grab { cursor: grab; }
-        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } .tipid-mascot-img { animation: none; } }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { animation: none !important; transition: none !important; }
+            .tipid-mascot-img { animation: none; }
+        }
     </style>
 </head>
 <body class="bg-paper dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
     <div id="root"></div>
 
     <script type="text/babel">
-        window.useState = React.useState; window.useEffect = React.useEffect;
-        window.useMemo = React.useMemo; window.useRef = React.useRef; window.useCallback = React.useCallback;
+        window.useState = React.useState;
+        window.useEffect = React.useEffect;
+        window.useMemo = React.useMemo;
+        window.useRef = React.useRef;
+        window.useCallback = React.useCallback;
 
         function Icon({ path, size = 20, className = "", strokeWidth = 2 }) {
             return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>{path}</svg>;
@@ -851,7 +930,7 @@
                     <div className="hero-command rounded-[2.5rem] md:col-span-8 p-7 sm:p-10 flex flex-col justify-between min-h-[260px] sm:min-h-[280px]">
                         <div className="hero-mesh" />
 
-                        <div className="absolute right-0 bottom-0 w-[160px] sm:w-[200px] h-full pointer-events-none z-0 overflow-visible opacity-90">
+                        <div className="absolute right-0 bottom-0 w-[140px] sm:w-[180px] h-full pointer-events-none z-0 overflow-visible opacity-90">
                             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-32 h-32 bg-white/20 blur-[40px] rounded-full"></div>
                             <img src="/assets/tipid_mascot.png" alt="Tipid Buddy" className="absolute bottom-[-15px] sm:bottom-[-20px] right-[-10px] sm:right-4 w-full object-contain tipid-mascot-img" draggable="false" />
                         </div>
@@ -872,15 +951,16 @@
                             <NotificationBell entries={entries} budget={budget} monthStats={monthStats} />
                         </div>
 
-                        <div className="relative z-10 mt-12 max-w-[65%] sm:max-w-[70%]">
+                        {/* 🌟 FIXED RESPONSIVENESS: Full width container with fluid font sizing and no truncation */}
+                        <div className="relative z-10 mt-10 w-full pr-16 sm:pr-24">
                             <div className="flex items-center gap-2 mb-2">
                                 <p className="text-[11px] sm:text-xs font-mono font-bold text-white/70 tracking-widest uppercase">SYS.BAL // Net Worth</p>
                                 <button onClick={() => setHidden(h => !h)} className="text-white/50 hover:text-white transition-colors p-1 relative z-20 focus:outline-none">
                                     {hidden ? <Icons.EyeOff size={14} /> : <Icons.Eye size={14} />}
                                 </button>
                             </div>
-                            <p className="font-fraunces text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tighter text-white drop-shadow-lg truncate">
-                                {hidden ? "₱ ••••••" : <><span className="opacity-60 mr-1">₱</span>{window.peso(balance)}</>}
+                            <p className="font-fraunces text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white drop-shadow-lg break-words leading-none">
+                                {hidden ? "₱ ••••••" : <><span className="opacity-60 mr-1 text-2xl sm:text-4xl">₱</span>{window.peso(balance)}</>}
                             </p>
                         </div>
                     </div>
@@ -1486,6 +1566,7 @@
             if (typeof window.Navbar !== "function") missingNames.push("Navbar");
             if (typeof window.SmartSummary !== "function") missingNames.push("SmartSummary");
             if (typeof window.ExpenseChart !== "function") missingNames.push("ExpenseChart");
+            if (typeof window.AddEntryForm !== "function") missingNames.push("AddEntryForm");
             if (typeof window.EntryList !== "function") missingNames.push("EntryList");
             if (typeof window.ExpenseItem !== "function") missingNames.push("ExpenseItem");
             if (typeof window.OnboardingModal !== "function") missingNames.push("OnboardingModal");
