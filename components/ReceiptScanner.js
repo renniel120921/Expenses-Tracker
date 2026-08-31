@@ -1,74 +1,4 @@
-// components/ReceiptScanner.js
-
-// ---- Real OCR helpers ---------------------------------------------------
-
-// Lazily load Tesseract.js only once, the first time it's actually needed.
-let tesseractLoadingPromise = null;
-function ensureTesseractLoaded() {
-    if (window.Tesseract) return Promise.resolve();
-    if (tesseractLoadingPromise) return tesseractLoadingPromise;
-
-    tesseractLoadingPromise = new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error("Failed to load OCR engine"));
-        document.head.appendChild(script);
-    });
-    return tesseractLoadingPromise;
-}
-
-// Pull the most likely "total amount" out of raw OCR text.
-// Strategy: look for lines with a TOTAL-ish keyword first (most reliable on
-// PH receipts), then fall back to the largest peso-looking number anywhere
-// in the text. Returns null (not a guessed number) when nothing plausible
-// is found — this is the key fix: no result should mean no result.
-function extractAmountFromText(rawText) {
-    if (!rawText || !rawText.trim()) return null;
-
-    const text = rawText.replace(/,/g, "");
-    const moneyPattern = /(?:₱|P|PHP)?\s*(\d{1,6}(?:\.\d{1,2})?)/gi;
-
-    const priorityKeywords = /total\s*(amount|due|sale)?|amount\s*due|grand\s*total/i;
-    const lines = text.split(/\n+/);
-
-    for (const line of lines) {
-        if (priorityKeywords.test(line)) {
-            const matches = [...line.matchAll(moneyPattern)].map(m => parseFloat(m[1])).filter(n => !isNaN(n) && n > 0);
-            if (matches.length > 0) {
-                return Math.max(...matches).toFixed(2);
-            }
-        }
-    }
-
-    // Fallback: largest plausible currency-like number in the whole text.
-    const allMatches = [...text.matchAll(moneyPattern)]
-        .map(m => parseFloat(m[1]))
-        .filter(n => !isNaN(n) && n > 0 && n < 1000000);
-
-    if (allMatches.length === 0) return null;
-    return Math.max(...allMatches).toFixed(2);
-}
-
-// Very light keyword-based category guess. Falls back to null (no guess)
-// so we don't silently mislabel something as "Pagkain" by default.
-function extractCategoryFromText(rawText) {
-    if (!rawText) return null;
-    const text = rawText.toLowerCase();
-
-    const rules = [
-        { category: "Pagkain", keywords: ["restaurant", "cafe", "grocery", "mart", "food", "kainan", "resto", "bakery", "milktea", "jollibee", "mcdo", "chowking"] },
-        { category: "Bills", keywords: ["meralco", "maynilad", "pldt", "globe", "smart", "bill", "electric", "water bill", "internet"] },
-        { category: "Pamasahe", keywords: ["grab", "taxi", "jeep", "bus", "toll", "gas station", "petron", "shell", "caltex", "fuel"] },
-    ];
-
-    for (const rule of rules) {
-        if (rule.keywords.some(k => text.includes(k))) return rule.category;
-    }
-    return null;
-}
-
-window.ReceiptScanner = function ReceiptScanner({ uid }) {
+window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"] }) {
     const { useState, useRef, useEffect } = React;
 
     const [status, setStatus] = useState("IDLE"); // IDLE, CAMERA, SCANNING, RESULT
@@ -78,12 +8,20 @@ window.ReceiptScanner = function ReceiptScanner({ uid }) {
     // Extracted Data States
     const [extractedAmount, setExtractedAmount] = useState("");
     const [extractedCategory, setExtractedCategory] = useState("Pagkain");
+    const [method, setMethod] = useState(wallets[0] || "Cash"); // 🌟 NEW PAYMENT OPTION STATE
     const [amountWasDetected, setAmountWasDetected] = useState(false);
     const [saving, setSaving] = useState(false);
     const [scanError, setScanError] = useState(null);
 
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
+
+    // Update default method if wallets prop changes
+    useEffect(() => {
+        if (wallets.length > 0 && !wallets.includes(method)) {
+            setMethod(wallets[0]);
+        }
+    }, [wallets]);
 
     // Turn off camera when component unmounts
     useEffect(() => {
@@ -152,30 +90,86 @@ window.ReceiptScanner = function ReceiptScanner({ uid }) {
         reader.readAsDataURL(file);
     };
 
-    // Real OCR pass using Tesseract.js — no more random mock values.
+    // Helper functions for extraction
+    const ensureTesseractLoaded = () => {
+        if (window.Tesseract) return Promise.resolve();
+        return new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error("Failed to load OCR engine"));
+            document.head.appendChild(script);
+        });
+    };
+
+    const extractAmountFromText = (rawText) => {
+        if (!rawText || !rawText.trim()) return null;
+        const text = rawText.replace(/,/g, "");
+        const moneyPattern = /(?:₱|P|PHP)?\s*(\d{1,6}(?:\.\d{1,2})?)/gi;
+        const priorityKeywords = /total\s*(amount|due|sale)?|amount\s*due|grand\s*total/i;
+        const lines = text.split(/\n+/);
+
+        for (const line of lines) {
+            if (priorityKeywords.test(line)) {
+                const matches = [...line.matchAll(moneyPattern)].map(m => parseFloat(m[1])).filter(n => !isNaN(n) && n > 0);
+                if (matches.length > 0) return Math.max(...matches).toFixed(2);
+            }
+        }
+
+        const allMatches = [...text.matchAll(moneyPattern)].map(m => parseFloat(m[1])).filter(n => !isNaN(n) && n > 0 && n < 1000000);
+        if (allMatches.length === 0) return null;
+        return Math.max(...allMatches).toFixed(2);
+    };
+
+    const extractCategoryFromText = (rawText) => {
+        if (!rawText) return null;
+        const text = rawText.toLowerCase();
+        const rules = [
+            { category: "Pagkain", keywords: ["restaurant", "cafe", "grocery", "mart", "food", "kainan", "resto", "bakery", "milktea", "jollibee", "mcdo", "chowking"] },
+            { category: "Bills", keywords: ["meralco", "maynilad", "pldt", "globe", "smart", "bill", "electric", "water bill", "internet"] },
+            { category: "Pamasahe", keywords: ["grab", "taxi", "jeep", "bus", "toll", "gas station", "petron", "shell", "caltex", "fuel"] },
+        ];
+
+        for (const rule of rules) {
+            if (rule.keywords.some(k => text.includes(k))) return rule.category;
+        }
+        return null;
+    };
+
+    const extractMethodFromText = (rawText) => {
+        if (!rawText) return null;
+        const lowerText = rawText.toLowerCase();
+        for (let m of wallets) {
+            if (lowerText.includes(m.toLowerCase())) return m;
+        }
+        if (lowerText.includes("gcash") && wallets.includes("GCash")) return "GCash";
+        if ((lowerText.includes("maya") || lowerText.includes("paymaya")) && wallets.includes("Maya")) return "Maya";
+        return null;
+    };
+
+    // Real OCR pass using Tesseract.js
     const processImage = async (base64Image) => {
         setStatus("SCANNING");
         setScanError(null);
 
         try {
             await ensureTesseractLoaded();
-            const { data } = await window.Tesseract.recognize(base64Image, "eng", {
-                // logger: m => console.log(m), // uncomment for OCR progress debugging
-            });
+            const { data } = await window.Tesseract.recognize(base64Image, "eng");
 
             const rawText = data && data.text ? data.text : "";
             const detectedAmount = extractAmountFromText(rawText);
             const detectedCategory = extractCategoryFromText(rawText);
+            const detectedMethod = extractMethodFromText(rawText);
 
             if (detectedAmount) {
                 setExtractedAmount(detectedAmount);
                 setAmountWasDetected(true);
             } else {
-                // Key fix: don't invent a number when nothing was found.
                 setExtractedAmount("");
                 setAmountWasDetected(false);
             }
 
+            if (detectedMethod) setMethod(detectedMethod);
             setExtractedCategory(detectedCategory || "Pagkain");
             setStatus("RESULT");
         } catch (err) {
@@ -201,21 +195,20 @@ window.ReceiptScanner = function ReceiptScanner({ uid }) {
                 desc: "Resibo (Auto-Scanned)",
                 amount: amt,
                 category: extractedCategory,
-                method: "Cash",
+                method: method, // 🌟 USING SELECTED WALLET
                 spendType: "need"
             });
 
             Swal.fire({
                 icon: 'success',
                 title: 'Nai-log na!',
-                text: `Ang resibo na ₱${window.peso(amt)} ay naidagdag na.`,
+                text: `Ang resibo na ₱${window.peso(amt)} ay naidagdag sa ${method}.`,
                 confirmButtonColor: '#1F6F54',
                 timer: 2000,
                 showConfirmButton: false,
                 customClass: { popup: 'tipid-swal' }
             });
 
-            // Reset state
             resetScanner();
 
         } catch (err) {
@@ -279,13 +272,13 @@ window.ReceiptScanner = function ReceiptScanner({ uid }) {
 
                         <div className="w-full max-w-[250px] flex flex-col gap-3 mt-4">
                             <button onClick={startCamera} className="w-full bg-gradient-to-r from-peso to-pesoLight text-white py-3.5 rounded-2xl font-semibold shadow-md active:scale-95 transition-all flex items-center justify-center gap-2">
-                                <window.Icons.Camera size={18} /> Buksan ang Camera
+                                Buksan ang Camera
                             </button>
 
                             <div className="relative w-full">
                                 <input type="file" accept="image/*" onChange={handleFileUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                                 <button className="w-full bg-black/5 dark:bg-white/5 text-ink dark:text-paper py-3.5 rounded-2xl font-medium active:scale-95 transition-all flex items-center justify-center gap-2">
-                                    <window.Icons.Image size={18} /> Mag-upload ng Larawan
+                                    Mag-upload ng Larawan
                                 </button>
                             </div>
                         </div>
@@ -331,12 +324,15 @@ window.ReceiptScanner = function ReceiptScanner({ uid }) {
 
                 {/* RESULT STATE: Form pre-filled (or blank if nothing detected) */}
                 {status === "RESULT" && (
-                    <div className="flex-1 flex flex-col">
+                    <div className="flex-1 flex flex-col animate-[fadeIn_0.4s_ease-out]">
+
                         {amountWasDetected ? (
                             <div className="flex items-start gap-4 mb-6 bg-peso/10 dark:bg-pesoLight/10 border border-peso/20 p-4 rounded-[1.25rem]">
                                 <img src={imageSrc} alt="Thumb" className="w-16 h-20 object-cover rounded-lg shadow-sm" />
                                 <div>
-                                    <p className="text-xs font-bold text-peso dark:text-pesoLight uppercase tracking-wider mb-1">OCR Success</p>
+                                    <p className="text-xs font-bold text-peso dark:text-pesoLight uppercase tracking-wider mb-1 flex items-center gap-1">
+                                        <window.Icons.Check size={14} strokeWidth={3} /> OCR Success
+                                    </p>
                                     <p className="text-sm text-ink dark:text-paper font-medium mb-1">Na-detect ang mga detalye mula sa resibo.</p>
                                     <p className="text-[10px] text-ink2/60 dark:text-paper/60">Paki-verify ang halaga kung tama bago i-save.</p>
                                 </div>
@@ -378,6 +374,18 @@ window.ReceiptScanner = function ReceiptScanner({ uid }) {
                                     <window.Icons.Category size={16} className="text-ink2/40 dark:text-paper/40 shrink-0" />
                                     <select value={extractedCategory} onChange={e => setExtractedCategory(e.target.value)} className="w-full bg-transparent text-[14px] text-ink dark:text-paper focus:outline-none appearance-none pr-4">
                                         {window.CATEGORIES.map(c => <option key={c} value={c} className="bg-paper dark:bg-ink">{c}</option>)}
+                                    </select>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="absolute right-4 text-ink2/30 dark:text-paper/30 pointer-events-none"><path d="M6 9l6 6 6-6" /></svg>
+                                </div>
+                            </div>
+
+                            {/* 🌟 NEW: PAYMENT OPTION / WALLET DROPDOWN */}
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[11px] font-mono font-semibold uppercase tracking-widest text-ink2/60 dark:text-paper/50 pl-1">Payment Method</label>
+                                <div className="flex items-center gap-2.5 bg-black/5 dark:bg-white/5 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-3.5 py-3.5 focus-within:ring-2 focus-within:ring-peso/40 transition-all relative">
+                                    <window.Icons.Wallet size={16} className="text-ink2/40 dark:text-paper/40 shrink-0" />
+                                    <select value={method} onChange={e => setMethod(e.target.value)} className="w-full bg-transparent text-[14px] text-ink dark:text-paper focus:outline-none appearance-none pr-4">
+                                        {wallets.map(w => <option key={w} value={w} className="bg-paper dark:bg-ink">{w}</option>)}
                                     </select>
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="absolute right-4 text-ink2/30 dark:text-paper/30 pointer-events-none"><path d="M6 9l6 6 6-6" /></svg>
                                 </div>

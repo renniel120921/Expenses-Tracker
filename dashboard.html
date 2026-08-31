@@ -65,12 +65,9 @@
 
     <style>
         :root {
-            --sat: env(safe-area-inset-top, 0px);
-            --sar: env(safe-area-inset-right, 0px);
-            --sab: env(safe-area-inset-bottom, 0px);
-            --sal: env(safe-area-inset-left, 0px);
-            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --sat: env(safe-area-inset-top, 0px); --sar: env(safe-area-inset-right, 0px);
+            --sab: env(safe-area-inset-bottom, 0px); --sal: env(safe-area-inset-left, 0px);
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1); --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         html { background: #F4F7F4; transition: background-color 0.5s var(--ease-out-expo); }
         html.dark { background: #070B09; color: #F4F7F4; }
@@ -86,99 +83,78 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.85s linear infinite; }
 
-        /* Premium Operational Animations */
-        @keyframes fadeUpBento {
-            from { opacity: 0; transform: translateY(30px) scale(0.97); filter: blur(4px); }
-            to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-        }
+        @keyframes fadeUpBento { from { opacity: 0; transform: translateY(30px) scale(0.97); filter: blur(4px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
         .fade-up-bento { animation: fadeUpBento 0.9s var(--ease-out-expo) both; }
 
         @keyframes breatheGlow { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.15); filter: brightness(1.2); } }
         .breathe-glow { animation: breatheGlow 5s ease-in-out infinite; }
 
         @keyframes dataSweep { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
-        .data-sweep {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            background-size: 200% 100%;
-            animation: dataSweep 3s infinite linear;
-        }
+        .data-sweep { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); background-size: 200% 100%; animation: dataSweep 3s infinite linear; }
 
         @keyframes mascotHover { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-8px) rotate(1deg); } }
         .tipid-mascot-img { animation: mascotHover 5s ease-in-out infinite; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.4)); }
 
+        /* 🌟 TIPID BUDDY MASCOT ALERT ANIMATIONS 🌟 */
+        @keyframes mascotCelebrate {
+            0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
+            20% { transform: translateY(-14px) scale(1.1) rotate(-6deg); }
+            40% { transform: translateY(0) scale(0.95) rotate(0deg); }
+            60% { transform: translateY(-10px) scale(1.08) rotate(6deg); }
+            80% { transform: translateY(0) scale(1) rotate(0deg); }
+        }
+        .mascot-anim-celebrate { animation: mascotCelebrate 1.2s var(--ease-spring) infinite; }
+
+        @keyframes mascotWorry {
+            0%, 100% { transform: translateX(0) rotate(0deg) scale(1); }
+            20% { transform: translateX(-8px) rotate(-4deg) scale(1.05); }
+            40% { transform: translateX(8px) rotate(4deg) scale(1.05); }
+            60% { transform: translateX(-6px) rotate(-2deg); }
+            80% { transform: translateX(6px) rotate(2deg); }
+        }
+        .mascot-anim-worry { animation: mascotWorry 0.8s ease-in-out infinite; }
+
+        @keyframes mascotCaution {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(-3deg); filter: drop-shadow(0 0 12px rgba(214, 64, 69, 0.4)); }
+        }
+        .mascot-anim-caution { animation: mascotCaution 1.5s ease-in-out infinite; }
+
+        @keyframes mascotFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(3deg); filter: drop-shadow(0 15px 20px rgba(31, 111, 84, 0.3)); }
+        }
+        .mascot-anim-float { animation: mascotFloat 2.2s ease-in-out infinite; }
+
         .bar-fill { transition: width 1.2s var(--ease-out-expo); }
-        .tipid-swal { border-radius: 28px !important; font-family: 'Inter', sans-serif !important; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 24px 48px -12px rgba(0,0,0,0.25) !important; }
-        .tipid-swal textarea { font-family: 'Inter', sans-serif !important; border-radius: 12px; }
+        .tipid-swal { border-radius: 28px !important; font-family: 'Inter', sans-serif !important; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 24px 48px -12px rgba(0,0,0,0.25) !important; background: #F4F7F4 !important; }
+        html.dark .tipid-swal { background: #141E18 !important; color: #F4F7F4 !important; border: 1px solid rgba(255,255,255,0.08) !important; }
+        .tipid-swal textarea { font-family: 'Inter', sans-serif !important; border-radius: 14px; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.1); }
+        html.dark .tipid-swal textarea { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; }
 
         /* Bento & Glassmorphism System */
-        .bento-card {
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(32px) saturate(200%);
-            -webkit-backdrop-filter: blur(32px) saturate(200%);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            box-shadow: var(--tw-shadow-bento);
-            transition: all 0.4s var(--ease-out-expo);
-        }
+        .bento-card { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(32px) saturate(200%); -webkit-backdrop-filter: blur(32px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.9); box-shadow: var(--tw-shadow-bento); transition: all 0.4s var(--ease-out-expo); }
         .bento-card:hover { transform: translateY(-4px); box-shadow: var(--tw-shadow-bentoHover); }
-
-        html.dark .bento-card {
-            background: rgba(20, 30, 24, 0.55);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: var(--tw-shadow-bentoDark);
-        }
+        html.dark .bento-card { background: rgba(20, 30, 24, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: var(--tw-shadow-bentoDark); }
         html.dark .bento-card:hover { box-shadow: var(--tw-shadow-bentoDarkHover); }
 
-        /* Hero Command Center */
-        .hero-command {
-            background: linear-gradient(145deg, #164C38 0%, #0E2E22 100%);
-            box-shadow: var(--tw-shadow-glass), 0 20px 40px -10px rgba(22, 76, 56, 0.4);
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.15);
-        }
+        .hero-command { background: linear-gradient(145deg, #164C38 0%, #0E2E22 100%); box-shadow: var(--tw-shadow-glass), 0 20px 40px -10px rgba(22, 76, 56, 0.4); position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.15); }
         html.dark .hero-command { background: linear-gradient(145deg, #113629 0%, #081711 100%); box-shadow: var(--tw-shadow-bentoDark); border: 1px solid rgba(255,255,255,0.08); }
+        .hero-mesh { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 0% 0%, rgba(82, 200, 161, 0.25) 0%, transparent 45%), radial-gradient(circle at 100% 100%, rgba(212, 175, 55, 0.15) 0%, transparent 50%); mix-blend-mode: screen; }
 
-        .hero-mesh {
-            position: absolute; inset: 0; pointer-events: none;
-            background:
-                radial-gradient(circle at 0% 0%, rgba(82, 200, 161, 0.25) 0%, transparent 45%),
-                radial-gradient(circle at 100% 100%, rgba(212, 175, 55, 0.15) 0%, transparent 50%);
-            mix-blend-mode: screen;
-        }
-
-        /* Interactive Hardware Buttons */
-        .action-btn {
-            background: rgba(255,255,255,0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.9);
-            box-shadow: var(--tw-shadow-action);
-            transition: all 0.3s var(--ease-spring);
-        }
+        .action-btn { background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.9); box-shadow: var(--tw-shadow-action); transition: all 0.3s var(--ease-spring); }
         .action-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 24px -6px rgba(18, 61, 46, 0.15), inset 0 1px 0 rgba(255,255,255,1); }
         .action-btn:active { transform: translateY(1px) scale(0.96); box-shadow: 0 2px 8px -2px rgba(18, 61, 46, 0.1); }
-
         html.dark .action-btn { background: rgba(30,45,35,0.6); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 8px 20px -4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05); }
         html.dark .action-btn:hover { background: rgba(40,55,45,0.8); box-shadow: 0 12px 24px -6px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1); }
 
-        /* Digital Wallet Holographics */
         .wallet-card { aspect-ratio: 1.586 / 1; transform-style: preserve-3d; perspective: 1200px; }
-        .holo-foil {
-            position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.5s ease;
-            background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.5) 45%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.5) 55%, transparent 80%);
-            background-size: 250% 250%; mix-blend-mode: color-dodge;
-        }
+        .holo-foil { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.5s ease; background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.5) 45%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.5) 55%, transparent 80%); background-size: 250% 250%; mix-blend-mode: color-dodge; }
         .wallet-card:hover .holo-foil { opacity: 1; animation: shine 2.5s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
         @keyframes shine { 0% { background-position: 200% 200%; } 100% { background-position: -100% -100%; } }
 
-        .chip-emboss {
-            background: linear-gradient(135deg, #E6D070, #947A26);
-            box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), 0 2px 6px rgba(0,0,0,0.4);
-            border-radius: 6px; position: relative; overflow: hidden;
-        }
-        .chip-emboss::after {
-            content: ''; position: absolute; inset: 0;
-            background-image: repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.15) 4px, rgba(0,0,0,0.15) 5px);
-        }
+        .chip-emboss { background: linear-gradient(135deg, #E6D070, #947A26); box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), 0 2px 6px rgba(0,0,0,0.4); border-radius: 6px; position: relative; overflow: hidden; }
+        .chip-emboss::after { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.15) 4px, rgba(0,0,0,0.15) 5px); }
 
         .tap-scale { transition: transform 0.2s var(--ease-spring); }
         .tap-scale:active { transform: scale(0.94); }
@@ -186,22 +162,15 @@
         .hide-scroll::-webkit-scrollbar { display: none; }
         .is-dragging { cursor: grabbing !important; user-select: none; }
         .scroll-grab { cursor: grab; }
-
-        @media (prefers-reduced-motion: reduce) {
-            * { animation: none !important; transition: none !important; }
-            .tipid-mascot-img { animation: none; }
-        }
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } .tipid-mascot-img, .mascot-anim-celebrate, .mascot-anim-worry, .mascot-anim-caution, .mascot-anim-float { animation: none !important; } }
     </style>
 </head>
 <body class="bg-paper dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
     <div id="root"></div>
 
     <script type="text/babel">
-        window.useState = React.useState;
-        window.useEffect = React.useEffect;
-        window.useMemo = React.useMemo;
-        window.useRef = React.useRef;
-        window.useCallback = React.useCallback;
+        window.useState = React.useState; window.useEffect = React.useEffect;
+        window.useMemo = React.useMemo; window.useRef = React.useRef; window.useCallback = React.useCallback;
 
         function Icon({ path, size = 20, className = "", strokeWidth = 2 }) {
             return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>{path}</svg>;
@@ -324,6 +293,42 @@
             for (let i = 0; i < seed.length; i++) { h = (h * 31 + seed.charCodeAt(i)) >>> 0; }
             return String(h % 9000 + 1000);
         }
+
+        // 🌟 CUSTOM TIPID BUDDY MODAL HELPER FUNCTION 🌟
+        window.showTipidBuddyModal = function({ title, message, mode = "celebrate", confirmText = "Sige", cancelText = null, confirmColor = "#1F6F54" }) {
+            const animMap = {
+                celebrate: "mascot-anim-celebrate",
+                worry: "mascot-anim-worry",
+                caution: "mascot-anim-caution",
+                float: "mascot-anim-float"
+            };
+            const emojiMap = {
+                celebrate: "🎉",
+                worry: "🚨",
+                caution: "🛑",
+                float: "🪄"
+            };
+
+            return Swal.fire({
+                html: `
+                    <div class="flex flex-col items-center text-center pt-2">
+                        <div class="relative w-24 h-24 mb-4 flex items-center justify-center">
+                            <div class="absolute inset-0 rounded-full bg-peso/15 blur-xl"></div>
+                            <img src="/assets/tipid_mascot.png" alt="Tipid Buddy" class="w-20 h-20 object-contain ${animMap[mode] || 'mascot-anim-float'} drop-shadow-md" />
+                            <span class="absolute -top-1 -right-1 text-2xl">${emojiMap[mode] || '✨'}</span>
+                        </div>
+                        <h3 class="font-display text-2xl font-bold text-ink dark:text-paper mb-2 tracking-tight">${title}</h3>
+                        <div class="text-[14px] text-ink2/80 dark:text-paper/80 font-medium leading-relaxed max-w-xs">${message}</div>
+                    </div>
+                `,
+                showCancelButton: !!cancelText,
+                confirmButtonColor: confirmColor,
+                cancelButtonColor: '#4A5568',
+                confirmButtonText: confirmText,
+                cancelButtonText: cancelText,
+                customClass: { popup: 'tipid-swal' }
+            });
+        };
     </script>
 
     <script type="text/babel" src="./components/navbar.js"></script>
@@ -379,6 +384,97 @@
                     <path d="M12 9v4M12 17h.01" />
                     <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
                 </svg>
+            );
+        }
+
+        // 🌟 TIPID BUDDY INSIGHTS (BEHAVIORAL SERMON) 🌟
+        function TipidBuddyInsights({ entries, monthStats, budget, goalName }) {
+            const { useState, useEffect } = React;
+            const [insight, setInsight] = useState(null);
+
+            useEffect(() => {
+                if (!entries || entries.length === 0) {
+                    setInsight({
+                        tone: "neutral",
+                        message: "Wala ka pang nalo-log ngayong buwan. I-update na ang tracker para alam natin kung magkano pa ang pwede nating gastusin!"
+                    });
+                    return;
+                }
+
+                const monthlyBudget = Number(budget) || 0;
+                const isOverBudget = monthlyBudget > 0 && monthStats.expenseThis > monthlyBudget;
+
+                const now = new Date();
+                const currentMonthEntries = entries.filter(e => {
+                    const d = parseEntryDate(e);
+                    return d && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+                });
+
+                let totalLuho = 0;
+                let totalFood = 0;
+
+                currentMonthEntries.forEach(e => {
+                    if (e.type === "expense") {
+                        if (e.spendType === "luho") totalLuho += Number(e.amount) || 0;
+                        if (e.category === "Pagkain") totalFood += Number(e.amount) || 0;
+                    }
+                });
+
+                const foodPct = monthStats.expenseThis > 0 ? (totalFood / monthStats.expenseThis) * 100 : 0;
+                const luhoPct = monthStats.expenseThis > 0 ? (totalLuho / monthStats.expenseThis) * 100 : 0;
+
+                if (isOverBudget) {
+                    setInsight({
+                        tone: "danger",
+                        message: `Naku, lagpas na tayo sa budget natin na ₱${window.peso(monthlyBudget)}! Medyo tipid-tipid muna tayo sa mga susunod na araw, baka madelay ang ipon natin.`
+                    });
+                } else if (luhoPct > 30) {
+                    setInsight({
+                        tone: "warning",
+                        message: `Pansin ko lang, umabot na ng ₱${window.peso(totalLuho)} ang nagastos natin sa 'Luho'. Baka pwede nating i-save na lang 'yan para sa ${goalName || 'Goal'} mo?`
+                    });
+                } else if (foodPct > 40 && totalFood > 1000) {
+                    setInsight({
+                        tone: "warning",
+                        message: `₱${window.peso(totalFood)} na ang nagagastos natin sa Pagkain this month. Kape at food delivery ba 'yan? Baka pwedeng mag-luto muna tayo sa bahay?`
+                    });
+                } else if (monthStats.savingsRate >= 20) {
+                    setInsight({
+                        tone: "success",
+                        message: `Ang ganda ng pacing natin! Pasok tayo sa budget at maganda ang savings rate (${Math.round(monthStats.savingsRate)}%). Keep it up para mabilis maabot ang ${goalName || 'Goal'}!`
+                    });
+                } else {
+                    setInsight({
+                        tone: "neutral",
+                        message: "Going strong tayo this week. Patuloy lang sa pag-log ng gastos para laging updated ang ating budget pace."
+                    });
+                }
+            }, [entries, monthStats, budget, goalName]);
+
+            if (!insight) return null;
+
+            const toneStyles = {
+                danger: "bg-[#FAEDE9] dark:bg-[#D64045]/20 border-[#D64045]/20 text-[#D64045] dark:text-[#F38C80]",
+                warning: "bg-[#FDF6E3] dark:bg-[#D4AF37]/20 border-[#D4AF37]/20 text-[#C9932E] dark:text-[#E8C071]",
+                success: "bg-[#E6F3EF] dark:bg-[#1F6F54]/20 border-[#1F6F54]/20 text-[#1F6F54] dark:text-[#52C8A1]",
+                neutral: "bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-ink dark:text-paper"
+            };
+
+            return (
+                <div className={`bento-card rounded-[2rem] p-6 sm:p-7 flex gap-5 items-center relative overflow-hidden mb-6 sm:mb-8 border ${toneStyles[insight.tone]}`}>
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full shrink-0 relative flex items-center justify-center bg-white/40 dark:bg-black/40 shadow-inner">
+                        <img src="/assets/tipid_mascot.png" alt="Tipid Buddy" className="w-[120%] h-[120%] object-contain absolute bottom-0 drop-shadow-md" />
+                    </div>
+                    <div className="flex-1">
+                        <div className="flex items-center gap-1.5 mb-1">
+                            <Icons.Sparkle size={14} />
+                            <h3 className="text-[11px] font-mono font-bold tracking-widest uppercase opacity-80">Tipid Buddy Insights</h3>
+                        </div>
+                        <p className="text-[13px] sm:text-[14px] font-medium leading-relaxed opacity-90">
+                            "{insight.message}"
+                        </p>
+                    </div>
+                </div>
             );
         }
 
@@ -460,42 +556,47 @@
 
                 if (!desc.trim()) {
                     triggerShake();
-                    return Swal.fire({ icon: 'warning', title: 'Teka muna!', text: 'Pakilagay kung ano ang binili o kinita mo.', confirmButtonColor: '#1F6F54', customClass: { popup: 'tipid-swal' }});
+                    return window.showTipidBuddyModal({
+                        title: 'Teka muna!',
+                        message: 'Pakilagay kung ano ang binili o kinita mo bago natin i-save.',
+                        mode: 'worry',
+                        confirmColor: '#1F6F54'
+                    });
                 }
                 if (!parsedAmount || parsedAmount <= 0) {
                     triggerShake();
-                    return Swal.fire({ icon: 'warning', title: 'Teka muna!', text: 'Pakilagay ang tamang halaga.', confirmButtonColor: '#1F6F54', customClass: { popup: 'tipid-swal' }});
+                    return window.showTipidBuddyModal({
+                        title: 'Teka muna!',
+                        message: 'Pakilagay ang tamang halaga para mai-record ko nang wasto.',
+                        mode: 'worry',
+                        confirmColor: '#1F6F54'
+                    });
                 }
 
                 if (insufficient) {
                     triggerShake();
-                    return Swal.fire({
-                        icon: 'error',
-                        title: 'Kulang ang Balanse',
-                        html: `Hindi mo pwedeng gamitin ang <b>${method}</b> dahil <b>₱${window.peso(currentBalance)}</b> na lamang ang laman nito.`,
-                        confirmButtonColor: '#B5483B',
-                        customClass: { popup: 'tipid-swal' }
+                    return window.showTipidBuddyModal({
+                        title: 'Kulang ang Balanse!',
+                        message: `Hindi mo pwedeng gamitin ang <b>${method}</b> dahil <b>₱${window.peso(currentBalance)}</b> na lamang ang laman nito.`,
+                        mode: 'worry',
+                        confirmColor: '#D64045'
                     });
                 }
 
+                // 🛑 Mascot Caution on Ipon Wallet
                 const savedGoalWallet = localStorage.getItem('tipid_goal_wallet');
                 if (!isIncome && method === savedGoalWallet) {
                     triggerShake();
-                    const confirm = await Swal.fire({
+                    const confirm = await window.showTipidBuddyModal({
                         title: 'Wait, Ipon mo ito! 🛑',
-                        html: `Ang <b>${method}</b> ay naka-set bilang iyong Ipon Wallet para sa iyong goal.<br><br>Sigurado ka bang gusto mong bawasan ang ipon mo ng <b class="text-[#B5483B] font-mono">₱${window.peso(parsedAmount)}</b>?`,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#B5483B',
-                        cancelButtonColor: '#33443A',
-                        confirmButtonText: 'Oo, Ituloy ang Gastos',
-                        cancelButtonText: 'Huwag, I-cancel',
-                        customClass: { popup: 'tipid-swal' }
+                        message: `Ang <b>${method}</b> ay naka-set bilang iyong Ipon Wallet.<br><br>Sigurado ka bang babawasan mo ang ipon mo ng <b class="text-[#D64045] font-mono">₱${window.peso(parsedAmount)}</b>?`,
+                        mode: 'caution',
+                        confirmColor: '#D64045',
+                        confirmText: 'Oo, Ituloy ang Gastos',
+                        cancelText: 'Huwag, I-cancel'
                     });
 
-                    if (!confirm.isConfirmed) {
-                        return;
-                    }
+                    if (!confirm.isConfirmed) return;
                 }
 
                 setSaving(true);
@@ -514,19 +615,22 @@
                     setJustAdded(true);
                     setTimeout(() => setJustAdded(false), 900);
 
-                    Swal.fire({
-                        icon: 'success',
+                    // 🥳 Mascot Celebrate Modal
+                    window.showTipidBuddyModal({
                         title: isIncome ? 'Kita Naitala! 🎉' : 'Gastos Naitala! 💸',
-                        text: `Matagumpay na naidagdag ang ₱${window.peso(parsedAmount)} bilang ${isIncome ? 'kita' : 'gastos'}.`,
-                        confirmButtonColor: '#1F6F54',
-                        timer: 2000,
-                        showConfirmButton: false,
-                        customClass: { popup: 'tipid-swal' }
+                        message: `Matagumpay na naidagdag ang <b>₱${window.peso(parsedAmount)}</b> bilang ${isIncome ? 'kita' : 'gastos'}.`,
+                        mode: 'celebrate',
+                        confirmColor: '#1F6F54'
                     });
 
                 } catch (err) {
                     triggerShake();
-                    Swal.fire({ icon: 'error', title: 'Error', text: 'Hindi nai-save ang data sa server. Subukan ulit.', confirmButtonColor: '#B5483B', customClass: { popup: 'tipid-swal' }});
+                    window.showTipidBuddyModal({
+                        title: 'May Error!',
+                        message: 'Hindi nai-save ang data sa server. Subukan ulit.',
+                        mode: 'worry',
+                        confirmColor: '#D64045'
+                    });
                 } finally {
                     setSaving(false);
                 }
@@ -808,13 +912,33 @@
 
             const handleBellClick = () => {
                 if (monthlyBudget === 0) {
-                    Swal.fire({ title: "SYSTEM ALERT", text: "Walang naka-set na Monthly Budget sa settings.", icon: "info", confirmButtonText: "Sige", confirmButtonColor: "#1F6F54", customClass: { popup: 'tipid-swal' } });
+                    window.showTipidBuddyModal({
+                        title: 'Walang Budget ⚙️',
+                        message: 'I-set muna ang iyong Monthly Budget sa ibaba para matulungan kitang mag-track.',
+                        mode: 'float',
+                        confirmColor: '#1F6F54'
+                    });
                 } else if (isOverBudget) {
-                    Swal.fire({ title: "BUDGET EXCEEDED 🚨", html: `Ang budget mo ay <b class="font-mono">₱${window.peso(monthlyBudget)}</b>, pero ang total gastos mo ngayon ay <b class="font-mono text-[#D64045]">₱${window.peso(monthStats.expenseThis)}</b>.`, icon: "error", confirmButtonText: "Acknowledged", confirmButtonColor: "#D64045", customClass: { popup: 'tipid-swal' } });
+                    window.showTipidBuddyModal({
+                        title: 'Over Budget Ka Na! 🚨',
+                        message: `Ang budget mo ay <b>₱${window.peso(monthlyBudget)}</b>, pero ang total gastos mo na ay <b class="text-[#D64045]">₱${window.peso(monthStats.expenseThis)}</b>. Hinay-hinay muna tayo!`,
+                        mode: 'worry',
+                        confirmColor: '#D64045'
+                    });
                 } else if (isOverDaily) {
-                    Swal.fire({ title: "DAILY LIMIT REACHED ⚠️", html: `Safe limit: <b class="font-mono">₱${window.peso(dailyBudget)}</b>/day.<br>Gastos ngayon: <b class="font-mono">₱${window.peso(todayExpenses)}</b>.`, icon: "warning", confirmButtonText: "Acknowledged", confirmButtonColor: "#D64045", customClass: { popup: 'tipid-swal' } });
+                    window.showTipidBuddyModal({
+                        title: 'Alerto sa Gastos! ⚠️',
+                        message: `Ang safe daily limit mo ay <b>₱${window.peso(dailyBudget)}</b>, pero naka-<b>₱${window.peso(todayExpenses)}</b> ka na ngayong araw.`,
+                        mode: 'worry',
+                        confirmColor: '#D64045'
+                    });
                 } else {
-                    Swal.fire({ title: "BUDGET STATUS: NOMINAL", html: `Safe limit: <b class="font-mono">₱${window.peso(dailyBudget)}</b>/day.<br>Gastos ngayon: <b class="font-mono">₱${window.peso(todayExpenses)}</b>.`, icon: "success", confirmButtonText: "Close", confirmButtonColor: "#1F6F54", customClass: { popup: 'tipid-swal' } });
+                    window.showTipidBuddyModal({
+                        title: 'Pasok sa Budget! 🎉',
+                        message: `Maganda ang pacing natin! Gastos ngayon: <b>₱${window.peso(todayExpenses)}</b> (Limit: ₱${window.peso(dailyBudget)}/day).`,
+                        mode: 'celebrate',
+                        confirmColor: '#1F6F54'
+                    });
                 }
             };
 
@@ -951,7 +1075,6 @@
                             <NotificationBell entries={entries} budget={budget} monthStats={monthStats} />
                         </div>
 
-                        {/* 🌟 FIXED RESPONSIVENESS: Full width container with fluid font sizing and no truncation */}
                         <div className="relative z-10 mt-10 w-full pr-16 sm:pr-24">
                             <div className="flex items-center gap-2 mb-2">
                                 <p className="text-[11px] sm:text-xs font-mono font-bold text-white/70 tracking-widest uppercase">SYS.BAL // Net Worth</p>
@@ -1028,11 +1151,11 @@
                         )}
                     </div>
 
-                    <GoalWidget
-                        goalName={goalName} goalAmount={goalAmount}
-                        goalWallet={goalWallet} goalContrib={goalContrib}
-                        goalFreq={goalFreq} goalStart={goalStart}
-                        walletBalances={walletBalances}
+                    <TipidBuddyInsights
+                        entries={entries}
+                        monthStats={monthStats}
+                        budget={budget}
+                        goalName={goalName}
                     />
 
                 </div>
@@ -1350,20 +1473,9 @@
 
             React.useEffect(() => {
                 if (!authReady) return;
-                let unsubscribe;
-                let cancelled = false;
-
-                window.TipidAuth.ready.then(() => {
-                    if (cancelled) return;
-                    unsubscribe = window.TipidAuth.onChange((u) => setUser(u || null));
-                });
-
-                return () => {
-                    cancelled = true;
-                    if (unsubscribe) unsubscribe();
-                };
+                return window.TipidAuth.onChange((u) => setUser(u || null));
             }, [authReady]);
-            
+
             React.useEffect(() => {
                 if (user === null) window.location.href = "login.html";
                 if (user && user.uid && !localStorage.getItem(`tipid_onboarded_${user.uid}`)) {
@@ -1418,15 +1530,25 @@
                 return window.TipidData.subscribeBudget(user.uid, setBudgetState, () => {});
             }, [dataReady, user]);
 
+            // 🌟 SMART SMS EXTRACTOR WITH TIPID BUDDY MASCOT 🌟
             const handleSmartPaste = async () => {
                 const { value: text } = await Swal.fire({
-                    title: 'Smart SMS Paste 🪄',
+                    html: `
+                        <div class="flex flex-col items-center text-center pt-2">
+                            <div class="relative w-20 h-20 mb-3 flex items-center justify-center">
+                                <div class="absolute inset-0 rounded-full bg-peso/15 blur-lg"></div>
+                                <img src="/assets/tipid_mascot.png" alt="Tipid Buddy" class="w-16 h-16 object-contain mascot-anim-float drop-shadow-md" />
+                                <span class="absolute -top-1 -right-1 text-2xl">🪄</span>
+                            </div>
+                            <h3 class="font-display text-2xl font-bold text-ink dark:text-paper mb-1">Smart SMS Paste</h3>
+                            <p class="text-[13px] text-ink2/70 dark:text-paper/70 font-medium mb-3">I-paste ang buong text mula sa GCash, Maya, o Bank alert.</p>
+                        </div>
+                    `,
                     input: 'textarea',
-                    inputLabel: 'I-paste ang buong text ng SMS o Resibo',
-                    inputPlaceholder: 'Halimbawa: You have paid PHP 150.00 to 7-Eleven...',
+                    inputPlaceholder: 'Hal: You have paid PHP 150.00 to 7-Eleven ref no...',
                     showCancelButton: true,
                     confirmButtonColor: '#1F6F54',
-                    cancelButtonColor: '#33443A',
+                    cancelButtonColor: '#4A5568',
                     confirmButtonText: 'I-extract',
                     cancelButtonText: 'Kanselahin',
                     customClass: { popup: 'tipid-swal' }
@@ -1474,13 +1596,11 @@
                         }
                     }));
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Na-extract na!',
-                        text: 'Paki-check kung tama ang mga detalye bago i-save.',
-                        timer: 2000,
-                        showConfirmButton: false,
-                        customClass: { popup: 'tipid-swal' }
+                    window.showTipidBuddyModal({
+                        title: 'Na-extract na! 🪄',
+                        message: `Nailagay na sa form: <b>₱${window.peso(extractedAmount || 0)}</b>. Paki-check kung tama bago i-save.`,
+                        mode: 'celebrate',
+                        confirmColor: '#1F6F54'
                     });
                 }
             };
