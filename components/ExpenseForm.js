@@ -2,7 +2,7 @@
 //
 // ASSUMPTIONS:
 //   - CATEGORIES, METHODS are globals defined elsewhere and loaded before this file
-//   - Icons.{Plus, Pencil, Category, Wallet, Loader} exist on a global Icons object
+//   - Icons.{Plus, Pencil, Category, Wallet, Loader, Check, ShoppingBag} exist on a global Icons object
 //   - window.peso(n) formats a number as a peso-formatted string (no ₱ sign)
 //   - window.TipidData.addIncome / addExpense are async and throw on failure
 //   - Swal (SweetAlert2) and a `.spin` CSS class are available globally
@@ -57,11 +57,9 @@ function ExpenseFormStyles() {
     );
 }
 
-// ringClass lets the parent theme the focus glow per active type (Gastos = terracotta, Kita = green)
-// so the whole form visibly "agrees" with the segmented control, not just the submit button.
 function FieldWrap({ icon, children, className = "", ringClass = "focus-within:ring-peso/40" }) {
     return (
-        <div className={`flex items-center gap-2.5 bg-white/60 dark:bg-black/20 ring-1 ring-black/5 dark:ring-white/10 hover:ring-black/10 dark:hover:ring-white/20 rounded-[14px] px-3.5 focus-within:ring-2 ${ringClass} focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200 ${className}`}>
+        <div className={`flex items-center gap-2.5 bg-white/80 dark:bg-black/20 ring-1 ring-black/5 dark:ring-white/10 hover:ring-black/10 dark:hover:ring-white/20 rounded-[14px] px-3.5 focus-within:ring-2 ${ringClass} focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200 shadow-sm ${className}`}>
             {icon}
             {children}
         </div>
@@ -84,7 +82,6 @@ function SelectChevron() {
     );
 }
 
-// Small inline warning glyph for the "kulang ang balanse" hint — no new Icons.* dependency needed.
 function WarningGlyph({ size = 12 }) {
     return (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
@@ -94,68 +91,89 @@ function WarningGlyph({ size = 12 }) {
     );
 }
 
-window.AddEntryForm = function AddEntryForm({ uid, onAdded, entries = [] }) {
-    const { useState, useMemo } = React;
+window.AddEntryForm = function AddEntryForm({ uid, onAdded, entries = [], baseBalances = {} }) {
+    const { useState, useMemo, useEffect } = React;
 
     const [type, setType] = useState("expense");
     const [desc, setDesc] = useState("");
     const [amount, setAmount] = useState("");
     const [category, setCategory] = useState(window.CATEGORIES[0]);
-    const [method, setMethod] = useState(window.METHODS[0]);
-    const [spendType, setSpendType] = useState("need"); // NEW: "need" or "luho"
+
+    const availableMethods = window.METHODS || ["Cash"];
+    const [method, setMethod] = useState(availableMethods[0] || "Cash");
+
+    const [spendType, setSpendType] = useState("need");
 
     const [saving, setSaving] = useState(false);
     const [justAdded, setJustAdded] = useState(false);
     const [shake, setShake] = useState(false);
+
+    useEffect(() => {
+        if (!availableMethods.includes(method)) {
+            setMethod(availableMethods[0] || "Cash");
+        }
+    }, [availableMethods, method]);
 
     const triggerShake = () => {
         setShake(true);
         setTimeout(() => setShake(false), 400);
     };
 
-    const currentBalance = useMemo(() => {
-        const totalIncome = entries.filter(e => e.type === "income").reduce((sum, curr) => sum + (Number(curr.amount) || 0), 0);
-        const totalExpense = entries.filter(e => e.type === "expense").reduce((sum, curr) => sum + (Number(curr.amount) || 0), 0);
-        return totalIncome - totalExpense;
-    }, [entries]);
+    // Kalkulahin ang real-time balance ng bawat wallet
+    const walletBalances = useMemo(() => {
+        const balances = {};
+        if (baseBalances) {
+            Object.keys(baseBalances).forEach(k => balances[k] = parseFloat(baseBalances[k]) || 0);
+        }
+        entries.forEach(e => {
+            const m = e.method || "Cash";
+            const amt = parseFloat(e.amount) || 0;
+            if (balances[m] === undefined) balances[m] = 0;
+            if (e.type === "income") balances[m] += amt;
+            else balances[m] -= amt;
+        });
+        return balances;
+    }, [entries, baseBalances]);
 
-    const parsedAmount = parseFloat(amount);
-    const willExceedBalance = type === "expense" && !isNaN(parsedAmount) && parsedAmount > 0 && parsedAmount > currentBalance;
+    const currentBalance = walletBalances[method] || 0;
+    const parsedAmount = parseFloat(amount) || 0;
+    const isExpense = type === "expense";
+
+    // Live validation
+    const matitira = isExpense ? (currentBalance - parsedAmount) : (currentBalance + parsedAmount);
+    const insufficient = isExpense && (parsedAmount > currentBalance);
 
     const isIncome = type === "income";
     const accent = isIncome
         ? {
             ring: "focus-within:ring-peso/40",
-            iconBg: "bg-peso/10 dark:bg-pesoLight/15",
-            iconFg: "text-peso dark:text-pesoLight",
-            cardRing: "ring-peso/15 dark:ring-pesoLight/20",
+            iconBg: "bg-gradient-to-br from-[#E6F3EF] to-[#D5EBE3] dark:from-[#1F6F54]/30 dark:to-[#1F6F54]/10 border-white/40 dark:border-white/5",
+            iconFg: "text-[#1F6F54] dark:text-[#52C8A1]",
         }
         : {
             ring: "focus-within:ring-expense/40",
-            iconBg: "bg-expense/10 dark:bg-[#F38C80]/15",
-            iconFg: "text-expense dark:text-[#F38C80]",
-            cardRing: "ring-expense/15 dark:ring-[#F38C80]/20",
+            iconBg: "bg-gradient-to-br from-[#FAEDE9] to-[#F5DBD5] dark:from-[#B5483B]/30 dark:to-[#B5483B]/10 border-white/40 dark:border-white/5",
+            iconFg: "text-[#B5483B] dark:text-[#F38C80]",
         };
 
     const submit = async (e) => {
         e.preventDefault();
-        const amt = parseFloat(amount);
 
         if (!desc.trim()) {
             triggerShake();
             return Swal.fire({ icon: 'warning', title: 'Teka muna!', text: 'Pakilagay kung ano ang binili o kinita mo.', confirmButtonColor: '#1F6F54', customClass: { popup: 'tipid-swal' }});
         }
-        if (!amt || amt <= 0) {
+        if (!parsedAmount || parsedAmount <= 0) {
             triggerShake();
             return Swal.fire({ icon: 'warning', title: 'Teka muna!', text: 'Pakilagay ang tamang halaga.', confirmButtonColor: '#1F6F54', customClass: { popup: 'tipid-swal' }});
         }
 
-        if (type === "expense" && amt > currentBalance) {
+        if (insufficient) {
             triggerShake();
             return Swal.fire({
                 icon: 'error',
-                title: 'Balanse ay Hindi Sapat',
-                html: `Hindi mo pwedeng ilagay ang gastos na <b>₱${window.peso(amt)}</b> dahil <b>₱${window.peso(currentBalance)}</b> na lamang ang natitira mong pera.<br><br>Mag-log muna ng kita.`,
+                title: 'Kulang ang Balanse',
+                html: `Hindi mo pwedeng gamitin ang <b>${method}</b> dahil <b>₱${window.peso(currentBalance)}</b> na lamang ang laman nito.`,
                 confirmButtonColor: '#B5483B',
                 customClass: { popup: 'tipid-swal' }
             });
@@ -164,11 +182,10 @@ window.AddEntryForm = function AddEntryForm({ uid, onAdded, entries = [] }) {
         setSaving(true);
 
         try {
-            if (type === "income") {
-                await window.TipidData.addIncome(uid, { desc: desc.trim(), amount: amt, method });
+            if (isIncome) {
+                await window.TipidData.addIncome(uid, { desc: desc.trim(), amount: parsedAmount, method });
             } else {
-                // NEW: Included spendType (need/luho) inside the payload sent to Firebase
-                await window.TipidData.addExpense(uid, { desc: desc.trim(), amount: amt, category, method, spendType });
+                await window.TipidData.addExpense(uid, { desc: desc.trim(), amount: parsedAmount, category, method, spendType });
             }
 
             setDesc("");
@@ -180,8 +197,8 @@ window.AddEntryForm = function AddEntryForm({ uid, onAdded, entries = [] }) {
 
             Swal.fire({
                 icon: 'success',
-                title: type === 'income' ? 'Kita Naitala! 🎉' : 'Gastos Naitala! 💸',
-                text: `Matagumpay na naidagdag ang ₱${window.peso(amt)} bilang ${type === 'income' ? 'kita' : 'gastos'}.`,
+                title: isIncome ? 'Kita Naitala! 🎉' : 'Gastos Naitala! 💸',
+                text: `Matagumpay na naidagdag ang ₱${window.peso(parsedAmount)} bilang ${isIncome ? 'kita' : 'gastos'}.`,
                 confirmButtonColor: '#1F6F54',
                 timer: 2000,
                 showConfirmButton: false,
@@ -197,7 +214,7 @@ window.AddEntryForm = function AddEntryForm({ uid, onAdded, entries = [] }) {
     };
 
     return (
-        <div className={`relative overflow-hidden bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios p-5 sm:p-7 mb-6 fade-up ${shake ? "shake-once" : ""}`}>
+        <div className={`relative overflow-hidden bg-white/70 dark:bg-ink2/40 backdrop-blur-3xl rounded-[1.75rem] border border-white/80 dark:border-white/10 shadow-ios p-5 sm:p-7 mb-6 fade-up ${shake ? "shake-once" : ""}`}>
             <ExpenseFormStyles />
 
             <div className="absolute top-0 left-0 right-0 h-1.5">
@@ -205,9 +222,9 @@ window.AddEntryForm = function AddEntryForm({ uid, onAdded, entries = [] }) {
                 <div className={`perf-edge absolute inset-0 bg-gradient-to-r from-expense/80 via-[#F38C80]/70 to-gold/60 transition-opacity duration-500 ${isIncome ? "opacity-0" : "opacity-100"}`} />
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 mt-1">
                 <div className="flex items-center gap-3">
-                    <span className={`w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 transition-colors duration-300 ${accent.iconBg} ${accent.iconFg}`}>
+                    <span className={`w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 shadow-sm border transition-colors duration-300 ${accent.iconBg} ${accent.iconFg}`}>
                         <window.Icons.Plus size={18} />
                     </span>
                     <div>
@@ -220,7 +237,7 @@ window.AddEntryForm = function AddEntryForm({ uid, onAdded, entries = [] }) {
                     <div className="relative grid grid-cols-2 bg-black/5 dark:bg-white/5 rounded-full p-1 text-[13px] font-medium shadow-inner w-[160px]">
                         <div
                             className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.2,0.4,1)] ${
-                                type === "income"
+                                isIncome
                                     ? "translate-x-full bg-white dark:bg-ink2"
                                     : "translate-x-0 bg-white dark:bg-ink2"
                             }`}
@@ -229,7 +246,7 @@ window.AddEntryForm = function AddEntryForm({ uid, onAdded, entries = [] }) {
                             type="button"
                             onClick={() => setType("expense")}
                             className={`relative z-10 py-1.5 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-expense/50 ${
-                                type === "expense" ? "text-expense dark:text-[#F38C80] font-semibold" : "text-ink2/50 dark:text-paper/50 hover:text-ink dark:hover:text-paper"
+                                !isIncome ? "text-expense dark:text-[#F38C80] font-semibold" : "text-ink2/50 dark:text-paper/50 hover:text-ink dark:hover:text-paper"
                             }`}
                         >
                             Gastos
@@ -238,111 +255,93 @@ window.AddEntryForm = function AddEntryForm({ uid, onAdded, entries = [] }) {
                             type="button"
                             onClick={() => setType("income")}
                             className={`relative z-10 py-1.5 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 ${
-                                type === "income" ? "text-peso dark:text-[#52C8A1] font-semibold" : "text-ink2/50 dark:text-paper/50 hover:text-ink dark:hover:text-paper"
+                                isIncome ? "text-peso dark:text-[#52C8A1] font-semibold" : "text-ink2/50 dark:text-paper/50 hover:text-ink dark:hover:text-paper"
                             }`}
                         >
                             Kita
                         </button>
                     </div>
 
-                    <span className="text-[10px] sm:text-[11px] font-mono text-ink2/50 dark:text-paper/40 px-1">
-                        Balanse: <span className="text-ink dark:text-paper font-semibold">₱{window.peso(currentBalance)}</span>
+                    <span className="text-[10px] sm:text-[11px] font-mono font-medium text-ink2/50 dark:text-paper/40 px-1 bg-black/5 dark:bg-white/5 rounded-md py-0.5">
+                        Balanse ng {method}: <span className="text-ink dark:text-paper font-bold">₱{window.peso(currentBalance)}</span>
                     </span>
                 </div>
             </div>
 
-            <form onSubmit={submit} className="flex flex-col gap-3 sm:gap-3.5">
+            <form onSubmit={submit} className="flex flex-col gap-3.5">
 
-                <FieldWrap icon={<window.Icons.Pencil size={16} className="text-ink2/40 dark:text-paper/40 shrink-0" />}>
+                <FieldWrap icon={<window.Icons.Pencil size={16} className="text-ink2/40 dark:text-paper/40 shrink-0" />} ringClass={accent.ring}>
                     <input
                         type="text" value={desc} onChange={e => setDesc(e.target.value)}
-                        placeholder={type === "income" ? "Hal: Allowance galing kay Mama" : "Hal: Kape, Grab, Shopee Checkout"}
-                        className="w-full min-w-0 bg-transparent py-3.5 text-[15px] text-ink dark:text-paper placeholder:text-ink2/30 dark:placeholder:text-paper/30 focus:outline-none"
+                        placeholder={isIncome ? "Hal: Allowance galing kay Mama" : "Hal: Kape, Grab, Shopee Checkout"}
+                        className="w-full min-w-0 bg-transparent py-3.5 text-[15px] font-medium text-ink dark:text-paper placeholder:text-ink2/30 dark:placeholder:text-paper/30 focus:outline-none"
                     />
                 </FieldWrap>
 
-                {/* NEW: Need vs Luho Toggle appears ONLY when logging expenses */}
-                {type === "expense" && (
-                    <div className="flex items-center gap-1.5 bg-black/5 dark:bg-white/5 p-1 rounded-2xl w-full">
-                        <button
-                            type="button"
-                            onClick={() => setSpendType("need")}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[12.5px] font-semibold rounded-[14px] transition-all duration-200 focus-visible:outline-none ${
-                                spendType === "need"
-                                    ? "bg-white dark:bg-ink2 text-[#1F6F54] dark:text-[#52C8A1] shadow-sm ring-1 ring-black/5 dark:ring-white/5"
-                                    : "text-ink2/50 dark:text-paper/50 hover:text-ink dark:hover:text-paper"
-                            }`}
-                        >
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                            </svg>
-                            Need (Kailangan)
+                {!isIncome && (
+                    <div className="flex gap-2.5">
+                        <button type="button" onClick={() => setSpendType("need")} className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[14px] text-[13px] font-bold transition-all ring-1 shadow-sm ${spendType === "need" ? 'bg-[#E6F3EF] ring-[#2F8E6C]/30 text-[#1F6F54] dark:bg-[#1F6F54]/20 dark:text-[#52C8A1]' : 'bg-white/80 dark:bg-black/20 ring-black/5 text-ink2/50 dark:text-paper/40 hover:bg-black/5 dark:hover:bg-white/5'}`}>
+                            <window.Icons.Check size={16} strokeWidth={3}/> Need <span className="hidden sm:inline">(Kailangan)</span>
                         </button>
-                        <button
-                            type="button"
-                            onClick={() => setSpendType("luho")}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[12.5px] font-semibold rounded-[14px] transition-all duration-200 focus-visible:outline-none ${
-                                spendType === "luho"
-                                    ? "bg-white dark:bg-ink2 text-[#B5483B] dark:text-[#F38C80] shadow-sm ring-1 ring-black/5 dark:ring-white/5"
-                                    : "text-ink2/50 dark:text-paper/50 hover:text-ink dark:hover:text-paper"
-                            }`}
-                        >
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                                <line x1="3" y1="6" x2="21" y2="6"></line>
-                                <path d="M16 10a4 4 0 0 1-8 0"></path>
-                            </svg>
-                            Want (Luho)
+                        <button type="button" onClick={() => setSpendType("luho")} className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[14px] text-[13px] font-bold transition-all ring-1 shadow-sm ${spendType === "luho" ? 'bg-[#FAEDE9] ring-[#B5483B]/30 text-[#B5483B] dark:bg-[#B5483B]/20 dark:text-[#F38C80]' : 'bg-white/80 dark:bg-black/20 ring-black/5 text-ink2/50 dark:text-paper/40 hover:bg-black/5 dark:hover:bg-white/5'}`}>
+                            {window.Icons.ShoppingBag ? <window.Icons.ShoppingBag size={16} strokeWidth={2.5}/> : <window.Icons.Category size={16} strokeWidth={2.5} />} Want <span className="hidden sm:inline">(Luho)</span>
                         </button>
                     </div>
                 )}
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-3.5 mt-1">
 
-                    <div className="flex flex-col gap-1.5 sm:w-[150px]">
-                        <FieldWrap icon={<span className="text-ink2/40 dark:text-paper/40 font-mono text-[15px] shrink-0">₱</span>}>
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-3.5 mt-1">
+                    <div className="flex flex-col gap-1.5 sm:w-[150px] shrink-0">
+                        <FieldWrap icon={<span className="text-ink2/40 dark:text-paper/40 font-mono text-[15px] shrink-0">₱</span>} ringClass={insufficient ? "ring-expense/50 bg-expense/5" : accent.ring} className={insufficient ? "ring-expense/50 bg-expense/5 dark:bg-expense/10" : ""}>
                             <input
-                                type="number" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)}
+                                type="number" step="0.01" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)}
                                 placeholder="0.00"
-                                className="w-full min-w-0 bg-transparent py-3.5 text-base font-mono font-bold text-ink dark:text-paper placeholder:text-ink2/25 dark:placeholder:text-paper/25 placeholder:font-medium focus:outline-none"
+                                className={`w-full min-w-0 bg-transparent py-3.5 text-base font-mono font-bold placeholder:font-medium focus:outline-none ${insufficient ? 'text-expense dark:text-[#F38C80] placeholder:text-expense/50' : 'text-ink dark:text-paper placeholder:text-ink2/25 dark:placeholder:text-paper/25'}`}
                             />
                         </FieldWrap>
-                        {type === "expense" && (
-                            <span className={`inline-flex items-center gap-1 text-[10px] font-mono px-1.5 transition-colors duration-200 ${willExceedBalance ? "text-expense dark:text-[#F38C80] font-semibold" : "text-ink2/40 dark:text-paper/30"}`}>
-                                {willExceedBalance && <WarningGlyph size={11} />}
-                                {willExceedBalance
+                        {(amount !== "") && (
+                            <span className={`inline-flex items-center gap-1 text-[10px] font-mono px-1.5 transition-colors duration-200 ${insufficient ? "text-expense dark:text-[#F38C80] font-semibold animate-pulse" : "text-ink2/40 dark:text-paper/30 font-medium"}`}>
+                                {insufficient && <WarningGlyph size={11} />}
+                                {insufficient
                                     ? `Kulang ng ₱${window.peso(parsedAmount - currentBalance)}`
-                                    : `Matitira: ₱${window.peso(currentBalance - (isNaN(parsedAmount) ? 0 : parsedAmount))}`}
+                                    : `Matitira: ₱${window.peso(matitira)}`}
                             </span>
                         )}
                     </div>
 
-                    {type === "expense" && (
-                        <FieldWrap className="field-pop sm:w-[170px] relative" icon={<window.Icons.Category size={15} className="text-ink2/40 dark:text-paper/40 shrink-0" />}>
-                            <select value={category} onChange={e => setCategory(e.target.value)} className="w-full min-w-0 bg-transparent py-3.5 text-[14px] text-ink dark:text-paper focus:outline-none appearance-none pr-2">
+                    {!isIncome && (
+                        <FieldWrap className="field-pop relative w-full sm:flex-1 h-[52px]" icon={<window.Icons.Category size={15} className="text-ink2/40 dark:text-paper/40 shrink-0" />} ringClass={accent.ring}>
+                            <select value={category} onChange={e => setCategory(e.target.value)} className="w-full min-w-0 bg-transparent h-full text-[14px] font-medium text-ink dark:text-paper focus:outline-none appearance-none pr-2 cursor-pointer">
                                 {window.CATEGORIES.map(c => <option key={c} value={c} className="bg-paper dark:bg-ink dark:text-paper">{c}</option>)}
                             </select>
                             <SelectChevron />
                         </FieldWrap>
                     )}
 
-                    <FieldWrap className="sm:w-[130px] relative" icon={<window.Icons.Wallet size={15} className="text-ink2/40 dark:text-paper/40 shrink-0" />}>
-                        <select value={method} onChange={e => setMethod(e.target.value)} className="w-full min-w-0 bg-transparent py-3.5 text-[14px] text-ink dark:text-paper focus:outline-none appearance-none pr-2">
-                            {window.METHODS.map(m => <option key={m} value={m} className="bg-paper dark:bg-ink dark:text-paper">{m}</option>)}
+                    <FieldWrap className="relative w-full sm:flex-1 h-[52px]" icon={<window.Icons.Wallet size={15} className="text-ink2/40 dark:text-paper/40 shrink-0" />} ringClass={accent.ring}>
+                        <select value={method} onChange={e => setMethod(e.target.value)} className="w-full min-w-0 bg-transparent h-full text-[14px] font-medium text-ink dark:text-paper focus:outline-none appearance-none pr-2 cursor-pointer">
+                            {availableMethods.map(m => {
+                                const bal = walletBalances[m] || 0;
+                                const cantAfford = isExpense && (parsedAmount > bal);
+                                return (
+                                    <option key={m} value={m} disabled={cantAfford} className={`bg-paper dark:bg-ink ${cantAfford ? 'text-expense dark:text-[#F38C80]' : 'text-ink dark:text-paper'}`}>
+                                        {m} {cantAfford ? `(Kulang: ₱${window.peso(bal)} lang)` : ""}
+                                    </option>
+                                );
+                            })}
                         </select>
                         <SelectChevron />
                     </FieldWrap>
 
-                    <button type="submit" disabled={saving}
-                        className={`font-semibold rounded-[14px] px-6 py-3.5 text-[14px] flex items-center justify-center gap-2 transition-all shrink-0 text-white disabled:opacity-60 active:scale-95 duration-200 shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
-                            type === "income"
+                    <button type="submit" disabled={saving || insufficient}
+                        className={`font-semibold rounded-[14px] px-6 h-[52px] flex items-center justify-center gap-2 transition-all shrink-0 text-white disabled:opacity-50 active:scale-95 duration-200 shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+                            isIncome
                                 ? "bg-gradient-to-r from-peso to-pesoLight hover:shadow-lg hover:shadow-peso/20 focus-visible:ring-peso/50"
-                                : "bg-gradient-to-r from-[#2C3E33] to-ink dark:from-peso dark:to-pesoDeep hover:shadow-lg focus-visible:ring-ink/50"
+                                : "bg-gradient-to-r from-[#15231C] to-[#2C3E33] dark:from-peso dark:to-pesoDeep hover:shadow-lg focus-visible:ring-ink/50"
                         }`}>
                         <span key={saving ? "saving" : justAdded ? "added" : "idle"} className={justAdded ? "success-pop inline-flex" : "inline-flex"}>
-                            {saving ? <window.Icons.Loader size={18} className="spin" /> : justAdded ? <CheckGlyph size={18} /> : <window.Icons.Plus size={18} />}
+                            {saving ? <window.Icons.Loader size={18} className="spin" /> : justAdded ? <CheckGlyph size={18} /> : <window.Icons.Plus size={18} strokeWidth={2.5} />}
                         </span>
-                        <span className="hidden sm:inline">{saving ? "Sinasave..." : justAdded ? "Nadagdag!" : "Idagdag"}</span>
+                        <span className="hidden sm:inline whitespace-nowrap">{saving ? "Sinasave..." : justAdded ? "Nadagdag!" : "Idagdag"}</span>
                     </button>
                 </div>
             </form>

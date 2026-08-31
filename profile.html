@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Profile — Tipid</title>
-    <meta name="theme-color" content="#1F6F54">
+    <meta name="theme-color" content="#123D2E">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <script>
         if (localStorage.getItem('tipid_theme') === 'dark' || (!('tipid_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -28,10 +28,10 @@
             theme: {
                 extend: {
                     colors: {
-                        paper: '#F8F9F7',
-                        paperDim: '#E9EDE6', ink: '#15231C', ink2: '#33443A',
+                        paper: '#F4F7F4', paperDim: '#E9EFEA', ink: '#101C15', ink2: '#2C3E33',
                         peso: '#1F6F54', pesoLight: '#2F8E6C', pesoDeep: '#123D2E',
-                        gold: '#C9932E', expense: '#B5483B', line: '#E2E8E4',
+                        gold: '#D4AF37', goldLight: '#F3E5AB', expense: '#C84B31', line: '#DCE4DD',
+                        mist: '#E7EEE8', foil: '#F4E5BE',
                     },
                     fontFamily: {
                         display: ['"Fraunces"', 'serif'],
@@ -39,7 +39,9 @@
                         mono: ['"JetBrains Mono"', 'monospace'],
                     },
                     boxShadow: {
-                        'ios': '0 2px 10px rgba(18,61,46,0.04), 0 16px 32px -12px rgba(18,61,46,0.1)',
+                        'bento': '0 4px 20px -2px rgba(18,61,46,0.05), 0 0 3px rgba(18,61,46,0.02)',
+                        'bentoHover': '0 12px 30px -8px rgba(18,61,46,0.15), 0 4px 12px rgba(18,61,46,0.06)',
+                        'glass': 'inset 0 1px 1px rgba(255,255,255,0.4), 0 8px 32px rgba(0,0,0,0.08)',
                     }
                 }
             }
@@ -60,11 +62,15 @@
             --sat: env(safe-area-inset-top, 0px);
             --sab: env(safe-area-inset-bottom, 0px);
             --ease-ios: cubic-bezier(0.22, 1, 0.36, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        html { background: #F8F9F7; transition: background-color 0.3s var(--ease-ios); }
-        html.dark { background: #111A15; color: #F1F4EF; }
-        body { min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
+        html { background: #F4F7F4; transition: background-color 0.4s var(--ease-ios); }
+        html.dark { background: #0A0F0D; color: #F4F7F4; }
+        body {
+            min-height: 100dvh; -webkit-tap-highlight-color: transparent;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+        }
 
         @keyframes slideInRight {
             from { transform: translateX(100%); opacity: 0; }
@@ -75,16 +81,50 @@
         @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
         .fade-up { animation: fadeUp 0.6s var(--ease-ios) both; }
 
+        @keyframes fadeUpBento { from { opacity: 0; transform: translateY(24px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .fade-up-bento { animation: fadeUpBento 0.8s var(--ease-spring) both; }
+
+        @keyframes breatheGlow { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.1); } }
+        .breathe-glow { animation: breatheGlow 4s ease-in-out infinite; }
+
         .spin { animation: spin 0.85s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         :focus-visible { outline: 2px solid #1F6F54; outline-offset: 2px; border-radius: 6px; }
         html.dark :focus-visible { outline-color: #52C8A1; }
 
-        .swal2-popup.tipid-swal { border-radius: 24px !important; font-family: 'Inter', sans-serif !important; }
+        .swal2-popup.tipid-swal { border-radius: 28px !important; font-family: 'Inter', sans-serif !important; }
 
-        .toggle-track { transition: background-color 0.2s var(--ease-ios); }
-        .toggle-knob { transition: transform 0.2s var(--ease-spring, cubic-bezier(0.34,1.56,0.64,1)); }
+        .toggle-track { transition: background-color 0.3s var(--ease-ios); }
+        .toggle-knob { transition: transform 0.3s var(--ease-spring); }
+
+        /* Bento & Glassmorphism */
+        .bento-card {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: var(--tw-shadow-bento);
+            transition: transform 0.3s var(--ease-spring), box-shadow 0.3s var(--ease-spring);
+        }
+        html.dark .bento-card {
+            background: rgba(22, 33, 27, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 4px 20px -2px rgba(0,0,0,0.4);
+        }
+
+        .hero-command {
+            background: linear-gradient(135deg, #1A543F 0%, #113629 100%);
+            box-shadow: var(--tw-shadow-glass);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-mesh {
+            position: absolute; inset: 0; pointer-events: none;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(47, 142, 108, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 90% 100%, rgba(212, 175, 55, 0.15) 0%, transparent 40%);
+            mix-blend-mode: screen;
+        }
     </style>
 </head>
 <body class="bg-paper dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
@@ -104,7 +144,6 @@
             );
         }
 
-        // FULL ICONS DICTIONARY COMPLETED TO PREVENT NAVBAR CRASHES
         window.Icons = {
             User: (p) => <Icon {...p} path={<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>} />,
             Users: (p) => <Icon {...p} path={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
@@ -119,50 +158,37 @@
             ChevronRight: (p) => <Icon {...p} path={<><path d="m9 18 6-6-6-6"/></>} />,
             ChevronLeft: (p) => <Icon {...p} path={<><path d="m15 18-6-6 6-6"/></>} />,
             Wallet: (p) => <Icon {...p} path={<><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></>} />,
-            Home: (p) => <Icon {...p} path={<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>} />,
-            List: (p) => <Icon {...p} path={<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>} />,
             Loader: (p) => <Icon {...p} path={<><path d="M12 2a10 10 0 0 1 10 10"/></>} />,
-            Category: (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
-            Sun: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>} />,
-            Moon: (p) => <Icon {...p} path={<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>} />,
-            Trash: (p) => <Icon {...p} path={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></>} />,
-            Plus: (p) => <Icon {...p} path={<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>} />,
-            Pencil: (p) => <Icon {...p} path={<><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></>} />,
             Calendar: (p) => <Icon {...p} path={<><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>} />,
-            AlertCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />,
             Check: (p) => <Icon {...p} path={<><polyline points="20 6 9 17 4 12"/></>} strokeWidth={3} />,
-            Inbox: (p) => <Icon {...p} path={<><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></>} />,
-            Zap: (p) => <Icon {...p} path={<><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></>} />,
-            Clock: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>} />,
-            Chart: (p) => <Icon {...p} path={<><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></>} />,
-            TrendUp: (p) => <Icon {...p} path={<><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>} />,
-            TrendDown: (p) => <Icon {...p} path={<><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></>} />,
-            Eye: (p) => <Icon {...p} path={<><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></>} />,
-            EyeOff: (p) => <Icon {...p} path={<><path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.94 3.71M6.16 6.16A18.6 18.6 0 0 0 1 11s4 7 11 7a10.9 10.9 0 0 0 5.64-1.56M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></>} />,
-            Sparkle: (p) => <Icon {...p} path={<><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M17.7 6.3l-2.8 2.8M9.1 14.9l-2.8 2.8"/></>} />,
-            X: (p) => <Icon {...p} path={<><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>} />,
-            ShoppingBag: (p) => <Icon {...p} path={<><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></>} />,
-            Menu: (p) => <Icon {...p} path={<><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></>} />,
-            Grid: (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
-            Receipt: (p) => <Icon {...p} path={<><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z"/><path d="M16 14h-8"/><path d="M16 10h-8"/></>} />,
-            Chip: (p) => (<svg width={p.size||24} height={p.size||24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={p.className}><rect x="4" y="4" width="16" height="16" rx="4" /><line x1="4" y1="9" x2="9" y2="9" /><line x1="4" y1="15" x2="9" y2="15" /><line x1="15" y1="9" x2="20" y2="9" /><line x1="15" y1="15" x2="20" y2="15" /><line x1="9" y1="4" x2="9" y2="20" /><line x1="15" y1="4" x2="15" y2="20" /></svg>),
-            Contactless: (p) => (<svg width={p.size||24} height={p.size||24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M8.5 21c-2.4-3.8-2.4-14.2 0-18" /><path d="M12.5 18c-1.6-2.5-1.6-9.5 0-12" /><path d="M16.5 15c-.8-1.2-.8-4.8 0-6" /></svg>),
             Download: (p) => <Icon {...p} path={<><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></>} />,
+            Trash: (p) => <Icon {...p} path={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></>} />,
             Star: (p) => <Icon {...p} path={<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>} />,
             MessageSquare: (p) => <Icon {...p} path={<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>} />,
             FileText: (p) => <Icon {...p} path={<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></>} />,
             ShieldAlert: (p) => <Icon {...p} path={<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />,
-            Coins: (p) => <Icon {...p} path={<><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></>} />,
+            Coins: (p) => <Icon {...p} path={<><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></>} />
         };
 
         window.Logo = function Logo({ size = 30, className = "" }) {
             const [broken, setBroken] = React.useState(false);
-            if (!broken) {
-                return <img src="/assets/logo.svg" alt="Tipid logo" width={size} height={size}
-                            onError={() => setBroken(true)} className={`rounded-md ${className}`} style={{ width: size, height: size }} />;
-            }
-            return <span style={{ width: size, height: size }} className={`rounded-md bg-ink text-paper flex items-center justify-center font-display font-semibold ${className}`}>₱</span>;
+            if (!broken) return <img src="/assets/logo.svg" alt="Tipid logo" width={size} height={size} onError={() => setBroken(true)} className={`rounded-md ${className}`} style={{ width: size, height: size }} />;
+            return <span style={{ width: size, height: size }} className={`rounded-md bg-peso text-paper flex items-center justify-center font-display font-semibold ${className}`}>₱</span>;
         }
+
+        window.SUPPORTED_WALLETS = [
+            { id: "Cash", name: "Cash" }, { id: "GCash", name: "GCash" }, { id: "Maya", name: "Maya" },
+            { id: "ShopeePay", name: "ShopeePay" }, { id: "GrabPay", name: "GrabPay" }, { id: "Atome", name: "Atome Card" },
+            { id: "MariBank", name: "MariBank" }, { id: "SeaBank", name: "SeaBank" }, { id: "GoTyme", name: "GoTyme Bank" },
+            { id: "Tonik", name: "Tonik Bank" }, { id: "UNO", name: "UNO Digital Bank" }, { id: "UnionDigital", name: "UnionDigital Bank" },
+            { id: "OFBank", name: "OFBank" }, { id: "CIMB", name: "CIMB Bank" }, { id: "DiskarTech", name: "DiskarTech" },
+            { id: "BDO", name: "BDO Unibank" }, { id: "BPI", name: "BPI" }, { id: "Metrobank", name: "Metrobank" },
+            { id: "PNB", name: "PNB" }, { id: "SecurityBank", name: "Security Bank" }, { id: "UnionBank", name: "UnionBank" },
+            { id: "RCBC", name: "RCBC" }, { id: "ChinaBank", name: "China Bank" }, { id: "EastWest", name: "EastWest Bank" },
+            { id: "LandBank", name: "Land Bank" }, { id: "BankOfCommerce", name: "Bank of Commerce" }, { id: "PSBank", name: "PSBank" },
+            { id: "Veterans", name: "Veterans Bank" }, { id: "Maybank", name: "Maybank" }, { id: "HSBC", name: "HSBC" },
+            { id: "StandardChartered", name: "Standard Chartered" }, { id: "Citi", name: "Citi" }, { id: "PayPal", name: "PayPal" }
+        ];
 
         window.useAuthReady = function() {
             const [ready, setReady] = React.useState(!!window.TipidAuth);
@@ -189,74 +215,26 @@
         function swalSuccess(title, text) { return Swal.fire({ icon: "success", title, text, confirmButtonText: "Sige", confirmButtonColor: "#1F6F54", customClass: { popup: "tipid-swal" }}); }
         function swalError(text) { return Swal.fire({ icon: "error", title: "Error", text, confirmButtonText: "Sige", confirmButtonColor: "#B5483B", customClass: { popup: "tipid-swal" }}); }
 
-        // --- Minimal i18n for this page's own chrome (menu, section titles,
-        // sub-page headers). Selecting a language here previously only wrote
-        // to localStorage with no visible effect — this dictionary is what
-        // actually makes that selection change what's on screen. It covers
-        // the navigational shell; the long-form body copy inside each
-        // sub-page (FAQ answers, About text, Terms) is intentionally left
-        // as Tagalog for now — translating that too is a bigger follow-up
-        // if wanted, since it's a lot of prose rather than short labels.
         window.TIPID_TRANSLATIONS = {
             tl: {
-                back: "Bumalik",
-                sectionAccount: "Account",
-                sectionPreferences: "Preferences",
-                sectionData: "Data & Backup",
-                sectionSupport: "Support",
-                sectionDanger: "Danger Zone",
-                menuManageProfile: "Manage Profile",
-                menuPasswordSecurity: "Password & Security",
-                menuNotifications: "Notifications",
-                menuLanguage: "Language",
-                menuAboutUs: "About Us",
-                menuTheme: "Theme",
-                menuFinancialGoals: "Financial Goals",
-                menuDefaultWallet: "Default Wallet",
-                menuPesoDisplay: "Peso Display",
-                menuExportData: "Export My Data",
-                menuClearPrefs: "Clear Local Preferences",
-                menuHelpCenter: "Help Center",
-                menuSendFeedback: "Send Feedback",
-                menuRateTipid: "Rate Tipid",
-                menuTermsPrivacy: "Terms & Privacy",
-                menuLogOut: "Log Out",
-                menuDeleteAccount: "Delete Account",
-                themeDark: "Dark",
-                themeLight: "Light",
-                pesoHidden: "Walang Sentimo",
-                pesoShown: "May Sentimo",
-                memberSince: "Miyembro simula",
+                back: "Bumalik", sectionAccount: "Account", sectionPreferences: "Preferences", sectionData: "Data & Backup",
+                sectionSupport: "Support", sectionDanger: "Danger Zone", menuManageProfile: "Manage Profile",
+                menuPasswordSecurity: "Password & Security", menuNotifications: "Notifications", menuLanguage: "Language",
+                menuAboutUs: "About Us", menuTheme: "Theme", menuFinancialGoals: "Financial Goals", menuDefaultWallet: "Default Wallet",
+                menuPesoDisplay: "Peso Display", menuExportData: "Export My Data", menuClearPrefs: "Clear Local Preferences",
+                menuHelpCenter: "Help Center", menuSendFeedback: "Send Feedback", menuRateTipid: "Rate Tipid",
+                menuTermsPrivacy: "Terms & Privacy", menuLogOut: "Log Out", menuDeleteAccount: "Delete Account",
+                themeDark: "Dark", themeLight: "Light", pesoHidden: "Walang Sentimo", pesoShown: "May Sentimo", memberSince: "Miyembro simula",
             },
             en: {
-                back: "Back",
-                sectionAccount: "Account",
-                sectionPreferences: "Preferences",
-                sectionData: "Data & Backup",
-                sectionSupport: "Support",
-                sectionDanger: "Danger Zone",
-                menuManageProfile: "Manage Profile",
-                menuPasswordSecurity: "Password & Security",
-                menuNotifications: "Notifications",
-                menuLanguage: "Language",
-                menuAboutUs: "About Us",
-                menuTheme: "Theme",
-                menuFinancialGoals: "Financial Goals",
-                menuDefaultWallet: "Default Wallet",
-                menuPesoDisplay: "Peso Display",
-                menuExportData: "Export My Data",
-                menuClearPrefs: "Clear Local Preferences",
-                menuHelpCenter: "Help Center",
-                menuSendFeedback: "Send Feedback",
-                menuRateTipid: "Rate Tipid",
-                menuTermsPrivacy: "Terms & Privacy",
-                menuLogOut: "Log Out",
-                menuDeleteAccount: "Delete Account",
-                themeDark: "Dark",
-                themeLight: "Light",
-                pesoHidden: "No Centavos",
-                pesoShown: "With Centavos",
-                memberSince: "Member since",
+                back: "Back", sectionAccount: "Account", sectionPreferences: "Preferences", sectionData: "Data & Backup",
+                sectionSupport: "Support", sectionDanger: "Danger Zone", menuManageProfile: "Manage Profile",
+                menuPasswordSecurity: "Password & Security", menuNotifications: "Notifications", menuLanguage: "Language",
+                menuAboutUs: "About Us", menuTheme: "Theme", menuFinancialGoals: "Financial Goals", menuDefaultWallet: "Default Wallet",
+                menuPesoDisplay: "Peso Display", menuExportData: "Export My Data", menuClearPrefs: "Clear Local Preferences",
+                menuHelpCenter: "Help Center", menuSendFeedback: "Send Feedback", menuRateTipid: "Rate Tipid",
+                menuTermsPrivacy: "Terms & Privacy", menuLogOut: "Log Out", menuDeleteAccount: "Delete Account",
+                themeDark: "Dark", themeLight: "Light", pesoHidden: "No Centavos", pesoShown: "With Centavos", memberSince: "Member since",
             },
         };
     </script>
@@ -269,67 +247,61 @@
 
         function MenuSection({ title, children }) {
             return (
-                <div className="mb-7">
-                    <h3 className="text-[13px] font-semibold text-ink2/50 dark:text-paper/40 px-4 mb-2">{title}</h3>
-                    <div className="bg-white dark:bg-[#1A2620] rounded-2xl shadow-ios overflow-hidden border border-line dark:border-white/5">
+                <div className="mb-8">
+                    <h3 className="text-[13px] font-bold tracking-widest uppercase text-ink2/50 dark:text-paper/40 px-4 mb-2">{title}</h3>
+                    <div className="bento-card rounded-2xl overflow-hidden divide-y divide-black/5 dark:divide-white/5">
                         {children}
                     </div>
                 </div>
             );
         }
 
-        function MenuItem({ icon, label, trailing, onClick, isDestructive, hideChevron, isLast }) {
+        function MenuItem({ icon, label, trailing, onClick, isDestructive, hideChevron }) {
             return (
                 <button
                     onClick={onClick}
-                    className={`w-full flex items-center justify-between px-4 py-4 bg-transparent hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors ${!isLast ? 'border-b border-line dark:border-white/5' : ''}`}
+                    className={`w-full flex items-center justify-between px-5 py-4 bg-transparent hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors`}
                 >
-                    <div className="flex items-center gap-3.5">
-                        <span className={`flex items-center justify-center ${isDestructive ? 'text-expense' : 'text-ink2/60 dark:text-paper/60'}`}>
+                    <div className="flex items-center gap-4">
+                        <span className={`flex items-center justify-center w-8 h-8 rounded-full ${isDestructive ? 'bg-expense/10 text-expense dark:bg-[#F38C80]/15 dark:text-[#F38C80]' : 'bg-black/5 dark:bg-white/10 text-peso dark:text-pesoLight'}`}>
                             {icon}
                         </span>
-                        <span className={`text-[15px] font-medium ${isDestructive ? 'text-expense' : 'text-ink dark:text-paper'}`}>
+                        <span className={`text-[15px] font-semibold ${isDestructive ? 'text-expense dark:text-[#F38C80]' : 'text-ink dark:text-paper'}`}>
                             {label}
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
-                        {trailing && <span className="text-[13px] text-ink2/40 dark:text-paper/40">{trailing}</span>}
+                        {trailing && <span className="text-[13px] font-medium text-ink2/50 dark:text-paper/50">{trailing}</span>}
                         {!hideChevron && <window.Icons.ChevronRight size={18} className="text-ink2/30 dark:text-paper/30" />}
                     </div>
                 </button>
             );
         }
 
-        // A real interactive switch (was a static div before — decorative,
-        // always "on", no click handler). Used by the Notifications sub-page.
         function Switch({ checked, onChange, label }) {
             return (
                 <button
-                    role="switch"
-                    aria-checked={checked}
-                    aria-label={label}
-                    onClick={onChange}
-                    className={`toggle-track w-12 h-7 rounded-full relative shadow-inner shrink-0 ${checked ? 'bg-peso dark:bg-pesoLight' : 'bg-black/15 dark:bg-white/15'}`}
+                    role="switch" aria-checked={checked} aria-label={label} onClick={onChange}
+                    className={`toggle-track w-12 h-7 rounded-full relative shadow-inner shrink-0 ${checked ? 'bg-gradient-to-r from-pesoLight to-peso dark:from-peso dark:to-pesoLight' : 'bg-black/10 dark:bg-white/10 border border-black/5 dark:border-white/5'}`}
                 >
-                    <div className={`toggle-knob absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm ${checked ? 'translate-x-[22px]' : 'translate-x-1'}`}></div>
+                    <div className={`toggle-knob absolute top-[3px] w-[22px] h-[22px] bg-white rounded-full shadow-sm ${checked ? 'translate-x-[22px]' : 'translate-x-[3px]'}`}></div>
                 </button>
             );
         }
 
-        // Sub-page layout container
         function SubPage({ title, onBack, children, backLabel = "Bumalik" }) {
             return (
                 <div className="fixed inset-0 z-50 bg-paper dark:bg-ink flex flex-col slide-in">
-                    <div className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+16px)] pb-4 border-b border-line dark:border-white/10 bg-white dark:bg-[#1A2620]">
+                    <div className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+16px)] pb-4 border-b border-line/60 dark:border-white/10 bg-white/80 dark:bg-[#1A2620]/80 backdrop-blur-xl sticky top-0 z-20">
                         <button onClick={onBack} className="p-2 -ml-2 text-peso dark:text-pesoLight flex items-center gap-1 active:opacity-50 transition-opacity">
                             <window.Icons.ChevronLeft size={22} />
-                            <span className="text-[15px] font-medium">{backLabel}</span>
+                            <span className="text-[15px] font-bold">{backLabel}</span>
                         </button>
-                        <h2 className="font-semibold text-ink dark:text-paper absolute left-1/2 -translate-x-1/2">{title}</h2>
-                        <div className="w-16"></div> {/* Spacer for centering */}
+                        <h2 className="font-display font-bold text-[17px] text-ink dark:text-paper absolute left-1/2 -translate-x-1/2 tracking-tight">{title}</h2>
+                        <div className="w-16"></div>
                     </div>
                     <div className="flex-1 overflow-y-auto p-5">
-                        <div className="max-w-[600px] mx-auto w-full">
+                        <div className="max-w-[600px] mx-auto w-full pb-10">
                             {children}
                         </div>
                     </div>
@@ -337,45 +309,36 @@
             );
         }
 
-        // Input Field Component for Sub-pages
-        function InputField({ label, icon, type = "text", value, onChange, placeholder, disabled }) {
+        function InputField({ label, icon, type = "text", value, onChange, placeholder, disabled, step }) {
             return (
                 <div className="mb-4">
-                    <label className="block text-[12px] font-semibold text-ink2/60 dark:text-paper/60 mb-2 pl-1">{label}</label>
-                    <div className="flex items-center gap-3 bg-white dark:bg-[#1A2620] ring-1 ring-line dark:ring-white/10 rounded-xl px-4 focus-within:ring-2 focus-within:ring-peso/50 transition-all">
+                    <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">{label}</label>
+                    <div className="flex items-center gap-3 bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 focus-within:bg-white dark:focus-within:bg-ink transition-all">
                         {icon && <span className="text-ink2/40 dark:text-paper/40">{icon}</span>}
                         <input
-                            type={type}
-                            value={value}
-                            onChange={onChange}
-                            placeholder={placeholder}
-                            disabled={disabled}
-                            className="w-full bg-transparent py-3.5 text-[15px] font-medium text-ink dark:text-paper placeholder-ink2/30 focus:outline-none disabled:opacity-50"
+                            type={type} step={step} value={value} onChange={onChange} placeholder={placeholder} disabled={disabled}
+                            className="w-full bg-transparent py-3.5 text-[15px] font-semibold text-ink dark:text-paper placeholder-ink2/30 focus:outline-none disabled:opacity-50"
                         />
                     </div>
                 </div>
             );
         }
 
-        // Selectable row list, used by Default Wallet / Language sub-pages
         function OptionList({ options, value, onSelect }) {
             return (
-                <div className="bg-white dark:bg-[#1A2620] rounded-2xl shadow-sm border border-line dark:border-white/5 overflow-hidden">
-                    {options.map((opt, i) => (
+                <div className="bento-card rounded-2xl overflow-hidden divide-y divide-black/5 dark:divide-white/5">
+                    {options.map((opt) => (
                         <button
-                            key={opt.value}
-                            onClick={() => onSelect(opt.value)}
-                            className={`w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors ${i !== options.length - 1 ? 'border-b border-line dark:border-white/5' : ''}`}
+                            key={opt.value} onClick={() => onSelect(opt.value)}
+                            className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors"
                         >
-                            <span className="text-[15px] font-medium text-ink dark:text-paper">{opt.label}</span>
-                            {value === opt.value && <window.Icons.Check size={18} className="text-peso dark:text-pesoLight" />}
+                            <span className="text-[15px] font-semibold text-ink dark:text-paper">{opt.label}</span>
+                            {value === opt.value && <window.Icons.Check size={20} strokeWidth={3} className="text-peso dark:text-pesoLight" />}
                         </button>
                     ))}
                 </div>
             );
         }
-
-        const COMMON_WALLETS = ["Cash", "GCash", "Maya", "ShopeePay", "GrabPay", "BDO", "BPI", "Iba pa"];
 
         async function getFirebaseHandles() {
             const [{ app }, authMod] = await Promise.all([
@@ -391,33 +354,30 @@
             const authReady = window.useAuthReady();
             const dataReady = window.useDataReady();
 
-            // States
             const [user, setUser] = React.useState(undefined);
-            const [activeMenu, setActiveMenu] = React.useState(null); // null = main menu
+            const [activeMenu, setActiveMenu] = React.useState(null);
             const [isDark, setIsDark] = React.useState(() => document.documentElement.classList.contains('dark'));
 
-            // Form States
             const [displayName, setDisplayName] = React.useState("");
             const [savingProfile, setSavingProfile] = React.useState(false);
 
+            // Goals & Budget States
             const [budgetInput, setBudgetInput] = React.useState("");
             const [goalName, setGoalName] = React.useState("");
             const [goalAmount, setGoalAmount] = React.useState("");
+            const [goalWallet, setGoalWallet] = React.useState("GCash");
+            const [goalContrib, setGoalContrib] = React.useState("");
+            const [goalFreq, setGoalFreq] = React.useState("sahod");
+            const [goalStart, setGoalStart] = React.useState("");
             const [savingGoals, setSavingGoals] = React.useState(false);
 
-            // Preference states (local-only, mirror the existing Theme pattern)
             const [lang, setLang] = React.useState(() => localStorage.getItem('tipid_lang') || 'tl');
             const [defaultWallet, setDefaultWallet] = React.useState(() => localStorage.getItem('tipid_default_wallet') || 'Cash');
             const [hideCentavos, setHideCentavos] = React.useState(() => localStorage.getItem('tipid_hide_centavos') === '1');
 
-            // Notification preferences — previously rendered as always-on
-            // decorative switches with no click handler. Now real, local-only
-            // toggles (no push backend exists yet, so this just gates whether
-            // this device's reminder/alert logic — once built — should fire).
             const [notifDaily, setNotifDaily] = React.useState(() => localStorage.getItem('tipid_notif_daily') !== '0');
             const [notifOverbudget, setNotifOverbudget] = React.useState(() => localStorage.getItem('tipid_notif_overbudget') !== '0');
 
-            // Data export / danger zone states
             const [exporting, setExporting] = React.useState(false);
             const [feedbackText, setFeedbackText] = React.useState("");
             const [sendingFeedback, setSendingFeedback] = React.useState(false);
@@ -426,7 +386,6 @@
 
             const t = window.TIPID_TRANSLATIONS[lang] || window.TIPID_TRANSLATIONS.tl;
 
-            // Fetch Auth
             React.useEffect(() => {
                 if (!authReady) return;
                 return window.TipidAuth.onChange((u) => {
@@ -435,12 +394,10 @@
                 });
             }, [authReady]);
 
-            // Redirect if not logged in
             React.useEffect(() => {
                 if (user === null) window.location.href = "login.html";
             }, [user]);
 
-            // Fetch Budget Data
             React.useEffect(() => {
                 if (!dataReady || !user) return;
                 return window.TipidData.subscribeBudget(
@@ -450,10 +407,21 @@
                 );
             }, [dataReady, user]);
 
-            // Fetch Local Goals Data
             React.useEffect(() => {
                 setGoalName(localStorage.getItem('tipid_goal_name') || "");
                 setGoalAmount(localStorage.getItem('tipid_goal_amount') || localStorage.getItem('tipid_goal') || "");
+                setGoalWallet(localStorage.getItem('tipid_goal_wallet') || "GCash");
+                setGoalContrib(localStorage.getItem('tipid_goal_contrib') || "");
+                setGoalFreq(localStorage.getItem('tipid_goal_freq') || "sahod");
+
+                const savedStart = localStorage.getItem('tipid_goal_start');
+                if (savedStart) {
+                    setGoalStart(savedStart);
+                } else {
+                    const today = new Date();
+                    const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                    setGoalStart(dateStr);
+                }
             }, []);
 
             if (user === undefined || user === null) {
@@ -465,15 +433,12 @@
             }
 
             const initial = displayName ? displayName.charAt(0).toUpperCase() : (user.email.charAt(0).toUpperCase());
-
-            // Derived, read-only account facts (from the Firebase user object already on hand)
             const providerId = user.providerData && user.providerData[0] ? user.providerData[0].providerId : "password";
             const providerLabel = providerId.includes("google") ? "Google" : providerId.includes("facebook") ? "Facebook" : "Email";
             const memberSince = user.metadata && user.metadata.creationTime
                 ? new Date(user.metadata.creationTime).toLocaleDateString("en-PH", { year: "numeric", month: "long" })
                 : null;
 
-            // Actions
             const toggleDarkMode = () => {
                 const newMode = !isDark;
                 if (newMode) {
@@ -526,16 +491,21 @@
                 e.preventDefault();
                 const amt = parseFloat(budgetInput);
                 const targetAmt = parseFloat(goalAmount);
+                const contribAmt = parseFloat(goalContrib);
+
                 if (isNaN(amt) || amt <= 0) return swalError("Maglagay ng tamang halaga para sa budget.");
 
                 setSavingGoals(true);
                 try {
                     await window.TipidData.setBudget(user.uid, amt);
+
                     if (goalName.trim()) localStorage.setItem('tipid_goal_name', goalName.trim());
-                    if (!isNaN(targetAmt) && targetAmt > 0) {
-                        localStorage.setItem('tipid_goal_amount', targetAmt.toString());
-                        localStorage.setItem('tipid_goal', targetAmt.toString());
-                    }
+                    if (!isNaN(targetAmt) && targetAmt > 0) localStorage.setItem('tipid_goal_amount', targetAmt.toString());
+                    if (goalWallet) localStorage.setItem('tipid_goal_wallet', goalWallet);
+                    if (!isNaN(contribAmt) && contribAmt > 0) localStorage.setItem('tipid_goal_contrib', contribAmt.toString());
+                    if (goalFreq) localStorage.setItem('tipid_goal_freq', goalFreq);
+                    if (goalStart) localStorage.setItem('tipid_goal_start', goalStart);
+
                     swalSuccess("Tagumpay", "Na-update na ang iyong Financial Goals.");
                 } catch (err) {
                     swalError("Hindi ma-save. Subukan ulit.");
@@ -544,53 +514,21 @@
                 }
             };
 
-            // Persist simple local-only preferences (mirrors the existing toggleDarkMode pattern).
-            // `lang` change is what makes `t` above resolve a different dictionary on re-render —
-            // that's what actually makes language selection visible now.
-            const handleSelectLang = (val) => {
-                setLang(val);
-                localStorage.setItem('tipid_lang', val);
-            };
-            const handleSelectDefaultWallet = (val) => {
-                setDefaultWallet(val);
-                localStorage.setItem('tipid_default_wallet', val);
-                setActiveMenu(null);
-            };
-            // This flag is read by window.peso() on the other pages (Utang,
-            // Chart, History, Hulugan) to decide whether to show centavos —
-            // toggling it here now actually changes how amounts render there.
-            const toggleHideCentavos = () => {
-                const next = !hideCentavos;
-                setHideCentavos(next);
-                localStorage.setItem('tipid_hide_centavos', next ? '1' : '0');
-            };
-            const toggleNotifDaily = () => {
-                const next = !notifDaily;
-                setNotifDaily(next);
-                localStorage.setItem('tipid_notif_daily', next ? '1' : '0');
-            };
-            const toggleNotifOverbudget = () => {
-                const next = !notifOverbudget;
-                setNotifOverbudget(next);
-                localStorage.setItem('tipid_notif_overbudget', next ? '1' : '0');
-            };
+            const handleSelectLang = (val) => { setLang(val); localStorage.setItem('tipid_lang', val); };
+            const handleSelectDefaultWallet = (val) => { setDefaultWallet(val); localStorage.setItem('tipid_default_wallet', val); setActiveMenu(null); };
+            const toggleHideCentavos = () => { const next = !hideCentavos; setHideCentavos(next); localStorage.setItem('tipid_hide_centavos', next ? '1' : '0'); };
+            const toggleNotifDaily = () => { const next = !notifDaily; setNotifDaily(next); localStorage.setItem('tipid_notif_daily', next ? '1' : '0'); };
+            const toggleNotifOverbudget = () => { const next = !notifOverbudget; setNotifOverbudget(next); localStorage.setItem('tipid_notif_overbudget', next ? '1' : '0'); };
 
-            // Export all of the user's entries as a CSV file — one-shot read via the
-            // existing TipidData.subscribeEntries contract (unsubscribes as soon as data arrives).
             const handleExportData = () => {
-                if (!window.TipidData || !window.TipidData.subscribeEntries) {
-                    return swalError("Hindi available ang data export sa ngayon.");
-                }
+                if (!window.TipidData || !window.TipidData.subscribeEntries) return swalError("Hindi available ang data export sa ngayon.");
                 setExporting(true);
                 let unsub = () => {};
                 unsub = window.TipidData.subscribeEntries(
                     user.uid,
                     (list) => {
-                        unsub();
-                        setExporting(false);
-                        if (!list || list.length === 0) {
-                            return Swal.fire({ icon: "info", title: "Wala pang datos", text: "Wala ka pang naitatalang gastos o kita.", confirmButtonColor: "#1F6F54", customClass: { popup: "tipid-swal" } });
-                        }
+                        unsub(); setExporting(false);
+                        if (!list || list.length === 0) return Swal.fire({ icon: "info", title: "Wala pang datos", text: "Wala ka pang naitatalang gastos o kita.", confirmButtonColor: "#1F6F54", customClass: { popup: "tipid-swal" } });
                         const header = ["date", "type", "category", "method", "amount", "note"];
                         const rows = list.map(e => header.map(k => {
                             const v = e[k] !== undefined && e[k] !== null ? String(e[k]).replace(/"/g, '""') : "";
@@ -600,19 +538,14 @@
                         const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement("a");
-                        a.href = url;
-                        a.download = `tipid-entries-${new Date().toISOString().slice(0, 10)}.csv`;
-                        document.body.appendChild(a);
-                        a.click();
-                        a.remove();
-                        URL.revokeObjectURL(url);
+                        a.href = url; a.download = `tipid-entries-${new Date().toISOString().slice(0, 10)}.csv`;
+                        document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
                         swalSuccess("Na-export!", "Na-download na ang iyong datos bilang CSV.");
                     },
                     () => { unsub(); setExporting(false); swalError("Hindi na-export ang datos. Subukan ulit."); }
                 );
             };
 
-            // Clear only the app's local-storage preferences (does not touch cloud data)
             const handleClearLocalPrefs = () => {
                 Swal.fire({
                     title: "I-clear ang lokal na preferences?",
@@ -626,16 +559,13 @@
                     customClass: { popup: "tipid-swal" }
                 }).then((result) => {
                     if (!result.isConfirmed) return;
-                    ["tipid_goal_name", "tipid_goal_amount", "tipid_goal", "tipid_default_wallet", "tipid_hide_centavos", "tipid_lang", "tipid_notif_daily", "tipid_notif_overbudget"].forEach(k => localStorage.removeItem(k));
-                    setGoalName(""); setGoalAmount(""); setDefaultWallet("Cash"); setHideCentavos(false); setLang("tl");
+                    ["tipid_goal_name", "tipid_goal_amount", "tipid_goal", "tipid_goal_wallet", "tipid_goal_contrib", "tipid_goal_freq", "tipid_goal_start", "tipid_default_wallet", "tipid_hide_centavos", "tipid_lang", "tipid_notif_daily", "tipid_notif_overbudget"].forEach(k => localStorage.removeItem(k));
+                    setGoalName(""); setGoalAmount(""); setGoalContrib(""); setGoalWallet("GCash"); setDefaultWallet("Cash"); setHideCentavos(false); setLang("tl");
                     setNotifDaily(true); setNotifOverbudget(true);
                     swalSuccess("Nabura na", "Na-reset na ang mga lokal na preferences.");
                 });
             };
 
-            // Feedback (no backend endpoint exists yet, so this is stored locally and
-            // acknowledged — swap the localStorage write for a real API/Firestore call
-            // once a feedback collection exists).
             const handleSendFeedback = (e) => {
                 e.preventDefault();
                 if (!feedbackText.trim()) return swalError("Maglagay muna ng mensahe.");
@@ -652,7 +582,6 @@
                 }
             };
 
-            // Delete account — reuses the same dynamic-import pattern as handleUpdateProfile
             const handleDeleteAccount = async () => {
                 if (deleteConfirmText.trim().toUpperCase() !== "DELETE") {
                     return swalError('I-type ang salitang "DELETE" para kumpirmahin.');
@@ -679,21 +608,10 @@
             if (activeMenu === 'profile') {
                 return (
                     <SubPage title={t.menuManageProfile} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <form onSubmit={handleUpdateProfile} className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5">
-                            <InputField
-                                label="Display Name"
-                                icon={<window.Icons.User size={18} />}
-                                value={displayName}
-                                onChange={e => setDisplayName(e.target.value)}
-                                placeholder="Pangalan mo"
-                            />
-                            <InputField
-                                label="Email Address"
-                                icon={<window.Icons.Globe size={18} />}
-                                value={user.email}
-                                disabled={true}
-                            />
-                            <button type="submit" disabled={savingProfile} className="w-full mt-4 bg-peso hover:bg-pesoLight text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-50">
+                        <form onSubmit={handleUpdateProfile} className="bento-card p-6 rounded-2xl">
+                            <InputField label="Display Name" icon={<window.Icons.User size={18} />} value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Pangalan mo" />
+                            <InputField label="Email Address" icon={<window.Icons.Globe size={18} />} value={user.email} disabled={true} />
+                            <button type="submit" disabled={savingProfile} className="w-full mt-4 bg-gradient-to-r from-pesoLight to-peso text-white font-bold py-4 rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50">
                                 {savingProfile ? "Nagsa-save..." : "I-save ang Profile"}
                             </button>
                         </form>
@@ -704,32 +622,66 @@
             if (activeMenu === 'goals') {
                 return (
                     <SubPage title={t.menuFinancialGoals} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <form onSubmit={handleUpdatePreferences} className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5">
-                            <p className="text-[13px] text-ink2/60 dark:text-paper/60 mb-6">I-set ang iyong buwanang limitasyon sa paggastos at ang pinag-iipunan mo.</p>
-                            <InputField
-                                label="Buwanang Budget Limit (₱)"
-                                icon={<window.Icons.Wallet size={18} />}
-                                type="number"
-                                value={budgetInput}
-                                onChange={e => setBudgetInput(e.target.value)}
-                                placeholder="Hal: 10000"
-                            />
-                            <InputField
-                                label="Pangalan ng Pinag-iipunan"
-                                icon={<window.Icons.Target size={18} />}
-                                value={goalName}
-                                onChange={e => setGoalName(e.target.value)}
-                                placeholder="Hal: Emergency Fund, Bagong Phone"
-                            />
-                            <InputField
-                                label="Target Amount (₱)"
-                                icon={<span className="font-mono text-[16px]">₱</span>}
-                                type="number"
-                                value={goalAmount}
-                                onChange={e => setGoalAmount(e.target.value)}
-                                placeholder="Hal: 50000"
-                            />
-                            <button type="submit" disabled={savingGoals} className="w-full mt-4 bg-gold hover:bg-[#D4A03A] text-ink font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-50">
+                        <form onSubmit={handleUpdatePreferences} className="bento-card p-5 sm:p-7 rounded-[1.5rem]">
+
+                            <div className="mb-8">
+                                <h3 className="font-display text-[18px] font-bold text-ink dark:text-paper mb-1">Buwanang Budget</h3>
+                                <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mb-5">I-set ang limitasyon sa paggastos kada buwan.</p>
+                                <InputField label="Budget Limit (₱)" icon={<window.Icons.Wallet size={18} />} type="number" step="0.01" value={budgetInput} onChange={e => setBudgetInput(e.target.value)} placeholder="Hal: 15000" />
+                            </div>
+
+                            <hr className="border-line/60 dark:border-white/10 mb-8" />
+
+                            <div className="mb-6">
+                                <h3 className="font-display text-[18px] font-bold text-ink dark:text-paper mb-1">Ipon Target (Estimator)</h3>
+                                <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mb-6 leading-relaxed">Awtomatikong makikita sa Dashboard kung kailan mo maaabot ang goal na ito base sa iyong paghuhulog.</p>
+
+                                <InputField label="Pangalan ng Pinag-iipunan" icon={<window.Icons.Target size={18} />} value={goalName} onChange={e => setGoalName(e.target.value)} placeholder="Hal: Bagong PC, Pang-bakasyon" />
+                                <InputField label="Target Amount (₱)" icon={<span className="font-mono text-[16px] font-bold">₱</span>} type="number" step="0.01" value={goalAmount} onChange={e => setGoalAmount(e.target.value)} placeholder="Hal: 50000" />
+
+                                <div className="mb-5">
+                                    <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Saan ilalagay ang ipon?</label>
+                                    <div className="flex items-center gap-3 bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 transition-all relative">
+                                        <window.Icons.Wallet size={18} className="text-ink2/40 dark:text-paper/40" />
+                                        <select value={goalWallet} onChange={e => setGoalWallet(e.target.value)} className="w-full bg-transparent py-3.5 text-[15px] font-semibold text-ink dark:text-paper focus:outline-none appearance-none cursor-pointer">
+                                            {window.SUPPORTED_WALLETS.map(w => <option key={w.id} value={w.id} className="bg-paper dark:bg-ink">{w.name}</option>)}
+                                        </select>
+                                        <window.Icons.ChevronRight size={16} className="absolute right-4 text-ink2/30 rotate-90 pointer-events-none" />
+                                    </div>
+                                    <p className="text-[11px] font-medium mt-2 ml-1 text-ink2/50 dark:text-paper/40">Babantayan ng system ang balanse ng wallet na ito sa dashboard.</p>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 mb-5">
+                                    <div>
+                                        <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Paghuhulog (₱)</label>
+                                        <div className="flex items-center gap-2 bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 transition-all">
+                                            <span className="font-mono font-bold text-[15px] text-ink2/40 dark:text-paper/40">₱</span>
+                                            <input type="number" step="0.01" value={goalContrib} onChange={e => setGoalContrib(e.target.value)} placeholder="Hal: 1000" className="w-full bg-transparent py-3.5 text-[15px] font-semibold text-ink dark:text-paper focus:outline-none" />
+                                        </div>
+                                    </div>
+                                    <div className="relative">
+                                        <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Dalas</label>
+                                        <div className="flex items-center bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 transition-all">
+                                            <select value={goalFreq} onChange={e => setGoalFreq(e.target.value)} className="w-full bg-transparent py-3.5 text-[14px] font-semibold text-ink dark:text-paper focus:outline-none appearance-none cursor-pointer">
+                                                <option value="sahod" className="bg-paper dark:bg-ink">Kada Sahod (2x/mo)</option>
+                                                <option value="monthly" className="bg-paper dark:bg-ink">Kada Buwan</option>
+                                            </select>
+                                            <window.Icons.ChevronRight size={16} className="absolute right-4 text-ink2/30 rotate-90 pointer-events-none" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mb-2">
+                                    <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Kailan mag-uumpisa?</label>
+                                    <div className="flex items-center gap-3 bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 transition-all">
+                                        <window.Icons.Calendar size={18} className="text-ink2/40 dark:text-paper/40" />
+                                        <input type="date" value={goalStart} onChange={e => setGoalStart(e.target.value)} className="w-full bg-transparent py-3.5 text-[15px] font-mono font-semibold text-ink dark:text-paper focus:outline-none" />
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <button type="submit" disabled={savingGoals} className="w-full mt-4 bg-gradient-to-r from-goldLight to-gold hover:shadow-lg hover:shadow-gold/20 text-[#111] font-bold py-4 rounded-xl transition-all disabled:opacity-50 text-[15px] shadow-sm active:scale-95">
                                 {savingGoals ? "Nagsa-save..." : "I-save ang Goals"}
                             </button>
                         </form>
@@ -740,13 +692,13 @@
             if (activeMenu === 'security') {
                 return (
                     <SubPage title={t.menuPasswordSecurity} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <div className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5 text-center">
-                            <div className="w-16 h-16 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 text-ink2/40 dark:text-paper/40">
-                                <window.Icons.Lock size={28} />
+                        <div className="bento-card p-8 rounded-2xl text-center">
+                            <div className="w-20 h-20 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center mx-auto mb-5 text-ink2/40 dark:text-paper/40 ring-1 ring-black/5 dark:ring-white/10 shadow-inner">
+                                <window.Icons.Lock size={32} />
                             </div>
-                            <h3 className="font-semibold text-[16px] text-ink dark:text-paper mb-2">I-secure ang iyong Account</h3>
-                            <p className="text-[13px] text-ink2/60 dark:text-paper/60 mb-6">Kung gumamit ka ng Google sa pag-login, hindi mo na kailangang mag-alala sa password. Kung gumamit ka ng email, maaari kang mag-request ng password reset.</p>
-                            <button onClick={() => swalSuccess('Email Sent', 'Kunwari ay nagpadala kami ng reset link sa iyong email!')} className="w-full bg-black/5 dark:bg-white/10 text-ink dark:text-paper font-semibold py-3.5 rounded-xl hover:bg-black/10 dark:hover:bg-white/20 transition-colors">
+                            <h3 className="font-display font-bold text-xl text-ink dark:text-paper mb-2">I-secure ang iyong Account</h3>
+                            <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-8 leading-relaxed px-2">Kung gumamit ka ng Google sa pag-login, hindi mo na kailangang mag-alala sa password. Kung gumamit ka ng email, maaari kang mag-request ng password reset.</p>
+                            <button onClick={() => swalSuccess('Email Sent', 'Kunwari ay nagpadala kami ng reset link sa iyong email!')} className="w-full bg-black/5 dark:bg-white/10 text-ink dark:text-paper font-bold py-4 rounded-xl hover:bg-black/10 dark:hover:bg-white/20 transition-all shadow-sm active:scale-95">
                                 Magpadala ng Reset Link
                             </button>
                         </div>
@@ -757,18 +709,18 @@
             if (activeMenu === 'notifications') {
                 return (
                     <SubPage title={t.menuNotifications} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <div className="bg-white dark:bg-[#1A2620] p-2 rounded-2xl shadow-sm border border-line dark:border-white/5 divide-y divide-line dark:divide-white/5">
-                            <div className="flex items-center justify-between p-4">
+                        <div className="bento-card p-2 rounded-2xl divide-y divide-black/5 dark:divide-white/5">
+                            <div className="flex items-center justify-between p-5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors rounded-t-xl">
                                 <div>
-                                    <p className="font-medium text-[15px] text-ink dark:text-paper">Daily Reminders</p>
-                                    <p className="text-[12px] text-ink2/50 dark:text-paper/50 mt-0.5">Paalala para mag-log ng gastos araw-araw</p>
+                                    <p className="font-bold text-[15px] text-ink dark:text-paper">Daily Reminders</p>
+                                    <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/50 mt-1">Paalala para mag-log ng gastos araw-araw</p>
                                 </div>
                                 <Switch checked={notifDaily} onChange={toggleNotifDaily} label="Daily Reminders" />
                             </div>
-                            <div className="flex items-center justify-between p-4">
+                            <div className="flex items-center justify-between p-5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors rounded-b-xl">
                                 <div>
-                                    <p className="font-medium text-[15px] text-ink dark:text-paper">Overbudget Alerts</p>
-                                    <p className="text-[12px] text-ink2/50 dark:text-paper/50 mt-0.5">I-notify ka kapag malapit na maubos ang budget</p>
+                                    <p className="font-bold text-[15px] text-ink dark:text-paper">Overbudget Alerts</p>
+                                    <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/50 mt-1">I-notify ka kapag malapit na maubos ang budget</p>
                                 </div>
                                 <Switch checked={notifOverbudget} onChange={toggleNotifOverbudget} label="Overbudget Alerts" />
                             </div>
@@ -780,14 +732,15 @@
             if (activeMenu === 'about') {
                 return (
                     <SubPage title={t.menuAboutUs} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <div className="bg-white dark:bg-[#1A2620] p-8 rounded-2xl shadow-sm border border-line dark:border-white/5 text-center">
-                            <window.Logo size={64} className="mx-auto mb-4" />
-                            <h2 className="font-display font-bold text-2xl text-ink dark:text-paper mb-1">Tipid Buddy</h2>
-                            <p className="text-[12px] font-mono text-ink2/50 dark:text-paper/40 mb-6">Version 1.0.0</p>
-                            <p className="text-[14px] text-ink2/70 dark:text-paper/70 leading-relaxed mb-6">
+                        <div className="bento-card p-10 rounded-2xl text-center relative overflow-hidden">
+                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-peso/10 rounded-full blur-3xl pointer-events-none" />
+                            <window.Logo size={72} className="mx-auto mb-5 shadow-md" />
+                            <h2 className="font-display font-bold text-3xl text-ink dark:text-paper mb-1 tracking-tight">Tipid Buddy</h2>
+                            <p className="text-[12px] font-mono font-bold tracking-widest uppercase text-peso dark:text-pesoLight mb-6 bg-peso/10 dark:bg-pesoLight/10 inline-block px-3 py-1 rounded-full">Version 1.0.0</p>
+                            <p className="text-[14px] font-medium text-ink2/70 dark:text-paper/70 leading-relaxed mb-8 px-2">
                                 Ang Tipid ay isang personal na expense tracker na ginawa para sa mga Pilipino. Tinutulungan ka nitong subaybayan ang iyong pera, i-manage ang mga utang, at maabot ang iyong financial goals nang libre at walang ads.
                             </p>
-                            <p className="text-[12px] text-ink2/40 dark:text-paper/40">© 2026 Tipid App. All rights reserved.</p>
+                            <p className="text-[12px] font-semibold text-ink2/40 dark:text-paper/40">© 2026 Tipid App. All rights reserved.</p>
                         </div>
                     </SubPage>
                 );
@@ -796,89 +749,71 @@
             if (activeMenu === 'help') {
                 return (
                     <SubPage title={t.menuHelpCenter} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <h3 className="font-semibold text-ink dark:text-paper mb-4 px-1">Frequently Asked Questions</h3>
-                        <div className="space-y-3">
-                            <div className="bg-white dark:bg-[#1A2620] p-5 rounded-2xl border border-line dark:border-white/5">
-                                <p className="font-medium text-[14px] text-ink dark:text-paper mb-2">Paano magdagdag ng wallet?</p>
-                                <p className="text-[13px] text-ink2/60 dark:text-paper/60 leading-relaxed">Pumunta sa Home Dashboard, i-scroll sa "Aking mga Wallet" section, at i-click ang Plus (+) icon sa pinakadulo ng mga cards.</p>
+                        <h3 className="font-bold text-[13px] tracking-widest uppercase text-ink2/50 dark:text-paper/40 mb-4 px-1 mt-2">Frequently Asked Questions</h3>
+                        <div className="space-y-4">
+                            <div className="bento-card p-6 rounded-2xl">
+                                <p className="font-bold text-[15px] text-ink dark:text-paper mb-2">Paano magdagdag ng wallet?</p>
+                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Pumunta sa Home Dashboard, i-scroll sa "Aking mga Wallet" section, at i-click ang Plus (+) icon sa pinakadulo ng mga cards.</p>
                             </div>
-                            <div className="bg-white dark:bg-[#1A2620] p-5 rounded-2xl border border-line dark:border-white/5">
-                                <p className="font-medium text-[14px] text-ink dark:text-paper mb-2">Paano mag-edit ng maling gastos?</p>
-                                <p className="text-[13px] text-ink2/60 dark:text-paper/60 leading-relaxed">Hanapin ang maling entry sa 'Kasaysayan' sa Home, i-swipe o i-tap ang delete (trash) icon, at i-log na lang ulit ang tamang halaga.</p>
+                            <div className="bento-card p-6 rounded-2xl">
+                                <p className="font-bold text-[15px] text-ink dark:text-paper mb-2">Paano mag-edit ng maling gastos?</p>
+                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Hanapin ang maling entry sa 'Kasaysayan' sa Home, i-swipe o i-tap ang delete (trash) icon, at i-log na lang ulit ang tamang halaga.</p>
                             </div>
-                            <div className="bg-white dark:bg-[#1A2620] p-5 rounded-2xl border border-line dark:border-white/5">
-                                <p className="font-medium text-[14px] text-ink dark:text-paper mb-2">Kailangan ba ng internet para magamit ang app?</p>
-                                <p className="text-[13px] text-ink2/60 dark:text-paper/60 leading-relaxed">Kailangan ng internet para mag-save sa cloud, pero kapag naka-install ang app sa phone mo, pwede mo itong buksan kahit offline.</p>
-                            </div>
-                            <div className="bg-white dark:bg-[#1A2620] p-5 rounded-2xl border border-line dark:border-white/5">
-                                <p className="font-medium text-[14px] text-ink dark:text-paper mb-2">Paano ma-export ang datos ko?</p>
-                                <p className="text-[13px] text-ink2/60 dark:text-paper/60 leading-relaxed">Pumunta sa Profile → Data & Backup → Export My Data. Ide-download ito bilang CSV file na pwede mong buksan sa Excel o Google Sheets.</p>
+                            <div className="bento-card p-6 rounded-2xl">
+                                <p className="font-bold text-[15px] text-ink dark:text-paper mb-2">Kailangan ba ng internet para magamit ang app?</p>
+                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Kailangan ng internet para mag-save sa cloud, pero kapag naka-install ang app sa phone mo, pwede mo itong buksan kahit offline.</p>
                             </div>
                         </div>
                     </SubPage>
                 );
             }
 
-            // Language sub-page (cosmetic preference toggle, same shape as Theme)
             if (activeMenu === 'language') {
                 return (
                     <SubPage title={t.menuLanguage} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <p className="text-[13px] text-ink2/60 dark:text-paper/60 mb-4 px-1">Piliin ang wika ng mga label at button sa app.</p>
-                        <OptionList
-                            value={lang}
-                            onSelect={handleSelectLang}
-                            options={[
-                                { value: "tl", label: "Tagalog" },
-                                { value: "en", label: "English" },
-                            ]}
-                        />
+                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-4 px-1 mt-2">Piliin ang wika ng mga label at button sa app.</p>
+                        <OptionList value={lang} onSelect={handleSelectLang} options={[{ value: "tl", label: "Tagalog" }, { value: "en", label: "English" }]} />
                     </SubPage>
                 );
             }
 
-            // Default Wallet sub-page
             if (activeMenu === 'defaultWallet') {
                 return (
                     <SubPage title={t.menuDefaultWallet} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <p className="text-[13px] text-ink2/60 dark:text-paper/60 mb-4 px-1">Ito ang paraan ng bayad na paunang napipili tuwing magdadagdag ka ng gastos.</p>
-                        <OptionList
-                            value={defaultWallet}
-                            onSelect={handleSelectDefaultWallet}
-                            options={COMMON_WALLETS.map(w => ({ value: w, label: w }))}
-                        />
+                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-4 px-1 mt-2">Ito ang paraan ng bayad na paunang napipili tuwing magdadagdag ka ng gastos.</p>
+                        <OptionList value={defaultWallet} onSelect={handleSelectDefaultWallet} options={COMMON_WALLETS.map(w => ({ value: w, label: w }))} />
                     </SubPage>
                 );
             }
 
-            // Data & Backup sub-page
             if (activeMenu === 'data') {
                 return (
                     <SubPage title={t.menuExportData} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <div className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5 mb-4">
-                            <div className="flex items-center gap-3 mb-3">
-                                <div className="w-11 h-11 rounded-full bg-peso/10 dark:bg-pesoLight/10 flex items-center justify-center text-peso dark:text-pesoLight shrink-0">
-                                    <window.Icons.Download size={20} />
+                        <div className="bento-card p-6 rounded-2xl mb-4">
+                            <div className="flex items-center gap-4 mb-5">
+                                <div className="w-12 h-12 rounded-full bg-peso/10 dark:bg-pesoLight/10 flex items-center justify-center text-peso dark:text-pesoLight shrink-0">
+                                    <window.Icons.Download size={22} />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-[15px] text-ink dark:text-paper">Export My Data</h3>
-                                    <p className="text-[12px] text-ink2/50 dark:text-paper/50">I-download ang lahat ng entries mo bilang CSV</p>
+                                    <h3 className="font-bold text-[16px] text-ink dark:text-paper">Export My Data</h3>
+                                    <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/50 mt-0.5">I-download ang lahat ng entries mo bilang CSV</p>
                                 </div>
                             </div>
-                            <button onClick={handleExportData} disabled={exporting} className="w-full bg-peso hover:bg-pesoLight text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-                                {exporting ? <><window.Icons.Loader size={16} className="spin" /> Ini-export...</> : "I-export bilang CSV"}
+                            <button onClick={handleExportData} disabled={exporting} className="w-full bg-gradient-to-r from-pesoLight to-peso hover:shadow-lg hover:shadow-peso/20 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95">
+                                {exporting ? <><window.Icons.Loader size={18} className="spin" /> Ini-export...</> : "I-export bilang CSV"}
                             </button>
                         </div>
-                        <div className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5">
-                            <div className="flex items-center gap-3 mb-3">
-                                <div className="w-11 h-11 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink2/60 dark:text-paper/60 shrink-0">
-                                    <window.Icons.Trash size={20} />
+                        <div className="bento-card p-6 rounded-2xl">
+                            <div className="flex items-center gap-4 mb-5">
+                                <div className="w-12 h-12 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink2/60 dark:text-paper/60 shrink-0">
+                                    <window.Icons.Trash size={22} />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-[15px] text-ink dark:text-paper">Clear Local Preferences</h3>
-                                    <p className="text-[12px] text-ink2/50 dark:text-paper/50">Bura ang naka-save na Goal, Default Wallet, atbp. sa device na ito</p>
+                                    <h3 className="font-bold text-[16px] text-ink dark:text-paper">Clear Local Preferences</h3>
+                                    <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/50 mt-0.5">Bura ang naka-save na Goal, Default Wallet, atbp. sa device na ito</p>
                                 </div>
                             </div>
-                            <button onClick={handleClearLocalPrefs} className="w-full bg-black/5 dark:bg-white/10 text-ink dark:text-paper font-semibold py-3.5 rounded-xl hover:bg-black/10 dark:hover:bg-white/20 transition-colors">
+                            <button onClick={handleClearLocalPrefs} className="w-full bg-black/5 dark:bg-white/10 text-ink dark:text-paper font-bold py-4 rounded-xl hover:bg-black/10 dark:hover:bg-white/20 transition-all active:scale-95">
                                 I-clear ang Local Preferences
                             </button>
                         </div>
@@ -886,21 +821,20 @@
                 );
             }
 
-            // Feedback sub-page
             if (activeMenu === 'feedback') {
                 return (
                     <SubPage title={t.menuSendFeedback} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <form onSubmit={handleSendFeedback} className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5">
-                            <p className="text-[13px] text-ink2/60 dark:text-paper/60 mb-4">May suggestion, bug, o reaction ka ba? Sabihin mo dito.</p>
-                            <label className="block text-[12px] font-semibold text-ink2/60 dark:text-paper/60 mb-2 pl-1">Iyong Mensahe</label>
+                        <form onSubmit={handleSendFeedback} className="bento-card p-6 rounded-2xl">
+                            <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-5">May suggestion, bug, o reaction ka ba? Sabihin mo dito.</p>
+                            <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Iyong Mensahe</label>
                             <textarea
                                 value={feedbackText}
                                 onChange={e => setFeedbackText(e.target.value)}
                                 placeholder="Isulat dito ang iyong feedback..."
                                 rows={5}
-                                className="w-full bg-white dark:bg-[#1A2620] ring-1 ring-line dark:ring-white/10 rounded-xl px-4 py-3.5 text-[15px] font-medium text-ink dark:text-paper placeholder-ink2/30 focus:outline-none focus:ring-2 focus:ring-peso/50 transition-all resize-none mb-4"
+                                className="w-full bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 py-3.5 text-[15px] font-medium text-ink dark:text-paper placeholder-ink2/30 focus:outline-none focus:ring-2 focus:ring-peso/50 transition-all resize-none mb-4 shadow-sm"
                             />
-                            <button type="submit" disabled={sendingFeedback} className="w-full bg-peso hover:bg-pesoLight text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-50">
+                            <button type="submit" disabled={sendingFeedback} className="w-full bg-gradient-to-r from-pesoLight to-peso hover:shadow-lg hover:shadow-peso/20 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-50 active:scale-95">
                                 {sendingFeedback ? "Ipinapadala..." : "Ipadala ang Feedback"}
                             </button>
                         </form>
@@ -908,38 +842,36 @@
                 );
             }
 
-            // Terms & Privacy sub-page (static placeholder copy)
             if (activeMenu === 'terms') {
                 return (
                     <SubPage title={t.menuTermsPrivacy} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <div className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-line dark:border-white/5 space-y-5">
+                        <div className="bento-card p-7 rounded-2xl space-y-6">
                             <div>
-                                <h3 className="font-semibold text-[15px] text-ink dark:text-paper mb-1.5">Paggamit ng App</h3>
-                                <p className="text-[13px] text-ink2/60 dark:text-paper/60 leading-relaxed">Ang Tipid ay libreng gamitin para sa personal na pagsubaybay ng gastos. Ikaw ang may pananagutan sa katumpakan ng datos na iyong ilalagay.</p>
+                                <h3 className="font-bold text-[16px] text-ink dark:text-paper mb-1.5">Paggamit ng App</h3>
+                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Ang Tipid ay libreng gamitin para sa personal na pagsubaybay ng gastos. Ikaw ang may pananagutan sa katumpakan ng datos na iyong ilalagay.</p>
                             </div>
                             <div>
-                                <h3 className="font-semibold text-[15px] text-ink dark:text-paper mb-1.5">Privacy</h3>
-                                <p className="text-[13px] text-ink2/60 dark:text-paper/60 leading-relaxed">Ang iyong mga entry, budget, at profile ay naka-store sa ilalim ng iyong account at hindi ibinabahagi sa ibang user.</p>
+                                <h3 className="font-bold text-[16px] text-ink dark:text-paper mb-1.5">Privacy</h3>
+                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Ang iyong mga entry, budget, at profile ay naka-store sa ilalim ng iyong account at hindi ibinabahagi sa ibang user.</p>
                             </div>
                             <div>
-                                <h3 className="font-semibold text-[15px] text-ink dark:text-paper mb-1.5">Pagbabago</h3>
-                                <p className="text-[13px] text-ink2/60 dark:text-paper/60 leading-relaxed">Maaaring magbago ang mga tuntuning ito paminsan-minsan. Palaging susuriin ang pahinang ito para sa pinakabagong bersyon.</p>
+                                <h3 className="font-bold text-[16px] text-ink dark:text-paper mb-1.5">Pagbabago</h3>
+                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Maaaring magbago ang mga tuntuning ito paminsan-minsan. Palaging susuriin ang pahinang ito para sa pinakabagong bersyon.</p>
                             </div>
                         </div>
                     </SubPage>
                 );
             }
 
-            // Delete Account sub-page (danger zone)
             if (activeMenu === 'deleteAccount') {
                 return (
                     <SubPage title={t.menuDeleteAccount} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <div className="bg-white dark:bg-[#1A2620] p-6 rounded-2xl shadow-sm border border-expense/20 text-center">
-                            <div className="w-16 h-16 bg-expense/10 rounded-full flex items-center justify-center mx-auto mb-4 text-expense">
-                                <window.Icons.ShieldAlert size={28} />
+                        <div className="bento-card p-6 sm:p-8 rounded-2xl text-center border-expense/30 shadow-none ring-1 ring-expense/10 bg-[#FAEDE9]/50 dark:bg-[#B5483B]/10">
+                            <div className="w-20 h-20 bg-expense/10 rounded-full flex items-center justify-center mx-auto mb-5 text-expense ring-1 ring-expense/20 shadow-inner">
+                                <window.Icons.ShieldAlert size={32} />
                             </div>
-                            <h3 className="font-semibold text-[16px] text-ink dark:text-paper mb-2">Permanenteng aalisin ang account mo</h3>
-                            <p className="text-[13px] text-ink2/60 dark:text-paper/60 mb-6 leading-relaxed">Hindi na mababawi ang aksyong ito. Kung kailan lang ka nag-login, maaaring hilingin sa iyong mag-log out at mag-log in muna bago ito ituloy.</p>
+                            <h3 className="font-display font-bold text-xl text-expense dark:text-[#F38C80] mb-2">Permanenteng aalisin ang account mo</h3>
+                            <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-6 leading-relaxed">Hindi na mababawi ang aksyong ito. Kung kailan lang ka nag-login, maaaring hilingin sa iyong mag-log out at mag-log in muna bago ito ituloy.</p>
                             <InputField
                                 label='I-type ang "DELETE" para kumpirmahin'
                                 value={deleteConfirmText}
@@ -949,7 +881,7 @@
                             <button
                                 onClick={handleDeleteAccount}
                                 disabled={deletingAccount || deleteConfirmText.trim().toUpperCase() !== "DELETE"}
-                                className="w-full bg-expense hover:bg-[#9C3C31] text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-40"
+                                className="w-full bg-expense hover:bg-[#9C3C31] text-white font-bold py-4 rounded-xl transition-all disabled:opacity-40 active:scale-95 shadow-md mt-2"
                             >
                                 {deletingAccount ? "Tinatanggal..." : "Permanenteng Tanggalin ang Account"}
                             </button>
@@ -963,76 +895,55 @@
                 <div className="min-h-dvh flex flex-col pb-[6rem]">
                     <div className="flex-1 max-w-[600px] w-full mx-auto px-4 sm:px-6 pt-[6.5rem] md:pt-[7.5rem]">
 
-                        {/* Static Profile Header Card */}
-                        <div className="bg-white dark:bg-[#1A2620] rounded-3xl p-5 shadow-sm border border-line dark:border-white/5 mb-8 fade-up">
-                            <div className="flex items-center gap-4">
-                                <div className="w-16 h-16 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center overflow-hidden shrink-0 ring-1 ring-black/5 dark:ring-white/10">
-                                    {user.photoURL
-                                        ? <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
-                                        : <span className="text-2xl font-display font-bold text-ink dark:text-paper">{initial}</span>
-                                    }
-                                </div>
-                                <div className="min-w-0">
-                                    <h1 className="font-bold text-[18px] text-ink dark:text-paper truncate">{displayName || "User"}</h1>
-                                    <p className="text-[13px] font-medium text-ink2/50 dark:text-paper/40 truncate">{user.email}</p>
+                        {/* Premium Hero Profile Card */}
+                        <div className="hero-command bento-card rounded-[2rem] p-6 sm:p-8 flex items-center gap-5 sm:gap-6 mb-8 fade-up-bento relative overflow-hidden">
+                            <div className="hero-mesh" />
+                            <div className="relative shrink-0 z-10">
+                                <span className="absolute inset-0 rounded-full bg-white/20 blur-md scale-110 pointer-events-none breathe-glow" />
+                                <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full border-[3px] border-white/30 shadow-lg overflow-hidden bg-white/10 flex items-center justify-center backdrop-blur-md">
+                                    {user.photoURL ? <img src={user.photoURL} className="w-full h-full object-cover"/> : <span className="text-3xl font-display font-bold text-white">{initial}</span>}
                                 </div>
                             </div>
-                            {/* Quick facts row — derived straight from the Firebase user object */}
-                            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-line dark:border-white/5">
-                                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-peso/10 dark:bg-pesoLight/10 text-peso dark:text-pesoLight">
-                                    <window.Icons.Lock size={11} /> {providerLabel}
-                                </span>
-                                {memberSince && (
-                                    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-black/5 dark:bg-white/10 text-ink2/60 dark:text-paper/60">
-                                        <window.Icons.Calendar size={11} /> {t.memberSince} {memberSince}
+                            <div className="min-w-0 z-10">
+                                <h1 className="font-display text-2xl sm:text-3xl font-bold text-white tracking-tight drop-shadow-sm truncate">{displayName || "User"}</h1>
+                                <p className="text-[13px] sm:text-sm font-medium text-white/80 truncate mt-0.5">{user.email}</p>
+
+                                <div className="flex items-center gap-2 mt-3.5 hidden sm:flex">
+                                    <span className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-widest px-2.5 py-1 rounded-full bg-black/20 text-white/90 uppercase shadow-inner border border-white/10">
+                                        <window.Icons.Lock size={11} /> {providerLabel}
                                     </span>
-                                )}
+                                    {memberSince && (
+                                        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-widest px-2.5 py-1 rounded-full bg-black/20 text-white/90 uppercase shadow-inner border border-white/10">
+                                            <window.Icons.Calendar size={11} /> Since {memberSince.split(' ')[1]}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
                         {/* Settings Lists */}
                         <div className="fade-up" style={{animationDelay: "60ms"}}>
                             <MenuSection title={t.sectionAccount}>
-                                <MenuItem icon={<window.Icons.User size={20} />} label={t.menuManageProfile} onClick={() => setActiveMenu('profile')} />
-                                <MenuItem icon={<window.Icons.Lock size={20} />} label={t.menuPasswordSecurity} onClick={() => setActiveMenu('security')} />
-                                <MenuItem icon={<window.Icons.Bell size={20} />} label={t.menuNotifications} onClick={() => setActiveMenu('notifications')} />
-                                <MenuItem icon={<window.Icons.Globe size={20} />} label={t.menuLanguage} trailing={lang === 'en' ? 'English' : 'Tagalog'} onClick={() => setActiveMenu('language')} isLast={true} />
+                                <MenuItem icon={<window.Icons.User size={18} />} label={t.menuManageProfile} onClick={() => setActiveMenu('profile')} />
+                                <MenuItem icon={<window.Icons.Lock size={18} />} label={t.menuPasswordSecurity} onClick={() => setActiveMenu('security')} />
+                                <MenuItem icon={<window.Icons.Bell size={18} />} label={t.menuNotifications} onClick={() => setActiveMenu('notifications')} />
+                                <MenuItem icon={<window.Icons.Globe size={18} />} label={t.menuLanguage} trailing={lang === 'en' ? 'English' : 'Tagalog'} onClick={() => setActiveMenu('language')} isLast={true} />
                             </MenuSection>
 
                             <MenuSection title={t.sectionPreferences}>
-                                <MenuItem icon={<window.Icons.Info size={20} />} label={t.menuAboutUs} onClick={() => setActiveMenu('about')} />
+                                <MenuItem icon={<window.Icons.Info size={18} />} label={t.menuAboutUs} onClick={() => setActiveMenu('about')} />
                                 <MenuItem
-                                    icon={<window.Icons.SunMoon size={20} />}
+                                    icon={<window.Icons.SunMoon size={18} />}
                                     label={t.menuTheme}
                                     trailing={isDark ? t.themeDark : t.themeLight}
                                     onClick={toggleDarkMode}
                                 />
-                                <MenuItem icon={<window.Icons.Target size={20} />} label={t.menuFinancialGoals} onClick={() => setActiveMenu('goals')} />
-                                <MenuItem icon={<window.Icons.Wallet size={20} />} label={t.menuDefaultWallet} trailing={defaultWallet} onClick={() => setActiveMenu('defaultWallet')} />
-                                <MenuItem
-                                    icon={<window.Icons.Coins size={20} />}
-                                    label={t.menuPesoDisplay}
-                                    trailing={hideCentavos ? t.pesoHidden : t.pesoShown}
-                                    onClick={toggleHideCentavos}
-                                    isLast={true}
-                                />
-                            </MenuSection>
-
-                            <MenuSection title={t.sectionData}>
-                                <MenuItem icon={<window.Icons.Download size={20} />} label={t.menuExportData} onClick={() => setActiveMenu('data')} />
-                                <MenuItem icon={<window.Icons.Trash size={20} />} label={t.menuClearPrefs} onClick={handleClearLocalPrefs} isLast={true} />
+                                <MenuItem icon={<window.Icons.Target size={18} />} label={t.menuFinancialGoals} onClick={() => setActiveMenu('goals')} isLast={true} />
                             </MenuSection>
 
                             <MenuSection title={t.sectionSupport}>
-                                <MenuItem icon={<window.Icons.HelpCircle size={20} />} label={t.menuHelpCenter} onClick={() => setActiveMenu('help')} />
-                                <MenuItem icon={<window.Icons.MessageSquare size={20} />} label={t.menuSendFeedback} onClick={() => setActiveMenu('feedback')} />
-                                <MenuItem icon={<window.Icons.Star size={20} />} label={t.menuRateTipid} onClick={() => swalSuccess("Salamat! 🎉", "Coming soon ang link sa App Store/Play Store.")} />
-                                <MenuItem icon={<window.Icons.FileText size={20} />} label={t.menuTermsPrivacy} onClick={() => setActiveMenu('terms')} isLast={true} />
-                            </MenuSection>
-
-                            <MenuSection title={t.sectionDanger}>
-                                <MenuItem icon={<window.Icons.LogOut size={20} />} label={t.menuLogOut} isDestructive={true} hideChevron={true} onClick={handleLogout} />
-                                <MenuItem icon={<window.Icons.ShieldAlert size={20} />} label={t.menuDeleteAccount} isDestructive={true} onClick={() => setActiveMenu('deleteAccount')} isLast={true} />
+                                <MenuItem icon={<window.Icons.HelpCircle size={18} />} label={t.menuHelpCenter} onClick={() => setActiveMenu('help')} />
+                                <MenuItem icon={<window.Icons.LogOut size={18} />} label={t.menuLogOut} isDestructive={true} hideChevron={true} onClick={handleLogout} isLast={true} />
                             </MenuSection>
                         </div>
                     </div>

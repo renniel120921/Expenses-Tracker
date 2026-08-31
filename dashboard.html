@@ -11,9 +11,8 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Global Dark Mode Script Initializer -->
     <script>
         if (localStorage.getItem('tipid_theme') === 'dark' || (!('tipid_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
@@ -29,21 +28,23 @@
             theme: {
                 extend: {
                     colors: {
-                        paper: '#F1F4EF', paperDim: '#E9EDE6', ink: '#15231C', ink2: '#33443A',
-                        peso: '#1F6F54', pesoLight: '#2F8E6C', pesoDeep: '#123D2E',
-                        gold: '#C9932E', goldLight: '#E8C071', expense: '#B5483B', line: '#D3DAD0',
+                        paper: '#F4F7F4', paperDim: '#E9EFEA', ink: '#0B130E', ink2: '#1D2B23',
+                        peso: '#1F6F54', pesoLight: '#2F8E6C', pesoDeep: '#0D3023',
+                        gold: '#D4AF37', goldLight: '#F3E5AB', expense: '#D64045', line: '#DCE4DD',
                         mist: '#E7EEE8', foil: '#F4E5BE',
                     },
                     fontFamily: {
                         display: ['"Fraunces"', 'serif'],
                         body: ['"Inter"', 'sans-serif'],
-                        mono: ['"IBM Plex Mono"', 'monospace'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
                     },
                     boxShadow: {
-                        'ios': '0 2px 10px rgba(18,61,46,0.06), 0 16px 32px -12px rgba(18,61,46,0.15)',
-                        'iosLg': '0 24px 48px -12px rgba(18,61,46,0.25)',
-                        'card': '0 1px 2px rgba(15,30,23,0.06), 0 18px 30px -14px rgba(15,30,23,0.35)',
-                        'cardHover': '0 4px 10px rgba(15,30,23,0.10), 0 26px 40px -14px rgba(15,30,23,0.42)',
+                        'bento': '0 4px 24px -4px rgba(18, 61, 46, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+                        'bentoHover': '0 16px 40px -8px rgba(18, 61, 46, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                        'bentoDark': '0 8px 32px -8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+                        'bentoDarkHover': '0 16px 48px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                        'glass': 'inset 0 1px 1px rgba(255,255,255,0.3), 0 12px 40px rgba(0,0,0,0.12)',
+                        'action': '0 8px 20px -4px rgba(18, 61, 46, 0.12), inset 0 1px 0 rgba(255,255,255,0.7)',
                     }
                 }
             }
@@ -62,97 +63,71 @@
 
     <style>
         :root {
-            --sat: env(safe-area-inset-top, 0px);
-            --sar: env(safe-area-inset-right, 0px);
-            --sab: env(safe-area-inset-bottom, 0px);
-            --sal: env(safe-area-inset-left, 0px);
-            --ease-ios: cubic-bezier(0.22, 1, 0.36, 1);
-            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --sat: env(safe-area-inset-top, 0px); --sar: env(safe-area-inset-right, 0px);
+            --sab: env(safe-area-inset-bottom, 0px); --sal: env(safe-area-inset-left, 0px);
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1); --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        html { background: #F1F4EF; transition: background-color 0.3s var(--ease-ios); }
-        html.dark { background: #0F1712; color: #F1F4EF; }
+        html { background: #F4F7F4; transition: background-color 0.5s var(--ease-out-expo); }
+        html.dark { background: #070B09; color: #F4F7F4; }
         body {
-            font-feature-settings: "tnum" 1, "lnum" 1;
+            font-feature-settings: "tnum" 1, "lnum" 1, "ss01" 1;
             min-height: 100dvh; -webkit-tap-highlight-color: transparent; overflow-x: hidden;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
         }
-        ::selection { background: #C9932E33; color: #15231C; }
-        :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
+        ::selection { background: #1F6F5440; color: #101C15; }
+        html.dark ::selection { background: #52C8A140; color: #F4F7F4; }
+        :focus-visible { outline: 2px solid #1F6F54; outline-offset: 4px; border-radius: 8px; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.85s linear infinite; }
-        @keyframes rowIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
-        .row-in { animation: rowIn 0.4s var(--ease-ios) both; }
-        .bar-fill { transition: width 1s var(--ease-ios); }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-up { animation: fadeUp 0.7s var(--ease-ios) both; }
-        @keyframes bannerIn { from { opacity: 0; transform: translateY(-8px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .banner-in { animation: bannerIn 0.45s var(--ease-spring) both; }
-        @keyframes logoBreathe { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }
-        .logo-breathe { animation: logoBreathe 1.7s ease-in-out infinite; }
-        @keyframes haloPulse { 0% { transform: scale(0.9); opacity: 0.35; } 70% { opacity: 0; } 100% { transform: scale(1.7); opacity: 0; } }
-        .halo-pulse { animation: haloPulse 2s var(--ease-ios) infinite; }
-        @keyframes heroFloat { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -10px); } }
-        .hero-float { animation: heroFloat 6s ease-in-out infinite; }
-        .glass-panel { background: rgba(255,255,255,0.7); backdrop-filter: blur(24px) saturate(180%); border: 1px solid rgba(255,255,255,0.8); }
-        html.dark .glass-panel { background: rgba(20,32,26,0.6); border: 1px solid rgba(255,255,255,0.08); }
-        .tap-scale { transition: transform 0.15s var(--ease-spring); }
-        .tap-scale:active { transform: scale(0.92); }
-        .tipid-swal { border-radius: 28px !important; font-family: 'Inter', sans-serif !important; }
+        @keyframes fadeUpBento { from { opacity: 0; transform: translateY(30px) scale(0.97); filter: blur(4px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
+        .fade-up-bento { animation: fadeUpBento 0.9s var(--ease-out-expo) both; }
+        @keyframes breatheGlow { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.15); filter: brightness(1.2); } }
+        .breathe-glow { animation: breatheGlow 5s ease-in-out infinite; }
+        @keyframes dataSweep { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+        .data-sweep { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); background-size: 200% 100%; animation: dataSweep 3s infinite linear; }
+        @keyframes mascotHover { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-8px) rotate(1deg); } }
+        .tipid-mascot-img { animation: mascotHover 5s ease-in-out infinite; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.4)); }
+        .bar-fill { transition: width 1.2s var(--ease-out-expo); }
+        .tipid-swal { border-radius: 28px !important; font-family: 'Inter', sans-serif !important; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 24px 48px -12px rgba(0,0,0,0.25) !important; }
+        .tipid-swal textarea { font-family: 'Inter', sans-serif !important; border-radius: 12px; }
+        .bento-card { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(32px) saturate(200%); -webkit-backdrop-filter: blur(32px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.9); box-shadow: var(--tw-shadow-bento); transition: all 0.4s var(--ease-out-expo); }
+        .bento-card:hover { transform: translateY(-4px); box-shadow: var(--tw-shadow-bentoHover); }
+        html.dark .bento-card { background: rgba(20, 30, 24, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: var(--tw-shadow-bentoDark); }
+        html.dark .bento-card:hover { box-shadow: var(--tw-shadow-bentoDarkHover); }
+        .hero-command { background: linear-gradient(145deg, #164C38 0%, #0E2E22 100%); box-shadow: var(--tw-shadow-glass), 0 20px 40px -10px rgba(22, 76, 56, 0.4); position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.15); }
+        html.dark .hero-command { background: linear-gradient(145deg, #113629 0%, #081711 100%); box-shadow: var(--tw-shadow-bentoDark); border: 1px solid rgba(255,255,255,0.08); }
+        .hero-mesh { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 0% 0%, rgba(82, 200, 161, 0.25) 0%, transparent 45%), radial-gradient(circle at 100% 100%, rgba(212, 175, 55, 0.15) 0%, transparent 50%); mix-blend-mode: screen; }
+        .action-btn { background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.9); box-shadow: var(--tw-shadow-action); transition: all 0.3s var(--ease-spring); }
+        .action-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 24px -6px rgba(18, 61, 46, 0.15), inset 0 1px 0 rgba(255,255,255,1); }
+        .action-btn:active { transform: translateY(1px) scale(0.96); box-shadow: 0 2px 8px -2px rgba(18, 61, 46, 0.1); }
+        html.dark .action-btn { background: rgba(30,45,35,0.6); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 8px 20px -4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05); }
+        html.dark .action-btn:hover { background: rgba(40,55,45,0.8); box-shadow: 0 12px 24px -6px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1); }
+        .wallet-card { aspect-ratio: 1.586 / 1; transform-style: preserve-3d; perspective: 1200px; }
+        .holo-foil { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.5s ease; background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.5) 45%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.5) 55%, transparent 80%); background-size: 250% 250%; mix-blend-mode: color-dodge; }
+        .wallet-card:hover .holo-foil { opacity: 1; animation: shine 2.5s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+        @keyframes shine { 0% { background-position: 200% 200%; } 100% { background-position: -100% -100%; } }
+        .chip-emboss { background: linear-gradient(135deg, #E6D070, #947A26); box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), 0 2px 6px rgba(0,0,0,0.4); border-radius: 6px; position: relative; overflow: hidden; }
+        .chip-emboss::after { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.15) 4px, rgba(0,0,0,0.15) 5px); }
+        .tap-scale { transition: transform 0.2s var(--ease-spring); }
+        .tap-scale:active { transform: scale(0.94); }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scroll::-webkit-scrollbar { display: none; }
         .is-dragging { cursor: grabbing !important; user-select: none; }
-        .is-dragging * { pointer-events: none; }
         .scroll-grab { cursor: grab; }
-        @keyframes mascotHover { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-        .tipid-mascot-img { animation: mascotHover 4s ease-in-out infinite; filter: drop-shadow(0 15px 25px rgba(18,61,46,0.35)); }
-
-        /* Hero mesh + grain */
-        .hero-mesh {
-            background:
-                radial-gradient(120% 140% at 8% -10%, rgba(255,255,255,0.16) 0%, transparent 45%),
-                radial-gradient(90% 110% at 105% 15%, rgba(201,147,46,0.28) 0%, transparent 50%),
-                radial-gradient(130% 130% at -10% 115%, rgba(0,0,0,0.35) 0%, transparent 55%),
-                linear-gradient(155deg, #2A8A69 0%, #1B6E52 38%, #103828 100%);
-        }
-        .grain-overlay { position: absolute; inset: 0; opacity: 0.5; mix-blend-mode: overlay; pointer-events: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
-
-        /* Wallet card realism */
-        .wallet-card { aspect-ratio: 1.586 / 1; }
-        .card-sheen { position: absolute; inset: 0; pointer-events: none;
-            background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,0.22) 49%, rgba(255,255,255,0.02) 58%, transparent 66%);
-            background-size: 220% 220%; background-position: 130% -20%;
-            transition: background-position 0.8s var(--ease-ios); }
-        .wallet-shine:hover .card-sheen { background-position: -30% 110%; }
-        .card-noise { position: absolute; inset: 0; opacity: 0.10; mix-blend-mode: overlay; pointer-events: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
-        .card-tilt { transition: transform 0.35s var(--ease-ios), box-shadow 0.35s var(--ease-ios); transform-style: preserve-3d; }
-        .card-tilt:hover { transform: translateY(-3px) rotateX(2deg) rotateY(-2deg); }
-        .chip-3d { background: linear-gradient(155deg, #F7E8B8 0%, #D9B96A 28%, #F4E5BE 55%, #C79F49 78%, #EFDCA0 100%);
-            box-shadow: inset 0 1px 1px rgba(255,255,255,0.6), inset 0 -1px 2px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.25); }
-        .wallet-shine::after { content: none; }
-
-        @media (prefers-reduced-motion: reduce) {
-            .spin, .row-in, .bar-fill, .fade-up, .banner-in, .logo-breathe, .halo-pulse, .hero-float, .tipid-mascot-img, .card-tilt { animation: none !important; transition: none !important; }
-            .card-tilt:hover { transform: none; }
-        }
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } .tipid-mascot-img { animation: none; } }
     </style>
 </head>
 <body class="bg-paper dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
     <div id="root"></div>
 
     <script type="text/babel">
-        window.useState = React.useState;
-        window.useEffect = React.useEffect;
-        window.useMemo = React.useMemo;
-        window.useRef = React.useRef;
-        window.useCallback = React.useCallback;
+        window.useState = React.useState; window.useEffect = React.useEffect;
+        window.useMemo = React.useMemo; window.useRef = React.useRef; window.useCallback = React.useCallback;
 
-        function Icon({ path, size = 20, className = "", strokeWidth = 2.2 }) {
+        function Icon({ path, size = 20, className = "", strokeWidth = 2 }) {
             return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>{path}</svg>;
         }
 
-        // FULL SET OF ICONS RESTORED
         window.Icons = {
             Plus: (p) => <Icon {...p} path={<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>} />,
             Trash: (p) => <Icon {...p} path={<><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></>} />,
@@ -161,7 +136,7 @@
             Inbox: (p) => <Icon {...p} path={<><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></>} />,
             List: (p) => <Icon {...p} path={<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>} />,
             Pencil: (p) => <Icon {...p} path={<><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></>} />,
-            Check: (p) => <Icon {...p} path={<><polyline points="20 6 9 17 4 12"/></>} strokeWidth={3} />,
+            Check: (p) => <Icon {...p} path={<><polyline points="20 6 9 17 4 12"/></>} strokeWidth={p.strokeWidth || 3} />,
             TrendUp: (p) => <Icon {...p} path={<><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>} />,
             TrendDown: (p) => <Icon {...p} path={<><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></>} />,
             Wallet: (p) => <Icon {...p} path={<><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></>} />,
@@ -176,36 +151,40 @@
             Moon: (p) => <Icon {...p} path={<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>} />,
             Sparkle: (p) => <Icon {...p} path={<><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M17.7 6.3l-2.8 2.8M9.1 14.9l-2.8 2.8"/></>} />,
             X: (p) => <Icon {...p} path={<><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>} />,
-            Calendar: (p) => <Icon {...p} path={<><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>} />,
-            Info: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>} />,
-            Shield: (p) => <Icon {...p} path={<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>} />,
-            Users: (p) => <Icon {...p} path={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
+            ArrowRight: (p) => <Icon {...p} path={<><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></>} />,
+            Target: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></>} />,
             Clock: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>} />,
-            Chip: (p) => (<svg width={p.size||24} height={p.size||24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={p.className}><rect x="4" y="4" width="16" height="16" rx="4" /><line x1="4" y1="9" x2="9" y2="9" /><line x1="4" y1="15" x2="9" y2="15" /><line x1="15" y1="9" x2="20" y2="9" /><line x1="15" y1="15" x2="20" y2="15" /><line x1="9" y1="4" x2="9" y2="20" /><line x1="15" y1="4" x2="15" y2="20" /></svg>),
+            Activity: (p) => <Icon {...p} path={<><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></>} />,
+            ShoppingBag: (p) => <Icon {...p} path={<><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></>} />,
+            Wand: (p) => <Icon {...p} path={<><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></>} />,
             Contactless: (p) => (<svg width={p.size||24} height={p.size||24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M8.5 21c-2.4-3.8-2.4-14.2 0-18" /><path d="M12.5 18c-1.6-2.5-1.6-9.5 0-12" /><path d="M16.5 15c-.8-1.2-.8-4.8 0-6" /></svg>)
         };
         const Icons = window.Icons;
 
         window.Logo = function Logo({ size = 30 }) {
             const [broken, setBroken] = React.useState(false);
-            if (!broken) {
-                return <img src="/assets/logo.svg" alt="Tipid logo" width={size} height={size} onError={() => setBroken(true)} style={{ width: size, height: size }} className="rounded-md" />;
-            }
-            return <span style={{ width: size, height: size }} className="rounded-md bg-ink text-paper flex items-center justify-center font-display font-semibold">₱</span>;
+            if (!broken) return <img src="/assets/logo.svg" alt="Tipid logo" width={size} height={size} onError={() => setBroken(true)} className="rounded-md shadow-sm" style={{ width: size, height: size }} />;
+            return <span style={{ width: size, height: size }} className="rounded-md bg-peso text-paper flex items-center justify-center font-display font-semibold shadow-sm">₱</span>;
         }
 
         window.peso = function peso(n) { return (n || 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
         window.CATEGORIES = ["Pagkain", "Pamasahe", "Bills", "Load", "Ipon", "Project Components", "Iba pa"];
 
-        // ---- COMPREHENSIVE PHILIPPINE BANKS & E-WALLETS ----
-        // `font` / `text` drive a distinct, brand-flavored wordmark treatment per issuer (no logo assets used).
+        window.CATEGORY_COLOR = {
+            "Pagkain": "#E63946", "Pamasahe": "#F4A261", "Bills": "#2F8E6C", "Load": "#457B9D",
+            "Ipon": "#D4AF37", "Project Components": "#9B5DE5", "Iba pa": "#8A9A90"
+        };
+
         window.SUPPORTED_WALLETS = [
             { id: "Cash", name: "Cash", type: "cash", color: "from-[#1F6F54] to-[#123D2E]", text: "CASH", font: "font-display tracking-[0.15em]", textStyle: "text-white", mono: "TIPID WALLET" },
             { id: "GCash", name: "GCash", type: "ewallet", color: "from-[#0052FE] to-[#004ADB]", text: "GCash", font: "font-sans italic font-extrabold tracking-tighter", textStyle: "text-white", mono: "E-WALLET" },
             { id: "Maya", name: "Maya", type: "ewallet", color: "from-[#0A0A0A] via-[#171717] to-[#242424]", text: "maya", font: "font-sans font-black tracking-widest lowercase", textStyle: "text-white", mono: "E-WALLET" },
             { id: "ShopeePay", name: "ShopeePay", type: "ewallet", color: "from-[#EE4D2D] to-[#D8390F]", text: "ShopeePay", font: "font-sans font-extrabold tracking-tight", textStyle: "text-white", mono: "E-WALLET" },
             { id: "GrabPay", name: "GrabPay", type: "ewallet", color: "from-[#00B14F] to-[#009344]", text: "GrabPay", font: "font-sans font-extrabold tracking-tight", textStyle: "text-white", mono: "E-WALLET" },
+            { id: "Atome", name: "Atome Card", type: "credit", color: "from-[#FFDE00] to-[#D4B300]", text: "atome", font: "font-sans font-black lowercase tracking-widest", textStyle: "text-[#111]", mono: "CREDIT CARD" },
+            { id: "MariBank", name: "MariBank", type: "digital", color: "from-[#EE4D2D] to-[#D8390F]", text: "MariBank", font: "font-sans font-bold tracking-tight", textStyle: "text-white", mono: "DIGITAL BANK" },
+            { id: "SeaBank", name: "SeaBank", type: "digital", color: "from-[#FF6E00] to-[#E65A00]", text: "SeaBank", font: "font-sans font-bold", textStyle: "text-white", mono: "DIGITAL BANK" },
             { id: "GoTyme", name: "GoTyme Bank", type: "digital", color: "from-[#0052FF] to-[#00238A]", text: "GoTyme", font: "font-sans font-bold tracking-tight", textStyle: "text-white", mono: "DIGITAL BANK" },
             { id: "Tonik", name: "Tonik Bank", type: "digital", color: "from-[#FF4D85] to-[#E6004F]", text: "tonik", font: "font-sans font-black lowercase tracking-tight", textStyle: "text-white", mono: "DIGITAL BANK" },
             { id: "UNO", name: "UNO Digital Bank", type: "digital", color: "from-[#E63946] to-[#8E0000]", text: "UNO", font: "font-sans font-black tracking-[0.2em] uppercase", textStyle: "text-white", mono: "DIGITAL BANK" },
@@ -261,8 +240,6 @@
             return ready;
         }
 
-        // Deterministic, purely cosmetic 4-digit "reference" so wallet cards read like real
-        // cards. Not tied to any real account number.
         window.cosmeticRef = function cosmeticRef(seed) {
             let h = 0;
             for (let i = 0; i < seed.length; i++) { h = (h * 31 + seed.charCodeAt(i)) >>> 0; }
@@ -270,11 +247,349 @@
         }
     </script>
 
-    <!-- Components -->
     <script type="text/babel" src="./components/navbar.js"></script>
     <script type="text/babel" src="./components/DashboardSummary.js"></script>
     <script type="text/babel" src="./components/ExpenseChart.js"></script>
-    <script type="text/babel" src="./components/ExpenseForm.js"></script>
+
+    <script type="text/babel">
+        function ExpenseFormStyles() {
+            return (
+                <style>{`
+                    @keyframes formBannerIn { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+                    .form-banner-in { animation: formBannerIn 0.35s cubic-bezier(0.34, 1.2, 0.4, 1) both; }
+                    @keyframes fieldPop { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+                    .field-pop { animation: fieldPop 0.3s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+                    @keyframes successPop { 0% { transform: scale(1); } 40% { transform: scale(1.15); } 100% { transform: scale(1); } }
+                    .success-pop { animation: successPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+                    @keyframes fieldShake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-4px); } 40% { transform: translateX(4px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
+                    .shake-once { animation: fieldShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+                    .perf-edge { -webkit-mask-image: radial-gradient(circle at 7px 3px, transparent 3px, black 3.5px); mask-image: radial-gradient(circle at 7px 3px, transparent 3px, black 3.5px); -webkit-mask-size: 14px 6px; mask-size: 14px 6px; -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x; }
+                    @media (prefers-reduced-motion: reduce) { .form-banner-in, .field-pop, .success-pop, .shake-once { animation: none !important; transition: none !important; } }
+                `}</style>
+            );
+        }
+
+        function FieldWrap({ icon, children, className = "", ringClass = "focus-within:ring-peso/40" }) {
+            return (
+                <div className={`flex items-center gap-2.5 bg-white/80 dark:bg-black/20 ring-1 ring-black/5 dark:ring-white/10 hover:ring-black/10 dark:hover:ring-white/20 rounded-[14px] px-3.5 focus-within:ring-2 ${ringClass} focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200 shadow-sm ${className}`}>
+                    {icon}
+                    {children}
+                </div>
+            );
+        }
+
+        function CheckGlyph({ size = 16 }) {
+            return (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6L9 17l-5-5" />
+                </svg>
+            );
+        }
+
+        function SelectChevron() {
+            return (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-ink2/30 dark:text-paper/30 shrink-0 pointer-events-none">
+                    <path d="M6 9l6 6 6-6" />
+                </svg>
+            );
+        }
+
+        function WarningGlyph({ size = 12 }) {
+            return (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                    <path d="M12 9v4M12 17h.01" />
+                    <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+                </svg>
+            );
+        }
+
+        window.AddEntryForm = function AddEntryForm({ uid, onAdded, entries = [], baseBalances = {} }) {
+            const { useState, useMemo, useEffect } = React;
+
+            const [type, setType] = useState("expense");
+            const [desc, setDesc] = useState("");
+            const [amount, setAmount] = useState("");
+            const [category, setCategory] = useState(window.CATEGORIES[0]);
+
+            const availableMethods = window.METHODS || ["Cash"];
+            const [method, setMethod] = useState(availableMethods[0] || "Cash");
+            const [spendType, setSpendType] = useState("need");
+            const [saving, setSaving] = useState(false);
+            const [justAdded, setJustAdded] = useState(false);
+            const [shake, setShake] = useState(false);
+
+            useEffect(() => {
+                if (!availableMethods.includes(method)) {
+                    setMethod(availableMethods[0] || "Cash");
+                }
+            }, [availableMethods, method]);
+
+            useEffect(() => {
+                const handlePaste = (e) => {
+                    const { amount: extAmt, desc: extDesc, method: extMethod, type: extType } = e.detail;
+                    if (extAmt) setAmount(extAmt);
+                    if (extDesc) setDesc(extDesc);
+                    if (extMethod && availableMethods.includes(extMethod)) setMethod(extMethod);
+                    if (extType) setType(extType);
+                };
+                window.addEventListener('tipid-smart-paste', handlePaste);
+                return () => window.removeEventListener('tipid-smart-paste', handlePaste);
+            }, [availableMethods]);
+
+            const triggerShake = () => {
+                setShake(true);
+                setTimeout(() => setShake(false), 400);
+            };
+
+            const walletBalances = useMemo(() => {
+                const balances = {};
+                if (baseBalances) {
+                    Object.keys(baseBalances).forEach(k => balances[k] = parseFloat(baseBalances[k]) || 0);
+                }
+                entries.forEach(e => {
+                    const m = e.method || "Cash";
+                    const amt = parseFloat(e.amount) || 0;
+                    if (balances[m] === undefined) balances[m] = 0;
+                    if (e.type === "income") balances[m] += amt;
+                    else balances[m] -= amt;
+                });
+                return balances;
+            }, [entries, baseBalances]);
+
+            const currentBalance = walletBalances[method] || 0;
+            const parsedAmount = parseFloat(amount) || 0;
+            const isExpense = type === "expense";
+
+            const matitira = isExpense ? (currentBalance - parsedAmount) : (currentBalance + parsedAmount);
+            const insufficient = isExpense && (parsedAmount > currentBalance);
+
+            const isIncome = type === "income";
+            const accent = isIncome
+                ? {
+                    ring: "focus-within:ring-peso/40",
+                    iconBg: "bg-gradient-to-br from-[#E6F3EF] to-[#D5EBE3] dark:from-[#1F6F54]/30 dark:to-[#1F6F54]/10 border-white/40 dark:border-white/5",
+                    iconFg: "text-[#1F6F54] dark:text-[#52C8A1]",
+                }
+                : {
+                    ring: "focus-within:ring-expense/40",
+                    iconBg: "bg-gradient-to-br from-[#FAEDE9] to-[#F5DBD5] dark:from-[#B5483B]/30 dark:to-[#B5483B]/10 border-white/40 dark:border-white/5",
+                    iconFg: "text-[#B5483B] dark:text-[#F38C80]",
+                };
+
+            const submit = async (e) => {
+                e.preventDefault();
+
+                if (!desc.trim()) {
+                    triggerShake();
+                    return Swal.fire({ icon: 'warning', title: 'Teka muna!', text: 'Pakilagay kung ano ang binili o kinita mo.', confirmButtonColor: '#1F6F54', customClass: { popup: 'tipid-swal' }});
+                }
+                if (!parsedAmount || parsedAmount <= 0) {
+                    triggerShake();
+                    return Swal.fire({ icon: 'warning', title: 'Teka muna!', text: 'Pakilagay ang tamang halaga.', confirmButtonColor: '#1F6F54', customClass: { popup: 'tipid-swal' }});
+                }
+
+                if (insufficient) {
+                    triggerShake();
+                    return Swal.fire({
+                        icon: 'error',
+                        title: 'Kulang ang Balanse',
+                        html: `Hindi mo pwedeng gamitin ang <b>${method}</b> dahil <b>₱${window.peso(currentBalance)}</b> na lamang ang laman nito.`,
+                        confirmButtonColor: '#B5483B',
+                        customClass: { popup: 'tipid-swal' }
+                    });
+                }
+
+                const savedGoalWallet = localStorage.getItem('tipid_goal_wallet');
+                if (!isIncome && method === savedGoalWallet) {
+                    triggerShake();
+                    const confirm = await Swal.fire({
+                        title: 'Wait, Ipon mo ito! 🛑',
+                        html: `Ang <b>${method}</b> ay naka-set bilang iyong Ipon Wallet para sa iyong goal.<br><br>Sigurado ka bang gusto mong bawasan ang ipon mo ng <b class="text-[#B5483B] font-mono">₱${window.peso(parsedAmount)}</b>?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#B5483B',
+                        cancelButtonColor: '#33443A',
+                        confirmButtonText: 'Oo, Ituloy ang Gastos',
+                        cancelButtonText: 'Huwag, I-cancel',
+                        customClass: { popup: 'tipid-swal' }
+                    });
+
+                    if (!confirm.isConfirmed) {
+                        return;
+                    }
+                }
+
+                setSaving(true);
+
+                try {
+                    if (isIncome) {
+                        await window.TipidData.addIncome(uid, { desc: desc.trim(), amount: parsedAmount, method });
+                    } else {
+                        await window.TipidData.addExpense(uid, { desc: desc.trim(), amount: parsedAmount, category, method, spendType });
+                    }
+
+                    setDesc("");
+                    setAmount("");
+                    if (onAdded) onAdded();
+
+                    setJustAdded(true);
+                    setTimeout(() => setJustAdded(false), 900);
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: isIncome ? 'Kita Naitala! 🎉' : 'Gastos Naitala! 💸',
+                        text: `Matagumpay na naidagdag ang ₱${window.peso(parsedAmount)} bilang ${isIncome ? 'kita' : 'gastos'}.`,
+                        confirmButtonColor: '#1F6F54',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        customClass: { popup: 'tipid-swal' }
+                    });
+
+                } catch (err) {
+                    triggerShake();
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Hindi nai-save ang data sa server. Subukan ulit.', confirmButtonColor: '#B5483B', customClass: { popup: 'tipid-swal' }});
+                } finally {
+                    setSaving(false);
+                }
+            };
+
+            return (
+                <div className={`relative overflow-hidden bg-white/70 dark:bg-ink2/40 backdrop-blur-3xl rounded-[1.75rem] border border-white/80 dark:border-white/10 shadow-ios p-5 sm:p-7 mb-6 fade-up ${shake ? "shake-once" : ""}`}>
+                    <ExpenseFormStyles />
+
+                    <div className="absolute top-0 left-0 right-0 h-1.5">
+                        <div className={`perf-edge absolute inset-0 bg-gradient-to-r from-peso/80 via-pesoLight/80 to-gold/80 transition-opacity duration-500 ${isIncome ? "opacity-100" : "opacity-0"}`} />
+                        <div className={`perf-edge absolute inset-0 bg-gradient-to-r from-expense/80 via-[#F38C80]/70 to-gold/60 transition-opacity duration-500 ${isIncome ? "opacity-0" : "opacity-100"}`} />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 mt-1">
+                        <div className="flex items-center gap-3">
+                            <span className={`w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 shadow-sm border transition-colors duration-300 ${accent.iconBg} ${accent.iconFg}`}>
+                                <Icons.Plus size={18} />
+                            </span>
+                            <div>
+                                <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper leading-tight">Bagong Entry</h3>
+                                <p className="text-[11px] text-ink2/50 dark:text-paper/50">Itala ang bawat sentimo</p>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col items-start sm:items-end gap-2">
+                            <div className="relative grid grid-cols-2 bg-black/5 dark:bg-white/5 rounded-full p-1 text-[13px] font-medium shadow-inner w-[160px]">
+                                <div
+                                    className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.2,0.4,1)] ${
+                                        isIncome
+                                            ? "translate-x-full bg-white dark:bg-ink2"
+                                            : "translate-x-0 bg-white dark:bg-ink2"
+                                    }`}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setType("expense")}
+                                    className={`relative z-10 py-1.5 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-expense/50 ${
+                                        !isIncome ? "text-expense dark:text-[#F38C80] font-semibold" : "text-ink2/50 dark:text-paper/50 hover:text-ink dark:hover:text-paper"
+                                    }`}
+                                >
+                                    Gastos
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setType("income")}
+                                    className={`relative z-10 py-1.5 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 ${
+                                        isIncome ? "text-peso dark:text-[#52C8A1] font-semibold" : "text-ink2/50 dark:text-paper/50 hover:text-ink dark:hover:text-paper"
+                                    }`}
+                                >
+                                    Kita
+                                </button>
+                            </div>
+
+                            <span className="text-[10px] sm:text-[11px] font-mono font-medium text-ink2/50 dark:text-paper/40 px-1 bg-black/5 dark:bg-white/5 rounded-md py-0.5">
+                                Balanse ng {method}: <span className="text-ink dark:text-paper font-bold">₱{window.peso(currentBalance)}</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <form onSubmit={submit} className="flex flex-col gap-3.5">
+
+                        <FieldWrap icon={<Icons.Pencil size={16} className="text-ink2/40 dark:text-paper/40 shrink-0" />} ringClass={accent.ring}>
+                            <input
+                                type="text" value={desc} onChange={e => setDesc(e.target.value)}
+                                placeholder={isIncome ? "Hal: Allowance galing kay Mama" : "Hal: Kape, Grab, Shopee Checkout"}
+                                className="w-full min-w-0 bg-transparent py-3.5 text-[15px] font-medium text-ink dark:text-paper placeholder:text-ink2/30 dark:placeholder:text-paper/30 focus:outline-none"
+                            />
+                        </FieldWrap>
+
+                        {!isIncome && (
+                            <div className="flex gap-2.5">
+                                <button type="button" onClick={() => setSpendType("need")} className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[14px] text-[13px] font-bold transition-all ring-1 shadow-sm ${spendType === "need" ? 'bg-[#E6F3EF] ring-[#2F8E6C]/30 text-[#1F6F54] dark:bg-[#1F6F54]/20 dark:text-[#52C8A1]' : 'bg-white/80 dark:bg-black/20 ring-black/5 text-ink2/50 dark:text-paper/40 hover:bg-black/5 dark:hover:bg-white/5'}`}>
+                                    <Icons.Check size={16} strokeWidth={3}/> Need <span className="hidden sm:inline">(Kailangan)</span>
+                                </button>
+                                <button type="button" onClick={() => setSpendType("luho")} className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[14px] text-[13px] font-bold transition-all ring-1 shadow-sm ${spendType === "luho" ? 'bg-[#FAEDE9] ring-[#B5483B]/30 text-[#B5483B] dark:bg-[#B5483B]/20 dark:text-[#F38C80]' : 'bg-white/80 dark:bg-black/20 ring-black/5 text-ink2/50 dark:text-paper/40 hover:bg-black/5 dark:hover:bg-white/5'}`}>
+                                    {Icons.ShoppingBag ? <Icons.ShoppingBag size={16} strokeWidth={2.5}/> : <Icons.Category size={16} strokeWidth={2.5} />} Want <span className="hidden sm:inline">(Luho)</span>
+                                </button>
+                            </div>
+                        )}
+
+                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-3.5 mt-1">
+                            <div className="flex flex-col gap-1.5 sm:w-[150px] shrink-0">
+                                <FieldWrap icon={<span className="text-ink2/40 dark:text-paper/40 font-mono text-[15px] shrink-0">₱</span>} ringClass={insufficient ? "ring-expense/50 bg-expense/5" : accent.ring} className={insufficient ? "ring-expense/50 bg-expense/5 dark:bg-expense/10" : ""}>
+                                    <input
+                                        type="number" step="0.01" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)}
+                                        placeholder="0.00"
+                                        className={`w-full min-w-0 bg-transparent py-3.5 text-base font-mono font-bold placeholder:font-medium focus:outline-none ${insufficient ? 'text-expense dark:text-[#F38C80] placeholder:text-expense/50' : 'text-ink dark:text-paper placeholder:text-ink2/25 dark:placeholder:text-paper/25'}`}
+                                    />
+                                </FieldWrap>
+                                {(amount !== "") && (
+                                    <span className={`inline-flex items-center gap-1 text-[10px] font-mono px-1.5 transition-colors duration-200 ${insufficient ? "text-expense dark:text-[#F38C80] font-semibold animate-pulse" : "text-ink2/40 dark:text-paper/30 font-medium"}`}>
+                                        {insufficient && <WarningGlyph size={11} />}
+                                        {insufficient
+                                            ? `Kulang ng ₱${window.peso(parsedAmount - currentBalance)}`
+                                            : `Matitira: ₱${window.peso(matitira)}`}
+                                    </span>
+                                )}
+                            </div>
+
+                            {!isIncome && (
+                                <FieldWrap className="field-pop relative w-full sm:flex-1 h-[52px]" icon={<Icons.Category size={15} className="text-ink2/40 dark:text-paper/40 shrink-0" />} ringClass={accent.ring}>
+                                    <select value={category} onChange={e => setCategory(e.target.value)} className="w-full min-w-0 bg-transparent h-full text-[14px] font-medium text-ink dark:text-paper focus:outline-none appearance-none pr-2 cursor-pointer">
+                                        {window.CATEGORIES.map(c => <option key={c} value={c} className="bg-paper dark:bg-ink dark:text-paper">{c}</option>)}
+                                    </select>
+                                    <SelectChevron />
+                                </FieldWrap>
+                            )}
+
+                            <FieldWrap className="relative w-full sm:flex-1 h-[52px]" icon={<Icons.Wallet size={15} className="text-ink2/40 dark:text-paper/40 shrink-0" />} ringClass={accent.ring}>
+                                <select value={method} onChange={e => setMethod(e.target.value)} className="w-full min-w-0 bg-transparent h-full text-[14px] font-medium text-ink dark:text-paper focus:outline-none appearance-none pr-2 cursor-pointer">
+                                    {availableMethods.map(m => {
+                                        const bal = walletBalances[m] || 0;
+                                        const cantAfford = isExpense && (parsedAmount > bal);
+                                        return (
+                                            <option key={m} value={m} disabled={cantAfford} className={`bg-paper dark:bg-ink ${cantAfford ? 'text-expense dark:text-[#F38C80]' : 'text-ink dark:text-paper'}`}>
+                                                {m} {cantAfford ? `(Kulang: ₱${window.peso(bal)} lang)` : ""}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                                <SelectChevron />
+                            </FieldWrap>
+
+                            <button type="submit" disabled={saving || insufficient}
+                                className={`font-semibold rounded-[14px] px-6 h-[52px] flex items-center justify-center gap-2 transition-all shrink-0 text-white disabled:opacity-50 active:scale-95 duration-200 shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+                                    isIncome
+                                        ? "bg-gradient-to-r from-peso to-pesoLight hover:shadow-lg hover:shadow-peso/20 focus-visible:ring-peso/50"
+                                        : "bg-gradient-to-r from-[#15231C] to-[#2C3E33] dark:from-peso dark:to-pesoDeep hover:shadow-lg focus-visible:ring-ink/50"
+                                }`}>
+                                <span key={saving ? "saving" : justAdded ? "added" : "idle"} className={justAdded ? "success-pop inline-flex" : "inline-flex"}>
+                                    {saving ? <Icons.Loader size={18} className="spin" /> : justAdded ? <CheckGlyph size={18} /> : <Icons.Plus size={18} strokeWidth={2.5} />}
+                                </span>
+                                <span className="hidden sm:inline whitespace-nowrap">{saving ? "Sinasave..." : justAdded ? "Nadagdag!" : "Idagdag"}</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            );
+        }
+    </script>
+
     <script type="text/babel" src="./components/ExpenseItem.js"></script>
     <script type="text/babel" src="./components/ExpenseList.js"></script>
     <script type="text/babel" src="./components/OnboardingModal.js"></script>
@@ -283,24 +598,24 @@
         function AmbientBackground() {
             return (
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div className="absolute inset-0 opacity-[0.35] dark:opacity-[0.18]"
-                        style={{ backgroundImage: "radial-gradient(rgba(31,111,84,0.14) 1px, transparent 1px)", backgroundSize: "26px 26px", maskImage: "radial-gradient(80% 60% at 50% 0%, black, transparent)" }} />
-                    <div className="absolute -top-24 -right-16 w-[380px] h-[380px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
-                    <div className="absolute bottom-0 -left-24 w-[400px] h-[400px] bg-gold/10 dark:bg-gold/5 rounded-full blur-[100px]" />
-                    <div className="absolute top-[38%] left-[55%] w-[260px] h-[260px] bg-expense/[0.05] dark:bg-expense/[0.04] rounded-full blur-[110px]" />
+                    <div className="absolute inset-0 opacity-[0.25] dark:opacity-[0.12]"
+                        style={{ backgroundImage: "radial-gradient(rgba(31,111,84,0.15) 1px, transparent 1px)", backgroundSize: "28px 28px", maskImage: "radial-gradient(ellipse at 50% 0%, black, transparent 80%)" }} />
+                    <div className="absolute -top-32 -right-20 w-[450px] h-[450px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[100px]" />
+                    <div className="absolute bottom-0 -left-32 w-[500px] h-[500px] bg-gold/10 dark:bg-gold/5 rounded-full blur-[120px]" />
+                    <div className="absolute top-[40%] left-[60%] w-[300px] h-[300px] bg-expense/[0.04] dark:bg-expense/[0.03] rounded-full blur-[100px]" />
                 </div>
             );
         }
 
         function SectionHeader({ title, subtitle, action }) {
             return (
-                <div className="flex items-end justify-between gap-4 mb-4 sm:mb-6 mt-2 ml-1">
+                <div className="flex items-end justify-between gap-4 mb-6 sm:mb-8 mt-2">
                     <div className="min-w-0">
-                        <div className="flex items-center gap-2.5 mb-1.5">
-                            <span className="w-4 h-[3px] rounded-full bg-gradient-to-r from-peso to-pesoLight dark:from-pesoLight dark:to-gold shrink-0" />
-                            <h2 className="font-display text-[1.35rem] sm:text-[1.5rem] font-semibold text-ink dark:text-paper tracking-tight leading-tight">{title}</h2>
+                        <div className="flex items-center gap-3 mb-1">
+                            <span className="w-1.5 h-6 rounded-full bg-gradient-to-b from-pesoLight to-peso dark:from-peso dark:to-gold shrink-0" />
+                            <h2 className="font-mono text-[13px] font-bold tracking-[0.2em] uppercase text-peso dark:text-pesoLight opacity-90">{title}</h2>
                         </div>
-                        {subtitle && <p className="text-[12.5px] text-ink2/60 dark:text-paper/50 ml-[1.625rem]">{subtitle}</p>}
+                        {subtitle && <p className="text-[20px] font-display font-bold text-ink dark:text-paper tracking-tight leading-tight mt-1.5">{subtitle}</p>}
                     </div>
                     {action}
                 </div>
@@ -319,110 +634,342 @@
             if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
         }
 
-        function NotificationBell({ entries, budget }) {
-            const monthlyBudget = budget?.amount || 0;
+        function parseEntryDate(e) {
+            if (!e) return null;
+            if (e.date && typeof e.date === 'string') {
+                const d = new Date(`${e.date}T00:00:00`);
+                if (!isNaN(d.getTime())) return d;
+            }
+            let t = e.createdAt || e.timestamp;
+            if (t && typeof t.toDate === "function") return t.toDate();
+            if (t) return new Date(t);
+            return null;
+        }
+
+        function isSameMonth(d, ref) {
+            return !!d && !!ref && d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth();
+        }
+
+        function useMonthlyStats(entries) {
+            return React.useMemo(() => {
+                const now = new Date();
+                const lastMonthRef = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                let incomeThis = 0, expenseThis = 0, incomeLast = 0, expenseLast = 0;
+                const categoryTotals = {};
+
+                const safeEntries = Array.isArray(entries) ? entries : [];
+
+                safeEntries.forEach((e) => {
+                    const d = parseEntryDate(e);
+                    if (!d) return;
+                    const amt = Number(e.amount) || 0;
+                    if (isSameMonth(d, now)) {
+                        if (e.type === "income") {
+                            incomeThis += amt;
+                        } else {
+                            expenseThis += amt;
+                            const cat = e.category || "Iba pa";
+                            categoryTotals[cat] = (categoryTotals[cat] || 0) + amt;
+                        }
+                    } else if (isSameMonth(d, lastMonthRef)) {
+                        if (e.type === "income") incomeLast += amt;
+                        else expenseLast += amt;
+                    }
+                });
+
+                const net = incomeThis - expenseThis;
+                const savingsRate = incomeThis > 0 ? (net / incomeThis) * 100 : 0;
+                const pctChange = (curr, prev) => (prev > 0 ? ((curr - prev) / prev) * 100 : (curr > 0 ? 100 : 0));
+                const topCategories = Object.entries(categoryTotals)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 4)
+                    .map(([name, amount]) => ({ name, amount, pct: expenseThis > 0 ? (amount / expenseThis) * 100 : 0 }));
+
+                return {
+                    incomeThis, expenseThis, incomeLast, expenseLast, net, savingsRate,
+                    incomeChangePct: pctChange(incomeThis, incomeLast),
+                    expenseChangePct: pctChange(expenseThis, expenseLast),
+                    topCategories,
+                };
+            }, [entries]);
+        }
+
+        function TrendPill({ pct, invertGood = false }) {
+            if (pct === null || pct === undefined || !isFinite(pct)) return null;
+            const rounded = Math.round(pct);
+            if (rounded === 0) {
+                return <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-1 rounded-md bg-black/5 dark:bg-white/5 text-ink2/50 dark:text-paper/40 uppercase tracking-widest border border-black/5 dark:border-white/5">0%</span>;
+            }
+            const isUp = rounded > 0;
+            const good = invertGood ? !isUp : isUp;
+            const tone = good ? "bg-peso/10 text-peso dark:bg-pesoLight/15 dark:text-pesoLight border-peso/20" : "bg-expense/10 text-expense dark:bg-expense/20 dark:text-[#F38C80] border-expense/20";
+            return (
+                <span className={`inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-1 rounded-md whitespace-nowrap uppercase tracking-widest border ${tone}`}>
+                    {isUp ? <Icons.TrendUp size={11} strokeWidth={3} /> : <Icons.TrendDown size={11} strokeWidth={3} />}
+                    {Math.abs(rounded)}%
+                </span>
+            );
+        }
+
+        function NotificationBell({ entries, budget, monthStats }) {
+            const monthlyBudget = Number(budget) || 0;
             const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
             const dailyBudget = monthlyBudget > 0 ? monthlyBudget / daysInMonth : 0;
 
             const now = new Date();
             const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-            const todayExpenses = entries.filter(e => e.type === "expense" && e.date === todayStr).reduce((sum, e) => sum + (e.amount || 0), 0);
-            const isOverspent = monthlyBudget > 0 && todayExpenses > dailyBudget;
+            const safeEntries = Array.isArray(entries) ? entries : [];
+            const todayExpenses = safeEntries.filter(e => e.type === "expense" && e.date === todayStr).reduce((sum, e) => sum + (e.amount || 0), 0);
+
+            const isOverDaily = monthlyBudget > 0 && todayExpenses > dailyBudget;
+            const isOverBudget = monthlyBudget > 0 && monthStats?.expenseThis > monthlyBudget;
+
+            const hasAlert = isOverBudget || isOverDaily;
 
             const handleBellClick = () => {
                 if (monthlyBudget === 0) {
-                    Swal.fire({ title: "Walang Budget ⚙️", text: "I-set muna ang iyong Monthly Budget sa ibaba.", icon: "info", confirmButtonText: "Sige", confirmButtonColor: "#1F6F54", customClass: { popup: 'tipid-swal' } });
-                } else if (isOverspent) {
-                    Swal.fire({ title: "Alerto sa Gastos! ⚠️", html: `Ang safe daily spending mo ay <b>₱${window.peso(dailyBudget)}</b>, pero gumastos ka na ng <b>₱${window.peso(todayExpenses)}</b>.`, icon: "warning", confirmButtonText: "Noted, Salamat", confirmButtonColor: "#B5483B", customClass: { popup: 'tipid-swal' } });
+                    Swal.fire({ title: "SYSTEM ALERT", text: "Walang naka-set na Monthly Budget sa settings.", icon: "info", confirmButtonText: "Sige", confirmButtonColor: "#1F6F54", customClass: { popup: 'tipid-swal' } });
+                } else if (isOverBudget) {
+                    Swal.fire({ title: "BUDGET EXCEEDED 🚨", html: `Ang budget mo ay <b class="font-mono">₱${window.peso(monthlyBudget)}</b>, pero ang total gastos mo ngayon ay <b class="font-mono text-[#D64045]">₱${window.peso(monthStats.expenseThis)}</b>.`, icon: "error", confirmButtonText: "Acknowledged", confirmButtonColor: "#D64045", customClass: { popup: 'tipid-swal' } });
+                } else if (isOverDaily) {
+                    Swal.fire({ title: "DAILY LIMIT REACHED ⚠️", html: `Safe limit: <b class="font-mono">₱${window.peso(dailyBudget)}</b>/day.<br>Gastos ngayon: <b class="font-mono">₱${window.peso(todayExpenses)}</b>.`, icon: "warning", confirmButtonText: "Acknowledged", confirmButtonColor: "#D64045", customClass: { popup: 'tipid-swal' } });
                 } else {
-                    Swal.fire({ title: "Pasok sa Budget! 🎉", html: `Safe daily spending: <b>₱${window.peso(dailyBudget)}</b><br>Gastos ngayon: <b>₱${window.peso(todayExpenses)}</b>`, icon: "success", confirmButtonText: "Ayos", confirmButtonColor: "#1F6F54", customClass: { popup: 'tipid-swal' } });
+                    Swal.fire({ title: "BUDGET STATUS: NOMINAL", html: `Safe limit: <b class="font-mono">₱${window.peso(dailyBudget)}</b>/day.<br>Gastos ngayon: <b class="font-mono">₱${window.peso(todayExpenses)}</b>.`, icon: "success", confirmButtonText: "Close", confirmButtonColor: "#1F6F54", customClass: { popup: 'tipid-swal' } });
                 }
             };
 
             return (
-                <button onClick={handleBellClick} aria-label="Tingnan ang alerts" className="relative tap-scale shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/15 hover:bg-white/25 ring-1 ring-white/15 backdrop-blur-md flex items-center justify-center transition-colors shadow-sm">
-                    <Icons.Bell size={19} className="text-paper" strokeWidth={2.2} />
-                    {isOverspent && (
-                        <span className="absolute top-[0.4rem] right-[0.4rem] flex h-2.5 w-2.5">
-                            <span className="absolute inline-flex h-full w-full rounded-full bg-[#FF6B6B] opacity-75 animate-ping" />
-                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#FF6B6B] border-2 border-pesoDeep" />
+                <button onClick={handleBellClick} aria-label="Alerts" className="relative tap-scale shrink-0 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md flex items-center justify-center transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-white/50 z-20">
+                    <Icons.Activity size={20} className="text-white" strokeWidth={2.5} />
+                    {hasAlert && (
+                        <span className="absolute top-[0.5rem] right-[0.5rem] flex h-2.5 w-2.5">
+                            <span className={`absolute inline-flex h-full w-full rounded-full opacity-80 animate-ping ${isOverBudget ? 'bg-[#FF0000]' : 'bg-[#FF6B6B]'}`} />
+                            <span className={`relative inline-flex rounded-full h-2.5 w-2.5 border-2 border-[#0B130E] ${isOverBudget ? 'bg-[#FF0000]' : 'bg-[#FF6B6B]'}`} />
                         </span>
                     )}
                 </button>
             );
         }
 
-        function HeroCard({ user, firstName, balance }) {
-            const [hidden, setHidden] = React.useState(false);
-            const initial = firstName ? firstName.charAt(0).toUpperCase() : "T";
+        function GoalWidget({ goalName, goalAmount, goalWallet, goalContrib, goalFreq, goalStart, walletBalances }) {
+            if (!goalName || !goalAmount) return null;
+
+            const currentSaved = walletBalances[goalWallet] || 0;
+            const target = Number(goalAmount) || 0;
+            const pct = target > 0 ? Math.min((currentSaved / target) * 100, 100) : 0;
+            const isCompleted = currentSaved >= target;
+
+            const contrib = Number(goalContrib) || 0;
+            const remaining = Math.max(0, target - currentSaved);
+            const monthlyContrib = goalFreq === "sahod" ? contrib * 2 : contrib;
+            const monthsNeeded = monthlyContrib > 0 ? Math.ceil(remaining / monthlyContrib) : 0;
+
+            const startDate = goalStart ? new Date(goalStart) : new Date();
+            const today = new Date();
+            let estDateObj = new Date(today);
+            estDateObj.setMonth(estDateObj.getMonth() + monthsNeeded);
+
+            const estDateStr = estDateObj.toLocaleDateString('en-PH', { month: 'short', year: 'numeric' }).toUpperCase();
+            const walletTheme = window.SUPPORTED_WALLETS.find(w => w.id === goalWallet) || window.SUPPORTED_WALLETS[0];
 
             return (
-                <div className="hero-mesh relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] text-paper p-5 sm:p-7 shadow-iosLg ring-1 ring-white/15 min-h-[200px] sm:min-h-[220px] flex flex-col justify-between">
-                    <div className="grain-overlay" />
-                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/[0.08] rounded-full blur-[50px] hero-float pointer-events-none" />
-                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-[#FFD700]/[0.08] rounded-full blur-[60px] pointer-events-none" />
+                <div className="bento-card rounded-[2rem] md:col-span-12 lg:col-span-6 p-6 sm:p-7 flex flex-col justify-between relative overflow-hidden group">
+                    <div className="absolute right-0 top-0 w-48 h-48 bg-gold/10 rounded-full blur-3xl pointer-events-none transition-all duration-700 group-hover:scale-110 group-hover:bg-gold/15" />
 
-                    <div className="absolute right-0 bottom-0 w-[140px] sm:w-[170px] h-full pointer-events-none z-0 overflow-visible">
-                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-24 h-24 bg-white/15 blur-2xl rounded-full"></div>
-                        <img src="/assets/tipid_mascot.png" alt="Tipid Buddy" className="absolute bottom-[-10px] sm:bottom-[-15px] right-[-10px] sm:right-2 w-full object-contain tipid-mascot-img" draggable="false" />
-                    </div>
-
-                    <div className="relative z-10 flex flex-col h-full gap-5 sm:gap-6">
-                        <div className="flex justify-between items-start gap-3">
-                            <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
-                                <div className="relative shrink-0">
-                                    <span className="absolute inset-0 rounded-full bg-white/20 blur-md scale-110 pointer-events-none" />
-                                    <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-full ring-2 ring-white/30 shadow-md overflow-hidden bg-white/10 flex items-center justify-center backdrop-blur-sm">
-                                        {user && user.photoURL ? <img src={user.photoURL} alt={firstName || "Profile"} className="w-full h-full object-cover" /> : <span className="font-display text-lg font-bold text-paper">{initial}</span>}
-                                    </div>
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-[9px] sm:text-[10px] font-mono font-semibold tracking-[0.2em] uppercase text-paper/80 mb-0.5">{timeGreeting()}</p>
-                                    <h1 className="font-display text-[1.25rem] sm:text-[1.6rem] font-bold leading-[1.1] truncate">Kumusta, {firstName}!</h1>
-                                </div>
+                    <div className="flex justify-between items-start mb-6 relative z-10">
+                        <div className="flex items-center gap-4">
+                            <div className="relative">
+                                <span className="absolute inset-0 rounded-[14px] bg-gold/20 blur-md" />
+                                <span className="relative w-12 h-12 rounded-[14px] bg-gold/10 text-gold flex items-center justify-center shrink-0 border border-gold/30 shadow-inner">
+                                    <Icons.Target size={22} strokeWidth={2} />
+                                </span>
                             </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                                <button onClick={() => scrollToId("add-entry")} aria-label="Magdagdag ng gastos" className="tap-scale shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-paper text-pesoDeep hover:bg-white ring-1 ring-black/5 flex items-center justify-center transition-colors shadow-md">
-                                    <Icons.Plus size={20} strokeWidth={2.4} />
-                                </button>
+                            <div>
+                                <p className="text-[10px] font-mono font-bold text-ink2/50 dark:text-paper/40 uppercase tracking-widest mb-1">Target Vault</p>
+                                <h3 className="font-display text-[18px] sm:text-[20px] font-bold text-ink dark:text-paper leading-none tracking-tight">{goalName}</h3>
                             </div>
                         </div>
+                        <div className={`px-2.5 py-1.5 rounded-lg text-[9px] font-mono font-bold tracking-widest uppercase border shadow-sm flex items-center gap-1.5 shrink-0 ${isCompleted ? 'bg-[#1F6F54] text-white border-[#1F6F54]' : 'bg-white/50 dark:bg-black/30 text-ink2/70 dark:text-paper/70 border-black/10 dark:border-white/10'}`}>
+                            {isCompleted ? <><Icons.Check size={12} strokeWidth={3}/> ACQUIRED</> : <><Icons.Clock size={12} strokeWidth={2.5}/> ACTIVE</>}
+                        </div>
+                    </div>
 
-                        <div className="mt-auto pt-2 max-w-[58%] sm:max-w-[66%]">
-                            <div className="flex items-center gap-1.5 mb-1">
-                                <p className="text-[11px] sm:text-xs font-medium text-paper/80 tracking-wide">Kasalukuyang Balanse</p>
-                                <button onClick={() => setHidden(h => !h)} className="text-paper/60 hover:text-paper transition-colors p-1 relative z-20 focus:outline-none">
+                    <div className="mb-6 relative z-10">
+                        <div className="flex justify-between items-end mb-3">
+                            <p className="font-mono text-3xl sm:text-4xl font-bold text-ink dark:text-paper tracking-tight truncate">
+                                ₱{window.peso(currentSaved)} <span className="text-[14px] text-ink2/40 dark:text-paper/40 font-medium">/ ₱{window.peso(target)}</span>
+                            </p>
+                            <p className="text-[14px] font-mono font-bold text-gold shrink-0 mb-1">{pct.toFixed(1)}%</p>
+                        </div>
+                        <div className="h-4 bg-black/5 dark:bg-white/5 rounded-full overflow-hidden shadow-inner p-[2.5px] border border-black/5 dark:border-white/5">
+                            <div className="h-full bg-gradient-to-r from-goldLight to-gold rounded-full bar-fill relative overflow-hidden" style={{ width: `${pct}%` }}>
+                                <div className="absolute inset-0 data-sweep opacity-50" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mt-auto border-t border-line/50 dark:border-white/10 pt-5 relative z-10">
+                        <div>
+                            <p className="text-[10px] font-mono font-bold text-ink2/50 dark:text-paper/40 uppercase tracking-widest mb-1.5">Storage</p>
+                            <div className="flex items-center gap-2">
+                                <span className={`w-3 h-3 rounded-full bg-gradient-to-br shadow-sm ${walletTheme.color}`} />
+                                <p className="text-[14px] font-bold text-ink dark:text-paper truncate">{walletTheme.name}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-mono font-bold text-ink2/50 dark:text-paper/40 uppercase tracking-widest mb-1.5">Est. Completion</p>
+                            {isCompleted ? (
+                                <p className="text-[14px] font-mono font-bold text-[#1F6F54] dark:text-[#52C8A1]">DONE</p>
+                            ) : monthlyContrib > 0 ? (
+                                <p className="text-[14px] font-mono font-bold text-ink dark:text-paper">{estDateStr}</p>
+                            ) : (
+                                <p className="text-[12px] font-medium text-expense dark:text-[#F38C80]">Awaiting Data</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )
+        }
+
+        function CommandCenter({ user, firstName, balance, entries, budget, monthStats, loading, walletBalances }) {
+            const initial = firstName ? firstName.charAt(0).toUpperCase() : "T";
+            const positiveNet = monthStats.net >= 0;
+            const [hidden, setHidden] = React.useState(false);
+            const monthlyBudget = Number(budget) || 0;
+
+            const goalName = localStorage.getItem('tipid_goal_name');
+            const goalAmount = localStorage.getItem('tipid_goal_amount');
+            const goalWallet = localStorage.getItem('tipid_goal_wallet') || "GCash";
+            const goalContrib = localStorage.getItem('tipid_goal_contrib');
+            const goalFreq = localStorage.getItem('tipid_goal_freq') || "sahod";
+            const goalStart = localStorage.getItem('tipid_goal_start');
+
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-6 fade-up-bento">
+
+                    <div className="hero-command rounded-[2.5rem] md:col-span-8 p-7 sm:p-10 flex flex-col justify-between min-h-[260px] sm:min-h-[280px]">
+                        <div className="hero-mesh" />
+
+                        <div className="absolute right-0 bottom-0 w-[160px] sm:w-[200px] h-full pointer-events-none z-0 overflow-visible opacity-90">
+                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-32 h-32 bg-white/20 blur-[40px] rounded-full"></div>
+                            <img src="/assets/tipid_mascot.png" alt="Tipid Buddy" className="absolute bottom-[-15px] sm:bottom-[-20px] right-[-10px] sm:right-4 w-full object-contain tipid-mascot-img" draggable="false" />
+                        </div>
+
+                        <div className="relative z-10 flex justify-between items-start gap-4 pr-1">
+                            <div className="flex items-center gap-4">
+                                <div className="relative shrink-0">
+                                    <span className="absolute inset-0 rounded-[18px] bg-white/20 blur-lg scale-110 pointer-events-none breathe-glow" />
+                                    <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-[18px] border-[3px] border-white/20 shadow-xl overflow-hidden bg-white/10 flex items-center justify-center backdrop-blur-xl">
+                                        {user && user.photoURL ? <img src={user.photoURL} alt={firstName} className="w-full h-full object-cover" /> : <span className="font-display text-2xl font-bold text-white">{initial}</span>}
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-mono font-bold tracking-widest uppercase text-white/60 mb-1">{timeGreeting()}</p>
+                                    <h1 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight drop-shadow-md">{firstName}.</h1>
+                                </div>
+                            </div>
+                            <NotificationBell entries={entries} budget={budget} monthStats={monthStats} />
+                        </div>
+
+                        <div className="relative z-10 mt-12 max-w-[65%] sm:max-w-[70%]">
+                            <div className="flex items-center gap-2 mb-2">
+                                <p className="text-[11px] sm:text-xs font-mono font-bold text-white/70 tracking-widest uppercase">SYS.BAL // Net Worth</p>
+                                <button onClick={() => setHidden(h => !h)} className="text-white/50 hover:text-white transition-colors p-1 relative z-20 focus:outline-none">
                                     {hidden ? <Icons.EyeOff size={14} /> : <Icons.Eye size={14} />}
                                 </button>
                             </div>
-                            <p className="font-mono text-[2rem] sm:text-[2.5rem] font-bold tracking-tight leading-none drop-shadow-md truncate">
-                                {hidden ? "₱ ••••••" : `₱${window.peso(balance)}`}
+                            <p className="font-fraunces text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tighter text-white drop-shadow-lg truncate">
+                                {hidden ? "₱ ••••••" : <><span className="opacity-60 mr-1">₱</span>{window.peso(balance)}</>}
                             </p>
-                            <div className="mt-3.5 inline-flex items-center gap-1.5 rounded-full bg-black/20 border border-white/10 px-2.5 py-1 backdrop-blur-sm">
-                                <Icons.Sparkle size={10} strokeWidth={2.4} className="text-[#FFD700]" />
-                                <span className="text-[9px] sm:text-[10px] font-medium text-paper/90 whitespace-nowrap">Kasama mo si Tipid Buddy</span>
-                            </div>
                         </div>
                     </div>
+
+                    <div className="bento-card rounded-[2.5rem] md:col-span-4 p-7 sm:p-8 flex flex-col justify-between min-h-[180px] md:min-h-full">
+                        <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <p className="text-[11px] font-mono font-bold text-ink2/50 dark:text-paper/40 uppercase tracking-widest">Net Savings</p>
+                                <span className={`w-10 h-10 rounded-[14px] flex items-center justify-center shadow-sm border ${positiveNet ? 'bg-peso/10 text-peso dark:bg-pesoLight/15 dark:text-pesoLight border-peso/20' : 'bg-expense/10 text-expense dark:bg-expense/15 dark:text-[#F38C80] border-expense/20'}`}>
+                                    <Icons.Wallet size={18} strokeWidth={2.5} />
+                                </span>
+                            </div>
+                            <p className={`font-mono text-3xl sm:text-4xl font-bold tracking-tight ${positiveNet ? 'text-peso dark:text-pesoLight' : 'text-expense dark:text-[#F38C80]'}`}>
+                                {positiveNet ? "" : "\u2212"}₱{window.peso(Math.abs(monthStats.net))}
+                            </p>
+                        </div>
+
+                        <div className="mt-5 pt-5 border-t border-line/60 dark:border-white/10 flex justify-between items-center">
+                            <div>
+                                <p className="text-[10px] font-mono font-bold text-ink2/50 dark:text-paper/40 uppercase tracking-widest mb-1">Rate</p>
+                                <p className="font-mono text-xl font-bold text-ink dark:text-paper">{Math.max(Math.round(monthStats.savingsRate), 0)}%</p>
+                            </div>
+                            <Icons.Sparkle size={24} className={positiveNet ? "text-gold" : "text-ink2/20 dark:text-paper/20"} strokeWidth={2} />
+                        </div>
+                    </div>
+
+                    <div className="bento-card rounded-[2rem] md:col-span-3 p-6 flex flex-col justify-center">
+                        <p className="text-[10px] font-mono font-bold text-ink2/50 dark:text-paper/40 uppercase tracking-widest mb-3 flex justify-between items-center">
+                            INFLOW <TrendPill pct={monthStats.incomeChangePct} invertGood={false} />
+                        </p>
+                        <p className="font-mono text-2xl font-bold text-ink dark:text-paper tracking-tight truncate">₱{window.peso(monthStats.incomeThis)}</p>
+                    </div>
+
+                    <div className="bento-card rounded-[2rem] md:col-span-3 p-6 flex flex-col justify-center">
+                        <p className="text-[10px] font-mono font-bold text-ink2/50 dark:text-paper/40 uppercase tracking-widest mb-3 flex justify-between items-center">
+                            OUTFLOW <TrendPill pct={monthStats.expenseChangePct} invertGood={true} />
+                        </p>
+                        <p className="font-mono text-2xl font-bold text-expense dark:text-[#F38C80] tracking-tight truncate">₱{window.peso(monthStats.expenseThis)}</p>
+                    </div>
+
+                    <div className={`bento-card rounded-[2rem] md:col-span-6 lg:col-span-${goalName ? '6' : '6'} p-6 flex flex-col justify-center relative overflow-hidden group`}>
+                        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-black/5 dark:from-white/5 to-transparent pointer-events-none" />
+                        <div className="flex justify-between items-center mb-4">
+                            <p className="text-[10px] font-mono font-bold text-ink2/50 dark:text-paper/40 uppercase tracking-widest">Burn Rate // Pacing</p>
+                            {monthlyBudget > 0 ? <span className="text-[10px] font-mono font-bold bg-black/5 dark:bg-white/10 px-2 py-1 rounded-md text-peso dark:text-pesoLight truncate border border-black/5 dark:border-white/5">LIM: ₱{window.peso(monthlyBudget)}</span> : null}
+                        </div>
+                        {monthlyBudget > 0 ? (
+                            <div className="flex flex-col gap-3">
+                                <div className="h-4 bg-black/5 dark:bg-white/5 rounded-full overflow-hidden shadow-inner p-[2px] border border-black/5 dark:border-white/5">
+                                    <div className={`h-full rounded-full bar-fill transition-all duration-1000 relative overflow-hidden ${monthStats.expenseThis > monthlyBudget ? 'bg-[#D64045] dark:bg-[#F38C80]' : 'bg-gradient-to-r from-pesoLight to-peso'}`} style={{ width: `${Math.min((monthStats.expenseThis / monthlyBudget) * 100, 100)}%` }}>
+                                        <div className="absolute inset-0 data-sweep opacity-30" />
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between text-[11px] font-mono font-bold">
+                                    <span className={monthStats.expenseThis > monthlyBudget ? 'text-expense dark:text-[#F38C80]' : 'text-ink2/60 dark:text-paper/50'}>
+                                        USED: ₱{window.peso(monthStats.expenseThis)}
+                                    </span>
+                                    <span className="text-ink2/40 dark:text-paper/40">
+                                        {monthStats.expenseThis > monthlyBudget ? 'EXCEEDED' : `REM: ₱${window.peso(monthlyBudget - monthStats.expenseThis)}`}
+                                    </span>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/50">System offline. Set budget to activate.</p>
+                        )}
+                    </div>
+
+                    <GoalWidget
+                        goalName={goalName} goalAmount={goalAmount}
+                        goalWallet={goalWallet} goalContrib={goalContrib}
+                        goalFreq={goalFreq} goalStart={goalStart}
+                        walletBalances={walletBalances}
+                    />
+
                 </div>
             );
         }
 
         function QuickActionButton({ icon, label, tone, onClick }) {
             const tones = {
-                peso: "bg-gradient-to-b from-[#EAF6F0] to-[#DCEEE5] text-[#1F6F54] dark:from-[#1F6F54]/25 dark:to-[#1F6F54]/10 dark:text-[#52C8A1]",
-                gold: "bg-gradient-to-b from-[#FDF6E3] to-[#FBEDC7] text-[#C9932E] dark:from-[#C9932E]/25 dark:to-[#C9932E]/10 dark:text-[#E8C071]",
-                expense: "bg-gradient-to-b from-[#FBEEEA] to-[#F6DCD5] text-[#B5483B] dark:from-[#B5483B]/25 dark:to-[#B5483B]/10 dark:text-[#F38C80]",
-                ink: "bg-gradient-to-b from-[#F2F4F1] to-[#E7EBE5] text-[#33443A] dark:from-white/15 dark:to-white/5 dark:text-[#E9EDE6]",
+                peso: "bg-white/80 dark:bg-[#1A2620]/80 text-peso dark:text-pesoLight border-white dark:border-white/10",
+                gold: "bg-white/80 dark:bg-[#1A2620]/80 text-gold dark:text-[#E8C071] border-white dark:border-white/10",
+                expense: "bg-white/80 dark:bg-[#1A2620]/80 text-expense dark:text-[#F38C80] border-white dark:border-white/10",
+                ink: "bg-white/80 dark:bg-[#1A2620]/80 text-ink2 dark:text-paper/80 border-white dark:border-white/10",
             };
             return (
-                <button onClick={onClick} className="tap-scale flex flex-col items-center gap-2 w-full group focus:outline-none">
-                    <div className={`relative overflow-hidden w-[3.25rem] h-[3.25rem] sm:w-[3.75rem] sm:h-[3.75rem] rounded-[18px] sm:rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-cardHover shadow-sm ring-1 ring-black/[0.04] dark:ring-white/[0.06] ${tones[tone]}`}>
-                        <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/50 dark:from-white/10 to-transparent pointer-events-none" />
-                        <span className="relative">{icon}</span>
-                    </div>
-                    <span className="text-[10px] sm:text-[11px] font-medium text-ink2 dark:text-paper/70 text-center leading-tight w-full truncate px-0.5">{label}</span>
+                <button onClick={onClick} className={`action-btn flex flex-col items-center justify-center gap-2.5 w-full h-[5.5rem] rounded-[1.5rem] group focus:outline-none ${tones[tone]}`}>
+                    <div className="transition-transform duration-400 group-hover:-translate-y-1 group-hover:scale-110 drop-shadow-sm">{icon}</div>
+                    <span className="text-[10px] sm:text-[11px] font-mono font-bold text-ink2/70 dark:text-paper/60 uppercase tracking-widest truncate px-1">{label}</span>
                 </button>
             );
         }
@@ -430,12 +977,12 @@
         function QuickActions() {
             return (
                 <div>
-                    <SectionHeader title="Mabilisang Aksyon" />
-                    <div className="grid grid-cols-4 gap-2 sm:gap-4 justify-items-center">
-                        <QuickActionButton icon={<Icons.Plus size={22} />} label="Magdagdag" tone="peso" onClick={() => scrollToId("add-entry")} />
-                        <QuickActionButton icon={<Icons.Wallet size={22} />} label="Budget" tone="gold" onClick={() => scrollToId("summary")} />
-                        <QuickActionButton icon={<Icons.Chart size={22} />} label="Analytics" tone="expense" onClick={() => scrollToId("analytics")} />
-                        <QuickActionButton icon={<Icons.List size={22} />} label="Kasaysayan" tone="ink" onClick={() => scrollToId("history")} />
+                    <SectionHeader title="System Commands" subtitle="Quick Actions" />
+                    <div className="grid grid-cols-4 gap-3 sm:gap-5">
+                        <QuickActionButton icon={<Icons.Plus size={26} strokeWidth={2.5} />} label="Add" tone="peso" onClick={() => scrollToId("add-entry")} />
+                        <QuickActionButton icon={<Icons.Wallet size={26} strokeWidth={2} />} label="Budget" tone="gold" onClick={() => scrollToId("summary")} />
+                        <QuickActionButton icon={<Icons.Chart size={26} strokeWidth={2} />} label="Report" tone="expense" onClick={() => scrollToId("analytics")} />
+                        <QuickActionButton icon={<Icons.List size={26} strokeWidth={2} />} label="Logs" tone="ink" onClick={() => scrollToId("history")} />
                     </div>
                 </div>
             );
@@ -477,60 +1024,64 @@
             const refCode = window.cosmeticRef(uid ? `${uid}:${method}` : method);
 
             return (
-                <div className={`wallet-card wallet-shine card-tilt shrink-0 w-[17.5rem] rounded-2xl bg-gradient-to-br ${theme.color} p-5 flex flex-col justify-between shadow-card hover:shadow-cardHover relative overflow-hidden select-none ${theme.textStyle}`}>
+                <div className={`wallet-card wallet-shine card-tilt shrink-0 w-[18.5rem] rounded-[1.75rem] bg-gradient-to-br ${theme.color} p-6 flex flex-col justify-between shadow-[0_12px_30px_-10px_rgba(0,0,0,0.4)] relative overflow-hidden select-none ${theme.textStyle} border border-white/10`}>
                     <div className="card-noise" />
-                    <div className="card-sheen" />
-                    <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/20 rounded-full blur-2xl pointer-events-none" />
-                    <div className="absolute -bottom-10 -left-6 w-24 h-24 bg-black/10 rounded-full blur-xl pointer-events-none" />
+                    <div className="holo-foil" />
+                    <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/20 rounded-full blur-[40px] pointer-events-none" />
+                    <div className="absolute -bottom-12 -left-8 w-32 h-32 bg-black/30 rounded-full blur-2xl pointer-events-none" />
 
                     <div className="relative z-10 flex justify-between items-start">
                         <div className="min-w-0">
-                            <span className={`${theme.font} block text-lg leading-none drop-shadow-sm truncate`}>{theme.text}</span>
-                            <span className="block mt-1 text-[8.5px] font-mono font-semibold tracking-[0.25em] uppercase opacity-60">{theme.mono || theme.type}</span>
+                            <span className={`${theme.font} block text-[1.2rem] leading-none drop-shadow-md truncate`}>{theme.text}</span>
+                            <span className="block mt-2 text-[9px] font-mono font-bold tracking-[0.3em] uppercase opacity-80">{theme.mono || theme.type}</span>
                         </div>
                         {!editing && (
-                            <button onClick={handleEdit} onMouseDown={stopPropagation} onTouchStart={stopPropagation} aria-label="I-edit ang balanse" className="opacity-50 hover:opacity-100 transition-opacity p-1 active:scale-90 shrink-0">
-                                <Icons.Pencil size={15} />
+                            <button onClick={handleEdit} onMouseDown={stopPropagation} onTouchStart={stopPropagation} aria-label="I-edit ang balanse" className="opacity-40 hover:opacity-100 transition-opacity p-1.5 active:scale-90 shrink-0 bg-black/20 rounded-full backdrop-blur-sm">
+                                <Icons.Pencil size={14} />
                             </button>
                         )}
                     </div>
 
                     {!editing && (
-                        <div className="relative z-10 flex items-center justify-between mt-2">
+                        <div className="relative z-10 flex items-center justify-between mt-3">
                             {isCash ? (
-                                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/15 ring-1 ring-white/25">
-                                    <span className="font-display text-base font-bold">₱</span>
+                                <span className="inline-flex items-center justify-center w-11 h-8 rounded-[8px] bg-white/20 ring-1 ring-white/30 backdrop-blur-sm shadow-inner">
+                                    <span className="font-display text-lg font-bold">₱</span>
                                 </span>
                             ) : (
-                                <Icons.Chip size={30} className={`chip-3d rounded-[6px] ${theme.textStyle === 'text-[#3E3100]' ? 'text-[#8A6A00]' : 'text-[#7A5A16]'}`} />
+                                <div className="w-11 h-8 chip-emboss flex items-center justify-center opacity-90">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.4)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="4" /><line x1="4" y1="9" x2="9" y2="9" /><line x1="4" y1="15" x2="9" y2="15" /><line x1="15" y1="9" x2="20" y2="9" /><line x1="15" y1="15" x2="20" y2="15" /><line x1="9" y1="4" x2="9" y2="20" /><line x1="15" y1="4" x2="15" y2="20" /></svg>
+                                </div>
                             )}
-                            <span className="font-mono text-[11px] tracking-[0.2em] opacity-55">•••• {refCode}</span>
+                            <div className="flex items-center gap-1 opacity-60">
+                                <Icons.Contactless size={20} />
+                            </div>
                         </div>
                     )}
 
-                    <div className="relative z-10 mt-auto">
+                    <div className="relative z-10 mt-auto pt-5">
                         {editing ? (
                             <div className="flex flex-col gap-2">
-                                <form onSubmit={handleSave} onMouseDown={stopPropagation} onTouchStart={stopPropagation} className="flex items-center gap-2 mt-2 bg-black/20 p-1.5 rounded-xl backdrop-blur-sm ring-1 ring-white/10">
-                                    <input autoFocus type="number" step="0.01" placeholder="0.00" value={inputValue} onChange={e => setInputValue(e.target.value)} className="w-full bg-transparent text-white placeholder-white/50 px-2 py-1 text-base font-mono focus:outline-none font-bold" />
-                                    <button type="submit" disabled={saving} className="bg-white/20 hover:bg-white/30 p-2 rounded-lg text-white">
-                                        {saving ? <Icons.Loader size={16} className="spin" /> : <Icons.Check size={16} />}
+                                <form onSubmit={handleSave} onMouseDown={stopPropagation} onTouchStart={stopPropagation} className="flex items-center gap-2 bg-black/40 p-1.5 rounded-xl backdrop-blur-md ring-1 ring-white/20 shadow-inner">
+                                    <input autoFocus type="number" step="0.01" placeholder="0.00" value={inputValue} onChange={e => setInputValue(e.target.value)} className="w-full bg-transparent text-white placeholder-white/50 px-2 py-1 text-[16px] font-mono focus:outline-none font-bold" />
+                                    <button type="submit" disabled={saving} className="bg-white/20 hover:bg-white/30 p-2 rounded-lg text-white transition-colors">
+                                        {saving ? <Icons.Loader size={16} className="spin" /> : <Icons.Check size={16} strokeWidth={3} />}
                                     </button>
-                                    <button type="button" onClick={() => setEditing(false)} className="bg-black/20 hover:bg-black/40 p-2 rounded-lg text-white/80 hover:text-white"><span className="text-xs font-bold px-0.5">✕</span></button>
+                                    <button type="button" onClick={() => setEditing(false)} className="bg-black/30 hover:bg-black/50 p-2 rounded-lg text-white/80 hover:text-white transition-colors"><span className="text-[10px] font-mono font-bold px-1 uppercase tracking-wide">ESC</span></button>
                                 </form>
                                 {method !== "Cash" && (
-                                    <button onClick={() => { setEditing(false); onRemove(method); }} onMouseDown={stopPropagation} onTouchStart={stopPropagation} className="text-[10px] text-white/70 hover:text-white uppercase tracking-wider font-semibold self-end flex items-center gap-1 bg-black/20 px-2 py-1 rounded-md">
-                                        <Icons.Trash size={12} /> Alisin
+                                    <button onClick={() => { setEditing(false); onRemove(method); }} onMouseDown={stopPropagation} onTouchStart={stopPropagation} className="text-[9px] font-mono text-white/70 hover:text-white uppercase tracking-[0.15em] font-bold self-end flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-lg transition-colors mt-1">
+                                        <Icons.Trash size={12} /> Remove
                                     </button>
                                 )}
                             </div>
                         ) : (
-                            <div className="flex items-end justify-between gap-2">
+                            <div className="flex items-end justify-between">
                                 <div className="min-w-0">
-                                    <p className="text-[10px] font-medium opacity-70 mb-0.5 uppercase tracking-wider">Available Balance</p>
-                                    <p className="font-mono text-2xl font-bold tracking-tight drop-shadow-md truncate">₱{window.peso(currentBalance)}</p>
+                                    <p className="text-[8px] font-mono font-bold opacity-70 mb-1 uppercase tracking-[0.2em]">Available Balance</p>
+                                    <p className="font-mono text-[1.75rem] font-bold tracking-tight drop-shadow-md truncate leading-none">₱{window.peso(currentBalance)}</p>
                                 </div>
-                                <Icons.Contactless size={20} className="opacity-45 shrink-0 mb-1" />
+                                <span className="font-mono text-[11px] font-semibold tracking-[0.2em] opacity-60 mb-0.5">•••• {refCode}</span>
                             </div>
                         )}
                     </div>
@@ -538,7 +1089,6 @@
             );
         }
 
-        // UPDATED: Using ReactDOM.createPortal to fix Z-Index / Overlap Issues
         function AddWalletModal({ open, onClose, onAdd, currentMethods }) {
             const [search, setSearch] = React.useState("");
 
@@ -554,30 +1104,36 @@
             );
 
             return ReactDOM.createPortal(
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-ink/60 backdrop-blur-sm fade-up">
-                    <div className="bg-paper dark:bg-ink2 w-full max-w-md rounded-3xl shadow-iosLg overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[80vh] ring-1 ring-black/5 dark:ring-white/10">
-                        <div className="p-5 border-b border-line dark:border-white/10 flex items-center justify-between bg-paper dark:bg-ink2 z-10">
-                            <h3 className="font-display font-semibold text-lg text-ink dark:text-paper">Magdagdag ng Wallet</h3>
-                            <button onClick={onClose} className="p-2 bg-black/5 dark:bg-white/10 rounded-full text-ink2 dark:text-paper hover:bg-expense/10 hover:text-expense transition-colors"><Icons.X size={18} /></button>
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-6 bg-ink/70 backdrop-blur-md fade-up">
+                    <div className="bg-paper dark:bg-ink2 w-full max-w-md sm:rounded-[2rem] rounded-t-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[80vh] border border-white/20 dark:border-white/10">
+                        <div className="w-12 h-1.5 bg-black/10 dark:bg-white/20 rounded-full mx-auto mt-4 sm:hidden" />
+                        <div className="p-6 border-b border-line dark:border-white/10 flex items-center justify-between bg-white/50 dark:bg-black/20 backdrop-blur-md z-10">
+                            <h3 className="font-display font-bold text-xl text-ink dark:text-paper tracking-tight">Magdagdag ng Wallet</h3>
+                            <button onClick={onClose} className="p-2 bg-black/5 dark:bg-white/10 rounded-full text-ink2 dark:text-paper hover:bg-expense/10 hover:text-expense transition-colors"><Icons.X size={18} strokeWidth={2.5} /></button>
                         </div>
-                        <div className="p-4 border-b border-line dark:border-white/10 bg-paper dark:bg-ink2 z-10">
-                            <input type="text" placeholder="Hanapin ang bangko o e-wallet..." value={search} onChange={e => setSearch(e.target.value)} className="w-full bg-white dark:bg-black/20 border border-line dark:border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-peso/40 text-ink dark:text-paper" />
+                        <div className="p-5 border-b border-line dark:border-white/10 bg-white/30 dark:bg-black/10 backdrop-blur-md z-10">
+                            <div className="relative">
+                                <Icons.Plus size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink2/40 dark:text-paper/40 rotate-45" />
+                                <input type="text" placeholder="Hanapin ang bangko o e-wallet..." value={search} onChange={e => setSearch(e.target.value)} className="w-full bg-white dark:bg-black/30 border border-line dark:border-white/10 rounded-[14px] pl-11 pr-4 py-3.5 text-[15px] font-medium focus:outline-none focus:ring-2 focus:ring-peso/40 text-ink dark:text-paper shadow-inner" />
+                            </div>
                         </div>
-                        <div className="overflow-y-auto p-3 space-y-1.5 bg-paper dark:bg-ink2">
+                        <div className="overflow-y-auto p-4 space-y-2.5 bg-paper dark:bg-ink2 flex-1">
                             {filtered.length === 0 ? (
-                                <p className="text-center text-sm text-ink2/50 dark:text-paper/40 py-8">Walang nahanap.</p>
+                                <p className="text-center text-sm font-mono font-medium text-ink2/50 dark:text-paper/40 py-12 uppercase tracking-widest">Wala nahanap.</p>
                             ) : (
                                 filtered.map(w => (
-                                    <button key={w.id} onClick={() => onAdd(w.id)} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-mist dark:hover:bg-white/5 transition-colors text-left group bg-transparent">
-                                        <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${w.color} flex items-center justify-center shrink-0 shadow-sm ring-1 ring-black/5 relative overflow-hidden`}>
+                                    <button key={w.id} onClick={() => onAdd(w.id)} className="w-full flex items-center gap-4 p-3.5 rounded-[1.25rem] hover:bg-white dark:hover:bg-black/20 transition-all text-left group bg-white/50 dark:bg-black/10 border border-black/[0.04] dark:border-white/5 shadow-sm hover:shadow-md active:scale-95">
+                                        <div className={`w-14 h-14 rounded-[14px] bg-gradient-to-br ${w.color} flex items-center justify-center shrink-0 shadow-md ring-1 ring-black/10 relative overflow-hidden`}>
                                             <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
-                                            <span className={`relative text-[10px] font-black tracking-tight ${w.textStyle}`}>{w.text.replace(/[^A-Za-z]/g, "").substring(0,3).toUpperCase()}</span>
+                                            <span className={`relative text-[12px] font-black tracking-tight ${w.textStyle}`}>{w.text.replace(/[^A-Za-z]/g, "").substring(0,3).toUpperCase()}</span>
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-ink dark:text-paper text-sm group-hover:text-peso dark:group-hover:text-pesoLight transition-colors truncate">{w.name}</p>
-                                            <p className="text-[11px] text-ink2/50 dark:text-paper/50 uppercase tracking-wider">{w.type}</p>
+                                            <p className="font-bold text-ink dark:text-paper text-[16px] group-hover:text-peso dark:group-hover:text-pesoLight transition-colors truncate">{w.name}</p>
+                                            <p className="text-[10.5px] font-mono font-bold text-ink2/50 dark:text-paper/50 uppercase tracking-widest mt-0.5">{w.type}</p>
                                         </div>
-                                        <Icons.Plus size={18} className="text-ink2/30 dark:text-paper/30 group-hover:text-peso dark:group-hover:text-pesoLight shrink-0" />
+                                        <div className="w-9 h-9 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center group-hover:bg-peso group-hover:text-white transition-colors">
+                                            <Icons.Plus size={18} strokeWidth={2.5} />
+                                        </div>
                                     </button>
                                 ))
                             )}
@@ -611,7 +1167,7 @@
                 if (!isMouseDown || !scrollRef.current) return;
                 e.preventDefault();
                 const x = e.pageX - scrollRef.current.offsetLeft;
-                const walk = (x - startX) * 2;
+                const walk = (x - startX) * 2.5;
                 if (Math.abs(walk) > 10) setIsDragging(true);
                 scrollRef.current.scrollLeft = scrollLeft - walk;
             }, [isMouseDown, startX, scrollLeft]);
@@ -664,16 +1220,16 @@
 
             return (
                 <div>
-                    <SectionHeader title="Aking mga Wallet" subtitle="I-edit ang balanse at kusa na itong mababawasan kapag gumastos ka." />
-                    <div ref={scrollRef} className={`flex overflow-x-auto gap-4 pb-4 hide-scroll snap-x snap-mandatory ${isDragging ? 'is-dragging' : 'scroll-grab'}`} style={{ paddingLeft: '2px', paddingRight: '20px' }} onMouseDown={handleMouseDown} onMouseLeave={handleMouseLeave} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove}>
+                    <SectionHeader title="Storage" subtitle="Aking mga Wallet" />
+                    <div ref={scrollRef} className={`flex overflow-x-auto gap-5 sm:gap-6 pb-8 pt-2 hide-scroll snap-x snap-mandatory ${isDragging ? 'is-dragging' : 'scroll-grab'}`} style={{ paddingLeft: '4px', paddingRight: '20px' }} onMouseDown={handleMouseDown} onMouseLeave={handleMouseLeave} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove}>
                         {methods.map((method) => (
-                            <div key={method} className="snap-start pointer-events-auto">
+                            <div key={method} className="snap-start pointer-events-auto shrink-0">
                                 <WalletCard uid={uid} method={method} entries={entries} baseBalance={baseBalances[method] || 0} onSaveBase={handleSaveBase} onRemove={handleRemoveWallet} />
                             </div>
                         ))}
-                        <div className="snap-start pointer-events-auto shrink-0 w-[5rem] flex items-center justify-center">
-                            <button onClick={() => setShowAddModal(true)} className="w-14 h-14 rounded-full bg-black/5 dark:bg-white/10 hover:bg-peso/10 dark:hover:bg-pesoLight/20 text-ink2/50 dark:text-paper/50 hover:text-peso flex items-center justify-center transition-all tap-scale shadow-sm border border-black/5 dark:border-white/5">
-                                <Icons.Plus size={24} strokeWidth={2.5} />
+                        <div className="snap-start pointer-events-auto shrink-0 w-[6rem] flex items-center justify-center">
+                            <button onClick={() => setShowAddModal(true)} className="w-16 h-16 rounded-[18px] bg-white/60 dark:bg-black/30 hover:bg-peso dark:hover:bg-pesoLight text-ink2/40 dark:text-paper/40 hover:text-white flex items-center justify-center transition-all tap-scale shadow-sm border border-white dark:border-white/5 focus:outline-none focus:ring-2 focus:ring-peso/50 backdrop-blur-md">
+                                <Icons.Plus size={28} strokeWidth={2.5} />
                             </button>
                         </div>
                     </div>
@@ -694,6 +1250,24 @@
             const [dataError, setDataError] = React.useState("");
             const [showOnboarding, setShowOnboarding] = React.useState(false);
 
+            const monthStats = useMonthlyStats(entries);
+
+            const walletBalances = React.useMemo(() => {
+                const balances = {};
+                if (baseBalances) {
+                    Object.keys(baseBalances).forEach(k => balances[k] = parseFloat(baseBalances[k]) || 0);
+                }
+                const safeEntries = Array.isArray(entries) ? entries : [];
+                safeEntries.forEach(e => {
+                    const m = e.method || "Cash";
+                    const amt = parseFloat(e.amount) || 0;
+                    if (balances[m] === undefined) balances[m] = 0;
+                    if (e.type === "income") balances[m] += amt;
+                    else balances[m] -= amt;
+                });
+                return balances;
+            }, [entries, baseBalances]);
+
             React.useEffect(() => {
                 if (!authReady) return;
                 return window.TipidAuth.onChange((u) => setUser(u || null));
@@ -706,7 +1280,6 @@
                 }
             }, [user]);
 
-            // Load Wallets (Base Balances)
             React.useEffect(() => {
                 if (!dataReady || !user) return;
                 const loadUserWallets = async () => {
@@ -732,7 +1305,6 @@
                 loadUserWallets();
             }, [dataReady, user]);
 
-            // Sync global METHODS for AddEntryForm dropdown
             React.useEffect(() => {
                 const keys = Object.keys(baseBalances);
                 if (keys.length > 0) {
@@ -755,15 +1327,82 @@
                 return window.TipidData.subscribeBudget(user.uid, setBudgetState, () => {});
             }, [dataReady, user]);
 
+            const handleSmartPaste = async () => {
+                const { value: text } = await Swal.fire({
+                    title: 'Smart SMS Paste 🪄',
+                    input: 'textarea',
+                    inputLabel: 'I-paste ang buong text ng SMS o Resibo',
+                    inputPlaceholder: 'Halimbawa: You have paid PHP 150.00 to 7-Eleven...',
+                    showCancelButton: true,
+                    confirmButtonColor: '#1F6F54',
+                    cancelButtonColor: '#33443A',
+                    confirmButtonText: 'I-extract',
+                    cancelButtonText: 'Kanselahin',
+                    customClass: { popup: 'tipid-swal' }
+                });
+
+                if (text) {
+                    let extractedAmount = "";
+                    let extractedDesc = "";
+                    let extractedMethod = "Cash";
+                    let extractedType = "expense";
+
+                    const amtMatch = text.match(/(?:PHP|Php|P)\s*([\d,]+(?:\.\d{2})?)/i) || text.match(/amount.*?(?:PHP|Php|P)\s*([\d,]+(?:\.\d{2})?)/i) || text.match(/([\d,]+\.\d{2})/);
+                    if (amtMatch) extractedAmount = (amtMatch[1] || amtMatch[0]).replace(/,/g, '');
+
+                    const lowerText = text.toLowerCase();
+                    for (let m of window.METHODS) {
+                        if (lowerText.includes(m.toLowerCase())) {
+                            extractedMethod = m;
+                            break;
+                        }
+                    }
+                    if (lowerText.includes("gcash") && window.METHODS.includes("GCash")) extractedMethod = "GCash";
+                    if ((lowerText.includes("maya") || lowerText.includes("paymaya")) && window.METHODS.includes("Maya")) extractedMethod = "Maya";
+
+                    if (lowerText.includes("received") || lowerText.includes("sent you") || lowerText.includes("cash in")) {
+                        extractedType = "income";
+                        const senderMatch = text.match(/from\s+([A-Za-z0-9*.\-\s]+?)(?:\s+on|\s+ref|\s+via|\.|$)/i);
+                        if (senderMatch) extractedDesc = senderMatch[1].trim();
+                    } else if (lowerText.includes("paid") || lowerText.includes("sent") || lowerText.includes("payment")) {
+                        extractedType = "expense";
+                        const receiverMatch = text.match(/(?:to|at)\s+([A-Za-z0-9*.\-\s]+?)(?:\s+on|\s+ref|\s+via|\.|$)/i);
+                        if (receiverMatch) extractedDesc = receiverMatch[1].trim();
+                    }
+
+                    if (!extractedDesc) {
+                        extractedDesc = extractedType === 'income' ? 'Income via SMS' : 'Expense via SMS';
+                    }
+
+                    window.dispatchEvent(new CustomEvent('tipid-smart-paste', {
+                        detail: {
+                            amount: extractedAmount,
+                            desc: extractedDesc.substring(0, 30),
+                            method: extractedMethod,
+                            type: extractedType
+                        }
+                    }));
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Na-extract na!',
+                        text: 'Paki-check kung tama ang mga detalye bago i-save.',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        customClass: { popup: 'tipid-swal' }
+                    });
+                }
+            };
+
             if (user === undefined || user === null) {
                 return (
                     <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
-                        <div className="glass-panel flex flex-col items-center gap-5 rounded-[32px] px-10 py-10 shadow-ios">
+                        <div className="bento-card flex flex-col items-center gap-6 rounded-[2.5rem] px-12 py-12">
                             <div className="relative flex items-center justify-center">
-                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/25 halo-pulse" />
-                                <div className="relative logo-breathe"><window.Logo size={44} /></div>
+                                <span className="absolute inline-flex h-20 w-20 rounded-[18px] bg-peso/20 halo-pulse blur-md" />
+                                <div className="relative logo-breathe"><window.Logo size={52} className="shadow-lg" /></div>
                             </div>
-                            <p className="text-[11px] font-mono font-semibold tracking-widest uppercase text-ink2 dark:text-paper/60 text-center">Loading dashboard</p>
+                            <p className="text-[11px] font-mono font-bold tracking-[0.2em] uppercase text-ink2 dark:text-paper/60 text-center">Initializing</p>
                         </div>
                     </div>
                 );
@@ -772,7 +1411,6 @@
             const logout = async () => { await window.TipidAuth.logOut(); window.location.href = "login.html"; };
             const firstName = user.displayName ? user.displayName.split(" ")[0] : user.email.split("@")[0];
 
-            // 🌟 SMART TOTAL BALANCE CALCULATION 🌟
             const totalBase = Object.values(baseBalances).reduce((s, val) => s + (parseFloat(val) || 0), 0);
             const totalIncome = entries.filter(e => e.type === "income").reduce((s, e) => s + (e.amount || 0), 0);
             const totalExpense = entries.filter(e => e.type !== "income").reduce((s, e) => s + (e.amount || 0), 0);
@@ -784,15 +1422,22 @@
                     <window.Navbar user={user} onLogout={logout} activeTab="home" />
                     {showOnboarding && <window.OnboardingModal uid={user.uid} onComplete={() => setShowOnboarding(false)} />}
 
-                    <main className="max-w-[1000px] mx-auto w-full px-5 sm:px-8 pt-[6.5rem] md:pt-10 pb-36 md:pb-20 space-y-9 sm:space-y-12" style={{ paddingLeft: 'max(1.25rem, calc(var(--sal) + 1.25rem))', paddingRight: 'max(1.25rem, calc(var(--sar) + 1.25rem))', paddingBottom: 'calc(8rem + var(--sab))' }}>
+                    <main className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 lg:px-8 pt-24 md:pt-32 pb-36 md:pb-24 space-y-10 sm:space-y-14" style={{ paddingLeft: 'max(1rem, calc(var(--sal) + 1rem))', paddingRight: 'max(1rem, calc(var(--sar) + 1rem))', paddingBottom: 'calc(8rem + var(--sab))' }}>
 
-                        <div className="fade-up" style={{ animationDelay: "0ms" }}>
-                            <HeroCard user={user} firstName={firstName} balance={overallBalance} />
-                        </div>
+                        <CommandCenter
+                            user={user}
+                            firstName={firstName}
+                            balance={overallBalance}
+                            entries={entries}
+                            budget={budget}
+                            monthStats={monthStats}
+                            loading={loadingEntries && entries.length === 0}
+                            walletBalances={walletBalances}
+                        />
 
                         {dataError && (
-                            <div className="banner-in glass-panel flex items-start gap-3 text-[#B5483B] dark:text-[#F38C80] text-sm font-medium border border-expense/20 rounded-2xl px-5 py-4 shadow-sm bg-[#FAEDE9] dark:bg-[#B5483B]/20">
-                                <Icons.AlertCircle size={18} className="shrink-0 mt-0.5" /><span>{dataError}</span>
+                            <div className="banner-in bento-card flex items-center gap-4 text-expense dark:text-[#F38C80] text-[13px] font-bold border border-expense/20 rounded-2xl px-5 py-4 bg-[#FAEDE9]/80 dark:bg-[#B5483B]/20">
+                                <Icons.AlertCircle size={20} className="shrink-0" /><span className="uppercase tracking-widest">{dataError}</span>
                             </div>
                         )}
 
@@ -805,22 +1450,30 @@
                         </div>
 
                         <div id="summary" className="fade-up scroll-mt-28" style={{ animationDelay: "120ms" }}>
-                            <SectionHeader title="Buod ng Buwan" subtitle="Kita, gastos, at natitirang budget" />
+                            <SectionHeader title="Metrics" subtitle="Buod ng Buwan" />
                             <window.SmartSummary uid={user.uid} entries={entries} budget={budget} />
                         </div>
 
                         <div id="analytics" className="fade-up scroll-mt-28" style={{ animationDelay: "180ms" }}>
-                            <SectionHeader title="Uso ng Paggastos" subtitle="Saan napupunta ang pera mo" />
+                            <SectionHeader title="Insights" subtitle="Uso ng Paggastos" />
                             <window.ExpenseChart entries={entries} />
                         </div>
 
                         <div id="add-entry" className="fade-up scroll-mt-28" style={{ animationDelay: "240ms" }}>
-                            <SectionHeader title="Magdagdag ng Gastos" />
-                            <window.AddEntryForm key={window.METHODS.join(",")} uid={user.uid} entries={entries} />
+                            <SectionHeader
+                                title="Interface"
+                                subtitle="Magdagdag ng Gastos"
+                                action={
+                                    <button onClick={handleSmartPaste} className="flex items-center gap-2 bg-black/5 dark:bg-white/10 hover:bg-peso hover:text-white dark:hover:bg-pesoLight text-ink dark:text-paper font-bold text-[11px] px-3.5 py-2 rounded-xl transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-peso/50">
+                                        <Icons.Wand size={16} strokeWidth={2.5}/> Auto-Fill via SMS
+                                    </button>
+                                }
+                            />
+                            <window.AddEntryForm key={window.METHODS.join(",")} uid={user.uid} entries={entries} baseBalances={baseBalances} />
                         </div>
 
                         <div id="history" className="fade-up scroll-mt-28" style={{ animationDelay: "300ms" }}>
-                            <SectionHeader title="Kasaysayan" action={<span className="text-[11px] font-mono font-medium bg-black/5 dark:bg-white/10 px-2.5 py-1 rounded-full text-ink2/60 dark:text-paper/50 shrink-0">{entries.length} entries</span>} />
+                            <SectionHeader title="Database" subtitle="Kasaysayan" action={<span className="text-[10px] font-mono font-bold tracking-widest uppercase bg-white/50 dark:bg-black/20 border border-black/5 dark:border-white/5 px-3 py-1.5 rounded-lg text-ink2/70 dark:text-paper/70 shrink-0">{entries.length} LOGS</span>} />
                             <window.EntryList uid={user.uid} entries={entries} loading={loadingEntries} />
                         </div>
                     </main>
@@ -833,7 +1486,6 @@
             if (typeof window.Navbar !== "function") missingNames.push("Navbar");
             if (typeof window.SmartSummary !== "function") missingNames.push("SmartSummary");
             if (typeof window.ExpenseChart !== "function") missingNames.push("ExpenseChart");
-            if (typeof window.AddEntryForm !== "function") missingNames.push("AddEntryForm");
             if (typeof window.EntryList !== "function") missingNames.push("EntryList");
             if (typeof window.ExpenseItem !== "function") missingNames.push("ExpenseItem");
             if (typeof window.OnboardingModal !== "function") missingNames.push("OnboardingModal");
@@ -843,7 +1495,7 @@
                 return;
             }
             if (attempt > 100) {
-                document.getElementById("root").innerHTML = `<div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:Inter,sans-serif;text-align:center;color:#15231C;"><div><p style="font-weight:600;margin-bottom:0.5rem;">Failed to load: ${missingNames.join(", ")}</p></div></div>`;
+                document.getElementById("root").innerHTML = `<div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:Inter,sans-serif;text-align:center;color:#15231C;"><div><p style="font-weight:600;margin-bottom:0.5rem;">Failed to load modules: ${missingNames.join(", ")}</p></div></div>`;
                 return;
             }
             setTimeout(() => mountWhenComponentsReady(attempt + 1), 30);
