@@ -9,7 +9,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -20,12 +20,10 @@
                         paper: '#F1F4EF', paperDim: '#E9EDE6', ink: '#15231C', ink2: '#33443A',
                         peso: '#1F6F54', pesoLight: '#2F8E6C', pesoDeep: '#123D2E',
                         gold: '#C9932E', expense: '#B5483B', line: '#D3DAD0',
-                        sun: '#FCD116', bayani: '#0038A8',
                     },
                     fontFamily: {
                         display: ['"Fraunces"', 'serif'],
                         body: ['"Inter"', 'sans-serif'],
-                        mono: ['"IBM Plex Mono"', 'monospace'],
                     },
                 }
             }
@@ -41,28 +39,10 @@
     <script type="module" src="./firebase-auth.js"></script>
 
     <style>
-        html { background: #F1F4EF; }
+        html { background: #FFFFFF; }
         body { font-feature-settings: "tnum" 1, "lnum" 1; }
         ::selection { background: #C9932E33; color: #15231C; }
         :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
-
-        .ledger-rule {
-            background-image: repeating-linear-gradient(
-                to right, #D3DAD0 0, #D3DAD0 6px, transparent 6px, transparent 14px
-            );
-            height: 1px;
-        }
-
-        .perf-edge {
-            -webkit-mask-image: radial-gradient(circle 5px at 5px 5px, transparent 5px, black 5.5px);
-            mask-image: radial-gradient(circle 5px at 5px 5px, transparent 5px, black 5.5px);
-            -webkit-mask-repeat: repeat-x;
-            mask-repeat: repeat-x;
-            -webkit-mask-position: -5px -5px;
-            mask-position: -5px -5px;
-            -webkit-mask-size: 20px 10px;
-            mask-size: 20px 10px;
-        }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.8s linear infinite; }
@@ -76,10 +56,10 @@
         .shake { animation: shake 0.5s; }
 
         @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(12px); }
+            from { opacity: 0; transform: translateY(14px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .fade-up { animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .fade-up { animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
         @keyframes growBar {
             from { transform: scaleX(0); }
@@ -87,569 +67,144 @@
         }
         .grow-bar { animation: growBar 0.3s cubic-bezier(0.34, 1.4, 0.64, 1) both; transform-origin: left; }
 
-        @keyframes floatMascot {
-            0%, 100% { transform: translate3d(0, 0, 0) rotate(-1deg); }
-            50% { transform: translate3d(0, -8px, 0) rotate(1deg); }
-        }
-
-        @keyframes mascotGlow {
-            0%, 100% { opacity: .18; transform: scale(.94); }
-            50% { opacity: .30; transform: scale(1.06); }
-        }
-
-        @keyframes softPulse {
-            0%, 100% { transform: scale(1); opacity: .55; }
-            50% { transform: scale(1.05); opacity: .85; }
-        }
-
-        .signup-shell {
-            width: min(1140px, calc(100vw - 32px));
-            min-height: min(740px, calc(100dvh - 48px));
-            margin: 24px auto;
-            display: grid;
-            grid-template-columns: minmax(360px, .92fr) minmax(0, 1.08fr);
-            overflow: hidden;
-            border-radius: 32px;
-            background: rgba(255,255,255,.84);
-            border: 1px solid rgba(255,255,255,.74);
-            box-shadow: 0 36px 90px -38px rgba(18,61,46,.34);
-            backdrop-filter: blur(20px) saturate(145%);
-            -webkit-backdrop-filter: blur(20px) saturate(145%);
-        }
-
-        .signup-visual-wrap {
-            height: 100%;
-            min-height: 100%;
-            min-width: 0;
-            overflow: hidden;
-        }
-
-        .signup-visual {
-            position: relative;
-            isolation: isolate;
-            overflow: hidden;
-            min-width: 0;
-            height: 100%;
-            min-height: 100%;
-            box-sizing: border-box;
-            padding: 42px;
-            display: flex;
-            flex-direction: column;
-            color: #F7FAF7;
-            background:
-                radial-gradient(circle at 82% 20%, rgba(47,142,108,.28), transparent 28%),
-                radial-gradient(circle at 10% 86%, rgba(201,147,46,.18), transparent 30%),
-                linear-gradient(150deg, #0F3F2F 0%, #134735 46%, #1F6F54 100%);
-        }
-
-        .signup-visual::before {
-            content: "";
-            position: absolute;
-            width: 360px;
-            height: 360px;
-            top: -170px;
-            right: -150px;
-            border-radius: 999px;
-            background: rgba(255,255,255,.055);
-            filter: blur(8px);
-        }
-
-        .signup-visual::after {
-            content: "";
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            bottom: -160px;
-            left: -140px;
-            border-radius: 999px;
-            background: rgba(201,147,46,.08);
-            filter: blur(8px);
-        }
-
-        .signup-brand,
-        .signup-visual-copy,
-        .signup-visual-note {
-            position: relative;
-            z-index: 3;
-        }
-
-        .signup-brand {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            width: fit-content;
-        }
-
-        .signup-pill {
-            position: relative;
-            z-index: 3;
-            display: inline-flex;
-            width: fit-content;
-            align-items: center;
-            gap: 7px;
-            margin-top: 18px;
-            padding: 7px 11px;
-            border-radius: 999px;
-            background: rgba(255,255,255,.08);
-            border: 1px solid rgba(255,255,255,.12);
-            color: rgba(247,250,247,.82);
-            font: 700 10px/1 'Inter', sans-serif;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-        }
-
-        .signup-visual-copy {
-            max-width: 410px;
-            margin-top: 38px;
-        }
-
-        .signup-eyebrow {
-            margin-bottom: 12px;
-            color: rgba(241,244,239,.56);
-            font: 700 10px/1.2 'IBM Plex Mono', monospace;
-            letter-spacing: .2em;
-            text-transform: uppercase;
-        }
-
-        .signup-visual-title {
-            margin: 0;
-            font: 700 clamp(2.15rem, 4vw, 3.35rem)/1.03 'Fraunces', serif;
-            letter-spacing: -.035em;
-            max-width: 100%;
-        }
-
-        .signup-visual-copy-text {
-            max-width: 350px;
-            margin-top: 14px;
-            color: rgba(247,250,247,.68);
-            font: 500 13px/1.65 'Inter', sans-serif;
-        }
-
-        .signup-mascot-glow {
-            position: absolute;
-            z-index: 1;
-            width: 210px;
-            height: 210px;
-            right: 52px;
-            bottom: 90px;
-            border-radius: 999px;
-            background: rgba(255,255,255,.08);
-            filter: blur(34px);
-            animation: mascotGlow 4s ease-in-out infinite;
-        }
-
-        .signup-mascot {
-            position: absolute;
-            z-index: 2;
-            right: 10px;
-            bottom: 10px;
-            width: 270px;
-            height: 292px;
-            max-width: 42%;
-            object-fit: contain;
-            object-position: center bottom;
-            filter: drop-shadow(0 20px 22px rgba(0,0,0,.20));
-            animation: floatMascot 4.8s ease-in-out infinite;
-            user-select: none;
-            pointer-events: none;
-        }
-
-        .signup-mascot-bubble {
-            position: absolute;
-            z-index: 4;
-            right: 196px;
-            bottom: 168px;
-            max-width: 135px;
-            padding: 8px 10px;
-            border-radius: 14px;
-            background: #F8FAF8;
-            color: #15231C;
-            box-shadow: 0 16px 28px -16px rgba(0,0,0,.32);
-            font: 700 10px/1.35 'Inter', sans-serif;
-        }
-
-        .signup-mascot-bubble::after {
-            content: "";
-            position: absolute;
-            right: 10px;
-            bottom: -8px;
-            width: 14px;
-            height: 14px;
-            background: #F8FAF8;
-            transform: rotate(45deg);
-            border-radius: 2px;
-        }
-
-        .signup-visual-note {
-            margin-top: auto;
-            width: fit-content;
-            max-width: 280px;
-            padding: 11px 13px;
-            border-radius: 16px;
-            background: rgba(255,255,255,.08);
-            border: 1px solid rgba(255,255,255,.12);
-            color: rgba(247,250,247,.76);
-            font: 600 11px/1.45 'Inter', sans-serif;
-        }
-
-        .signup-form-side {
-            position: relative;
-            min-width: 0;
+        .page-shell {
+            min-height: 100dvh;
+            width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 42px 52px;
-            background: rgba(250,252,249,.76);
-        }
-
-        .signup-form-wrap {
-            width: min(100%, 470px);
-        }
-
-        .signup-form-eyebrow {
-            margin-bottom: 8px;
-            color: #1F6F54;
-            font: 700 10px/1.2 'IBM Plex Mono', monospace;
-            letter-spacing: .2em;
-            text-transform: uppercase;
-        }
-
-        .signup-form-title {
-            margin: 0;
-            color: #15231C;
-            font: 700 clamp(2rem, 3vw, 2.35rem)/1.04 'Fraunces', serif;
-            letter-spacing: -.03em;
-        }
-
-        .signup-form-subtitle {
-            margin-top: 9px;
-            color: rgba(51,68,58,.66);
-            font: 500 13px/1.55 'Inter', sans-serif;
-        }
-
-        .signup-header {
-            margin-bottom: 25px;
-        }
-
-        .signup-social {
-            width: 100%;
-            border: 1px solid #D3DAD0;
-            border-radius: 14px;
-            padding: 12px 16px;
-            font-weight: 700;
+            padding: 32px 18px;
             background: #FFFFFF;
-            transition: background-color .2s ease, border-color .2s ease, transform .18s ease, box-shadow .2s ease;
         }
 
-        .signup-social:hover {
-            background: #FAFCFA;
-            border-color: rgba(21,35,28,.18);
-            box-shadow: 0 10px 28px -20px rgba(18,61,46,.38);
+        .auth-card {
+            width: 100%;
+            max-width: 428px;
+            background: #FFFFFF;
+            border: 1px solid #EDF1EB;
+            border-radius: 28px;
+            padding: 34px 30px 28px;
+            box-shadow: 0 30px 70px -40px rgba(18,61,46,.18);
         }
 
-        .signup-social:active { transform: scale(.985); }
+        .back-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #33443A;
+            background: #FFFFFF;
+            border: 1.5px solid #E9EDE6;
+            transition: background-color .18s ease, border-color .18s ease, transform .18s ease;
+        }
+        .back-btn:hover { background: #F7FAF7; border-color: #D3DAD0; }
+        .back-btn:active { transform: scale(.94); }
+
+        .auth-title {
+            font: 700 1.6rem/1.18 'Fraunces', serif;
+            letter-spacing: -.02em;
+            color: #15231C;
+        }
+
+        .auth-subtitle {
+            margin-top: 6px;
+            color: rgba(51,68,58,.62);
+            font: 500 13.5px/1.5 'Inter', sans-serif;
+        }
+
+        .field-label {
+            display: block;
+            margin-bottom: 7px;
+            font: 600 13px/1 'Inter', sans-serif;
+            color: #33443A;
+        }
 
         .field-shell {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             min-width: 0;
             background: #FFFFFF;
-            border: 1px solid #D3DAD0;
+            border: 1.5px solid #E2E8DF;
             border-radius: 14px;
-            padding: 0 13px;
-            transition: box-shadow .2s ease, border-color .2s ease, transform .2s ease;
+            padding: 0 15px;
+            transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease;
         }
 
         .field-shell:focus-within {
-            border-color: rgba(31,111,84,.45);
-            box-shadow: 0 0 0 4px rgba(31,111,84,.10);
-            transform: translateY(-1px);
+            border-color: rgba(31,111,84,.5);
+            box-shadow: 0 0 0 4px rgba(31,111,84,.08);
         }
 
-        .field-shell.error { border-color: rgba(181,72,59,.55); }
+        .field-shell.error { border-color: rgba(181,72,59,.55); background: rgba(181,72,59,.04); }
 
         .field-shell input {
             width: 100%;
             min-width: 0;
             background: transparent;
             padding: 13px 0;
-            font-size: 14px;
+            font-size: 14.5px;
+            color: #15231C;
             outline: none;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
-        .signup-submit {
-            width: 100%;
-            border-radius: 14px;
-            padding: 14px 16px;
-            font-weight: 700;
-            transition: transform .18s ease, background-color .2s ease, box-shadow .2s ease;
-            box-shadow: 0 18px 34px -20px rgba(31,111,84,.65);
-        }
+        .field-shell input::placeholder { color: rgba(51,68,58,.38); }
 
-        .signup-submit:hover { box-shadow: 0 20px 38px -18px rgba(31,111,84,.72); }
-        .signup-submit:active { transform: scale(.985); }
-
-        .signup-foot {
-            display: flex;
+        .agree-box {
+            width: 19px;
+            height: 19px;
+            border-radius: 6px;
+            border: 1.7px solid #D3DAD0;
+            display: inline-flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-            margin-top: 18px;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background-color .16s ease, border-color .16s ease;
         }
+        .agree-box.checked { background: #1F6F54; border-color: #1F6F54; }
+        .agree-box.error { border-color: rgba(181,72,59,.65); }
 
-        .signup-foot-note {
-            color: rgba(51,68,58,.45);
-            font: 500 10px/1.4 'Inter', sans-serif;
+        .submit-btn {
+            width: 100%;
+            border-radius: 999px;
+            padding: 15px 16px;
+            font: 700 14.5px 'Inter', sans-serif;
+            color: #F8FAF8;
+            background: #1F6F54;
+            box-shadow: 0 18px 32px -18px rgba(31,111,84,.65);
+            transition: background-color .2s ease, transform .16s ease, box-shadow .2s ease;
         }
+        .submit-btn:hover:not(:disabled) { background: #226A50; box-shadow: 0 20px 36px -16px rgba(31,111,84,.7); }
+        .submit-btn:active:not(:disabled) { transform: scale(.985); }
+        .submit-btn:disabled { opacity: .55; }
 
-        /* Tablet: compact split becomes stacked so nothing gets squeezed. */
-        @media (max-width: 1023px) {
-            .signup-shell {
-                width: min(760px, calc(100vw - 28px));
-                min-height: auto;
-                margin: 18px auto 28px;
-                grid-template-columns: 1fr;
-            }
-
-            .signup-visual {
-                min-height: 250px;
-                height: 250px;
-                padding: 28px 30px 22px;
-            }
-
-            .signup-visual-copy {
-                max-width: 56%;
-                margin-top: 28px;
-            }
-
-            .signup-visual-title {
-                font-size: clamp(2rem, 5vw, 2.8rem);
-            }
-
-            .signup-visual-copy-text {
-                font-size: 12px;
-            }
-
-            .signup-mascot {
-                width: 205px;
-                height: 220px;
-                max-width: 40%;
-                right: 12px;
-                bottom: -3px;
-            }
-
-            .signup-mascot-glow {
-                width: 155px;
-                height: 155px;
-                right: 46px;
-                bottom: 24px;
-            }
-
-            .signup-mascot-bubble {
-                right: 158px;
-                bottom: 140px;
-                max-width: 120px;
-            }
-
-            .signup-visual-note {
-                display: none;
-            }
-
-            .signup-form-side {
-                padding: 38px 30px 34px;
-            }
-
-            .signup-form-wrap {
-                width: min(100%, 520px);
-            }
+        .oauth-circle {
+            width: 52px;
+            height: 52px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #FFFFFF;
+            border: 1px solid #D3DAD0;
+            transition: border-color .18s ease, transform .16s ease, box-shadow .2s ease;
         }
-
-        /* Small tablets / large phones: full-width form with larger touch targets. */
-        @media (max-width: 760px) {
-            .signup-shell {
-                width: calc(100vw - 20px);
-                margin: 10px auto 18px;
-                border-radius: 24px;
-            }
-
-            .signup-visual {
-                min-height: 215px;
-                height: 215px;
-                padding: 22px 22px 18px;
-            }
-
-            .signup-brand span { font-size: 18px; }
-
-            .signup-pill {
-                margin-top: 11px;
-                padding: 6px 9px;
-                font-size: 9px;
-            }
-
-            .signup-visual-copy {
-                max-width: 60%;
-                margin-top: 20px;
-            }
-
-            .signup-eyebrow {
-                font-size: 9px;
-                margin-bottom: 8px;
-            }
-
-            .signup-visual-title {
-                font-size: 2.15rem;
-                max-width: 10ch;
-            }
-
-            .signup-visual-copy-text {
-                display: none;
-            }
-
-            .signup-mascot {
-                width: 172px;
-                height: 184px;
-                max-width: none;
-                right: -2px;
-                bottom: -8px;
-            }
-
-            .signup-mascot-glow {
-                width: 130px;
-                height: 130px;
-                right: 14px;
-                bottom: 18px;
-            }
-
-            .signup-mascot-bubble {
-                right: 92px;
-                bottom: 112px;
-                max-width: 110px;
-                padding: 7px 8px;
-                font-size: 8px;
-            }
-
-            .signup-form-side {
-                padding: 30px 20px 26px;
-            }
-
-            .signup-form-wrap {
-                width: 100%;
-                max-width: 520px;
-            }
-
-            .signup-header {
-                margin-bottom: 20px;
-            }
-
-            .signup-form-title {
-                font-size: 2.05rem;
-            }
-
-            .signup-form-subtitle {
-                font-size: 12px;
-            }
-
-            .signup-social,
-            .signup-submit {
-                min-height: 48px;
-            }
-
-            .field-shell input {
-                padding: 14px 0;
-                font-size: 14px;
-            }
-
-            .signup-foot {
-                align-items: flex-start;
-                flex-direction: column-reverse;
-            }
-
-            .signup-foot-note {
-                display: none;
-            }
-
-            .signup-foot p {
-                width: 100%;
-                text-align: center;
-            }
-        }
-
-        /* Phones: single-column fields and safe-area-aware spacing. */
-        @media (max-width: 520px) {
-            .signup-shell {
-                width: calc(100vw - 12px);
-                margin: 6px auto 14px;
-            }
-
-            .signup-visual {
-                min-height: 188px;
-                height: 188px;
-                padding: 19px 18px 16px;
-            }
-
-            .signup-visual-title {
-                font-size: 1.95rem;
-            }
-
-            .signup-mascot {
-                width: 150px;
-                height: 162px;
-                right: -6px;
-                bottom: -7px;
-            }
-
-            .signup-mascot-bubble {
-                right: 80px;
-                bottom: 95px;
-                max-width: 96px;
-                font-size: 7.5px;
-            }
-
-            .signup-form-side {
-                padding:
-                    26px
-                    max(16px, env(safe-area-inset-right))
-                    calc(24px + env(safe-area-inset-bottom))
-                    max(16px, env(safe-area-inset-left));
-            }
-
-            .signup-form-title {
-                font-size: 1.9rem;
-            }
-
-            .signup-form-subtitle {
-                max-width: 300px;
-            }
-
-            /* Prevent the name row from becoming cramped. */
-            .signup-form-side form > .grid.grid-cols-2 {
-                grid-template-columns: 1fr;
-            }
-        }
+        .oauth-circle:hover:not(:disabled) { border-color: rgba(21,35,28,.22); box-shadow: 0 12px 26px -18px rgba(18,61,46,.4); }
+        .oauth-circle:active:not(:disabled) { transform: scale(.95); }
+        .oauth-circle:disabled { opacity: .5; }
 
         @media (prefers-reduced-motion: reduce) {
-            .spin, .shake, .fade-up, .grow-bar, .sun-rotate, .star-twinkle,
-            .stamp-pop, .check-pop, .signup-mascot, .signup-mascot-glow {
-                animation: none !important;
-                transition: none !important;
-            }
+            .spin, .shake, .fade-up, .grow-bar { animation: none !important; transition: none !important; }
         }
 
         .swal2-popup.tipid-swal {
             border-radius: 20px !important;
             font-family: 'Inter', sans-serif;
         }
-
-        .tipid-swal .swal2-title {
-            font-family: 'Fraunces', serif;
-            color: #15231C;
-        }
-
+        .tipid-swal .swal2-title { font-family: 'Fraunces', serif; color: #15231C; }
         .tipid-swal .swal2-html-container { color: #33443A; }
-
         .tipid-swal .swal2-confirm {
             border-radius: 999px !important;
             padding: 0.65em 1.6em !important;
@@ -675,19 +230,15 @@
         }
 
         const Icons = {
-            Mail: (p) => <Icon {...p} path={<><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></>} />,
-            Lock: (p) => <Icon {...p} path={<><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></>} />,
-            User: (p) => <Icon {...p} path={<><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></>} />,
+            ArrowLeft: (p) => <Icon {...p} path={<><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></>} />,
             Eye: (p) => <Icon {...p} path={<><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></>} />,
             EyeOff: (p) => <Icon {...p} path={<><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c6.5 0 10 8 10 8a17.4 17.4 0 0 1-2.24 3.32M6.16 6.16C3.4 7.9 2 11 2 11s3.5 7 10 7a9.4 9.4 0 0 0 4.24-.94"/><path d="M9.5 9.5a3 3 0 0 0 4.24 4.24"/><line x1="2" y1="2" x2="22" y2="22"/></>} />,
             Loader: (p) => <Icon {...p} path={<><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></>} />,
             AlertCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />,
             Check: (p) => <Icon {...p} path={<path d="M20 6 9 17l-5-5"/>} />,
-            BarChart: (p) => <Icon {...p} path={<><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></>} />,
-            Target: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></>} />,
         };
 
-        function GoogleIcon({ size = 18 }) {
+        function GoogleIcon({ size = 20 }) {
             return (
                 <svg width={size} height={size} viewBox="0 0 48 48">
                     <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.5 29.6 3.5 24 3.5 12.7 3.5 3.5 12.7 3.5 24S12.7 44.5 24 44.5 44.5 35.3 44.5 24c0-1.2-.1-2.4-.3-3.5Z"/>
@@ -698,7 +249,7 @@
             );
         }
 
-        function Logo({ size = 32, light = false }) {
+        function Logo({ size = 30 }) {
             const [broken, setBroken] = useState(false);
 
             if (!broken) {
@@ -718,9 +269,7 @@
             return (
                 <span
                     style={{ width: size, height: size }}
-                    className={`rounded-md flex items-center justify-center font-display font-semibold ${
-                        light ? "bg-paper text-pesoDeep" : "bg-ink text-paper"
-                    }`}
+                    className="rounded-md flex items-center justify-center font-display font-semibold bg-ink text-paper"
                 >
                     ₱
                 </span>
@@ -777,11 +326,11 @@
             });
         }
 
-        function Field({ icon: IconCmp, error, children }) {
+        function Field({ label, error, children }) {
             return (
-                <div className={`field-shell ${error ? "error" : ""}`}>
-                    <IconCmp size={17} className="text-ink2/50 shrink-0" />
-                    {children}
+                <div>
+                    <label className="field-label">{label}</label>
+                    <div className={`field-shell ${error ? "error" : ""}`}>{children}</div>
                 </div>
             );
         }
@@ -811,218 +360,20 @@
             const filled = password.length ? Math.max(score, 1) : 0;
             const meta = STRENGTH_META[score];
 
-            const checks = [
-                { ok: password.length >= 6, label: "6+ na karakter" },
-                { ok: /\d/.test(password), label: "May numero" },
-                { ok: /[A-Z]/.test(password), label: "May malaking titik" },
-            ];
-
             if (!password) return null;
 
             return (
-                <div className="pt-1">
+                <div className="pt-2">
                     <div className="flex gap-1.5">
                         {[0, 1, 2, 3].map(i => (
-                            <div key={i} className="h-1.5 flex-1 rounded-full bg-line/70 overflow-hidden">
-                                {i < filled && (
-                                    <div className={`h-full grow-bar rounded-full ${meta.color}`}></div>
-                                )}
+                            <div key={i} className="h-1.5 flex-1 rounded-full bg-line/60 overflow-hidden">
+                                {i < filled && <div className={`h-full grow-bar rounded-full ${meta.color}`}></div>}
                             </div>
                         ))}
                     </div>
-
-                    <div className="flex items-center justify-between mt-1">
-                        <span className={`text-xs font-semibold ${meta.text}`}>{meta.label}</span>
-                        <span className="text-xs text-ink2/50 font-mono">{password.length} char</span>
-                    </div>
-
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
-                        {checks.map((c, i) => (
-                            <span
-                                key={i}
-                                className={`inline-flex items-center gap-1 text-[11px] ${
-                                    c.ok ? "text-peso" : "text-ink2/40"
-                                }`}
-                            >
-                                <span className={c.ok ? "inline-flex" : "inline-flex opacity-30"}>
-                                    <Icons.Check size={11} strokeWidth={3} />
-                                </span>
-                                {c.label}
-                            </span>
-                        ))}
-                    </div>
-                </div>
-            );
-        }
-
-        function SunRays({ size = 420 }) {
-            const rayCount = 8;
-
-            return (
-                <svg width={size} height={size} viewBox="0 0 100 100" className="sun-rotate">
-                    <g stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
-                        {Array.from({ length: rayCount }).map((_, i) => (
-                            <line
-                                key={i}
-                                x1="50"
-                                y1="2"
-                                x2="50"
-                                y2="20"
-                                transform={`rotate(${(360 / rayCount) * i} 50 50)`}
-                            />
-                        ))}
-                    </g>
-                    <circle cx="50" cy="50" r="13" fill="none" stroke="currentColor" strokeWidth="1.3" />
-                </svg>
-            );
-        }
-
-        function TinyStar({ style, size = 11, delay = 0 }) {
-            return (
-                <svg
-                    width={size}
-                    height={size}
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="star-twinkle"
-                    style={{ ...style, animationDelay: `${delay}s` }}
-                >
-                    <path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.2L12 16.4 5.7 20.8 8 13.6 2 9.2h7.6z"/>
-                </svg>
-            );
-        }
-
-        function WeavePattern() {
-            return (
-                <svg className="absolute inset-0 w-full h-full opacity-[0.05] pointer-events-none">
-                    <defs>
-                        <pattern
-                            id="banig-weave-signup"
-                            width="14"
-                            height="14"
-                            patternUnits="userSpaceOnUse"
-                            patternTransform="rotate(45)"
-                        >
-                            <line x1="0" y1="0" x2="0" y2="14" stroke="currentColor" strokeWidth="1" />
-                            <line x1="7" y1="0" x2="7" y2="14" stroke="currentColor" strokeWidth="1" opacity="0.5" />
-                        </pattern>
-                    </defs>
-                    <rect width="100%" height="100%" fill="url(#banig-weave-signup)" />
-                </svg>
-            );
-        }
-
-        function GenuineStamp() {
-            return (
-                <div className="absolute -top-3 -right-3 w-[4.5rem] h-[4.5rem] rounded-full border-2 border-dashed border-ink2/30 flex items-center justify-center bg-paper/70">
-                    <span className="text-center text-[7.5px] font-mono font-bold tracking-wider text-ink2/50 leading-tight uppercase">
-                        Tunay na<br/>Tipid
-                    </span>
-                </div>
-            );
-        }
-
-        function ReceiptMock() {
-            const rows = [
-                { label: "Grocery", cat: "bg-gold", amount: "− ₱1,240.00", tone: "text-ink" },
-                { label: "Pamasahe", cat: "bg-peso", amount: "− ₱180.00", tone: "text-ink" },
-                { label: "Kuryente", cat: "bg-expense", amount: "− ₱2,050.00", tone: "text-ink" },
-                { label: "Naipon", cat: "bg-pesoLight", amount: "+ ₱3,000.00", tone: "text-peso" },
-            ];
-
-            return (
-                <div className="relative bg-paper rounded-2xl shadow-2xl p-5 pt-6 w-full max-w-xs -rotate-1">
-                    <div className="perf-edge absolute -top-[1px] left-0 right-0 h-2 bg-pesoDeep"></div>
-                    <GenuineStamp />
-
-                    <div className="flex items-center justify-between mb-3">
-                        <span className="font-mono text-[11px] tracking-[0.15em] uppercase text-ink2/60">
-                            Ledger — Buwan na Ito
-                        </span>
-                        <span className="font-mono text-[11px] text-ink2/40">#0042</span>
-                    </div>
-
-                    <div className="space-y-2.5">
-                        {rows.map((r, i) => (
-                            <div key={i}>
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="flex items-center gap-2 text-ink2">
-                                        <span className={`w-1.5 h-1.5 rounded-full ${r.cat}`}></span>
-                                        {r.label}
-                                    </span>
-
-                                    <span className={`font-mono font-medium ${r.tone}`}>
-                                        {r.amount}
-                                    </span>
-                                </div>
-
-                                {i < rows.length - 1 && <div className="ledger-rule mt-2.5"></div>}
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="ledger-rule my-3"></div>
-
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-ink2 uppercase tracking-wide">
-                            Naipon ngayong buwan
-                        </span>
-                        <span className="font-mono font-bold text-peso">₱3,000.00</span>
-                    </div>
-                </div>
-            );
-        }
-
-        function BrandPanel() {
-            return (
-                <div className="signup-visual">
-                    <WeavePattern />
-
-                    <div className="absolute top-[-120px] right-[-100px] w-[320px] h-[320px] bg-pesoLight/20 rounded-full blur-3xl"></div>
-                    <div className="absolute bottom-[-160px] left-[-120px] w-[360px] h-[360px] bg-gold/10 rounded-full blur-3xl"></div>
-
-                    <div className="absolute -bottom-20 -right-20 text-sun/65 pointer-events-none">
-                        <SunRays size={380} />
-                    </div>
-
-                    <TinyStar style={{ position: "absolute", top: "12%", left: "64%" }} delay={0} size={10} />
-                    <TinyStar style={{ position: "absolute", top: "21%", left: "80%" }} delay={0.6} size={8} />
-                    <TinyStar style={{ position: "absolute", top: "8%", left: "86%" }} delay={1.2} size={9} />
-
-                    <a href="index.html" className="signup-brand">
-                        <Logo size={29} light />
-                        <span className="text-xl font-display font-semibold tracking-tight">Tipid</span>
-                    </a>
-
-                    <div className="signup-pill">
-                        <span aria-hidden="true">🇵🇭</span>
-                        Gawang Pilipino
-                    </div>
-
-                    <div className="signup-visual-copy">
-                        <p className="signup-eyebrow">Ang unang hakbang sa tipid</p>
-                        <h2 className="signup-visual-title">Simulan ang habit na magpapagaan sa buwan mo.</h2>
-                        <p className="signup-visual-copy-text">
-                            I-log ang gastos, magtakda ng goals, at gawing mas simple ang araw-araw na budget.
-                        </p>
-                    </div>
-
-                    <div className="signup-mascot-glow"></div>
-
-                    <img
-                        src="/assets/signup_mascot.png"
-                        alt="Tipid Buddy"
-                        className="signup-mascot"
-                        draggable="false"
-                    />
-
-                    <div className="signup-mascot-bubble">
-                        <strong>Welcome!</strong><br/>
-                        Tara, mag-tipid tayo. 💚
-                    </div>
-
-                    <div className="signup-visual-note">
-                        “Maliit na habits, malaking tulong.”
+                    <div className="flex items-center justify-between mt-1.5">
+                        <span className={`text-[11.5px] font-semibold ${meta.text}`}>{meta.label}</span>
+                        <span className="text-[11px] text-ink2/45">{password.length} char</span>
                     </div>
                 </div>
             );
@@ -1036,6 +387,7 @@
             const [email, setEmail] = useState("");
             const [password, setPassword] = useState("");
             const [confirm, setConfirm] = useState("");
+            const [agree, setAgree] = useState(false);
             const [showPw, setShowPw] = useState(false);
             const [loading, setLoading] = useState(false);
             const [error, setError] = useState("");
@@ -1056,6 +408,7 @@
                 if (!/^\S+@\S+\.\S+$/.test(email)) return fail("Hindi valid ang email address.", "email");
                 if (password.length < 6) return fail("Dapat 6 characters pataas ang password.", "password");
                 if (password !== confirm) return fail("Hindi magkatugma ang password.", "confirm");
+                if (!agree) return fail("Kailangan mong sumang-ayon sa Mga Tuntunin ng Serbisyo.", "agree");
                 return true;
             };
 
@@ -1110,146 +463,150 @@
             };
 
             return (
-                <div className={shake ? "shake" : ""}>
-                    <div className="signup-shell">
+                <div className="page-shell">
+                    <div className={`auth-card fade-up ${shake ? "shake" : ""}`}>
 
-                        <section className="signup-visual-wrap">
-                            <BrandPanel />
-                        </section>
-
-                        <section className="signup-form-side">
-                            <div className="signup-form-wrap fade-up">
-
-                                <div className="lg:hidden flex items-center justify-center gap-2.5 mb-7">
-                                    <Logo size={29} />
-                                    <span className="text-xl font-display font-semibold tracking-tight text-ink">Tipid</span>
-                                </div>
-
-                                <div className="signup-header">
-                                    <p className="signup-form-eyebrow">Simulan ang tipid</p>
-                                    <h1 className="signup-form-title">Gumawa ng account</h1>
-                                    <p className="signup-form-subtitle">
-                                        Libre, mabilis, at ready para sa everyday budget mo.
-                                    </p>
-                                </div>
-
-                                {timedOut && !authReady && (
-                                    <div className="mb-5 flex items-start gap-2 bg-expense/10 text-expense text-sm rounded-xl px-3.5 py-3">
-                                        <Icons.AlertCircle size={16} className="shrink-0 mt-0.5" />
-                                        <span>Hindi ma-connect sa auth system. Paki-refresh ang page o subukan ulit mamaya.</span>
-                                    </div>
-                                )}
-
-                                <button
-                                    onClick={handleGoogle}
-                                    disabled={loading || !authReady}
-                                    type="button"
-                                    className="signup-social flex items-center justify-center gap-2.5 disabled:opacity-50"
-                                >
-                                    <GoogleIcon size={18} />
-                                    Mag-sign up gamit ang Google
-                                </button>
-
-                                <div className="flex items-center gap-3 my-5">
-                                    <div className="ledger-rule flex-1"></div>
-                                    <span className="text-[11px] font-mono text-ink2/45 uppercase">o</span>
-                                    <div className="ledger-rule flex-1"></div>
-                                </div>
-
-                                {error && (
-                                    <div className="mb-5 flex items-start gap-2 bg-expense/10 text-expense text-sm rounded-xl px-3.5 py-3">
-                                        <Icons.AlertCircle size={16} className="shrink-0 mt-0.5" />
-                                        <span>{error}</span>
-                                    </div>
-                                )}
-
-                                <form onSubmit={handleSubmit} className="space-y-3.5">
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <Field icon={Icons.User} error={fieldErr.firstName}>
-                                            <input
-                                                type="text"
-                                                value={firstName}
-                                                onChange={e => setFirstName(e.target.value)}
-                                                placeholder="Unang pangalan"
-                                                autoComplete="given-name"
-                                            />
-                                        </Field>
-
-                                        <Field icon={Icons.User} error={fieldErr.lastName}>
-                                            <input
-                                                type="text"
-                                                value={lastName}
-                                                onChange={e => setLastName(e.target.value)}
-                                                placeholder="Apelyido"
-                                                autoComplete="family-name"
-                                            />
-                                        </Field>
-                                    </div>
-
-                                    <Field icon={Icons.Mail} error={fieldErr.email}>
-                                        <input
-                                            type="email"
-                                            value={email}
-                                            onChange={e => setEmail(e.target.value)}
-                                            placeholder="Email address"
-                                            autoComplete="email"
-                                        />
-                                    </Field>
-
-                                    <div>
-                                        <Field icon={Icons.Lock} error={fieldErr.password}>
-                                            <input
-                                                type={showPw ? "text" : "password"}
-                                                value={password}
-                                                onChange={e => setPassword(e.target.value)}
-                                                placeholder="Password (6+ characters)"
-                                                autoComplete="new-password"
-                                            />
-
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowPw(v => !v)}
-                                                className="text-ink2/50 hover:text-ink2 shrink-0 transition-colors duration-200"
-                                                aria-label="Toggle password visibility"
-                                            >
-                                                {showPw ? <Icons.EyeOff size={17} /> : <Icons.Eye size={17} />}
-                                            </button>
-                                        </Field>
-
-                                        <PasswordStrength password={password} />
-                                    </div>
-
-                                    <Field icon={Icons.Lock} error={fieldErr.confirm}>
-                                        <input
-                                            type={showPw ? "text" : "password"}
-                                            value={confirm}
-                                            onChange={e => setConfirm(e.target.value)}
-                                            placeholder="Ulitin ang password"
-                                            autoComplete="new-password"
-                                        />
-                                    </Field>
-
-                                    <button
-                                        type="submit"
-                                        disabled={loading || !authReady}
-                                        className="signup-submit bg-peso hover:bg-pesoLight disabled:opacity-60 text-paper flex items-center justify-center gap-2 mt-2"
-                                    >
-                                        {loading && <Icons.Loader size={16} className="spin" />}
-                                        {loading ? "Ginagawa..." : "Gumawa ng Account"}
-                                    </button>
-                                </form>
-
-                                <div className="signup-foot">
-                                    <span className="signup-foot-note">Secure signup · Gawang Pilipino · Tipid</span>
-                                    <p className="text-sm text-ink2">
-                                        May account ka na?
-                                        <a href="login.html" className="text-peso font-semibold hover:underline ml-1">
-                                            Mag-log in
-                                        </a>
-                                    </p>
-                                </div>
+                        <div className="flex items-center justify-between mb-7">
+                            <a href="index.html" className="back-btn" aria-label="Bumalik">
+                                <Icons.ArrowLeft size={17} />
+                            </a>
+                            <div className="flex items-center gap-2">
+                                <Logo size={34} />
+                                <span className="text-lg font-display font-semibold tracking-tight text-ink">Tipid</span>
                             </div>
-                        </section>
+                            <span className="w-[34px]"></span>
+                        </div>
+
+                        <h1 className="auth-title">Gumawa ng account</h1>
+                        <p className="auth-subtitle">Libre, mabilis, at ready para sa everyday budget mo.</p>
+
+                        {timedOut && !authReady && (
+                            <div className="mt-5 flex items-start gap-2 bg-expense/10 text-expense text-sm rounded-xl px-3.5 py-3">
+                                <Icons.AlertCircle size={16} className="shrink-0 mt-0.5" />
+                                <span>Hindi ma-connect sa auth system. Paki-refresh ang page o subukan ulit mamaya.</span>
+                            </div>
+                        )}
+
+                        {error && (
+                            <div className="mt-5 flex items-start gap-2 bg-expense/10 text-expense text-sm rounded-xl px-3.5 py-3">
+                                <Icons.AlertCircle size={16} className="shrink-0 mt-0.5" />
+                                <span>{error}</span>
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                            <div className="grid grid-cols-2 gap-3">
+                                <Field label="Unang pangalan" error={fieldErr.firstName}>
+                                    <input
+                                        type="text"
+                                        value={firstName}
+                                        onChange={e => setFirstName(e.target.value)}
+                                        placeholder="Juan"
+                                        autoComplete="given-name"
+                                    />
+                                </Field>
+
+                                <Field label="Apelyido" error={fieldErr.lastName}>
+                                    <input
+                                        type="text"
+                                        value={lastName}
+                                        onChange={e => setLastName(e.target.value)}
+                                        placeholder="Dela Cruz"
+                                        autoComplete="family-name"
+                                    />
+                                </Field>
+                            </div>
+
+                            <Field label="Email" error={fieldErr.email}>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={e => setEmail(e.target.value)}
+                                    placeholder="juandelacruz@gmail.com"
+                                    autoComplete="email"
+                                />
+                            </Field>
+
+                            <div>
+                                <Field label="Password" error={fieldErr.password}>
+                                    <input
+                                        type={showPw ? "text" : "password"}
+                                        value={password}
+                                        onChange={e => setPassword(e.target.value)}
+                                        placeholder="6+ characters"
+                                        autoComplete="new-password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPw(v => !v)}
+                                        className="text-ink2/50 hover:text-ink2 shrink-0 transition-colors duration-200"
+                                        aria-label="Ipakita ang password"
+                                    >
+                                        {showPw ? <Icons.EyeOff size={17} /> : <Icons.Eye size={17} />}
+                                    </button>
+                                </Field>
+                                <PasswordStrength password={password} />
+                            </div>
+
+                            <Field label="Ulitin ang password" error={fieldErr.confirm}>
+                                <input
+                                    type={showPw ? "text" : "password"}
+                                    value={confirm}
+                                    onChange={e => setConfirm(e.target.value)}
+                                    placeholder="Ulitin ang password"
+                                    autoComplete="new-password"
+                                />
+                            </Field>
+
+                            <label className="flex items-start gap-2.5 cursor-pointer select-none pt-1">
+                                <input
+                                    type="checkbox"
+                                    checked={agree}
+                                    onChange={e => setAgree(e.target.checked)}
+                                    className="sr-only"
+                                />
+                                <span className={`agree-box mt-0.5 ${agree ? "checked" : ""} ${fieldErr.agree ? "error" : ""}`}>
+                                    {agree && <Icons.Check size={12} strokeWidth={3} className="text-white" />}
+                                </span>
+                                <span className="text-[13px] text-ink2 leading-snug">
+                                    Sumasang-ayon ako sa <span className="text-peso font-semibold">Mga Tuntunin ng Serbisyo</span>
+                                </span>
+                            </label>
+
+                            <button
+                                type="submit"
+                                disabled={loading || !authReady}
+                                className="submit-btn flex items-center justify-center gap-2 mt-1"
+                            >
+                                {loading && <Icons.Loader size={16} className="spin" />}
+                                {loading ? "Ginagawa..." : "Gumawa ng Account"}
+                            </button>
+                        </form>
+
+                        <div className="flex items-center gap-3 my-6">
+                            <div className="h-px flex-1 bg-line/70"></div>
+                            <span className="text-[12px] text-ink2/50">o mag-sign up gamit</span>
+                            <div className="h-px flex-1 bg-line/70"></div>
+                        </div>
+
+                        <div className="flex items-center justify-center">
+                            <button
+                                onClick={handleGoogle}
+                                disabled={loading || !authReady}
+                                type="button"
+                                className="oauth-circle"
+                                aria-label="Mag-sign up gamit ang Google"
+                            >
+                                <GoogleIcon size={20} />
+                            </button>
+                        </div>
+
+                        <p className="text-center text-sm text-ink2 mt-7">
+                            May account ka na?
+                            <a href="login.html" className="text-peso font-semibold hover:underline ml-1">
+                                Mag-log in
+                            </a>
+                        </p>
                     </div>
                 </div>
             );
