@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Utang Tracker — Tipid</title>
+    <title>Allowance Tracker — Tipid</title>
     <meta name="theme-color" content="#1F6F54">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Track your daily allowance and avoid petsa de peligro.">
     <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,6 +41,7 @@
                     boxShadow: {
                         'ios': '0 2px 10px rgba(18,61,46,0.06), 0 16px 32px -12px rgba(18,61,46,0.15)',
                         'iosLg': '0 24px 48px -12px rgba(18,61,46,0.25)',
+                        'glass': '0 8px 32px 0 rgba(31, 111, 84, 0.1)',
                     }
                 }
             }
@@ -49,7 +51,6 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script type="module" src="./firebase.js"></script>
@@ -57,7 +58,8 @@
     <script type="module" src="./firebase-data.js"></script>
 
     <script type="text/babel" src="./components/navbar.js"></script>
-    <script type="text/babel" src="./components/UtangTracker.js"></script>
+    <!-- Ensure AllowanceCalculator.js exists in the components folder -->
+    <script type="text/babel" src="./components/AllowanceCalculator.js"></script>
 
     <style>
         :root {
@@ -69,60 +71,57 @@
             --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        html { background: #F1F4EF; transition: background-color 0.3s var(--ease-ios); }
+        html { background: #F1F4EF; transition: background-color 0.4s var(--ease-ios); }
         html.dark { background: #111A15; color: #F1F4EF; }
 
         body { font-family: 'Inter', sans-serif; min-height: 100dvh; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-up { animation: fadeIn 0.6s var(--ease-ios) both; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-up { animation: fadeIn 0.7s var(--ease-spring) both; }
 
-        .spin { animation: spin 0.9s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes haloPulse { 0% { transform: scale(0.85); opacity: 0.4; } 70% { opacity: 0; } 100% { transform: scale(1.8); opacity: 0; } }
+        .halo-pulse { animation: haloPulse 2s var(--ease-ios) infinite; }
 
-        @keyframes haloPulse { 0% { transform: scale(0.9); opacity: 0.35; } 70% { opacity: 0; } 100% { transform: scale(1.6); opacity: 0; } }
-        .halo-pulse { animation: haloPulse 1.9s var(--ease-ios) infinite; }
+        @keyframes logoBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
 
-        @keyframes logoBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
-
-        .glass-panel { background: rgba(255,255,255,0.65); backdrop-filter: blur(20px) saturate(160%); border: 1px solid rgba(255,255,255,0.55); }
-        html.dark .glass-panel { background: rgba(24,38,31,0.55); border: 1px solid rgba(255,255,255,0.08); }
-
-        .tap-scale { transition: transform 0.15s var(--ease-spring); }
-        .tap-scale:active { transform: scale(0.92); }
+        .glass-panel { background: rgba(255,255,255,0.7); backdrop-filter: blur(24px) saturate(180%); border: 1px solid rgba(255,255,255,0.6); }
+        html.dark .glass-panel { background: rgba(24,38,31,0.6); border: 1px solid rgba(255,255,255,0.08); }
 
         .tipid-swal { border-radius: 1.5rem !important; font-family: 'Inter', sans-serif !important; }
 
-        /* Hero: quiet inner highlight for a bit of physical depth, not decoration for its own sake */
         .hero-panel { position: relative; isolation: isolate; }
         .hero-panel::before {
-            content: '';
-            position: absolute; inset: 0;
-            border-radius: inherit;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 0 0 1px rgba(255,255,255,0.06);
-            pointer-events: none;
+            content: ''; position: absolute; inset: 0; border-radius: inherit;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 0 0 1px rgba(255,255,255,0.1);
+            pointer-events: none; z-index: 20;
         }
-        .hero-glow { animation: heroFloat 7s ease-in-out infinite; }
-        @keyframes heroFloat { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -8px); } }
+
+        .hero-glow { animation: heroFloat 8s ease-in-out infinite alternate; }
+        @keyframes heroFloat { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(15px, -15px) scale(1.1); } }
 
         .speech-bubble {
-            animation: fadeUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.45s both;
-            box-shadow: 0 10px 25px -5px rgba(18, 61, 46, 0.25);
+            animation: fadeIn 0.6s var(--ease-spring) 0.5s both;
+            box-shadow: 0 12px 28px -6px rgba(18, 61, 46, 0.3);
+            position: relative;
         }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(8px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-        .tip-card { transition: transform 0.3s var(--ease-ios), box-shadow 0.3s var(--ease-ios); }
-        .tip-card:hover { transform: translateY(-3px); }
+        .speech-bubble::after {
+            content: ''; position: absolute; bottom: -6px; right: 24px;
+            border-width: 6px 6px 0; border-style: solid; border-color: #F1F4EF transparent transparent transparent;
+        }
 
-        :focus-visible { outline: 2px solid #1F6F54; outline-offset: 2px; border-radius: 6px; }
+        .tip-card { transition: all 0.3s var(--ease-ios); }
+        .tip-card:hover { transform: translateY(-4px); box-shadow: var(--tw-shadow-glass); }
+
+        :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 8px; transition: outline-offset 0.2s; }
         html.dark :focus-visible { outline-color: #52C8A1; }
 
         @media (prefers-reduced-motion: reduce) {
-            .fade-up, .spin, .halo-pulse, .hero-glow, .tap-scale, .speech-bubble, .tip-card, [style*="logoBreathe"] { animation: none !important; transition: none !important; }
+            .fade-up, .halo-pulse, .hero-glow, .speech-bubble, .tip-card, [style*="logoBreathe"] { animation: none !important; transition: none !important; transform: none !important; }
         }
     </style>
 </head>
-<body class="bg-paper dark:bg-ink text-ink dark:text-paper min-h-screen flex flex-col transition-colors duration-300">
+<body class="bg-paper dark:bg-ink text-ink dark:text-paper min-h-screen flex flex-col transition-colors duration-400">
 
     <div id="root"></div>
 
@@ -141,31 +140,16 @@
         }
 
         window.Icons = {
-            Sun: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>} />,
-            Moon: (p) => <Icon {...p} path={<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>} />,
-            Trash: (p) => <Icon {...p} path={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></>} />,
-            Plus: (p) => <Icon {...p} path={<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>} />,
+            Activity: (p) => <Icon {...p} path={<><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></>} />,
             Pencil: (p) => <Icon {...p} path={<><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></>} />,
-            Calendar: (p) => <Icon {...p} path={<><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>} />,
-            Category: (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
-            Wallet: (p) => <Icon {...p} path={<><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></>} />,
-            AlertCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />,
-            Check: (p) => <Icon {...p} path={<><polyline points="20 6 9 17 4 12"/></>} strokeWidth={3} />,
-            Inbox: (p) => <Icon {...p} path={<><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></>} />,
-            Loader: (p) => <Icon {...p} path={<><path d="M12 2a10 10 0 0 1 10 10"/></>} />,
-            Info: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>} />,
             Shield: (p) => <Icon {...p} path={<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>} />,
-            Users: (p) => <Icon {...p} path={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
-            Clock: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>} />
+            Info: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>} />
         };
 
-        window.Logo = function Logo({ size = 30 }) {
+        window.Logo = function Logo({ size = 30, className = "" }) {
             const [broken, setBroken] = React.useState(false);
-            if (!broken) {
-                return <img src="/assets/logo.svg" alt="Tipid logo" width={size} height={size}
-                            onError={() => setBroken(true)} style={{ width: size, height: size }} className="rounded-md" />;
-            }
-            return <span style={{ width: size, height: size }} className="rounded-md bg-ink text-paper flex items-center justify-center font-display font-semibold">₱</span>;
+            if (!broken) return <img src="/assets/logo.svg" alt="Tipid Logo" width={size} height={size} onError={() => setBroken(true)} className={`rounded-lg shadow-sm ${className}`} style={{ width: size, height: size }} />;
+            return <span style={{ width: size, height: size }} className={`rounded-lg bg-peso text-paper flex items-center justify-center font-display font-semibold shadow-sm ${className}`}>₱</span>;
         }
 
         window.peso = (num) => {
@@ -188,116 +172,106 @@
     <script type="text/babel">
         function AmbientBackground() {
             return (
-                <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div className="absolute -top-24 -right-16 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
-                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-gold/10 dark:bg-gold/5 rounded-full blur-[100px]" />
+                <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10" aria-hidden="true">
+                    <div className="absolute -top-32 -right-24 w-[450px] h-[450px] bg-peso/15 dark:bg-pesoLight/10 rounded-full blur-[100px] mix-blend-multiply dark:mix-blend-screen opacity-70" />
+                    <div className="absolute bottom-10 -left-32 w-[400px] h-[400px] bg-gold/15 dark:bg-gold/10 rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-screen opacity-60" />
                 </div>
             );
         }
 
-        function UtangHeroCard() {
+        function AllowanceHeroCard() {
             return (
-                <div className="hero-panel relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-5 sm:p-7 shadow-iosLg ring-1 ring-white/10 min-h-[190px] sm:min-h-[220px] flex flex-col justify-center mb-6 sm:mb-8">
-                    <div className="hero-glow absolute -top-16 -right-10 w-56 h-56 bg-white/10 rounded-full blur-[50px]" />
-                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-[#FFD700]/10 rounded-full blur-[60px]" />
+                <section className="hero-panel relative overflow-hidden rounded-[1.75rem] sm:rounded-[2.25rem] bg-gradient-to-br from-peso via-pesoLight to-pesoDeep text-paper p-6 sm:p-9 shadow-iosLg min-h-[200px] sm:min-h-[240px] flex flex-col justify-center mb-8">
+                    {/* Abstract decorative blobs */}
+                    <div className="hero-glow absolute -top-20 -right-12 w-64 h-64 bg-white/15 rounded-full blur-[60px]" />
+                    <div className="absolute -bottom-24 -left-12 w-72 h-72 bg-[#FFD700]/15 rounded-full blur-[70px]" />
 
-                    <div className="relative z-10 flex items-end justify-between gap-4">
-                        <div className="max-w-[62%] sm:max-w-[65%]">
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/15 border border-white/10 mb-3 backdrop-blur-sm">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#FFD700]" />
-                                <span className="text-[10.5px] font-medium text-white/85">Personal ledger</span>
+                    <div className="relative z-10 flex items-end justify-between gap-4 h-full">
+                        <div className="max-w-[70%] sm:max-w-[65%] flex flex-col justify-center">
+                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/20 border border-white/20 mb-4 backdrop-blur-md w-max shadow-sm">
+                                <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
+                                <span className="text-[11px] font-semibold text-white/90 uppercase tracking-widest">Daily Budget</span>
                             </div>
-                            <h1 className="font-display text-[1.6rem] sm:text-[2.25rem] font-semibold tracking-tight leading-[1.1] mb-2.5">
-                                Utang Tracker
+                            <h1 className="font-display text-4xl sm:text-5xl font-bold tracking-tight leading-[1.05] mb-3 drop-shadow-sm">
+                                Allowance
                             </h1>
-                            <p className="text-[12px] sm:text-[13.5px] font-medium text-white/75 leading-relaxed">
-                                Subaybayan kung sino ang may utang sa'yo, at kung magkano pa ang utang mo sa iba.
+                            <p className="text-sm sm:text-[15px] font-medium text-white/80 leading-relaxed max-w-sm">
+                                I-budget ang baon mo para umabot hanggang sa susunod na sahod o padala.
                             </p>
                         </div>
 
-                        <div className="hidden sm:flex flex-col items-end shrink-0">
-                            <div className="speech-bubble bg-paper text-ink rounded-2xl px-3.5 py-2.5 text-[11px] font-semibold leading-tight max-w-[150px] border border-white/50">
-                                Lista mo 'yan! Para iwas limot. ✍️
+                        <div className="hidden sm:flex flex-col items-end shrink-0 pb-4">
+                            <div className="speech-bubble bg-paper text-ink rounded-2xl px-4 py-3 text-xs font-bold leading-tight max-w-[160px] text-center border border-white/60">
+                                Iwas petsa de peligro! 💸
                             </div>
                         </div>
                     </div>
-                </div>
+                </section>
             );
         }
 
-        function UtangTipsSection() {
+        function AllowanceTipsSection() {
             const tips = [
                 {
-                    icon: "Shield", tone: "expense",
-                    title: "Set Boundaries",
-                    body: "Okay lang humindi kung wala talagang extra. Unahin ang sariling budget at emergency fund bago magpautang."
+                    icon: "Activity", tone: "expense",
+                    title: "Alamin ang Daily Limit",
+                    body: "Hatiin ang baon sa bilang ng araw bago ang susunod na sahod para alam mo ang safe daily limit mo."
                 },
                 {
-                    icon: "Clock", tone: "gold",
-                    title: "Kusang Magbayad",
-                    body: "Bayaran ang utang sa pinangakong araw bago pa singilin. Nakakasira ng tiwala at pagkakaibigan ang pagtatago."
+                    icon: "Pencil", tone: "gold",
+                    title: "I-track Kahit Barya",
+                    body: "Kahit barya lang yan o pamasahe sa trike, i-lista mo. Malaking bagay ang maliliit na gastos pag naipon."
                 },
                 {
-                    icon: "Users", tone: "peso",
-                    title: "Iwas Kalimutan sa KKB",
-                    body: "Kung may ambagan o Kanya-Kanyang Bayad (KKB), i-lista agad dito sa tracker para walang nagkakalimutan pagkatapos kumain."
+                    icon: "Shield", tone: "peso",
+                    title: "Save Before You Spend",
+                    body: "Magtabi agad ng ipon pagkatanggap ng allowance bago pa mag-umpisang gumastos."
                 }
             ];
+
             const toneClasses = {
-                expense: "bg-[#FAEDE9] dark:bg-[#B5483B]/20 text-[#B5483B] dark:text-[#F38C80]",
-                gold: "bg-[#FDF6E3] dark:bg-[#C9932E]/20 text-[#C9932E] dark:text-[#E8C071]",
-                peso: "bg-[#E6F3EF] dark:bg-[#1F6F54]/20 text-[#1F6F54] dark:text-[#52C8A1]",
+                expense: "bg-[#FAEDE9] dark:bg-[#B5483B]/15 text-[#B5483B] dark:text-[#F38C80]",
+                gold: "bg-[#FDF6E3] dark:bg-[#C9932E]/15 text-[#C9932E] dark:text-[#E8C071]",
+                peso: "bg-[#E6F3EF] dark:bg-[#1F6F54]/15 text-[#1F6F54] dark:text-[#52C8A1]",
             };
 
             return (
-                <div className="mt-8 sm:mt-10 fade-up" style={{ animationDelay: "150ms" }}>
-                    <div className="flex items-center gap-2.5 mb-4 px-1">
-                        <window.Icons.Info size={20} className="text-peso dark:text-pesoLight" />
-                        <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper tracking-tight">Tipid hacks: utang edition</h3>
+                <section className="mt-10 sm:mt-12 fade-up" style={{ animationDelay: "200ms" }} aria-labelledby="tips-heading">
+                    <div className="flex items-center gap-3 mb-5 px-1">
+                        <window.Icons.Info size={22} className="text-peso dark:text-pesoLight" />
+                        <h2 id="tips-heading" className="font-display text-xl font-bold text-ink dark:text-paper tracking-tight">Tipid hacks: baon edition</h2>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                         {tips.map((tip) => {
                             const TipIcon = window.Icons[tip.icon];
                             return (
-                                <div key={tip.title} className="tip-card bg-white/60 dark:bg-ink2/30 backdrop-blur-xl p-5 rounded-[1.25rem] border border-white/60 dark:border-white/5 shadow-sm">
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${toneClasses[tip.tone]}`}>
-                                        <TipIcon size={18} />
+                                <article key={tip.title} className="tip-card group cursor-default glass-panel dark:bg-ink2/30 p-6 rounded-[1.5rem] flex flex-col h-full relative overflow-hidden">
+                                    <div className="absolute -right-4 -top-4 w-20 h-20 opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none rounded-full bg-current" style={{ color: "var(--tw-text-opacity)" }} />
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 shadow-sm ${toneClasses[tip.tone]}`}>
+                                        <TipIcon size={22} strokeWidth={2.5} />
                                     </div>
-                                    <h4 className="font-semibold text-[13px] text-ink dark:text-paper mb-1.5">{tip.title}</h4>
-                                    <p className="text-[11.5px] text-ink2/70 dark:text-paper/60 leading-relaxed">{tip.body}</p>
-                                </div>
+                                    <h3 className="font-bold text-[14px] text-ink dark:text-paper mb-2">{tip.title}</h3>
+                                    <p className="text-[13px] text-ink2/80 dark:text-paper/70 leading-relaxed">{tip.body}</p>
+                                </article>
                             );
                         })}
                     </div>
-                </div>
+                </section>
             );
         }
 
-        function UtangPage() {
+        function AllowancePage() {
             const authReady = window.useAuthReady();
             const [user, setUser] = React.useState(null);
-            const [utangList, setUtangList] = React.useState([]);
+            const [allowanceList, setAllowanceList] = React.useState([]);
             const [loading, setLoading] = React.useState(true);
             const [authChecking, setAuthChecking] = React.useState(true);
             const [componentsReady, setComponentsReady] = React.useState(false);
 
-            // Dark mode lives on this page as a read-only reflection of the
-            // preference set in profile.html — no toggle is rendered here.
-            React.useEffect(() => {
-                const applyTheme = () => {
-                    const isDark = localStorage.getItem("tipid_theme") === "dark" ||
-                        (!localStorage.getItem("tipid_theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
-                    document.documentElement.classList.toggle("dark", isDark);
-                };
-                applyTheme();
-                window.addEventListener("storage", applyTheme);
-                return () => window.removeEventListener("storage", applyTheme);
-            }, []);
-
             React.useEffect(() => {
                 const interval = setInterval(() => {
-                    if (window.UtangTracker && window.Navbar) {
+                    if (window.AllowanceCalculator && window.Navbar) {
                         setComponentsReady(true);
                         clearInterval(interval);
                     }
@@ -324,13 +298,8 @@
                         setTimeout(checkAuth, 50);
                     }
                 };
-
                 checkAuth();
-
-                return () => {
-                    isMounted = false;
-                    if (typeof unsub === "function") unsub();
-                };
+                return () => { isMounted = false; if (typeof unsub === "function") unsub(); };
             }, []);
 
             const handleLogout = async () => {
@@ -342,82 +311,74 @@
                 }
             };
 
-            const utangListRef = React.useRef(utangList);
-            utangListRef.current = utangList;
-
             React.useEffect(() => {
                 if (!user) return;
-                let unsubUtang = null;
+                let unsubAllowance = null;
 
-                const loadUtang = () => {
-                    if (window.TipidData && window.TipidData.subscribeUtang) {
-                        unsubUtang = window.TipidData.subscribeUtang(
+                const loadAllowance = () => {
+                    if (window.TipidData?.subscribeAllowance) {
+                        unsubAllowance = window.TipidData.subscribeAllowance(
                             user.uid,
-                            (data) => {
-                                setUtangList(data);
-                                setLoading(false);
-                            },
-                            (err) => {
-                                console.error("Error fetching utang:", err);
-                                setLoading(false);
-                            }
+                            (data) => { setAllowanceList(data); setLoading(false); },
+                            (err) => { console.error("Error fetching allowance data:", err); setLoading(false); }
+                        );
+                    } else if (window.TipidData?.subscribeEntries) {
+                        unsubAllowance = window.TipidData.subscribeEntries(
+                            user.uid,
+                            (data) => { setAllowanceList(data); setLoading(false); },
+                            (err) => { console.error("Error fetching data:", err); setLoading(false); }
                         );
                     } else {
-                        setTimeout(loadUtang, 50);
+                        setTimeout(loadAllowance, 50);
                     }
                 };
-
-                loadUtang();
-
-                return () => {
-                    if (typeof unsubUtang === "function") unsubUtang();
-                };
+                loadAllowance();
+                return () => { if (typeof unsubAllowance === "function") unsubAllowance(); };
             }, [user?.uid]);
 
             if (authChecking || !componentsReady) {
                 return (
                     <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
-                        <div className="glass-panel flex flex-col items-center gap-5 rounded-[32px] px-10 py-10 shadow-ios">
+                        <div className="glass-panel flex flex-col items-center gap-6 rounded-[2rem] px-12 py-12 shadow-ios transition-all">
                             <div className="relative flex items-center justify-center">
-                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/25 halo-pulse" />
-                                <div className="relative" style={{ animation: "logoBreathe 1.7s ease-in-out infinite" }}>
-                                    <window.Logo size={44} />
+                                <span className="absolute inline-flex h-20 w-20 rounded-full bg-peso/20 dark:bg-pesoLight/20 halo-pulse" />
+                                <div className="relative bg-white dark:bg-ink p-3 rounded-2xl shadow-sm" style={{ animation: "logoBreathe 2s ease-in-out infinite" }}>
+                                    <window.Logo size={48} />
                                 </div>
                             </div>
-                            <p className="text-[11px] font-mono font-medium tracking-widest text-ink2 dark:text-paper/60 text-center">
-                                Loading utang
+                            <p className="text-xs font-mono font-semibold tracking-widest text-ink2/70 dark:text-paper/60 text-center uppercase">
+                                Preparing Workspace
                             </p>
                         </div>
                     </div>
                 );
             }
 
-            const AppUtangTracker = window.UtangTracker;
+            const AppAllowanceCalculator = window.AllowanceCalculator;
             const AppNavbar = window.Navbar;
 
             return (
                 <div className="min-h-dvh flex flex-col relative">
                     <AmbientBackground />
-
-                    <AppNavbar user={user} onLogout={handleLogout} activeTab="utang" />
+                    <AppNavbar user={user} onLogout={handleLogout} activeTab="allowance" />
 
                     <main
-                        className="max-w-[1000px] mx-auto w-full px-4 sm:px-8 pt-[6rem] sm:pt-[6.5rem] md:pt-10 pb-36 md:pb-20 flex-1"
+                        className="max-w-[1024px] mx-auto w-full px-5 sm:px-8 pt-[6.5rem] md:pt-12 pb-36 md:pb-24 flex-1 z-10"
                         style={{
-                            paddingLeft: 'max(1rem, calc(var(--sal) + 1rem))',
-                            paddingRight: 'max(1rem, calc(var(--sar) + 1rem))',
+                            paddingLeft: 'max(1.25rem, calc(var(--sal) + 1.25rem))',
+                            paddingRight: 'max(1.25rem, calc(var(--sar) + 1.25rem))',
                             paddingBottom: 'calc(8rem + var(--sab))',
                         }}
                     >
                         <div className="fade-up">
-                            <UtangHeroCard />
+                            <AllowanceHeroCard />
                         </div>
 
-                        <div className="fade-up" style={{ animationDelay: "60ms" }}>
-                            <AppUtangTracker uid={user.uid} utangList={utangList} loading={loading} />
+                        <div className="fade-up" style={{ animationDelay: "100ms" }}>
+                            <AppAllowanceCalculator user={user} entries={allowanceList} loading={loading} />
                         </div>
 
-                        <UtangTipsSection />
+                        <AllowanceTipsSection />
                     </main>
                 </div>
             );
@@ -426,18 +387,20 @@
         function mountWhenComponentsReady(attempt = 0) {
             const missingNames = [];
             if (typeof window.Navbar !== "function") missingNames.push("Navbar");
-            if (typeof window.UtangTracker !== "function") missingNames.push("UtangTracker");
+            if (typeof window.AllowanceCalculator !== "function") missingNames.push("AllowanceCalculator");
 
             if (missingNames.length === 0) {
-                ReactDOM.createRoot(document.getElementById("root")).render(<UtangPage />);
+                ReactDOM.createRoot(document.getElementById("root")).render(<AllowancePage />);
                 return;
             }
+
             if (attempt > 100) {
                 document.getElementById("root").innerHTML =
-                    `<div style="min-h-dvh;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:Inter,sans-serif;text-align:center;color:#15231C;">
-                        <div>
-                            <p style="font-weight:600;margin-bottom:0.5rem;">Failed to load: ${missingNames.join(", ")}</p>
-                            <p style="font-size:0.875rem;opacity:0.7;">Check the file path (Network tab) and ensure component exports match.</p>
+                    `<div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:Inter,sans-serif;text-align:center;">
+                        <div style="background:rgba(255,255,255,0.8);backdrop-filter:blur(10px);padding:2rem;border-radius:1rem;border:1px solid rgba(0,0,0,0.1);max-width:400px;box-shadow:0 10px 25px rgba(0,0,0,0.05);">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#B5483B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 1rem;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            <h2 style="font-weight:600;margin-bottom:0.5rem;color:#15231C;font-size:1.1rem;">Components Missing</h2>
+                            <p style="font-size:0.9rem;color:#33443A;line-height:1.5;">Failed to load: <b>${missingNames.join(", ")}</b>.<br>Please ensure these files exist in your <code>/components/</code> directory.</p>
                         </div>
                     </div>`;
                 return;
