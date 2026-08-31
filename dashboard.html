@@ -11,10 +11,8 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Premium Typography: Fraunces (Editorial), Inter (UI), JetBrains Mono (Operational Data) -->
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Global Dark Mode Script Initializer -->
     <script>
         if (localStorage.getItem('tipid_theme') === 'dark' || (!('tipid_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
@@ -79,23 +77,17 @@
         ::selection { background: #1F6F5440; color: #101C15; }
         html.dark ::selection { background: #52C8A140; color: #F4F7F4; }
         :focus-visible { outline: 2px solid #1F6F54; outline-offset: 4px; border-radius: 8px; }
-
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.85s linear infinite; }
-
         @keyframes fadeUpBento { from { opacity: 0; transform: translateY(30px) scale(0.97); filter: blur(4px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
         .fade-up-bento { animation: fadeUpBento 0.9s var(--ease-out-expo) both; }
-
         @keyframes breatheGlow { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.15); filter: brightness(1.2); } }
         .breathe-glow { animation: breatheGlow 5s ease-in-out infinite; }
-
         @keyframes dataSweep { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
         .data-sweep { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); background-size: 200% 100%; animation: dataSweep 3s infinite linear; }
-
         @keyframes mascotHover { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-8px) rotate(1deg); } }
         .tipid-mascot-img { animation: mascotHover 5s ease-in-out infinite; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.4)); }
 
-        /* 🌟 TIPID BUDDY MASCOT ALERT ANIMATIONS 🌟 */
         @keyframes mascotCelebrate {
             0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
             20% { transform: translateY(-14px) scale(1.1) rotate(-6deg); }
@@ -104,7 +96,6 @@
             80% { transform: translateY(0) scale(1) rotate(0deg); }
         }
         .mascot-anim-celebrate { animation: mascotCelebrate 1.2s var(--ease-spring) infinite; }
-
         @keyframes mascotWorry {
             0%, 100% { transform: translateX(0) rotate(0deg) scale(1); }
             20% { transform: translateX(-8px) rotate(-4deg) scale(1.05); }
@@ -113,13 +104,11 @@
             80% { transform: translateX(6px) rotate(2deg); }
         }
         .mascot-anim-worry { animation: mascotWorry 0.8s ease-in-out infinite; }
-
         @keyframes mascotCaution {
             0%, 100% { transform: scale(1) rotate(0deg); }
             50% { transform: scale(1.1) rotate(-3deg); filter: drop-shadow(0 0 12px rgba(214, 64, 69, 0.4)); }
         }
         .mascot-anim-caution { animation: mascotCaution 1.5s ease-in-out infinite; }
-
         @keyframes mascotFloat {
             0%, 100% { transform: translateY(0) rotate(0deg); }
             50% { transform: translateY(-10px) rotate(3deg); filter: drop-shadow(0 15px 20px rgba(31, 111, 84, 0.3)); }
@@ -132,7 +121,6 @@
         .tipid-swal textarea { font-family: 'Inter', sans-serif !important; border-radius: 14px; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.1); }
         html.dark .tipid-swal textarea { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; }
 
-        /* Bento & Glassmorphism System */
         .bento-card { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(32px) saturate(200%); -webkit-backdrop-filter: blur(32px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.9); box-shadow: var(--tw-shadow-bento); transition: all 0.4s var(--ease-out-expo); }
         .bento-card:hover { transform: translateY(-4px); box-shadow: var(--tw-shadow-bentoHover); }
         html.dark .bento-card { background: rgba(20, 30, 24, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: var(--tw-shadow-bentoDark); }
@@ -331,9 +319,12 @@
         };
     </script>
 
-    <script type="text/babel" src="./components/navbar.js"></script>
-    <script type="text/babel" src="./components/DashboardSummary.js"></script>
-    <script type="text/babel" src="./components/ExpenseChart.js"></script>
+    <script type="text/babel" src="./components/navbar.js?v=2"></script>
+    <script type="text/babel" src="./components/DashboardSummary.js?v=2"></script>
+    <script type="text/babel" src="./components/ExpenseChart.js?v=2"></script>
+    <script type="text/babel" src="./components/ExpenseItem.js?v=2"></script>
+    <script type="text/babel" src="./components/ExpenseList.js?v=2"></script>
+    <script type="text/babel" src="./components/OnboardingModal.js?v=2"></script>
 
     <script type="text/babel">
         function ExpenseFormStyles() {
@@ -387,7 +378,6 @@
             );
         }
 
-        // 🌟 TIPID BUDDY INSIGHTS (BEHAVIORAL SERMON) 🌟
         function TipidBuddyInsights({ entries, monthStats, budget, goalName }) {
             const { useState, useEffect } = React;
             const [insight, setInsight] = useState(null);
@@ -583,7 +573,6 @@
                     });
                 }
 
-                // 🛑 Mascot Caution on Ipon Wallet
                 const savedGoalWallet = localStorage.getItem('tipid_goal_wallet');
                 if (!isIncome && method === savedGoalWallet) {
                     triggerShake();
@@ -615,7 +604,6 @@
                     setJustAdded(true);
                     setTimeout(() => setJustAdded(false), 900);
 
-                    // 🥳 Mascot Celebrate Modal
                     window.showTipidBuddyModal({
                         title: isIncome ? 'Kita Naitala! 🎉' : 'Gastos Naitala! 💸',
                         message: `Matagumpay na naidagdag ang <b>₱${window.peso(parsedAmount)}</b> bilang ${isIncome ? 'kita' : 'gastos'}.`,
@@ -773,9 +761,9 @@
         }
     </script>
 
-    <script type="text/babel" src="./components/ExpenseItem.js"></script>
-    <script type="text/babel" src="./components/ExpenseList.js"></script>
-    <script type="text/babel" src="./components/OnboardingModal.js"></script>
+    <script type="text/babel" src="./components/ExpenseItem.js?v=2"></script>
+    <script type="text/babel" src="./components/ExpenseList.js?v=2"></script>
+    <script type="text/babel" src="./components/OnboardingModal.js?v=2"></script>
 
     <script type="text/babel">
         function AmbientBackground() {
@@ -1054,7 +1042,7 @@
                     <div className="hero-command rounded-[2.5rem] md:col-span-8 p-7 sm:p-10 flex flex-col justify-between min-h-[260px] sm:min-h-[280px]">
                         <div className="hero-mesh" />
 
-                        <div className="absolute right-0 bottom-0 w-[140px] sm:w-[180px] h-full pointer-events-none z-0 overflow-visible opacity-90">
+                        <div className="absolute right-0 bottom-0 w-[160px] sm:w-[200px] h-full pointer-events-none z-0 overflow-visible opacity-90">
                             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-32 h-32 bg-white/20 blur-[40px] rounded-full"></div>
                             <img src="/assets/tipid_mascot.png" alt="Tipid Buddy" className="absolute bottom-[-15px] sm:bottom-[-20px] right-[-10px] sm:right-4 w-full object-contain tipid-mascot-img" draggable="false" />
                         </div>
