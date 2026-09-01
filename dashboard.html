@@ -151,6 +151,40 @@
         .is-dragging { cursor: grabbing !important; user-select: none; }
         .scroll-grab { cursor: grab; }
         @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } .tipid-mascot-img, .mascot-anim-celebrate, .mascot-anim-worry, .mascot-anim-caution, .mascot-anim-float { animation: none !important; } }
+
+        /* ---- Mascot Intro Sequence (sleeping -> wakeup -> greetings -> working) ---- */
+        @keyframes mascotBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+        .mascot-anim-sleep { animation: mascotBreathe 2.6s ease-in-out infinite; }
+
+        @keyframes zzzFloat {
+            0% { opacity: 0; transform: translateY(0) translateX(0) scale(0.5) rotate(-8deg); }
+            15% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-54px) translateX(10px) scale(1.15) rotate(6deg); }
+        }
+        .zzz-float { animation: zzzFloat 2.4s ease-in-out infinite; }
+
+        @keyframes mascotStretch {
+            0% { transform: scale(0.88) rotate(-5deg); }
+            35% { transform: scale(1.1) rotate(4deg); }
+            60% { transform: scale(0.96) rotate(-2deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+        .mascot-anim-wake { animation: mascotStretch 0.85s var(--ease-spring) both; }
+
+        @keyframes introSparkle {
+            0% { opacity: 0; transform: translateY(6px) scale(0.4); }
+            40% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-30px) scale(1); }
+        }
+        .intro-sparkle { animation: introSparkle 1.8s ease-in-out infinite; }
+
+        @keyframes introFadeOut { to { opacity: 0; transform: scale(1.02); filter: blur(6px); } }
+        .intro-fade-out { animation: introFadeOut 0.55s var(--ease-out-expo) forwards; }
+
+        @keyframes twinkle { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.65; } }
+        .intro-star { animation: twinkle 3s ease-in-out infinite; }
+
+        .intro-stage-bg { transition: background 1.3s var(--ease-out-expo); }
     </style>
 </head>
 <body class="bg-paper dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
@@ -1429,6 +1463,159 @@
             );
         }
 
+        /* --- MASCOT INTRO SEQUENCE ---
+           Plays for logged-in users right after auth resolves, before the
+           main dashboard content is shown. Stages: sleeping -> waking ->
+           greeting -> working, each with its own mascot image, background,
+           and animation, then fades out into the real dashboard. */
+        function MascotIntroSequence({ firstName, onComplete }) {
+            const { useState, useEffect, useRef } = React;
+            const [stage, setStage] = useState("sleeping");
+            const [progress, setProgress] = useState(0);
+            const [exiting, setExiting] = useState(false);
+            const timers = useRef([]);
+            const progressInterval = useRef(null);
+
+            useEffect(() => {
+                const schedule = (fn, delay) => { timers.current.push(setTimeout(fn, delay)); };
+
+                schedule(() => setStage("waking"), 1500);
+                schedule(() => setStage("greeting"), 2500);
+                schedule(() => {
+                    setStage("working");
+                    const start = Date.now();
+                    const duration = 1300;
+                    progressInterval.current = setInterval(() => {
+                        const pct = Math.min(100, Math.round(((Date.now() - start) / duration) * 100));
+                        setProgress(pct);
+                        if (pct >= 100 && progressInterval.current) {
+                            clearInterval(progressInterval.current);
+                            progressInterval.current = null;
+                        }
+                    }, 40);
+                }, 4100);
+                schedule(() => setExiting(true), 5600);
+                schedule(() => { if (onComplete) onComplete(); }, 6150);
+
+                return () => {
+                    timers.current.forEach(clearTimeout);
+                    if (progressInterval.current) clearInterval(progressInterval.current);
+                };
+            }, [onComplete]);
+
+            const STAGE_META = {
+                sleeping: {
+                    img: "/assets/sleeping_mascot.png",
+                    bg: "radial-gradient(circle at 30% 20%, #1A2B21 0%, #0B130E 60%), linear-gradient(180deg, #0B130E, #060A08)",
+                    animClass: "mascot-anim-sleep",
+                    caption: null,
+                    sub: "Tulog pa si Tipid Buddy...",
+                },
+                waking: {
+                    img: "/assets/wakeup_mascot.png",
+                    bg: "radial-gradient(circle at 30% 20%, #1F6F54 0%, #123D2E 55%, #0B1F17 100%)",
+                    animClass: "mascot-anim-wake",
+                    caption: "Gising na!",
+                    sub: "Sandali lang, gigising muna si Tipid Buddy...",
+                },
+                greeting: {
+                    img: "/assets/greetings_mascot.png",
+                    bg: "radial-gradient(circle at 30% 15%, #2F8E6C 0%, #164C38 50%, #0E2E22 100%)",
+                    animClass: "mascot-anim-celebrate",
+                    caption: `Kumusta, ${firstName}!`,
+                    sub: "Handa ka na bang mag-ipon ngayon?",
+                },
+                working: {
+                    img: "/assets/working_mascot.png",
+                    bg: "radial-gradient(circle at 30% 15%, #1F6F54 0%, #123D2E 60%, #0B130E 100%)",
+                    animClass: "mascot-anim-float",
+                    caption: "Inaayos na...",
+                    sub: "Ini-lo-load ang iyong Tipid Dashboard",
+                },
+            };
+
+            const meta = STAGE_META[stage];
+
+            return (
+                <div
+                    className={`fixed inset-0 z-[200] flex items-center justify-center overflow-hidden intro-stage-bg ${exiting ? "intro-fade-out" : ""}`}
+                    style={{ background: meta.bg }}
+                >
+                    {/* ambient stars — visible mostly during sleeping/waking */}
+                    <div className={`absolute inset-0 pointer-events-none transition-opacity duration-700 ${stage === "sleeping" || stage === "waking" ? "opacity-100" : "opacity-0"}`}>
+                        {Array.from({ length: 18 }).map((_, i) => (
+                            <span
+                                key={i}
+                                className="intro-star absolute rounded-full bg-white"
+                                style={{
+                                    width: `${2 + (i % 3)}px`, height: `${2 + (i % 3)}px`,
+                                    top: `${(i * 37) % 90}%`, left: `${(i * 53) % 95}%`,
+                                    animationDelay: `${(i % 6) * 0.4}s`,
+                                }}
+                            />
+                        ))}
+                    </div>
+
+                    {/* sparkle particles for greeting/working */}
+                    {(stage === "greeting" || stage === "working") && (
+                        <div className="absolute inset-0 pointer-events-none">
+                            {Array.from({ length: 10 }).map((_, i) => (
+                                <span
+                                    key={i}
+                                    className="intro-sparkle absolute text-gold text-lg"
+                                    style={{ top: `${20 + (i * 13) % 60}%`, left: `${10 + (i * 27) % 80}%`, animationDelay: `${i * 0.22}s` }}
+                                >✦</span>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="relative z-10 flex flex-col items-center px-6 text-center">
+                        <div className="relative w-40 h-40 sm:w-48 sm:h-48 mb-6 flex items-center justify-center">
+                            <div className="absolute inset-0 rounded-full bg-white/10 blur-2xl" />
+                            {stage === "sleeping" && (
+                                <>
+                                    <span className="zzz-float absolute -top-2 right-6 text-white/80 font-display text-2xl font-bold" style={{ animationDelay: "0s" }}>z</span>
+                                    <span className="zzz-float absolute top-4 right-0 text-white/70 font-display text-3xl font-bold" style={{ animationDelay: "0.5s" }}>Z</span>
+                                    <span className="zzz-float absolute top-10 right-8 text-white/60 font-display text-xl font-bold" style={{ animationDelay: "1s" }}>z</span>
+                                </>
+                            )}
+                            <img
+                                key={stage}
+                                src={meta.img}
+                                alt="Tipid Buddy"
+                                className={`relative w-full h-full object-contain drop-shadow-2xl ${meta.animClass}`}
+                                draggable="false"
+                                onError={(e) => { e.currentTarget.style.display = "none"; }}
+                            />
+                        </div>
+
+                        {meta.caption && (
+                            <h2 key={`cap-${stage}`} className="font-display text-2xl sm:text-3xl font-bold text-white tracking-tight mb-2 drop-shadow-md">
+                                {meta.caption}
+                            </h2>
+                        )}
+                        <p key={`sub-${stage}`} className="text-[13px] sm:text-[14px] font-medium text-white/70 max-w-xs">
+                            {meta.sub}
+                        </p>
+
+                        {stage === "working" && (
+                            <div className="w-56 sm:w-64 h-2 bg-white/15 rounded-full overflow-hidden mt-6 shadow-inner">
+                                <div className="h-full bg-gradient-to-r from-goldLight to-gold rounded-full transition-all duration-150" style={{ width: `${progress}%` }} />
+                            </div>
+                        )}
+
+                        {(stage === "sleeping" || stage === "waking") && (
+                            <div className="mt-6 flex gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" style={{ animationDelay: "0s" }} />
+                                <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" style={{ animationDelay: "0.2s" }} />
+                                <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" style={{ animationDelay: "0.4s" }} />
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
         /* --- MAIN DASHBOARD APP --- */
         function Dashboard() {
             const authReady = window.useAuthReady();
@@ -1440,6 +1627,14 @@
             const [loadingEntries, setLoadingEntries] = React.useState(true);
             const [dataError, setDataError] = React.useState("");
             const [showOnboarding, setShowOnboarding] = React.useState(false);
+
+            // Whether the mascot intro sequence has already played this tab
+            // session. Gated by sessionStorage (not localStorage) so it
+            // greets the user again on a fresh session/login, but doesn't
+            // replay on every in-app refresh within the same visit.
+            const [introDone, setIntroDone] = React.useState(() => {
+                try { return sessionStorage.getItem("tipid_intro_shown") === "1"; } catch (e) { return false; }
+            });
 
             const monthStats = useMonthlyStats(entries);
 
@@ -1609,6 +1804,25 @@
 
             const logout = async () => { await window.TipidAuth.logOut(); window.location.href = "login.html"; };
             const firstName = user.displayName ? user.displayName.split(" ")[0] : user.email.split("@")[0];
+
+            // Mascot intro sequence plays once auth has resolved to a real
+            // user, before any dashboard content mounts. Every other effect
+            // above (auth redirect, onboarding check, data subscriptions)
+            // keeps running normally in the background while this shows —
+            // so by the time it fades out, entries/wallets are usually
+            // already loaded and the onboarding modal (if needed) is ready
+            // to appear right after.
+            if (!introDone) {
+                return (
+                    <MascotIntroSequence
+                        firstName={firstName}
+                        onComplete={() => {
+                            try { sessionStorage.setItem("tipid_intro_shown", "1"); } catch (e) {}
+                            setIntroDone(true);
+                        }}
+                    />
+                );
+            }
 
             const totalBase = Object.values(baseBalances).reduce((s, val) => s + (parseFloat(val) || 0), 0);
             const totalIncome = entries.filter(e => e.type === "income").reduce((s, e) => s + (e.amount || 0), 0);

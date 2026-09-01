@@ -24,6 +24,34 @@ function resolveStartDate(item) {
     return isNaN(fromId) ? new Date() : new Date(fromId);
 }
 
+// `startDate` represents the DUE DATE of payment #1 (not the purchase date,
+// not "one month before the first payment"). So:
+//   - due date of payment #n           = addMonths(startDate, n - 1)
+//   - next unpaid payment's due date   = addMonths(startDate, paidMonths)
+//   - due date of the final payment    = addMonths(startDate, terms - 1)
+// (Previously this code added +1 / +terms, which pushed every date one
+// month too late — that's the bug that showed "Feb 8" as next due when the
+// first payment was actually due "Jan 8", and "April 2027" instead of the
+// correct "March 2027" completion month.)
+
+// How many monthly payments are already due as of `today`, counting the
+// very first due date (startDate) itself as payment #1. Used to suggest a
+// starting paidMonths value when a hulugan is added with a startDate that's
+// already in the past (e.g. logging a phone you started paying months ago).
+function monthsDueSoFar(startDateStr, today, terms) {
+    const start = new Date(startDateStr);
+    start.setHours(0, 0, 0, 0);
+    const t = new Date(today);
+    t.setHours(0, 0, 0, 0);
+    if (isNaN(start.getTime()) || t < start) return 0;
+
+    let months = (t.getFullYear() - start.getFullYear()) * 12 + (t.getMonth() - start.getMonth());
+    if (t.getDate() < start.getDate()) months -= 1;
+
+    const dueCount = months + 1; // startDate itself is payment #1's due date
+    return Math.max(0, Math.min(dueCount, terms));
+}
+
 // Same bank/e-wallet catalog used on the main dashboard (dashboard.html's
 // window.SUPPORTED_WALLETS), so a hulugan can be tagged with the actual
 // card/wallet the user pays it from. Duplicated here — rather than relying
@@ -147,7 +175,16 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
 
     const platforms = ["SPayLater", "LazPayLater", "Home Credit", "Billease", "Motorcycle", "Iba pa"];
 
-    const handleAdd = (e) => {
+    // Live preview numbers for the price section, so mistakes (like typing
+    // the monthly amount into "Kabuuang Babayaran" instead of the total)
+    // are obvious before you even hit save.
+    const amtNum = parseFloat(totalAmount);
+    const termsNum = parseInt(terms);
+    const srpNum = srp.trim() === "" ? null : parseFloat(srp);
+    const previewMonthly = (!isNaN(amtNum) && !isNaN(termsNum) && termsNum > 0) ? amtNum / termsNum : null;
+    const cheaperThanCash = (srpNum !== null && !isNaN(srpNum) && !isNaN(amtNum) && amtNum < srpNum);
+
+    const handleAdd = async (e) => {
         e.preventDefault();
         const amt = parseFloat(totalAmount);
         const t = parseInt(terms);
@@ -161,6 +198,37 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
             return Swal.fire({ icon: 'warning', title: 'Mali ang Presyo', text: 'Paki-check ang cash price ng item.', confirmButtonColor: '#1F6F54', customClass: { popup: 'tipid-swal' }});
         }
 
+        // If the first payment's due date has already passed, ask how many
+        // months have actually been paid so far instead of always starting
+        // the tracker at 0/terms — that's what was making "Susunod na
+        // Bayaran" show the wrong month for hulugan added after the fact.
+        let paidMonths = 0;
+        const suggested = monthsDueSoFar(startDate, new Date(), t);
+
+        if (suggested > 0) {
+            const { value: confirmedPaid, isConfirmed } = await Swal.fire({
+                icon: 'question',
+                title: 'Ilang buwan na ba ang nabayaran mo?',
+                html: `Ang unang bayad ay noong <b>${formatDatePH(new Date(startDate))}</b>. Base dito, malamang <b>${suggested}</b> buwan na ang dapat mong nabayaran hanggang ngayon. I-adjust kung iba.`,
+                input: 'number',
+                inputValue: suggested,
+                inputAttributes: { min: 0, max: String(t), step: 1 },
+                showCancelButton: true,
+                confirmButtonText: 'Tama, ganito',
+                cancelButtonText: 'Wala pa akong bayad',
+                confirmButtonColor: '#1F6F54',
+                cancelButtonColor: '#33443A',
+                customClass: { popup: 'tipid-swal' },
+                inputValidator: (value) => {
+                    if (value === '' || value === null || value === undefined) return 'Maglagay ng number';
+                    const n = Number(value);
+                    if (isNaN(n) || n < 0 || n > t) return `Dapat nasa pagitan ng 0 at ${t}`;
+                }
+            });
+            if (isConfirmed) paidMonths = Number(confirmedPaid);
+            // If cancelled ("Wala pa akong bayad"), keep paidMonths at 0.
+        }
+
         const newItem = {
             id: Date.now().toString(),
             name: name.trim(),
@@ -169,9 +237,9 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
             srp: srpVal,            // original cash price, optional — used to surface markup/interest
             totalAmount: amt,       // total amount actually being paid (post-markup)
             terms: t,
-            paidMonths: 0,
+            paidMonths,
             monthly: amt / t,
-            startDate,              // date of first payment / purchase date — drives due date math
+            startDate,              // due date of the FIRST payment — drives all due-date math
         };
 
         setItems([newItem, ...items]);
@@ -262,10 +330,25 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
                             </div>
                             <div className="flex-1 flex items-center gap-2.5 bg-black/5 dark:bg-white/5 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-3.5 focus-within:ring-2 focus-within:ring-peso/40 transition-all">
                                 <span className="text-ink2/40 dark:text-paper/40 font-mono text-[15px] shrink-0">₱</span>
-                                <input type="number" step="0.01" value={totalAmount} onChange={e => setTotalAmount(e.target.value)} placeholder="Kabuuang Babayaran" className="w-full bg-transparent py-3.5 text-[14px] font-mono focus:outline-none text-ink dark:text-paper" />
+                                <input type="number" step="0.01" value={totalAmount} onChange={e => setTotalAmount(e.target.value)} placeholder="Kabuuang Babayaran (lahat ng buwan, hindi per-buwan)" className="w-full bg-transparent py-3.5 text-[14px] font-mono focus:outline-none text-ink dark:text-paper" />
                             </div>
                         </div>
                         <p className="text-[10.5px] text-ink2/45 dark:text-paper/40 pl-1">Ilagay ang Presyo Cash kung gusto mong makita kung magkano ang dagdag/interest ng hulugan.</p>
+                        <p className="text-[10.5px] text-ink2/45 dark:text-paper/40 pl-1">
+                            <span className="font-semibold text-ink2/60 dark:text-paper/55">Paano kwentahin ang Kabuuang Babayaran:</span> buwanang bayad × ilang buwan. Hal: kung ₱1,500 kada buwan sa loob ng 12 buwan, ilagay dito ang ₱18,000 (hindi yung ₱1,500).
+                        </p>
+
+                        {/* Live preview — catches the "nailagay ko yung monthly sa total" mistake immediately */}
+                        {previewMonthly !== null && (
+                            <p className="text-[11px] font-mono font-medium text-peso dark:text-pesoLight pl-1">
+                                = ₱{previewMonthly.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / buwan sa loob ng {termsNum} buwan
+                            </p>
+                        )}
+                        {cheaperThanCash && (
+                            <p className="text-[11px] font-medium text-[#B5483B] dark:text-[#F38C80] pl-1">
+                                ⚠️ Mas mababa ang Kabuuang Babayaran kaysa sa Presyo Cash — hindi karaniwan (madalas mas mataas ito dahil sa interest). Baka na-type mo yung buwanang bayad sa halip na total — paki-check.
+                            </p>
+                        )}
                     </div>
 
                     {/* Terms + start date */}
@@ -281,7 +364,7 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
                                 <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full bg-transparent py-3.5 text-[14px] font-mono focus:outline-none text-ink dark:text-paper" />
                             </div>
                         </div>
-                        <p className="text-[10.5px] text-ink2/45 dark:text-paper/40 pl-1">Petsa ng unang bayad — dito babatayan ang susunod na due date at kung kailan matatapos.</p>
+                        <p className="text-[10.5px] text-ink2/45 dark:text-paper/40 pl-1">Petsa ng unang bayad (hindi petsa ng pagkabili) — dito babatayan ang susunod na due date at kung kailan matatapos. Kung nakaraan na ang petsang ito, itatanong namin kung ilang buwan ka na nakabayad bago i-save.</p>
                     </div>
 
                     {/* Payment method — pulled from the user's actual bank cards / e-wallets */}
@@ -323,8 +406,12 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
                         const isDone = item.paidMonths >= item.terms;
 
                         const startD = resolveStartDate(item);
-                        const completionDate = addMonths(startD, item.terms);
-                        const nextDueDate = isDone ? null : addMonths(startD, item.paidMonths + 1);
+                        // startD is the due date of payment #1, so the final
+                        // payment (#terms) is due terms-1 months after it,
+                        // and the next unpaid payment (#paidMonths+1) is due
+                        // paidMonths months after it.
+                        const completionDate = addMonths(startD, item.terms - 1);
+                        const nextDueDate = isDone ? null : addMonths(startD, item.paidMonths);
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
                         const isOverdue = !isDone && nextDueDate && nextDueDate < today;
@@ -334,6 +421,7 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
                         // correct, even though new entries no longer collect one.
                         const legacyDownpayment = item.downpayment || 0;
                         const markup = (item.srp !== null && item.srp !== undefined) ? item.totalAmount - item.srp : null;
+                        const isDiscount = markup !== null && markup < 0;
                         const totalPaidSoFar = legacyDownpayment + (item.paidMonths * item.monthly);
                         const remaining = item.totalAmount - totalPaidSoFar;
                         const method = walletMeta(item.paymentMethod || "Cash");
@@ -361,8 +449,9 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
                                     </button>
                                 </div>
 
-                                {/* Price breakdown: cash price + markup/interest. Downpayment shown
-                                    only for legacy items that still have one on record. */}
+                                {/* Price breakdown: cash price + markup/interest (or discount, if the
+                                    installment total actually came out lower than cash price).
+                                    Downpayment shown only for legacy items that still have one on record. */}
                                 {(item.srp || legacyDownpayment > 0) && (
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3 text-[11px] font-mono">
                                         {item.srp ? (
@@ -373,9 +462,11 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
                                         ) : null}
                                         {markup !== null ? (
                                             <div className="bg-black/[0.03] dark:bg-white/[0.04] rounded-lg px-2.5 py-2">
-                                                <p className="text-ink2/50 dark:text-paper/45 text-[9.5px] uppercase tracking-wider mb-0.5">Dagdag (Interest)</p>
-                                                <p className={`font-semibold ${markup > 0 ? 'text-[#B5483B] dark:text-[#F38C80]' : 'text-ink dark:text-paper'}`}>
-                                                    {markup > 0 ? '+' : ''}₱{window.peso(markup)}
+                                                <p className="text-ink2/50 dark:text-paper/45 text-[9.5px] uppercase tracking-wider mb-0.5">
+                                                    {isDiscount ? "Diskwento" : "Dagdag (Interest)"}
+                                                </p>
+                                                <p className={`font-semibold ${isDiscount ? 'text-[#1F6F54] dark:text-pesoLight' : (markup > 0 ? 'text-[#B5483B] dark:text-[#F38C80]' : 'text-ink dark:text-paper')}`}>
+                                                    {isDiscount ? '-' : (markup > 0 ? '+' : '')}₱{window.peso(Math.abs(markup))}
                                                 </p>
                                             </div>
                                         ) : null}
