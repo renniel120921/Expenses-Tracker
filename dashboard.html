@@ -288,13 +288,35 @@
             const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); return d;
         }
 
+        // Waits both for window.TipidAuth to exist AND for its persistence
+        // setup to finish (window.TipidAuth.ready). Trusting TipidAuth's
+        // mere existence isn't enough: setPersistence() to IndexedDB is
+        // still running in the background at that point, and subscribing to
+        // onAuthStateChanged before it resolves can report "no user" even
+        // when a valid session is cached locally — which is exactly what
+        // was bouncing offline users (who DO have a cached session) back to
+        // login.html. Waiting for .ready closes that race.
         window.useAuthReady = function useAuthReady() {
-            const [ready, setReady] = React.useState(!!window.TipidAuth);
+            const [ready, setReady] = React.useState(false);
             React.useEffect(() => {
-                if (window.TipidAuth) { setReady(true); return; }
-                const h = () => setReady(true);
-                window.addEventListener("tipid-auth-ready", h, { once: true });
-                return () => window.removeEventListener("tipid-auth-ready", h);
+                let cancelled = false;
+
+                const waitForPersistence = () => {
+                    Promise.resolve(window.TipidAuth.ready).finally(() => {
+                        if (!cancelled) setReady(true);
+                    });
+                };
+
+                if (window.TipidAuth) {
+                    waitForPersistence();
+                } else {
+                    window.addEventListener("tipid-auth-ready", waitForPersistence, { once: true });
+                }
+
+                return () => {
+                    cancelled = true;
+                    window.removeEventListener("tipid-auth-ready", waitForPersistence);
+                };
             }, []);
             return ready;
         }
