@@ -1479,12 +1479,12 @@
             useEffect(() => {
                 const schedule = (fn, delay) => { timers.current.push(setTimeout(fn, delay)); };
 
-                schedule(() => setStage("waking"), 1500);
-                schedule(() => setStage("greeting"), 2500);
+                schedule(() => setStage("waking"), 3000);
+                schedule(() => setStage("greeting"), 6000);
                 schedule(() => {
                     setStage("working");
                     const start = Date.now();
-                    const duration = 1300;
+                    const duration = 3000; // matched to the 3s "working" stage window
                     progressInterval.current = setInterval(() => {
                         const pct = Math.min(100, Math.round(((Date.now() - start) / duration) * 100));
                         setProgress(pct);
@@ -1493,9 +1493,9 @@
                             progressInterval.current = null;
                         }
                     }, 40);
-                }, 4100);
-                schedule(() => setExiting(true), 5600);
-                schedule(() => { if (onComplete) onComplete(); }, 6150);
+                }, 9000);
+                schedule(() => setExiting(true), 12000);
+                schedule(() => { if (onComplete) onComplete(); }, 12550);
 
                 return () => {
                     timers.current.forEach(clearTimeout);
