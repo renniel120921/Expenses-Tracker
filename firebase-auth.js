@@ -183,6 +183,37 @@ function normalizeEmail(email) {
   return (email || "").trim().toLowerCase();
 }
 
+// ---------------------------------------------------------------------------
+// Offline detection
+// ---------------------------------------------------------------------------
+// signUp/logIn/loginWithGoogle/resetPassword all need a real round-trip to
+// Firebase's servers — no amount of client code can make those work with
+// zero connectivity. What THIS does is fail fast with a clear Tagalog
+// message the instant we know we're offline, instead of letting the user
+// stare at a spinner for Firebase's own ~20-30s network timeout, and it
+// avoids burning a rate-limit attempt on a request that never left the
+// browser.
+//
+// IMPORTANT: this does NOT affect already-logged-in users. Firebase's
+// browserLocalPersistence (set up above) keeps the session cached locally,
+// so onAuthStateChanged/onChange still fires with the cached user — and the
+// dashboard stays fully usable — even with zero internet. Only background
+// token refresh is skipped until connectivity returns, silently.
+function isOnline() {
+  return typeof navigator === "undefined" ? true : navigator.onLine !== false;
+}
+
+class OfflineError extends Error {
+  constructor() {
+    super("offline");
+    this.code = "app/offline";
+  }
+}
+
+function assertOnline() {
+  if (!isOnline()) throw new OfflineError();
+}
+
 function formatWait(seconds) {
   if (seconds < 60) return `${seconds} segundo`;
   return `${Math.ceil(seconds / 60)} minuto`;
@@ -214,6 +245,9 @@ function friendlyError(errOrCode) {
   const code = typeof errOrCode === "string" ? errOrCode : errOrCode && errOrCode.code;
   const secondsLeft = errOrCode && typeof errOrCode === "object" ? errOrCode.secondsLeft : undefined;
 
+  if (code === "app/offline") {
+    return "Wala kang internet connection. Kailangan ng connection para dito — subukan ulit kapag may signal o WiFi ka na.";
+  }
   if (code === "app/rate-limited") {
     return secondsLeft
       ? `Sobrang dami ng pagtatangka. Subukan ulit pagkalipas ng ${formatWait(secondsLeft)}.`
@@ -243,6 +277,7 @@ function friendlyError(errOrCode) {
 
 window.TipidAuth = {
   async signUp(name, email, password) {
+    assertOnline();
     const normEmail = normalizeEmail(email);
     checkRateLimit("signUp", normEmail);
     if (isCommonPassword(password)) {
@@ -265,6 +300,7 @@ window.TipidAuth = {
   },
 
   async logIn(email, password) {
+    assertOnline();
     const normEmail = normalizeEmail(email);
     checkRateLimit("login", normEmail);
     const claim = claimInFlight("login", normEmail);
@@ -281,6 +317,7 @@ window.TipidAuth = {
   },
 
   async loginWithGoogle() {
+    assertOnline();
     const claim = claimInFlight("google", "popup");
     try {
       const cred = await signInWithPopup(auth, googleProvider);
@@ -291,6 +328,7 @@ window.TipidAuth = {
   },
 
   async resetPassword(email) {
+    assertOnline();
     const normEmail = normalizeEmail(email);
     if (!EMAIL_RE.test(normEmail)) {
       const err = new Error("invalid-email");
@@ -325,6 +363,8 @@ window.TipidAuth = {
   },
 
   async logOut() {
+    // Deliberately NOT gated by assertOnline() — logging out just clears the
+    // locally-cached session, so it must keep working with zero connectivity.
     await signOut(auth);
   },
 
@@ -339,6 +379,7 @@ window.TipidAuth = {
   },
 
   friendlyError,
+  isOnline,
 
   // Resolves once persistence has been (attempted to be) set. Pages that
   // check login state the moment they load — e.g. "if no user, redirect to
@@ -346,6 +387,14 @@ window.TipidAuth = {
   // race ahead of Firebase restoring the saved session.
   ready: persistenceReady,
 };
+
+// ---------------------------------------------------------------------------
+// Network status broadcast
+// ---------------------------------------------------------------------------
+// Lets dashboard.html/bills.html/etc. react to connectivity changes (e.g.
+// show/hide an "Offline mode" banner) without polling.
+window.addEventListener("online", () => window.dispatchEvent(new CustomEvent("tipid-network-change", { detail: { online: true } })));
+window.addEventListener("offline", () => window.dispatchEvent(new CustomEvent("tipid-network-change", { detail: { online: false } })));
 
 // ---------------------------------------------------------------------------
 // One-time restore diagnostic
