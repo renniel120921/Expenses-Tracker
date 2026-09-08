@@ -66,6 +66,12 @@ test("CSP policy in vercel.json is secure and permits required runtime origins",
   assert.match(csp, /worker-src 'self' blob:/);
   assert.doesNotMatch(csp, /worker-src[^;]*cdn\.jsdelivr\.net/);
 
+  // Script-src origins
+  const scriptMatch = csp.match(/script-src ([^;]+);/);
+  assert.ok(scriptMatch, "script-src directive exists");
+  const scriptSources = scriptMatch[1].split(/\s+/);
+  assert.ok(scriptSources.includes("https://www.googletagmanager.com"), "script-src includes https://www.googletagmanager.com");
+
   // Connect-src origins
   const connectMatch = csp.match(/connect-src ([^;]+);/);
   assert.ok(connectMatch, "connect-src directive exists");
@@ -75,32 +81,45 @@ test("CSP policy in vercel.json is secure and permits required runtime origins",
   assert.ok(!connectSources.includes("*"), "connect-src does not contain *");
   assert.ok(!connectSources.includes("https:"), "connect-src does not contain broad https:");
   assert.ok(!connectSources.includes("data:"), "connect-src does not contain data:");
+  assert.ok(!connectSources.includes("wss://tipid-tracker-app.vercel.app"), "connect-src does not whitelist extension WebSocket");
 
-  // Required CDN origins
+  // Required CDN and telemetry origins
   for (const origin of [
     "https://cdn.tailwindcss.com",
     "https://unpkg.com",
     "https://cdn.jsdelivr.net",
     "https://www.gstatic.com",
+    "https://www.google-analytics.com",
+    "https://analytics.google.com",
+    "https://region1.google-analytics.com",
   ]) {
     assert.ok(connectSources.includes(origin), `connect-src includes ${origin}`);
   }
+
+  // Img-src origins
+  const imgMatch = csp.match(/img-src ([^;]+);/);
+  assert.ok(imgMatch, "img-src directive exists");
+  const imgSources = imgMatch[1].split(/\s+/);
+  assert.ok(imgSources.includes("https://www.google-analytics.com"), "img-src includes https://www.google-analytics.com");
+  assert.ok(imgSources.includes("https://www.googletagmanager.com"), "img-src includes https://www.googletagmanager.com");
 });
 
 test("Service Worker implements safe precache, response guarantees, and private API exclusions", () => {
   const sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
 
   // Cache version
-  assert.match(sw, /CACHE_VERSION\s*=\s*'v19'/);
+  assert.match(sw, /CACHE_VERSION\s*=\s*'v20'/);
 
   // Split shell assets
   assert.match(sw, /const CORE_SHELL\s*=\s*\[/);
   assert.match(sw, /const OPTIONAL_SHELL\s*=\s*\[/);
 
-  // Private API exclusions
+  // Private API and telemetry exclusions
   assert.match(sw, /firestore\.googleapis\.com/);
   assert.match(sw, /identitytoolkit\.googleapis\.com/);
   assert.match(sw, /securetoken\.googleapis\.com/);
+  assert.match(sw, /www\.googletagmanager\.com/);
+  assert.match(sw, /www\.google-analytics\.com/);
   assert.match(sw, /isPrivateOrApiRequest/);
 
   // No unsafe catch pattern
@@ -113,6 +132,15 @@ test("Service Worker implements safe precache, response guarantees, and private 
   // Deletes only tipid caches
   assert.match(sw, /tipid-shell-/);
   assert.match(sw, /tipid-runtime-/);
+});
+
+test("no dev live-reload or websocket scripts exist in application files", () => {
+  for (const page of pages) {
+    const html = fs.readFileSync(path.join(root, page), "utf8");
+    assert.doesNotMatch(html, /reload\.js/i, `${page} contains reload.js`);
+    assert.doesNotMatch(html, /\/ws\/ws/i, `${page} contains /ws/ws`);
+    assert.doesNotMatch(html, /new\s+WebSocket\(/i, `${page} contains WebSocket`);
+  }
 });
 
 test("layout constraints and landing main maintain desktop responsiveness", () => {
