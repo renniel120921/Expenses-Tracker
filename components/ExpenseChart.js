@@ -66,12 +66,8 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
             if (dateFilter === "all") return true;
 
             // Safe date parsing (handles numbers, strings, or Firestore timestamps)
-            let entryTime = e.timestamp;
-            if (typeof entryTime === 'string' || entryTime instanceof String) {
-                entryTime = new Date(entryTime).getTime();
-            } else if (entryTime && typeof entryTime.toMillis === 'function') {
-                entryTime = entryTime.toMillis();
-            }
+            const parsedDate = window.TipidCore.entryDate(e);
+            const entryTime = parsedDate ? parsedDate.getTime() : null;
 
             if (!entryTime || isNaN(entryTime)) return true; // fallback kung walang date
 
@@ -87,17 +83,17 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
         const expenses = filteredEntries.filter(e => e.type === "expense");
         const incomes = filteredEntries.filter(e => e.type === "income");
 
-        const totalExpense = expenses.reduce((sum, e) => sum + (Number(e.amount)||0), 0);
-        const totalIncome = incomes.reduce((sum, e) => sum + (Number(e.amount)||0), 0);
+        const totalExpense = window.TipidCore.sumMoney(expenses.map(e => e.amount));
+        const totalIncome = window.TipidCore.sumMoney(incomes.map(e => e.amount));
 
         // Guilt Tracker Computation
         // Kung lumang data na walang spendType, ituturing itong "need" para hindi masira ang chart
-        const needsTotal = expenses.filter(e => e.spendType === "need" || !e.spendType).reduce((sum, e) => sum + (Number(e.amount)||0), 0);
-        const luhoTotal = expenses.filter(e => e.spendType === "luho").reduce((sum, e) => sum + (Number(e.amount)||0), 0);
+        const needsTotal = window.TipidCore.sumMoney(expenses.filter(e => e.spendType === "need" || !e.spendType).map(e => e.amount));
+        const luhoTotal = window.TipidCore.sumMoney(expenses.filter(e => e.spendType === "luho").map(e => e.amount));
         const luhoPct = totalExpense > 0 ? Math.round((luhoTotal / totalExpense) * 100) : 0;
 
         const catGroup = expenses.reduce((acc, e) => {
-            acc[e.category] = (acc[e.category] || 0) + (Number(e.amount)||0);
+            acc[e.category] = window.TipidCore.sumMoney([acc[e.category] || 0, e.amount]);
             return acc;
         }, {});
 

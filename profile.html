@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="fil" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="/app.css">
+    <link rel="manifest" href="/manifest.json">
+    <script src="/app-utils.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Profile — Tipid</title>
     <meta name="theme-color" content="#123D2E">
@@ -371,12 +374,12 @@
             const [goalStart, setGoalStart] = React.useState("");
             const [savingGoals, setSavingGoals] = React.useState(false);
 
-            const [lang, setLang] = React.useState(() => localStorage.getItem('tipid_lang') || 'tl');
-            const [defaultWallet, setDefaultWallet] = React.useState(() => localStorage.getItem('tipid_default_wallet') || 'Cash');
-            const [hideCentavos, setHideCentavos] = React.useState(() => localStorage.getItem('tipid_hide_centavos') === '1');
+            const [lang, setLang] = React.useState('tl');
+            const [defaultWallet, setDefaultWallet] = React.useState('Cash');
+            const [hideCentavos, setHideCentavos] = React.useState(false);
 
-            const [notifDaily, setNotifDaily] = React.useState(() => localStorage.getItem('tipid_notif_daily') !== '0');
-            const [notifOverbudget, setNotifOverbudget] = React.useState(() => localStorage.getItem('tipid_notif_overbudget') !== '0');
+            const [notifDaily, setNotifDaily] = React.useState(true);
+            const [notifOverbudget, setNotifOverbudget] = React.useState(true);
 
             const [exporting, setExporting] = React.useState(false);
             const [feedbackText, setFeedbackText] = React.useState("");
@@ -408,13 +411,20 @@
             }, [dataReady, user]);
 
             React.useEffect(() => {
-                setGoalName(localStorage.getItem('tipid_goal_name') || "");
-                setGoalAmount(localStorage.getItem('tipid_goal_amount') || localStorage.getItem('tipid_goal') || "");
-                setGoalWallet(localStorage.getItem('tipid_goal_wallet') || "GCash");
-                setGoalContrib(localStorage.getItem('tipid_goal_contrib') || "");
-                setGoalFreq(localStorage.getItem('tipid_goal_freq') || "sahod");
+                if (!user?.uid) return;
+                const scoped = (name) => localStorage.getItem(window.TipidCore.storageKey(user.uid, name));
+                setGoalName(scoped('goal_name') || "");
+                setGoalAmount(scoped('goal_amount') || "");
+                setGoalWallet(scoped('goal_wallet') || "GCash");
+                setGoalContrib(scoped('goal_contrib') || "");
+                setGoalFreq(scoped('goal_freq') || "sahod");
+                setLang(scoped('lang') || 'tl');
+                setDefaultWallet(scoped('default_wallet') || 'Cash');
+                setHideCentavos(scoped('hide_centavos') === '1');
+                setNotifDaily(scoped('notif_daily') !== '0');
+                setNotifOverbudget(scoped('notif_overbudget') !== '0');
 
-                const savedStart = localStorage.getItem('tipid_goal_start');
+                const savedStart = scoped('goal_start');
                 if (savedStart) {
                     setGoalStart(savedStart);
                 } else {
@@ -422,7 +432,7 @@
                     const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
                     setGoalStart(dateStr);
                 }
-            }, []);
+            }, [user?.uid]);
 
             if (user === undefined || user === null) {
                 return (
@@ -487,6 +497,15 @@
                 }
             };
 
+            const handlePasswordReset = async () => {
+                try {
+                    await window.TipidAuth.resetPassword(user.email);
+                    swalSuccess("Tingnan ang inbox", "Kung eligible ang account mo, nagpadala ang Firebase ng password reset link.");
+                } catch (err) {
+                    swalError(window.TipidAuth.friendlyError(err));
+                }
+            };
+
             const handleUpdatePreferences = async (e) => {
                 e.preventDefault();
                 const amt = parseFloat(budgetInput);
@@ -499,12 +518,13 @@
                 try {
                     await window.TipidData.setBudget(user.uid, amt);
 
-                    if (goalName.trim()) localStorage.setItem('tipid_goal_name', goalName.trim());
-                    if (!isNaN(targetAmt) && targetAmt > 0) localStorage.setItem('tipid_goal_amount', targetAmt.toString());
-                    if (goalWallet) localStorage.setItem('tipid_goal_wallet', goalWallet);
-                    if (!isNaN(contribAmt) && contribAmt > 0) localStorage.setItem('tipid_goal_contrib', contribAmt.toString());
-                    if (goalFreq) localStorage.setItem('tipid_goal_freq', goalFreq);
-                    if (goalStart) localStorage.setItem('tipid_goal_start', goalStart);
+                    const key = (name) => window.TipidCore.storageKey(user.uid, name);
+                    if (goalName.trim()) localStorage.setItem(key('goal_name'), goalName.trim());
+                    if (!isNaN(targetAmt) && targetAmt > 0) localStorage.setItem(key('goal_amount'), window.TipidCore.money(targetAmt).toString());
+                    if (goalWallet) localStorage.setItem(key('goal_wallet'), goalWallet);
+                    if (!isNaN(contribAmt) && contribAmt > 0) localStorage.setItem(key('goal_contrib'), window.TipidCore.money(contribAmt).toString());
+                    if (goalFreq) localStorage.setItem(key('goal_freq'), goalFreq);
+                    if (goalStart && window.TipidCore.isDateKey(goalStart)) localStorage.setItem(key('goal_start'), goalStart);
 
                     swalSuccess("Tagumpay", "Na-update na ang iyong Financial Goals.");
                 } catch (err) {
@@ -514,11 +534,12 @@
                 }
             };
 
-            const handleSelectLang = (val) => { setLang(val); localStorage.setItem('tipid_lang', val); };
-            const handleSelectDefaultWallet = (val) => { setDefaultWallet(val); localStorage.setItem('tipid_default_wallet', val); setActiveMenu(null); };
-            const toggleHideCentavos = () => { const next = !hideCentavos; setHideCentavos(next); localStorage.setItem('tipid_hide_centavos', next ? '1' : '0'); };
-            const toggleNotifDaily = () => { const next = !notifDaily; setNotifDaily(next); localStorage.setItem('tipid_notif_daily', next ? '1' : '0'); };
-            const toggleNotifOverbudget = () => { const next = !notifOverbudget; setNotifOverbudget(next); localStorage.setItem('tipid_notif_overbudget', next ? '1' : '0'); };
+            const prefKey = (name) => window.TipidCore.storageKey(user.uid, name);
+            const handleSelectLang = (val) => { setLang(val); localStorage.setItem(prefKey('lang'), val); };
+            const handleSelectDefaultWallet = (val) => { setDefaultWallet(val); localStorage.setItem(prefKey('default_wallet'), val); setActiveMenu(null); };
+            const toggleHideCentavos = () => { const next = !hideCentavos; setHideCentavos(next); localStorage.setItem(prefKey('hide_centavos'), next ? '1' : '0'); };
+            const toggleNotifDaily = () => { const next = !notifDaily; setNotifDaily(next); localStorage.setItem(prefKey('notif_daily'), next ? '1' : '0'); };
+            const toggleNotifOverbudget = () => { const next = !notifOverbudget; setNotifOverbudget(next); localStorage.setItem(prefKey('notif_overbudget'), next ? '1' : '0'); };
 
             const handleExportData = () => {
                 if (!window.TipidData || !window.TipidData.subscribeEntries) return swalError("Hindi available ang data export sa ngayon.");
@@ -529,11 +550,16 @@
                     (list) => {
                         unsub(); setExporting(false);
                         if (!list || list.length === 0) return Swal.fire({ icon: "info", title: "Wala pang datos", text: "Wala ka pang naitatalang gastos o kita.", confirmButtonColor: "#1F6F54", customClass: { popup: "tipid-swal" } });
-                        const header = ["date", "type", "category", "method", "amount", "note"];
-                        const rows = list.map(e => header.map(k => {
-                            const v = e[k] !== undefined && e[k] !== null ? String(e[k]).replace(/"/g, '""') : "";
-                            return `"${v}"`;
-                        }).join(","));
+                        const header = ["date", "type", "category", "method", "amount", "description"];
+                        const rows = list.map(e => {
+                            const date = window.TipidCore.entryDate(e);
+                            const values = [date ? date.toISOString() : "", e.type, e.category, e.method, window.TipidCore.money(e.amount), e.desc ?? e.note ?? ""];
+                            return values.map(value => {
+                                let safe = value == null ? "" : String(value);
+                                if (/^[=+\-@\t\r]/.test(safe)) safe = `'${safe}`;
+                                return `"${safe.replace(/"/g, '""')}"`;
+                            }).join(",");
+                        });
                         const csv = [header.join(","), ...rows].join("\n");
                         const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
                         const url = URL.createObjectURL(blob);
@@ -559,7 +585,7 @@
                     customClass: { popup: "tipid-swal" }
                 }).then((result) => {
                     if (!result.isConfirmed) return;
-                    ["tipid_goal_name", "tipid_goal_amount", "tipid_goal", "tipid_goal_wallet", "tipid_goal_contrib", "tipid_goal_freq", "tipid_goal_start", "tipid_default_wallet", "tipid_hide_centavos", "tipid_lang", "tipid_notif_daily", "tipid_notif_overbudget"].forEach(k => localStorage.removeItem(k));
+                    ["goal_name", "goal_amount", "goal_wallet", "goal_contrib", "goal_freq", "goal_start", "default_wallet", "hide_centavos", "lang", "notif_daily", "notif_overbudget"].forEach(name => localStorage.removeItem(prefKey(name)));
                     setGoalName(""); setGoalAmount(""); setGoalContrib(""); setGoalWallet("GCash"); setDefaultWallet("Cash"); setHideCentavos(false); setLang("tl");
                     setNotifDaily(true); setNotifOverbudget(true);
                     swalSuccess("Nabura na", "Na-reset na ang mga lokal na preferences.");
@@ -571,12 +597,12 @@
                 if (!feedbackText.trim()) return swalError("Maglagay muna ng mensahe.");
                 setSendingFeedback(true);
                 try {
-                    const key = "tipid_feedback_log";
+                    const key = prefKey("feedback_drafts");
                     const existing = JSON.parse(localStorage.getItem(key) || "[]");
                     existing.push({ text: feedbackText.trim(), at: new Date().toISOString() });
                     localStorage.setItem(key, JSON.stringify(existing.slice(-20)));
                     setFeedbackText("");
-                    swalSuccess("Salamat!", "Natanggap ang iyong feedback.");
+                    swalSuccess("Na-save sa device", "Naka-save bilang draft ang feedback mo. Walang remote feedback service ang app sa ngayon.");
                 } finally {
                     setSendingFeedback(false);
                 }
@@ -698,7 +724,7 @@
                             </div>
                             <h3 className="font-display font-bold text-xl text-ink dark:text-paper mb-2">I-secure ang iyong Account</h3>
                             <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-8 leading-relaxed px-2">Kung gumamit ka ng Google sa pag-login, hindi mo na kailangang mag-alala sa password. Kung gumamit ka ng email, maaari kang mag-request ng password reset.</p>
-                            <button onClick={() => swalSuccess('Email Sent', 'Kunwari ay nagpadala kami ng reset link sa iyong email!')} className="w-full bg-black/5 dark:bg-white/10 text-ink dark:text-paper font-bold py-4 rounded-xl hover:bg-black/10 dark:hover:bg-white/20 transition-all shadow-sm active:scale-95">
+                             <button onClick={handlePasswordReset} className="w-full bg-black/5 dark:bg-white/10 text-ink dark:text-paper font-bold py-4 rounded-xl hover:bg-black/10 dark:hover:bg-white/20 transition-all shadow-sm active:scale-95">
                                 Magpadala ng Reset Link
                             </button>
                         </div>
@@ -710,12 +736,12 @@
                 return (
                     <SubPage title={t.menuNotifications} backLabel={t.back} onBack={() => setActiveMenu(null)}>
                         <div className="bento-card p-2 rounded-2xl divide-y divide-black/5 dark:divide-white/5">
-                            <div className="flex items-center justify-between p-5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors rounded-t-xl">
+                            <div className="flex items-center justify-between p-5 rounded-t-xl">
                                 <div>
                                     <p className="font-bold text-[15px] text-ink dark:text-paper">Daily Reminders</p>
-                                    <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/50 mt-1">Paalala para mag-log ng gastos araw-araw</p>
+                                    <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/50 mt-1">Hindi pa available ang scheduled background reminders.</p>
                                 </div>
-                                <Switch checked={notifDaily} onChange={toggleNotifDaily} label="Daily Reminders" />
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-ink2/50 dark:text-paper/50">Coming soon</span>
                             </div>
                             <div className="flex items-center justify-between p-5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors rounded-b-xl">
                                 <div>
@@ -771,7 +797,7 @@
             if (activeMenu === 'language') {
                 return (
                     <SubPage title={t.menuLanguage} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-4 px-1 mt-2">Piliin ang wika ng mga label at button sa app.</p>
+                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-4 px-1 mt-2">Piliin ang wika ng mga label sa Account page. Ang ibang page ay Tagalog-first pa rin.</p>
                         <OptionList value={lang} onSelect={handleSelectLang} options={[{ value: "tl", label: "Tagalog" }, { value: "en", label: "English" }]} />
                     </SubPage>
                 );
@@ -835,7 +861,7 @@
                                 className="w-full bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 py-3.5 text-[15px] font-medium text-ink dark:text-paper placeholder-ink2/30 focus:outline-none focus:ring-2 focus:ring-peso/50 transition-all resize-none mb-4 shadow-sm"
                             />
                             <button type="submit" disabled={sendingFeedback} className="w-full bg-gradient-to-r from-pesoLight to-peso hover:shadow-lg hover:shadow-peso/20 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-50 active:scale-95">
-                                {sendingFeedback ? "Ipinapadala..." : "Ipadala ang Feedback"}
+                                {sendingFeedback ? "Sine-save..." : "I-save bilang Draft"}
                             </button>
                         </form>
                     </SubPage>
@@ -852,7 +878,7 @@
                             </div>
                             <div>
                                 <h3 className="font-bold text-[16px] text-ink dark:text-paper mb-1.5">Privacy</h3>
-                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Ang iyong mga entry, budget, at profile ay naka-store sa ilalim ng iyong account at hindi ibinabahagi sa ibang user.</p>
+                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Ang iyong mga entry, budget, at profile ay naka-store sa user-scoped Firebase paths. Ang device-only preferences ay hiwalay rin ayon sa account. Dapat i-deploy ang kasamang Firestore rules bago ilabas ang app.</p>
                             </div>
                             <div>
                                 <h3 className="font-bold text-[16px] text-ink dark:text-paper mb-1.5">Pagbabago</h3>
@@ -871,7 +897,7 @@
                                 <window.Icons.ShieldAlert size={32} />
                             </div>
                             <h3 className="font-display font-bold text-xl text-expense dark:text-[#F38C80] mb-2">Permanenteng aalisin ang account mo</h3>
-                            <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-6 leading-relaxed">Hindi na mababawi ang aksyong ito. Kung kailan lang ka nag-login, maaaring hilingin sa iyong mag-log out at mag-log in muna bago ito ituloy.</p>
+                            <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-6 leading-relaxed">Tatanggalin nito ang iyong Firebase sign-in account. Hindi awtomatikong nabubura ng kasalukuyang app ang Firestore records o lokal na feature data. Maaaring kailanganin mong mag-log in ulit bago ituloy.</p>
                             <InputField
                                 label='I-type ang "DELETE" para kumpirmahin'
                                 value={deleteConfirmText}

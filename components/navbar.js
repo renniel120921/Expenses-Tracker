@@ -187,8 +187,8 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                         </a>
                     </div>
 
-                    <div className="flex-1 min-w-0 block text-center px-1">
-                        <div ref={navContainerRef} className="inline-flex relative flex-nowrap items-center gap-0.5 lg:gap-1 max-w-full overflow-x-auto hide-scroll-nav py-1 text-left">
+                    <div className="flex-1 min-w-0 flex justify-center px-1">
+                        <div ref={navContainerRef} className="flex relative flex-nowrap items-center gap-0.5 lg:gap-1 max-w-full overflow-x-auto hide-scroll-nav py-1">
                             <div
                                 className="absolute bottom-0 h-[2.5px] rounded-full bg-gradient-to-r from-peso to-pesoLight dark:from-pesoLight dark:to-gold pointer-events-none"
                                 style={{
@@ -303,8 +303,8 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
 };
 
 const DesktopNavLink = ({ href, label, active, icon, innerRef, onClick }) => (
-    <a ref={innerRef} href={href} onClick={onClick} aria-current={active ? "page" : undefined} className={`relative flex items-center gap-1.5 lg:gap-2 whitespace-nowrap shrink-0 transition-all duration-300 px-3 lg:px-3.5 py-2 lg:py-2.5 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 ${active ? 'font-semibold text-peso dark:text-pesoLight' : 'font-medium text-ink2/55 dark:text-paper/45 hover:text-ink dark:hover:text-paper'}`}>
-        {icon} <span className="text-[13px] lg:text-sm">{label}</span>
+    <a ref={innerRef} href={href} onClick={onClick} aria-current={active ? "page" : undefined} title={label} className={`relative flex items-center gap-1.5 lg:gap-2 whitespace-nowrap shrink-0 transition-all duration-300 px-2.5 lg:px-3.5 py-2 lg:py-2.5 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 ${active ? 'font-semibold text-peso dark:text-pesoLight' : 'font-medium text-ink2/55 dark:text-paper/45 hover:text-ink dark:hover:text-paper'}`}>
+        {icon} <span className="hidden lg:inline text-[13px] lg:text-sm">{label}</span>
     </a>
 );
 

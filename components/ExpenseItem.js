@@ -52,7 +52,7 @@ window.ExpenseItem = function ExpenseItem({ item, entry, uid }) {
 
         Swal.fire({
             title: 'Sigurado ka ba?',
-            html: `Buburahin mo ang record para sa <b>"${data.desc}"</b> (₱${window.peso(data.amount)}).<br>Hindi na ito maibabalik.`,
+            text: `Buburahin mo ang record para sa “${data.desc}” (₱${window.peso(data.amount)}). Hindi na ito maibabalik.`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#B5483B',

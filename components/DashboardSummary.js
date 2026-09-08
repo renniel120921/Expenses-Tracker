@@ -236,8 +236,8 @@ function SmartSummary({ uid, entries, budget }) {
         [entries, monthStart]
     );
 
-    const income = thisMonth.filter(e => e.type === "income").reduce((s, e) => s + (e.amount || 0), 0);
-    const spent = thisMonth.filter(e => e.type !== "income").reduce((s, e) => s + (e.amount || 0), 0);
+    const income = window.TipidCore.sumMoney(thisMonth.filter(e => e.type === "income").map(e => e.amount));
+    const spent = window.TipidCore.sumMoney(thisMonth.filter(e => e.type !== "income").map(e => e.amount));
     const remaining = budget != null ? budget - spent : income - spent;
     const remainingLabel = budget != null ? "Natitirang Budget" : "Natitira (Kita − Gastos)";
     const overBudget = budget != null && remaining < 0;
@@ -262,8 +262,8 @@ function SmartSummary({ uid, entries, budget }) {
             return entryTime >= lastMonthStart && entryTime <= lastMonthEnd;
         });
 
-        const lastIncome = lastMonthEntries.filter(e => e.type === "income").reduce((s, e) => s + (e.amount || 0), 0);
-        const lastSpent = lastMonthEntries.filter(e => e.type !== "income").reduce((s, e) => s + (e.amount || 0), 0);
+        const lastIncome = window.TipidCore.sumMoney(lastMonthEntries.filter(e => e.type === "income").map(e => e.amount));
+        const lastSpent = window.TipidCore.sumMoney(lastMonthEntries.filter(e => e.type !== "income").map(e => e.amount));
         const pctDelta = (curr, prev) => (prev ? Math.round(((curr - prev) / prev) * 100) : null);
 
         return { incomeDelta: pctDelta(income, lastIncome), spentDelta: pctDelta(spent, lastSpent) };
@@ -271,8 +271,9 @@ function SmartSummary({ uid, entries, budget }) {
 
     const byCategory = useMemo(() => {
         const totals = {};
-        thisMonth.filter(e => e.type !== "expense").forEach(e => {
-            totals[e.category] = (totals[e.category] || 0) + (e.amount || 0);
+        thisMonth.filter(e => e.type === "expense").forEach(e => {
+            const current = totals[e.category] || 0;
+            totals[e.category] = window.TipidCore.sumMoney([current, e.amount]);
         });
         return window.CATEGORIES
             .map(c => ({ label: c, amount: totals[c] || 0 }))

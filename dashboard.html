@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="fil" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="/app.css">
+    <link rel="manifest" href="/manifest.json">
+    <script src="/app-utils.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Tipid Dashboard</title>
     <meta name="theme-color" content="#123D2E">
@@ -237,7 +240,9 @@
             return <span style={{ width: size, height: size }} className="rounded-md bg-peso text-paper flex items-center justify-center font-display font-semibold shadow-sm">₱</span>;
         }
 
-        window.peso = function peso(n) { return (n || 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+        window.peso = function peso(n) {
+            return window.TipidCore.formatPeso(n);
+        }
 
         window.CATEGORIES = ["Pagkain", "Pamasahe", "Bills", "Load", "Ipon", "Project Components", "Iba pa"];
 
@@ -353,18 +358,21 @@
                 float: "🪄"
             };
 
+            const content = document.createElement("div");
+            content.className = "flex flex-col items-center text-center pt-2";
+            const image = document.createElement("img");
+            image.src = "/assets/tipid_mascot.png";
+            image.alt = "";
+            image.className = `w-20 h-20 object-contain ${animMap[mode] || 'mascot-anim-float'} drop-shadow-md mb-3`;
+            const heading = document.createElement("h3");
+            heading.className = "font-display text-2xl font-bold text-ink dark:text-paper mb-2 tracking-tight";
+            heading.textContent = `${emojiMap[mode] || '✨'} ${String(title)}`;
+            const copy = document.createElement("p");
+            copy.className = "text-[14px] text-ink2/80 dark:text-paper/80 font-medium leading-relaxed max-w-xs whitespace-pre-line";
+            copy.textContent = String(message);
+            content.append(image, heading, copy);
             return Swal.fire({
-                html: `
-                    <div class="flex flex-col items-center text-center pt-2">
-                        <div class="relative w-24 h-24 mb-4 flex items-center justify-center">
-                            <div class="absolute inset-0 rounded-full bg-peso/15 blur-xl"></div>
-                            <img src="/assets/tipid_mascot.png" alt="Tipid Buddy" class="w-20 h-20 object-contain ${animMap[mode] || 'mascot-anim-float'} drop-shadow-md" />
-                            <span class="absolute -top-1 -right-1 text-2xl">${emojiMap[mode] || '✨'}</span>
-                        </div>
-                        <h3 class="font-display text-2xl font-bold text-ink dark:text-paper mb-2 tracking-tight">${title}</h3>
-                        <div class="text-[14px] text-ink2/80 dark:text-paper/80 font-medium leading-relaxed max-w-xs">${message}</div>
-                    </div>
-                `,
+                html: content,
                 showCancelButton: !!cancelText,
                 confirmButtonColor: confirmColor,
                 cancelButtonColor: '#4A5568',
@@ -378,10 +386,6 @@
     <script type="text/babel" src="./components/navbar.js?v=2"></script>
     <script type="text/babel" src="./components/DashboardSummary.js?v=2"></script>
     <script type="text/babel" src="./components/ExpenseChart.js?v=2"></script>
-    <script type="text/babel" src="./components/ExpenseItem.js?v=2"></script>
-    <script type="text/babel" src="./components/ExpenseList.js?v=2"></script>
-    <script type="text/babel" src="./components/OnboardingModal.js?v=2"></script>
-
     <script type="text/babel">
         function ExpenseFormStyles() {
             return (
@@ -507,7 +511,7 @@
             };
 
             return (
-                <div className={`bento-card rounded-[2rem] p-6 sm:p-7 flex gap-5 items-center relative overflow-hidden mb-6 sm:mb-8 border ${toneStyles[insight.tone]}`}>
+                <div className={`bento-card rounded-[2rem] p-6 sm:p-7 flex gap-5 items-center relative overflow-hidden mb-6 sm:mb-8 border md:col-span-12 ${toneStyles[insight.tone]}`}>
                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full shrink-0 relative flex items-center justify-center bg-white/40 dark:bg-black/40 shadow-inner">
                         <img src="/assets/tipid_mascot.png" alt="Tipid Buddy" className="w-[120%] h-[120%] object-contain absolute bottom-0 drop-shadow-md" />
                     </div>
@@ -533,7 +537,10 @@
             const [category, setCategory] = useState(window.CATEGORIES[0]);
 
             const availableMethods = window.METHODS || ["Cash"];
-            const [method, setMethod] = useState(availableMethods[0] || "Cash");
+            const preferredMethod = (() => {
+                try { return localStorage.getItem(window.TipidCore.storageKey(uid, "default_wallet")); } catch (_) { return null; }
+            })();
+            const [method, setMethod] = useState(availableMethods.includes(preferredMethod) ? preferredMethod : (availableMethods[0] || "Cash"));
             const [spendType, setSpendType] = useState("need");
             const [saving, setSaving] = useState(false);
             const [justAdded, setJustAdded] = useState(false);
@@ -563,26 +570,16 @@
             };
 
             const walletBalances = useMemo(() => {
-                const balances = {};
-                if (baseBalances) {
-                    Object.keys(baseBalances).forEach(k => balances[k] = parseFloat(baseBalances[k]) || 0);
-                }
-                entries.forEach(e => {
-                    const m = e.method || "Cash";
-                    const amt = parseFloat(e.amount) || 0;
-                    if (balances[m] === undefined) balances[m] = 0;
-                    if (e.type === "income") balances[m] += amt;
-                    else balances[m] -= amt;
-                });
-                return balances;
+                return window.TipidCore.walletBalances(entries, baseBalances);
             }, [entries, baseBalances]);
 
             const currentBalance = walletBalances[method] || 0;
-            const parsedAmount = parseFloat(amount) || 0;
+            let parsedAmount = 0;
+            try { parsedAmount = amount === "" ? 0 : window.TipidCore.money(amount); } catch (_) { parsedAmount = 0; }
             const isExpense = type === "expense";
 
             const matitira = isExpense ? (currentBalance - parsedAmount) : (currentBalance + parsedAmount);
-            const insufficient = isExpense && (parsedAmount > currentBalance);
+            const insufficient = isExpense && window.TipidCore.toCentavos(parsedAmount, { allowZero: true }) > window.TipidCore.toCentavos(Math.max(currentBalance, 0), { allowZero: true });
 
             const isIncome = type === "income";
             const accent = isIncome
@@ -623,18 +620,18 @@
                     triggerShake();
                     return window.showTipidBuddyModal({
                         title: 'Kulang ang Balanse!',
-                        message: `Hindi mo pwedeng gamitin ang <b>${method}</b> dahil <b>₱${window.peso(currentBalance)}</b> na lamang ang laman nito.`,
+                        message: `Hindi mo pwedeng gamitin ang ${method} dahil ₱${window.peso(currentBalance)} na lamang ang laman nito.`,
                         mode: 'worry',
                         confirmColor: '#D64045'
                     });
                 }
 
-                const savedGoalWallet = localStorage.getItem('tipid_goal_wallet');
+                const savedGoalWallet = localStorage.getItem(window.TipidCore.storageKey(uid, "goal_wallet"));
                 if (!isIncome && method === savedGoalWallet) {
                     triggerShake();
                     const confirm = await window.showTipidBuddyModal({
                         title: 'Wait, Ipon mo ito! 🛑',
-                        message: `Ang <b>${method}</b> ay naka-set bilang iyong Ipon Wallet.<br><br>Sigurado ka bang babawasan mo ang ipon mo ng <b class="text-[#D64045] font-mono">₱${window.peso(parsedAmount)}</b>?`,
+                        message: `Ang ${method} ay naka-set bilang iyong Ipon Wallet.\n\nSigurado ka bang babawasan mo ang ipon mo ng ₱${window.peso(parsedAmount)}?`,
                         mode: 'caution',
                         confirmColor: '#D64045',
                         confirmText: 'Oo, Ituloy ang Gastos',
@@ -662,7 +659,7 @@
 
                     window.showTipidBuddyModal({
                         title: isIncome ? 'Kita Naitala! 🎉' : 'Gastos Naitala! 💸',
-                        message: `Matagumpay na naidagdag ang <b>₱${window.peso(parsedAmount)}</b> bilang ${isIncome ? 'kita' : 'gastos'}.`,
+                        message: `Matagumpay na naidagdag ang ₱${window.peso(parsedAmount)} bilang ${isIncome ? 'kita' : 'gastos'}.`,
                         mode: 'celebrate',
                         confirmColor: '#1F6F54'
                     });
@@ -862,15 +859,7 @@
         }
 
         function parseEntryDate(e) {
-            if (!e) return null;
-            if (e.date && typeof e.date === 'string') {
-                const d = new Date(`${e.date}T00:00:00`);
-                if (!isNaN(d.getTime())) return d;
-            }
-            let t = e.createdAt || e.timestamp;
-            if (t && typeof t.toDate === "function") return t.toDate();
-            if (t) return new Date(t);
-            return null;
+            return window.TipidCore.entryDate(e);
         }
 
         function isSameMonth(d, ref) {
@@ -881,7 +870,7 @@
             return React.useMemo(() => {
                 const now = new Date();
                 const lastMonthRef = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-                let incomeThis = 0, expenseThis = 0, incomeLast = 0, expenseLast = 0;
+                let incomeThisCents = 0, expenseThisCents = 0, incomeLastCents = 0, expenseLastCents = 0;
                 const categoryTotals = {};
 
                 const safeEntries = Array.isArray(entries) ? entries : [];
@@ -889,28 +878,33 @@
                 safeEntries.forEach((e) => {
                     const d = parseEntryDate(e);
                     if (!d) return;
-                    const amt = Number(e.amount) || 0;
+                    let amt = 0;
+                    try { amt = window.TipidCore.toCentavos(e.amount, { allowZero: true }); } catch (_) { return; }
                     if (isSameMonth(d, now)) {
                         if (e.type === "income") {
-                            incomeThis += amt;
+                            incomeThisCents += amt;
                         } else {
-                            expenseThis += amt;
+                            expenseThisCents += amt;
                             const cat = e.category || "Iba pa";
                             categoryTotals[cat] = (categoryTotals[cat] || 0) + amt;
                         }
                     } else if (isSameMonth(d, lastMonthRef)) {
-                        if (e.type === "income") incomeLast += amt;
-                        else expenseLast += amt;
+                        if (e.type === "income") incomeLastCents += amt;
+                        else expenseLastCents += amt;
                     }
                 });
 
+                const incomeThis = window.TipidCore.fromCentavos(incomeThisCents);
+                const expenseThis = window.TipidCore.fromCentavos(expenseThisCents);
+                const incomeLast = window.TipidCore.fromCentavos(incomeLastCents);
+                const expenseLast = window.TipidCore.fromCentavos(expenseLastCents);
                 const net = incomeThis - expenseThis;
                 const savingsRate = incomeThis > 0 ? (net / incomeThis) * 100 : 0;
                 const pctChange = (curr, prev) => (prev > 0 ? ((curr - prev) / prev) * 100 : (curr > 0 ? 100 : 0));
                 const topCategories = Object.entries(categoryTotals)
                     .sort((a, b) => b[1] - a[1])
                     .slice(0, 4)
-                    .map(([name, amount]) => ({ name, amount, pct: expenseThis > 0 ? (amount / expenseThis) * 100 : 0 }));
+                    .map(([name, amount]) => ({ name, amount: window.TipidCore.fromCentavos(amount), pct: expenseThisCents > 0 ? (amount / expenseThisCents) * 100 : 0 }));
 
                 return {
                     incomeThis, expenseThis, incomeLast, expenseLast, net, savingsRate,
@@ -938,21 +932,22 @@
             );
         }
 
-        function NotificationBell({ entries, budget, monthStats }) {
+        function NotificationBell({ uid, entries, budget, monthStats }) {
             const monthlyBudget = Number(budget) || 0;
             const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
             const dailyBudget = monthlyBudget > 0 ? monthlyBudget / daysInMonth : 0;
 
             const now = new Date();
-            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const todayStr = window.TipidCore.manilaDateKey(now);
 
             const safeEntries = Array.isArray(entries) ? entries : [];
-            const todayExpenses = safeEntries.filter(e => e.type === "expense" && e.date === todayStr).reduce((sum, e) => sum + (e.amount || 0), 0);
+            const todayExpenses = window.TipidCore.sumMoney(safeEntries.filter(e => e.type === "expense" && window.TipidCore.manilaDateKey(parseEntryDate(e)) === todayStr).map(e => e.amount));
 
             const isOverDaily = monthlyBudget > 0 && todayExpenses > dailyBudget;
             const isOverBudget = monthlyBudget > 0 && monthStats?.expenseThis > monthlyBudget;
 
-            const hasAlert = isOverBudget || isOverDaily;
+            const overbudgetEnabled = localStorage.getItem(window.TipidCore.storageKey(uid, "notif_overbudget")) !== "0";
+            const hasAlert = overbudgetEnabled && (isOverBudget || isOverDaily);
 
             const handleBellClick = () => {
                 if (monthlyBudget === 0) {
@@ -965,21 +960,21 @@
                 } else if (isOverBudget) {
                     window.showTipidBuddyModal({
                         title: 'Over Budget Ka Na! 🚨',
-                        message: `Ang budget mo ay <b>₱${window.peso(monthlyBudget)}</b>, pero ang total gastos mo na ay <b class="text-[#D64045]">₱${window.peso(monthStats.expenseThis)}</b>. Hinay-hinay muna tayo!`,
+                        message: `Ang budget mo ay ₱${window.peso(monthlyBudget)}, pero ang total gastos mo na ay ₱${window.peso(monthStats.expenseThis)}. Hinay-hinay muna tayo!`,
                         mode: 'worry',
                         confirmColor: '#D64045'
                     });
                 } else if (isOverDaily) {
                     window.showTipidBuddyModal({
                         title: 'Alerto sa Gastos! ⚠️',
-                        message: `Ang safe daily limit mo ay <b>₱${window.peso(dailyBudget)}</b>, pero naka-<b>₱${window.peso(todayExpenses)}</b> ka na ngayong araw.`,
+                        message: `Ang safe daily limit mo ay ₱${window.peso(dailyBudget)}, pero naka-₱${window.peso(todayExpenses)} ka na ngayong araw.`,
                         mode: 'worry',
                         confirmColor: '#D64045'
                     });
                 } else {
                     window.showTipidBuddyModal({
                         title: 'Pasok sa Budget! 🎉',
-                        message: `Maganda ang pacing natin! Gastos ngayon: <b>₱${window.peso(todayExpenses)}</b> (Limit: ₱${window.peso(dailyBudget)}/day).`,
+                        message: `Maganda ang pacing natin! Gastos ngayon: ₱${window.peso(todayExpenses)} (Limit: ₱${window.peso(dailyBudget)}/day).`,
                         mode: 'celebrate',
                         confirmColor: '#1F6F54'
                     });
@@ -1085,12 +1080,13 @@
             const [hidden, setHidden] = React.useState(false);
             const monthlyBudget = Number(budget) || 0;
 
-            const goalName = localStorage.getItem('tipid_goal_name');
-            const goalAmount = localStorage.getItem('tipid_goal_amount');
-            const goalWallet = localStorage.getItem('tipid_goal_wallet') || "GCash";
-            const goalContrib = localStorage.getItem('tipid_goal_contrib');
-            const goalFreq = localStorage.getItem('tipid_goal_freq') || "sahod";
-            const goalStart = localStorage.getItem('tipid_goal_start');
+            const scoped = (name) => localStorage.getItem(window.TipidCore.storageKey(user.uid, name));
+            const goalName = scoped('goal_name');
+            const goalAmount = scoped('goal_amount');
+            const goalWallet = scoped('goal_wallet') || "GCash";
+            const goalContrib = scoped('goal_contrib');
+            const goalFreq = scoped('goal_freq') || "sahod";
+            const goalStart = scoped('goal_start');
 
             return (
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-6 fade-up-bento">
@@ -1116,7 +1112,7 @@
                                     <h1 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight drop-shadow-md">{firstName}.</h1>
                                 </div>
                             </div>
-                            <NotificationBell entries={entries} budget={budget} monthStats={monthStats} />
+                            <NotificationBell uid={user.uid} entries={entries} budget={budget} monthStats={monthStats} />
                         </div>
 
                         <div className="relative z-10 mt-10 w-full pr-16 sm:pr-24">
@@ -1243,12 +1239,15 @@
 
             const net = useMemo(() => {
                 const methodEntries = entries.filter(e => e.method === method);
-                const inc = methodEntries.filter(e => e.type === "income").reduce((s, e) => s + (Number(e.amount) || 0), 0);
-                const exp = methodEntries.filter(e => e.type !== "income").reduce((s, e) => s + (Number(e.amount) || 0), 0);
+                const inc = window.TipidCore.sumMoney(methodEntries.filter(e => e.type === "income").map(e => e.amount));
+                const exp = window.TipidCore.sumMoney(methodEntries.filter(e => e.type !== "income").map(e => e.amount));
                 return inc - exp;
             }, [entries, method]);
 
-            const currentBalance = baseBalance + net;
+            const rawCurrentBalance = baseBalance + net;
+            const currentBalance = Math.sign(rawCurrentBalance) * window.TipidCore.fromCentavos(
+                window.TipidCore.toCentavos(Math.abs(rawCurrentBalance), { allowZero: true })
+            );
 
             const handleEdit = () => {
                 setInputValue(currentBalance > 0 ? currentBalance.toString() : "");
@@ -1257,8 +1256,13 @@
 
             const handleSave = async (e) => {
                 e.preventDefault();
-                const targetBalance = parseFloat(inputValue) || 0;
-                const newBase = targetBalance - net;
+                let targetBalance;
+                try { targetBalance = window.TipidCore.money(inputValue, { allowZero: true }); }
+                catch (_) { return; }
+                const newBase = window.TipidCore.fromCentavos(
+                    window.TipidCore.toCentavos(targetBalance, { allowZero: true }) -
+                    window.TipidCore.toCentavos(net, { allowZero: true, allowNegative: true })
+                );
                 setSaving(true);
                 await onSaveBase(method, newBase);
                 setSaving(false);
@@ -1428,11 +1432,16 @@
 
                 try {
                     if (window.FirestoreAPI && window.db) {
-                        await window.FirestoreAPI.setDoc(window.FirestoreAPI.doc(window.db, "users", uid), { wallets: updatedWallets }, { merge: true });
+                        await window.FirestoreAPI.updateDoc(window.FirestoreAPI.doc(window.db, "users", uid), {
+                            [`wallets.${method}`]: window.TipidCore.money(newBase, { allowZero: true, allowNegative: true })
+                        });
                     }
                     const Toast = Swal.mixin({ toast: true, position: "top-end", showConfirmButton: false, timer: 2000, timerProgressBar: true, customClass: { popup: 'tipid-swal text-sm font-body' } });
                     Toast.fire({ icon: "success", title: "Na-update ang wallet" });
-                } catch (err) { Swal.fire({ icon: 'error', title: 'Error', text: 'Hindi ma-save ang balance.', customClass: { popup: 'tipid-swal' }}); }
+                } catch (err) {
+                    setBaseBalances(baseBalances);
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Hindi ma-save ang balance.', customClass: { popup: 'tipid-swal' }});
+                }
             };
 
             const handleRemoveWallet = async (method) => {
@@ -1442,9 +1451,14 @@
 
                 try {
                     if (window.FirestoreAPI && window.db) {
-                        await window.FirestoreAPI.setDoc(window.FirestoreAPI.doc(window.db, "users", uid), { wallets: updatedWallets }, { merge: true });
+                        await window.FirestoreAPI.updateDoc(window.FirestoreAPI.doc(window.db, "users", uid), {
+                            [`wallets.${method}`]: window.FirestoreAPI.deleteField()
+                        });
                     }
-                } catch (err) { Swal.fire({ icon: 'error', title: 'Error', text: 'Hindi maalis ang wallet.', customClass: { popup: 'tipid-swal' }}); }
+                } catch (err) {
+                    setBaseBalances(baseBalances);
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Hindi maalis ang wallet.', customClass: { popup: 'tipid-swal' }});
+                }
             };
 
             const handleAddWallet = async (methodId) => {
@@ -1461,7 +1475,9 @@
 
                 if (!isConfirmed) return;
 
-                const balance = parseFloat(initialBalance) || 0;
+                let balance;
+                try { balance = window.TipidCore.money(initialBalance, { allowZero: true }); }
+                catch (_) { return Swal.fire({ icon: 'warning', title: 'Maling halaga', text: 'Maglagay ng valid na balanse.', customClass: { popup: 'tipid-swal' } }); }
                 await handleSaveBase(methodId, balance);
             };
 
@@ -1661,24 +1677,15 @@
             const monthStats = useMonthlyStats(entries);
 
             const walletBalances = React.useMemo(() => {
-                const balances = {};
-                if (baseBalances) {
-                    Object.keys(baseBalances).forEach(k => balances[k] = parseFloat(baseBalances[k]) || 0);
-                }
-                const safeEntries = Array.isArray(entries) ? entries : [];
-                safeEntries.forEach(e => {
-                    const m = e.method || "Cash";
-                    const amt = parseFloat(e.amount) || 0;
-                    if (balances[m] === undefined) balances[m] = 0;
-                    if (e.type === "income") balances[m] += amt;
-                    else balances[m] -= amt;
-                });
-                return balances;
+                return window.TipidCore.walletBalances(entries, baseBalances);
             }, [entries, baseBalances]);
 
             React.useEffect(() => {
                 if (!authReady) return;
-                return window.TipidAuth.onChange((u) => setUser(u || null));
+                return window.TipidAuth.onChange((u) => {
+                    window.TIPID_CURRENT_UID = u?.uid || null;
+                    setUser(u || null);
+                });
             }, [authReady]);
 
             React.useEffect(() => {
@@ -1846,10 +1853,11 @@
                 );
             }
 
-            const totalBase = Object.values(baseBalances).reduce((s, val) => s + (parseFloat(val) || 0), 0);
-            const totalIncome = entries.filter(e => e.type === "income").reduce((s, e) => s + (e.amount || 0), 0);
-            const totalExpense = entries.filter(e => e.type !== "income").reduce((s, e) => s + (e.amount || 0), 0);
-            const overallBalance = totalBase + totalIncome - totalExpense;
+            const balanceCentavos = Object.values(walletBalances).reduce((sum, value) => {
+                const number = Number(value) || 0;
+                return sum + Math.sign(number) * window.TipidCore.toCentavos(Math.abs(number), { allowZero: true });
+            }, 0);
+            const overallBalance = window.TipidCore.fromCentavos(balanceCentavos);
 
             return (
                 <div className="min-h-dvh relative">

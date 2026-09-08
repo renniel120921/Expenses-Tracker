@@ -121,27 +121,17 @@ window.AddEntryForm = function AddEntryForm({ uid, onAdded, entries = [], baseBa
 
     // Kalkulahin ang real-time balance ng bawat wallet
     const walletBalances = useMemo(() => {
-        const balances = {};
-        if (baseBalances) {
-            Object.keys(baseBalances).forEach(k => balances[k] = parseFloat(baseBalances[k]) || 0);
-        }
-        entries.forEach(e => {
-            const m = e.method || "Cash";
-            const amt = parseFloat(e.amount) || 0;
-            if (balances[m] === undefined) balances[m] = 0;
-            if (e.type === "income") balances[m] += amt;
-            else balances[m] -= amt;
-        });
-        return balances;
+        return window.TipidCore.walletBalances(entries, baseBalances);
     }, [entries, baseBalances]);
 
     const currentBalance = walletBalances[method] || 0;
-    const parsedAmount = parseFloat(amount) || 0;
+    let parsedAmount = 0;
+    try { parsedAmount = amount === "" ? 0 : window.TipidCore.money(amount); } catch (_) { parsedAmount = 0; }
     const isExpense = type === "expense";
 
     // Live validation
     const matitira = isExpense ? (currentBalance - parsedAmount) : (currentBalance + parsedAmount);
-    const insufficient = isExpense && (parsedAmount > currentBalance);
+    const insufficient = isExpense && window.TipidCore.toCentavos(parsedAmount, { allowZero: true }) > window.TipidCore.toCentavos(Math.max(currentBalance, 0), { allowZero: true });
 
     const isIncome = type === "income";
     const accent = isIncome
@@ -173,7 +163,7 @@ window.AddEntryForm = function AddEntryForm({ uid, onAdded, entries = [], baseBa
             return Swal.fire({
                 icon: 'error',
                 title: 'Kulang ang Balanse',
-                html: `Hindi mo pwedeng gamitin ang <b>${method}</b> dahil <b>₱${window.peso(currentBalance)}</b> na lamang ang laman nito.`,
+                text: `Hindi mo pwedeng gamitin ang ${method} dahil ₱${window.peso(currentBalance)} na lamang ang laman nito.`,
                 confirmButtonColor: '#B5483B',
                 customClass: { popup: 'tipid-swal' }
             });

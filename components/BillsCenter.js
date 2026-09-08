@@ -115,7 +115,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
 
     const Icons = { ...BillsCenterFallbackIcons, ...(window.Icons || {}) };
 
-    const totalUnpaid = bills.filter(b => b.status === "Unpaid" || b.status === "Overdue").reduce((acc, curr) => acc + curr.amount, 0);
+    const totalUnpaid = window.TipidCore.sumMoney(bills.filter(b => b.status === "Unpaid" || b.status === "Overdue").map(b => b.amount));
     const overdueCount = bills.filter(b => b.status === "Overdue").length;
     const paidCount = bills.filter(b => b.status === "Paid").length;
     const paidPct = bills.length > 0 ? Math.round((paidCount / bills.length) * 100) : 0;
@@ -123,7 +123,8 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
     // --- FIX: EXACT DATE LOGIC IN NOTIFICATIONS ---
     useEffect(() => {
         if (!loading && bills.length > 0) {
-            const hasNotified = sessionStorage.getItem('tipid_bills_notified');
+            const notificationKey = window.TipidCore.storageKey(uid, 'bills_notified');
+            const hasNotified = sessionStorage.getItem(notificationKey);
             if (hasNotified) return;
 
             const today = new Date();
@@ -148,50 +149,29 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
             });
 
             if (overdue.length > 0 || upcoming.length > 0) {
-                let htmlMsg = `<div class="text-left text-sm space-y-4 mt-2 font-body" style="color: #15231C;">`;
-
-                if (overdue.length > 0) {
-                    htmlMsg += `<div style="margin-bottom: 16px; padding: 12px; background: #FAEDE9; border-radius: 12px; border: 1px solid rgba(181, 72, 59, 0.2);">
-                        <strong style="color: #B5483B; display: flex; align-items: center; gap: 6px;">⚠️ Overdue Na</strong>
-                        <ul style="margin-top: 8px; margin-bottom: 0; padding-left: 18px; list-style-type: disc;">`;
-                    overdue.forEach(b => {
-                        htmlMsg += `<li style="margin-bottom: 4px;">${b.title} — <b style="font-family: 'JetBrains Mono', monospace;">₱${window.peso(b.amount)}</b></li>`;
-                    });
-                    htmlMsg += `</ul></div>`;
+                const lines = [];
+                if (overdue.length) {
+                    lines.push("Overdue:", ...overdue.map(b => `${b.title} — ₱${window.peso(b.amount)}`));
                 }
-
-                if (upcoming.length > 0) {
-                    htmlMsg += `<div>
-                        <strong style="color: #1F6F54; display: flex; align-items: center; gap: 6px;">📅 Paalala sa Bayarin</strong>
-                        <ul style="margin-top: 10px; margin-bottom: 0; padding-left: 0; list-style-type: none;">`;
-                    upcoming.forEach(b => {
-                        let dayLabel = "";
-                        if (b.diffDays === 0) dayLabel = "Ngayong Araw!";
-                        else if (b.diffDays === 1) dayLabel = "Bukas";
-                        else dayLabel = `Sa loob ng ${b.diffDays} araw`;
-
-                        htmlMsg += `<li style="margin-bottom: 10px; border-left: 3px solid #2F8E6C; padding-left: 10px; background: #F1F4EF; padding-top: 6px; padding-bottom: 6px; border-radius: 0 8px 8px 0;">
-                            <div style="font-weight: 600;">${b.title} — <span style="font-family: 'JetBrains Mono', monospace;">₱${window.peso(b.amount)}</span></div>
-                            <div style="font-size: 10px; color: #2F8E6C; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 3px;">${dayLabel}</div>
-                        </li>`;
-                    });
-                    htmlMsg += `</ul></div>`;
+                if (upcoming.length) {
+                    if (lines.length) lines.push("");
+                    lines.push("Paparating:", ...upcoming.map(b => {
+                        const dayLabel = b.diffDays === 0 ? "Ngayong araw" : b.diffDays === 1 ? "Bukas" : `Sa loob ng ${b.diffDays} araw`;
+                        return `${b.title} — ₱${window.peso(b.amount)} (${dayLabel})`;
+                    }));
                 }
-
-                htmlMsg += `</div>`;
-
                 Swal.fire({
                     title: 'May Babayaran Ka',
-                    html: htmlMsg,
+                    text: lines.join("\n"),
                     confirmButtonText: 'Sige, Titingnan Ko',
                     confirmButtonColor: '#1F6F54',
                     customClass: { popup: 'tipid-swal' }
                 });
 
-                sessionStorage.setItem('tipid_bills_notified', 'true');
+                sessionStorage.setItem(notificationKey, 'true');
             }
         }
-    }, [bills, loading]);
+    }, [bills, loading, uid]);
 
     const handleAddBill = async (e) => {
         e.preventDefault();

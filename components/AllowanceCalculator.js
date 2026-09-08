@@ -110,6 +110,10 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
     };
     const DEFAULT_META = { color: "#6B7280", bg: "#EEF0F2", dark: "rgba(107,114,128,0.15)", icon: <><circle cx="6" cy="12" r="1.4" /><circle cx="12" cy="12" r="1.4" /><circle cx="18" cy="12" r="1.4" /></> };
     const getCategoryMeta = (cat) => CATEGORY_META[cat] || DEFAULT_META;
+    const moneyOrZero = (value) => {
+        try { return window.TipidCore.money(value || 0, { allowZero: true }); }
+        catch (_) { return 0; }
+    };
 
     const [salary, setSalary] = useState("");
     const [bills, setBills] = useState("");
@@ -165,39 +169,24 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
     // dashboard computes it — so what the user sees here always matches
     // what they'd see there.
     const walletBalances = useMemo(() => {
-        const balances = {};
-        Object.keys(baseBalances).forEach(k => balances[k] = parseFloat(baseBalances[k]) || 0);
-        entries.forEach(e => {
-            const m = e.method || "Cash";
-            const amt = parseFloat(e.amount) || 0;
-            if (balances[m] === undefined) balances[m] = 0;
-            if (e.type === "income") balances[m] += amt;
-            else balances[m] -= amt;
-        });
-        return balances;
+        return window.TipidCore.walletBalances(entries, baseBalances);
     }, [entries, baseBalances]);
 
     useEffect(() => {
-        if (!walletIds.includes(expMethod)) setExpMethod(walletIds[0] || "Cash");
-    }, [walletIds]);
+        let preferred = null;
+        try { preferred = localStorage.getItem(window.TipidCore.storageKey(uid, "default_wallet")); } catch (_) {}
+        if (!walletIds.includes(expMethod)) setExpMethod(walletIds.includes(preferred) ? preferred : (walletIds[0] || "Cash"));
+    }, [walletIds, uid]);
 
     const [dismissedBanner, setDismissedBanner] = useState(false);
     const [toasts, setToasts] = useState([]);
     const [notifEnabled, setNotifEnabled] = useState(false);
     const notifiedFlags = useRef({ danger: false, warning: false, payday: false });
 
-    const todayKey = (d = new Date()) => {
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, "0");
-        const dd = String(d.getDate()).padStart(2, "0");
-        return `${yyyy}-${mm}-${dd}`;
-    };
+    const todayKey = (d = new Date()) => window.TipidCore.manilaDateKey(d);
 
     const entryToDate = (entry) => {
-        const raw = entry.createdAt;
-        if (raw && typeof raw.toDate === "function") return raw.toDate();
-        if (raw) return new Date(raw);
-        return new Date();
+        return window.TipidCore.entryDate(entry);
     };
 
     const pushToast = (message, tone = "success") => {
@@ -279,9 +268,9 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                 setSaving(true);
                 await setDoc(doc(window.db, "users", uid), {
                     allowance: {
-                        salary: parseFloat(salary) || 0,
-                        bills: parseFloat(bills) || 0,
-                        savings: parseFloat(savings) || 0,
+                        salary: moneyOrZero(salary),
+                        bills: moneyOrZero(bills),
+                        savings: moneyOrZero(savings),
                         paydayDate: paydayDate || null,
                         updatedAt: serverTimestamp()
                     }
@@ -302,13 +291,13 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
     }, [entries]);
 
     const spentToday = useMemo(
-        () => todaysExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
+        () => window.TipidCore.sumMoney(todaysExpenses.map(e => e.amount)),
         [todaysExpenses]
     );
 
-    const numSalary = parseFloat(salary) || 0;
-    const numBills = parseFloat(bills) || 0;
-    const numSavings = parseFloat(savings) || 0;
+    const numSalary = moneyOrZero(salary);
+    const numBills = moneyOrZero(bills);
+    const numSavings = moneyOrZero(savings);
 
     const daysLeft = (() => {
         if (!paydayDate) return 0;
@@ -340,7 +329,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
             const key = todayKey(d);
             const total = entries
                 .filter(e => e.type !== "income" && todayKey(entryToDate(e)) === key)
-                .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+                .reduce((sum, e) => window.TipidCore.sumMoney([sum, e.amount]), 0);
             out.push({ key, dow: d.getDay(), total, isToday: i === 0 });
         }
         return out;
@@ -427,7 +416,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
             return Swal.fire({
                 icon: 'error',
                 title: 'Kulang ang Balanse',
-                html: `Hindi mo pwedeng gamitin ang <b>${walletMeta(expMethod).name}</b> dahil <b>₱${window.peso(currentBalance)}</b> na lang ang laman nito.`,
+                text: `Hindi mo pwedeng gamitin ang ${walletMeta(expMethod).name} dahil ₱${window.peso(currentBalance)} na lang ang laman nito.`,
                 confirmButtonColor: '#B5483B',
                 customClass: { popup: 'tipid-swal' }
             });
@@ -883,7 +872,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                                     <button
                                         key={a}
                                         type="button"
-                                        onClick={() => setExpAmount(String((parseFloat(expAmount) || 0) + a))}
+                                        onClick={() => setExpAmount(String(window.TipidCore.sumMoney([moneyOrZero(expAmount), a])))}
                                         className="text-[11px] font-mono font-bold text-ink2/60 dark:text-paper/60 border border-black/5 dark:border-white/10 bg-white dark:bg-black/20 hover:bg-black/5 dark:hover:bg-white/10 active:scale-95 px-3 py-1.5 rounded-lg shadow-sm transition-all duration-150"
                                     >
                                         +₱{a}

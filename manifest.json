@@ -6,21 +6,23 @@
   "start_url": "/login.html",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "lang": "fil",
   "background_color": "#F1F4EF",
   "theme_color": "#123D2E",
   "categories": ["finance", "productivity"],
   "icons": [
     {
-      "src": "/assets/tipid_mascot_full.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "/assets/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     },
     {
-      "src": "/assets/tipid_mascot_full.png",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "src": "/assets/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }

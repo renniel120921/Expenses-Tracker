@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="fil" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="/app.css">
+    <link rel="manifest" href="/manifest.json">
+    <script src="/app-utils.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Hulugan Tracker — Tipid</title>
     <meta name="theme-color" content="#1F6F54">
@@ -187,9 +190,7 @@
         // InstallmentTracker.js required.
 
         function addMonths(date, months) {
-            const d = new Date(date);
-            d.setMonth(d.getMonth() + months);
-            return d;
+            return window.TipidCore.addMonthsClamped(date, months);
         }
 
         function formatDatePH(date) {
@@ -230,7 +231,7 @@
                 totalRemaining += (item.totalAmount - paidSoFar);
 
                 const startD = resolveStartDate(item);
-                const dueDate = addMonths(startD, item.paidMonths + 1);
+                const dueDate = addMonths(startD, item.paidMonths);
 
                 if (dueDate < today) overdueCount += 1;
                 if (!nearestDue || dueDate < nearestDue) nearestDue = dueDate;

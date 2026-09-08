@@ -3,9 +3,7 @@
 // ---- date helpers ---------------------------------------------------
 
 function addMonths(date, months) {
-    const d = new Date(date);
-    d.setMonth(d.getMonth() + months);
-    return d;
+    return window.TipidCore.addMonthsClamped(date, months);
 }
 
 function formatDatePH(date) {
@@ -166,8 +164,10 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
     // If the previously-picked method disappears (or on first load once
     // wallets arrive), fall back to the first available one.
     useEffect(() => {
-        if (!walletIds.includes(paymentMethod)) setPaymentMethod(walletIds[0] || "Cash");
-    }, [walletIds]);
+        let preferred = null;
+        try { preferred = localStorage.getItem(window.TipidCore.storageKey(uid, "default_wallet")); } catch (_) {}
+        if (!walletIds.includes(paymentMethod)) setPaymentMethod(walletIds.includes(preferred) ? preferred : (walletIds[0] || "Cash"));
+    }, [walletIds, uid]);
 
     useEffect(() => {
         localStorage.setItem(`tipid_installments_${uid}`, JSON.stringify(items));
@@ -178,7 +178,8 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
     // Live preview numbers for the price section, so mistakes (like typing
     // the monthly amount into "Kabuuang Babayaran" instead of the total)
     // are obvious before you even hit save.
-    const amtNum = parseFloat(totalAmount);
+    let amtNum = NaN;
+    try { if (totalAmount !== "") amtNum = window.TipidCore.money(totalAmount); } catch (_) {}
     const termsNum = parseInt(terms);
     const srpNum = srp.trim() === "" ? null : parseFloat(srp);
     const previewMonthly = (!isNaN(amtNum) && !isNaN(termsNum) && termsNum > 0) ? amtNum / termsNum : null;
@@ -186,7 +187,8 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
 
     const handleAdd = async (e) => {
         e.preventDefault();
-        const amt = parseFloat(totalAmount);
+        let amt = NaN;
+        try { amt = window.TipidCore.money(totalAmount); } catch (_) {}
         const t = parseInt(terms);
         const srpVal = srp.trim() === "" ? null : parseFloat(srp);
 
@@ -209,7 +211,7 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
             const { value: confirmedPaid, isConfirmed } = await Swal.fire({
                 icon: 'question',
                 title: 'Ilang buwan na ba ang nabayaran mo?',
-                html: `Ang unang bayad ay noong <b>${formatDatePH(new Date(startDate))}</b>. Base dito, malamang <b>${suggested}</b> buwan na ang dapat mong nabayaran hanggang ngayon. I-adjust kung iba.`,
+                text: `Ang unang bayad ay noong ${formatDatePH(new Date(startDate))}. Base dito, malamang ${suggested} buwan na ang dapat mong nabayaran hanggang ngayon. I-adjust kung iba.`,
                 input: 'number',
                 inputValue: suggested,
                 inputAttributes: { min: 0, max: String(t), step: 1 },
@@ -238,7 +240,7 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
             totalAmount: amt,       // total amount actually being paid (post-markup)
             terms: t,
             paidMonths,
-            monthly: amt / t,
+            monthly: window.TipidCore.fromCentavos(Math.round(window.TipidCore.toCentavos(amt) / t)),
             startDate,              // due date of the FIRST payment — drives all due-date math
         };
 

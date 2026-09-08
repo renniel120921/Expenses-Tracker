@@ -10,7 +10,8 @@ window.GroceryList = function GroceryList({ uid }) {
     });
 
     const [budget, setBudget] = useState(() => {
-        return parseFloat(localStorage.getItem(`tipid_grocery_budget_${uid}`)) || 0;
+        try { return window.TipidCore.money(localStorage.getItem(`tipid_grocery_budget_${uid}`) || 0, { allowZero: true }); }
+        catch (_) { return 0; }
     });
 
     const [newItemName, setNewItemName] = useState("");
@@ -28,11 +29,11 @@ window.GroceryList = function GroceryList({ uid }) {
 
     // Computations
     const runningTotal = useMemo(() => {
-        return items.filter(item => item.isChecked).reduce((sum, item) => sum + item.price, 0);
+        return window.TipidCore.sumMoney(items.filter(item => item.isChecked).map(item => item.price));
     }, [items]);
 
     const expectedTotal = useMemo(() => {
-        return items.reduce((sum, item) => sum + item.price, 0);
+        return window.TipidCore.sumMoney(items.map(item => item.price));
     }, [items]);
 
     const remaining = budget - runningTotal;
@@ -40,7 +41,8 @@ window.GroceryList = function GroceryList({ uid }) {
 
     const addItem = (e) => {
         e.preventDefault();
-        const price = parseFloat(newItemPrice);
+        let price;
+        try { price = window.TipidCore.money(newItemPrice, { allowZero: true }); } catch (_) { price = NaN; }
 
         if (!newItemName.trim() || isNaN(price) || price < 0) {
             return Swal.fire({ icon: 'warning', title: 'Teka muna!', text: 'Ilagay ang pangalan at tamang presyo ng bibilhin.', confirmButtonColor: '#1F6F54', customClass: { popup: 'tipid-swal' }});
@@ -73,7 +75,7 @@ window.GroceryList = function GroceryList({ uid }) {
 
         Swal.fire({
             title: 'I-log ang Gastos?',
-            html: `Idadagdag ang <b>₱${window.peso(runningTotal)}</b> sa iyong history bilang gastos sa <b>Pagkain</b> (Cash).`,
+            text: `Idadagdag ang ₱${window.peso(runningTotal)} sa iyong history bilang gastos sa Pagkain (Cash).`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#1F6F54',
@@ -148,7 +150,10 @@ window.GroceryList = function GroceryList({ uid }) {
                         <input
                             type="number"
                             value={budget || ""}
-                            onChange={(e) => setBudget(parseFloat(e.target.value) || 0)}
+                            onChange={(e) => {
+                                try { setBudget(window.TipidCore.money(e.target.value || 0, { allowZero: true })); }
+                                catch (_) { setBudget(0); }
+                            }}
                             placeholder="0.00"
                             className="w-full bg-transparent font-mono text-xl font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
                         />

@@ -10,18 +10,27 @@
 //
 // Bump BOTH version numbers below whenever you change the file list or want
 // old clients to drop their cached copies.
-const CACHE_VERSION = 'v17'; // Bumped to v4 to force full shell caching
+const CACHE_VERSION = 'v18';
 const CACHE_NAME = `tipid-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `tipid-runtime-${CACHE_VERSION}`;
 
 const APP_SHELL = [
   '/',
+  '/index.html',
   '/login.html',
   '/signup.html',
   '/dashboard.html',
   '/chart.html',
   '/history.html',
   '/profile.html',
+  '/allowance.html',
+  '/bills.html',
+  '/grocery.html',
+  '/installments.html',
+  '/scanner.html',
+  '/utang.html',
+  '/app.css',
+  '/app-utils.js',
   '/firebase.js',
   '/firebase-auth.js',
   '/firebase-data.js',
@@ -31,10 +40,29 @@ const APP_SHELL = [
   '/components/ExpenseForm.js',
   '/components/ExpenseItem.js',
   '/components/ExpenseList.js',
+  '/components/AllowanceCalculator.js',
+  '/components/BillsCenter.js',
+  '/components/GroceryList.js',
+  '/components/InstallmentTracker.js',
+  '/components/OnboardingModal.js',
+  '/components/ReceiptScanner.js',
+  '/components/UtangTracker.js',
   '/manifest.json',
   '/assets/logo.svg',
   '/assets/logo-512.png',
   '/assets/favicon-32.png',
+  '/assets/allowance_mascot.png',
+  '/assets/bills_mascot.png',
+  '/assets/chart_mascot.png',
+  '/assets/greetings_mascot.png',
+  '/assets/history_mascot.png',
+  '/assets/login_mascot.png',
+  '/assets/signup_mascot.png',
+  '/assets/tipid_mascot.png',
+  '/assets/tipid_mascot_full.png',
+  '/assets/sleeping_mascot.png',
+  '/assets/wakeup_mascot.png',
+  '/assets/working_mascot.png',
 ];
 
 // Cross-origin hosts we're willing to cache.

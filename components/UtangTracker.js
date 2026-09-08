@@ -126,12 +126,12 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
     // ---- derived totals (unpaid only) ----
     const totals = useMemo(() => {
         const unpaid = utangList.filter(u => u.status !== "Paid");
-        const owedToMe = unpaid.filter(u => u.direction !== "i_owe").reduce((s, u) => s + (Number(u.amount) || 0), 0);
-        const iOwe = unpaid.filter(u => u.direction === "i_owe").reduce((s, u) => s + (Number(u.amount) || 0), 0);
+        const owedToMe = window.TipidCore.sumMoney(unpaid.filter(u => u.direction !== "i_owe").map(u => u.amount));
+        const iOwe = window.TipidCore.sumMoney(unpaid.filter(u => u.direction === "i_owe").map(u => u.amount));
         return { owedToMe, iOwe, net: owedToMe - iOwe };
     }, [utangList]);
 
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = window.TipidCore.manilaDateKey();
 
     const filteredList = useMemo(() => {
         let list = utangList;

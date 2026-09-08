@@ -8,7 +8,10 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"] }) {
     // Extracted Data States
     const [extractedAmount, setExtractedAmount] = useState("");
     const [extractedCategory, setExtractedCategory] = useState("Pagkain");
-    const [method, setMethod] = useState(wallets[0] || "Cash"); // 🌟 NEW PAYMENT OPTION STATE
+    const preferredWallet = (() => {
+        try { return localStorage.getItem(window.TipidCore.storageKey(uid, "default_wallet")); } catch (_) { return null; }
+    })();
+    const [method, setMethod] = useState(wallets.includes(preferredWallet) ? preferredWallet : (wallets[0] || "Cash"));
     const [amountWasDetected, setAmountWasDetected] = useState(false);
     const [saving, setSaving] = useState(false);
     const [scanError, setScanError] = useState(null);
@@ -81,6 +84,10 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"] }) {
     const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        if (!file.type.startsWith("image/") || file.size > 10 * 1024 * 1024) {
+            e.target.value = "";
+            return Swal.fire({ icon: 'warning', title: 'Hindi mabasang file', text: 'Pumili ng image na hanggang 10 MB.', confirmButtonColor: '#1F6F54', customClass: { popup: 'tipid-swal' }});
+        }
 
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -95,7 +102,7 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"] }) {
         if (window.Tesseract) return Promise.resolve();
         return new Promise((resolve, reject) => {
             const script = document.createElement("script");
-            script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+            script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
             script.onload = () => resolve();
             script.onerror = () => reject(new Error("Failed to load OCR engine"));
             document.head.appendChild(script);
@@ -106,11 +113,12 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"] }) {
         if (!rawText || !rawText.trim()) return null;
         const text = rawText.replace(/,/g, "");
         const moneyPattern = /(?:₱|P|PHP)?\s*(\d{1,6}(?:\.\d{1,2})?)/gi;
-        const priorityKeywords = /total\s*(amount|due|sale)?|amount\s*due|grand\s*total/i;
+        const finalTotalKeywords = /\b(grand\s*total|total\s*(amount|due|sale)?|amount\s*due)\b/i;
+        const subtotalKeyword = /\bsub\s*total\b/i;
         const lines = text.split(/\n+/);
 
         for (const line of lines) {
-            if (priorityKeywords.test(line)) {
+            if (finalTotalKeywords.test(line) && !subtotalKeyword.test(line)) {
                 const matches = [...line.matchAll(moneyPattern)].map(m => parseFloat(m[1])).filter(n => !isNaN(n) && n > 0);
                 if (matches.length > 0) return Math.max(...matches).toFixed(2);
             }
