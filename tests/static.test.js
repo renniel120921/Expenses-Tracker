@@ -50,3 +50,76 @@ test("JSON configuration parses", () => {
     assert.doesNotThrow(() => JSON.parse(fs.readFileSync(path.join(root, file), "utf8")), file);
   }
 });
+
+test("CSP policy in vercel.json is secure and permits required runtime origins", () => {
+  const vercel = JSON.parse(fs.readFileSync(path.join(root, "vercel.json"), "utf8"));
+  const headerObj = vercel.headers[0].headers.find(h => h.key === "Content-Security-Policy");
+  assert.ok(headerObj, "Content-Security-Policy header exists");
+  const csp = headerObj.value;
+
+  // Directive existence
+  assert.match(csp, /default-src 'self'/);
+  assert.match(csp, /object-src 'none'/);
+  assert.match(csp, /frame-ancestors 'none'/);
+  assert.match(csp, /form-action 'self'/);
+  assert.match(csp, /manifest-src 'self'/);
+  assert.match(csp, /worker-src 'self' blob:/);
+  assert.doesNotMatch(csp, /worker-src[^;]*cdn\.jsdelivr\.net/);
+
+  // Connect-src origins
+  const connectMatch = csp.match(/connect-src ([^;]+);/);
+  assert.ok(connectMatch, "connect-src directive exists");
+  const connectSources = connectMatch[1].split(/\s+/);
+
+  // No wildcards in connect-src
+  assert.ok(!connectSources.includes("*"), "connect-src does not contain *");
+  assert.ok(!connectSources.includes("https:"), "connect-src does not contain broad https:");
+  assert.ok(!connectSources.includes("data:"), "connect-src does not contain data:");
+
+  // Required CDN origins
+  for (const origin of [
+    "https://cdn.tailwindcss.com",
+    "https://unpkg.com",
+    "https://cdn.jsdelivr.net",
+    "https://www.gstatic.com",
+  ]) {
+    assert.ok(connectSources.includes(origin), `connect-src includes ${origin}`);
+  }
+});
+
+test("Service Worker implements safe precache, response guarantees, and private API exclusions", () => {
+  const sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
+
+  // Cache version
+  assert.match(sw, /CACHE_VERSION\s*=\s*'v19'/);
+
+  // Split shell assets
+  assert.match(sw, /const CORE_SHELL\s*=\s*\[/);
+  assert.match(sw, /const OPTIONAL_SHELL\s*=\s*\[/);
+
+  // Private API exclusions
+  assert.match(sw, /firestore\.googleapis\.com/);
+  assert.match(sw, /identitytoolkit\.googleapis\.com/);
+  assert.match(sw, /securetoken\.googleapis\.com/);
+  assert.match(sw, /isPrivateOrApiRequest/);
+
+  // No unsafe catch pattern
+  assert.doesNotMatch(sw, /\.catch\(\s*\(\)\s*=>\s*cached\s*\)/);
+  assert.doesNotMatch(sw, /\.catch\(console\.error\)/);
+
+  // Guaranteed Response fallback
+  assert.match(sw, /return new Response\(/);
+
+  // Deletes only tipid caches
+  assert.match(sw, /tipid-shell-/);
+  assert.match(sw, /tipid-runtime-/);
+});
+
+test("layout constraints and landing main maintain desktop responsiveness", () => {
+  const css = fs.readFileSync(path.join(root, "app.css"), "utf8");
+  assert.doesNotMatch(css, /main\s*\{\s*max-width:/);
+  assert.match(css, /\.tipid-container\s*\{/);
+
+  const indexHtml = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  assert.match(indexHtml, /<main[^>]*landing-main[^>]*w-full[^>]*max-w-none/);
+});
