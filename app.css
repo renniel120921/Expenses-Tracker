@@ -80,6 +80,31 @@ button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: no
 }
 
 .dark .tipid-offline { background: #3a2d12; color: #ffe7a2; border-color: rgba(255, 231, 162, .25); }
+.tipid-update-prompt {
+  position: fixed;
+  z-index: 10001;
+  right: max(16px, var(--tipid-safe-right));
+  bottom: max(16px, var(--tipid-safe-bottom));
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: min(31rem, calc(100vw - 32px));
+  padding: 14px;
+  border: 1px solid var(--tipid-separator);
+  border-radius: var(--tipid-radius-md);
+  background: var(--tipid-surface-solid);
+  color: var(--tipid-text);
+  box-shadow: 0 18px 50px rgba(18, 61, 46, .22);
+}
+.tipid-update-prompt strong, .tipid-update-prompt span { display: block; }
+.tipid-update-prompt strong { font-size: 14px; }
+.tipid-update-prompt span { margin-top: 3px; color: var(--tipid-muted); font-size: 12px; line-height: 1.4; }
+.tipid-update-actions { display: flex; gap: 8px; margin-left: auto; flex-shrink: 0; }
+.tipid-update-actions button { min-height: 40px; padding: 0 13px; border-radius: 11px; font-size: 12px; font-weight: 700; }
+.tipid-update-later { color: var(--tipid-muted); background: transparent; }
+.tipid-update-now { color: white; background: var(--tipid-accent); }
+.tipid-update-now:hover { background: var(--tipid-accent-strong); }
+.tipid-update-actions button:disabled { opacity: .65; }
 .tipid-sr-live { position: fixed; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .tipid-swal { max-width: min(92vw, 32rem) !important; border-radius: var(--tipid-radius-lg) !important; }
 .swal2-actions { padding-bottom: var(--tipid-safe-bottom); }
@@ -89,6 +114,9 @@ button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: no
   .swal2-popup { width: calc(100vw - 24px) !important; padding: 1.1rem !important; }
   .swal2-actions { width: 100%; }
   .swal2-actions button { flex: 1 1 0; min-height: 46px; }
+  .tipid-update-prompt { left: 12px; right: 12px; bottom: max(12px, var(--tipid-safe-bottom)); width: auto; flex-direction: column; align-items: stretch; }
+  .tipid-update-actions { width: 100%; margin-left: 0; }
+  .tipid-update-actions button { flex: 1; min-height: 44px; }
 }
 
 .tipid-container {

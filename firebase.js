@@ -6,7 +6,6 @@
 // other — that mismatch is what causes "Component auth has not been
 // registered yet."
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-analytics.js";
 
 // Pinalitan natin ang getFirestore para isama ang offline persistence tools
 import {
@@ -34,13 +33,11 @@ const firebaseConfig = {
   projectId: "expensestracker-18d2b",
   storageBucket: "expensestracker-18d2b.firebasestorage.app",
   messagingSenderId: "316182556072",
-  appId: "1:316182556072:web:d673007a335bc4622b019d",
-  measurementId: "G-XEPDS0FG10"
+  appId: "1:316182556072:web:d673007a335bc4622b019d"
 };
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
 // Initialize Firestore with Offline Persistence ENABLED
 // Pinapayagan nito ang app na gumana, mag-save, at mag-load ng data kahit walang internet.

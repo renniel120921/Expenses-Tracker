@@ -10,7 +10,7 @@
 //
 // Bump BOTH version numbers below whenever you change the file list or want
 // old clients to drop their cached copies.
-const CACHE_VERSION = 'v20';
+const CACHE_VERSION = 'v22';
 const CACHE_NAME = `tipid-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `tipid-runtime-${CACHE_VERSION}`;
 
@@ -77,23 +77,16 @@ const RUNTIME_HOSTS = [
   'cdn.jsdelivr.net',
 ];
 
-// Database, authentication, and telemetry endpoints that must NEVER be cached or intercepted
+// Database and authentication endpoints that must NEVER be cached or intercepted
 const PRIVATE_API_HOSTS = [
   'firestore.googleapis.com',
   'identitytoolkit.googleapis.com',
   'securetoken.googleapis.com',
   'accounts.google.com',
-  'www.googletagmanager.com',
-  'www.google-analytics.com',
-  'analytics.google.com',
-  'region1.google-analytics.com',
 ];
 
 function isPrivateOrApiRequest(url) {
   if (PRIVATE_API_HOSTS.includes(url.hostname)) return true;
-  if (url.hostname.endsWith('.google-analytics.com') || url.hostname === 'google-analytics.com') return true;
-  if (url.hostname.endsWith('.googletagmanager.com') || url.hostname === 'googletagmanager.com') return true;
-  if (url.hostname === 'www.google.com' && url.pathname.startsWith('/g/collect')) return true;
   if (url.hostname.endsWith('.firebaseio.com') || url.hostname === 'firebaseio.com') return true;
   if (url.hostname.endsWith('.firebaseapp.com') || url.hostname === 'firebaseapp.com') return true;
   return false;
@@ -135,8 +128,6 @@ self.addEventListener('install', event => {
         }
       });
       await Promise.all(optionalPromises);
-
-      await self.skipWaiting();
     })()
   );
 });
@@ -159,7 +150,8 @@ self.addEventListener('activate', event => {
 
 // Lets a page force an update immediately
 self.addEventListener('message', event => {
-  if (event.data === 'SKIP_WAITING') self.skipWaiting();
+  const type = typeof event.data === 'string' ? event.data : event.data?.type;
+  if (type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 // --- fetch -------------------------------------------------------------------
@@ -193,7 +185,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // All other cross-origin requests (fonts, telemetry, external images) pass through normally
+  // All other cross-origin requests (fonts and external images) pass through normally
 });
 
 // Same-origin app shell: prefer network, fall back to cache or safe offline response

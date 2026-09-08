@@ -618,32 +618,5 @@
         ReactDOM.createRoot(document.getElementById("root")).render(<SignUp />);
     </script>
 
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').then(registration => {
-                    registration.addEventListener('updatefound', () => {
-                        const newWorker = registration.installing;
-
-                        newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                Swal.fire({
-                                    title: "May Bagong Update! 🎉",
-                                    text: "May in-add kaming bagong features sa Tipid App. I-refresh ang app para magamit ito.",
-                                    icon: "info",
-                                    confirmButtonText: "I-update Ngayon",
-                                    confirmButtonColor: "#1F6F54",
-                                    allowOutsideClick: false,
-                                    customClass: { popup: "tipid-swal" }
-                                }).then(() => {
-                                    window.location.reload();
-                                });
-                            }
-                        });
-                    });
-                }).catch(err => console.error("Service Worker registration failed:", err));
-            });
-        }
-    </script>
 </body>
 </html>

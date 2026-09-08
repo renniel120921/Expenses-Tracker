@@ -146,6 +146,65 @@
     }
   }
 
+  let updateAccepted = false;
+  let updateReloadStarted = false;
+
+  function showUpdatePrompt(registration, worker = registration.waiting) {
+    if (!navigator.serviceWorker.controller || !worker || document.getElementById("tipid-update-prompt")) return;
+
+    const prompt = document.createElement("aside");
+    prompt.id = "tipid-update-prompt";
+    prompt.className = "tipid-update-prompt";
+    prompt.setAttribute("role", "status");
+    prompt.setAttribute("aria-live", "polite");
+
+    const copy = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = "May bagong bersyon ng Tipid.";
+    const description = document.createElement("span");
+    description.textContent = "Refresh para makuha ang latest update.";
+    copy.append(title, description);
+
+    const actions = document.createElement("div");
+    actions.className = "tipid-update-actions";
+    const later = document.createElement("button");
+    later.type = "button";
+    later.className = "tipid-update-later";
+    later.textContent = "Mamaya";
+    later.addEventListener("click", () => prompt.remove());
+    const update = document.createElement("button");
+    update.type = "button";
+    update.className = "tipid-update-now";
+    update.textContent = "Update Now";
+    update.addEventListener("click", () => {
+      if (updateAccepted) return;
+      updateAccepted = true;
+      update.disabled = true;
+      later.disabled = true;
+      update.textContent = "Ina-update…";
+      (registration.waiting || worker).postMessage({ type: "SKIP_WAITING" });
+    });
+    actions.append(later, update);
+    prompt.append(copy, actions);
+    document.body.appendChild(prompt);
+  }
+
+  async function registerServiceWorker() {
+    try {
+      const registration = await navigator.serviceWorker.register("/sw.js");
+      if (registration.waiting) showUpdatePrompt(registration);
+      registration.addEventListener("updatefound", () => {
+        const worker = registration.installing;
+        if (!worker) return;
+        worker.addEventListener("statechange", () => {
+          if (worker.state === "installed" && navigator.serviceWorker.controller) showUpdatePrompt(registration, worker);
+        });
+      });
+    } catch (error) {
+      console.error("Service Worker registration failed:", error);
+    }
+  }
+
   window.TipidCore = Object.freeze({
     toCentavos, fromCentavos, money, sumMoney, walletBalances, cleanText, optionalText,
     assertChoice, isDateKey, manilaDateKey, entryDate, addMonthsClamped,
@@ -158,6 +217,11 @@
   else updateNetworkStatus();
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}), { once: true });
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!updateAccepted || updateReloadStarted) return;
+      updateReloadStarted = true;
+      window.location.reload();
+    });
+    window.addEventListener("load", registerServiceWorker, { once: true });
   }
 })();

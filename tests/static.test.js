@@ -51,6 +51,30 @@ test("JSON configuration parses", () => {
   }
 });
 
+test("production runtime contains no analytics or tag-manager integration", () => {
+  const productionFiles = [
+    "firebase.js", "firebase-auth.js", "firebase-data.js", "sw.js", "vercel.json",
+    ...pages,
+    ...fs.readdirSync(path.join(root, "components")).filter(name => name.endsWith(".js")).map(name => path.join("components", name)),
+  ];
+  const source = productionFiles.map(file => fs.readFileSync(path.join(root, file), "utf8")).join("\n");
+  for (const pattern of [
+    /getAnalytics/,
+    /firebase-analytics/,
+    /\bgtag\s*\(/,
+    /gtag\.js/,
+    /googletagmanager/i,
+    /google-analytics/i,
+    /measurementId/,
+    /\bdataLayer\b/,
+    /G-XEPDS0FG10/,
+  ]) assert.doesNotMatch(source, pattern);
+
+  const auth = fs.readFileSync(path.join(root, "firebase-auth.js"), "utf8");
+  assert.match(auth, /new GoogleAuthProvider\(\)/);
+  assert.match(auth, /signInWithPopup\(auth, googleProvider\)/);
+});
+
 test("CSP policy in vercel.json is secure and permits required runtime origins", () => {
   const vercel = JSON.parse(fs.readFileSync(path.join(root, "vercel.json"), "utf8"));
   const headerObj = vercel.headers[0].headers.find(h => h.key === "Content-Security-Policy");
@@ -70,7 +94,8 @@ test("CSP policy in vercel.json is secure and permits required runtime origins",
   const scriptMatch = csp.match(/script-src ([^;]+);/);
   assert.ok(scriptMatch, "script-src directive exists");
   const scriptSources = scriptMatch[1].split(/\s+/);
-  assert.ok(scriptSources.includes("https://www.googletagmanager.com"), "script-src includes https://www.googletagmanager.com");
+  assert.ok(scriptSources.includes("https://apis.google.com"), "script-src retains the Google Auth API origin");
+  assert.ok(!scriptSources.includes("https://www.googletagmanager.com"), "script-src excludes Google Tag Manager");
 
   // Connect-src origins
   const connectMatch = csp.match(/connect-src ([^;]+);/);
@@ -81,46 +106,65 @@ test("CSP policy in vercel.json is secure and permits required runtime origins",
   assert.ok(!connectSources.includes("*"), "connect-src does not contain *");
   assert.ok(!connectSources.includes("https:"), "connect-src does not contain broad https:");
   assert.ok(!connectSources.includes("data:"), "connect-src does not contain data:");
+  assert.ok(!connectSources.includes("https://*.google.com"), "connect-src avoids a broad Google wildcard");
+  assert.ok(connectSources.includes("https://accounts.google.com"), "connect-src retains the Google account origin");
   assert.ok(!connectSources.includes("wss://tipid-tracker-app.vercel.app"), "connect-src does not whitelist extension WebSocket");
+  assert.doesNotMatch(csp, /\/ws\/ws/i, "CSP does not whitelist the extension live-reload endpoint");
 
-  // Required CDN and telemetry origins
+  // Required runtime origins
   for (const origin of [
     "https://cdn.tailwindcss.com",
     "https://unpkg.com",
     "https://cdn.jsdelivr.net",
     "https://www.gstatic.com",
-    "https://www.google-analytics.com",
-    "https://analytics.google.com",
-    "https://region1.google-analytics.com",
   ]) {
     assert.ok(connectSources.includes(origin), `connect-src includes ${origin}`);
   }
 
-  // Img-src origins
+  for (const origin of ["https://www.google-analytics.com", "https://analytics.google.com", "https://region1.google-analytics.com"]) {
+    assert.ok(!connectSources.includes(origin), `connect-src excludes ${origin}`);
+  }
+
+  // Img-src excludes analytics pixels
   const imgMatch = csp.match(/img-src ([^;]+);/);
   assert.ok(imgMatch, "img-src directive exists");
   const imgSources = imgMatch[1].split(/\s+/);
-  assert.ok(imgSources.includes("https://www.google-analytics.com"), "img-src includes https://www.google-analytics.com");
-  assert.ok(imgSources.includes("https://www.googletagmanager.com"), "img-src includes https://www.googletagmanager.com");
+  assert.ok(!imgSources.includes("https://www.google-analytics.com"));
+  assert.ok(!imgSources.includes("https://www.googletagmanager.com"));
 });
 
 test("Service Worker implements safe precache, response guarantees, and private API exclusions", () => {
   const sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
+  const client = fs.readFileSync(path.join(root, "app-utils.js"), "utf8");
 
   // Cache version
-  assert.match(sw, /CACHE_VERSION\s*=\s*'v20'/);
+  assert.match(sw, /CACHE_VERSION\s*=\s*'v22'/);
 
   // Split shell assets
   assert.match(sw, /const CORE_SHELL\s*=\s*\[/);
   assert.match(sw, /const OPTIONAL_SHELL\s*=\s*\[/);
 
-  // Private API and telemetry exclusions
+  // Private API exclusions remain while obsolete analytics rules are gone
   assert.match(sw, /firestore\.googleapis\.com/);
   assert.match(sw, /identitytoolkit\.googleapis\.com/);
   assert.match(sw, /securetoken\.googleapis\.com/);
-  assert.match(sw, /www\.googletagmanager\.com/);
-  assert.match(sw, /www\.google-analytics\.com/);
+  assert.match(sw, /accounts\.google\.com/);
+  assert.doesNotMatch(sw, /googletagmanager|google-analytics|\/g\/collect/i);
   assert.match(sw, /isPrivateOrApiRequest/);
+
+  // Updates wait until the current page explicitly accepts them.
+  const installBlock = sw.slice(sw.indexOf("self.addEventListener('install'"), sw.indexOf("self.addEventListener('activate'"));
+  assert.doesNotMatch(installBlock, /skipWaiting/);
+  assert.match(sw, /event\.data\?\.type/);
+  assert.match(sw, /type === 'SKIP_WAITING'\) self\.skipWaiting\(\)/);
+  assert.match(client, /navigator\.serviceWorker\.controller/);
+  assert.match(client, /registration\.waiting/);
+  assert.match(client, /postMessage\(\{ type: "SKIP_WAITING" \}\)/);
+  assert.match(client, /updateReloadStarted = true;\s*window\.location\.reload\(\)/);
+  for (const page of pages) {
+    assert.doesNotMatch(fs.readFileSync(path.join(root, page), "utf8"), /navigator\.serviceWorker\.register/,
+      `${page} must use the shared update registration`);
+  }
 
   // No unsafe catch pattern
   assert.doesNotMatch(sw, /\.catch\(\s*\(\)\s*=>\s*cached\s*\)/);

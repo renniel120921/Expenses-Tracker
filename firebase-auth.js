@@ -270,6 +270,7 @@ function friendlyError(errOrCode) {
     "auth/invalid-credential": "Mali ang email o password.",
     "auth/too-many-requests": "Sobrang dami ng attempts. Subukan ulit mamaya.",
     "auth/popup-closed-by-user": "Na-cancel ang Google sign-in.",
+    "auth/unauthorized-domain": "Hindi authorized ang domain na ito para sa Google sign-in. Pakigamit ang production site.",
     "auth/network-request-failed": "Walang connection. Subukan ulit.",
   };
   return map[code] || "May problema. Subukan ulit.";
@@ -322,6 +323,10 @@ window.TipidAuth = {
     try {
       const cred = await signInWithPopup(auth, googleProvider);
       return cred.user;
+    } catch (err) {
+      // Safe diagnostic: log only the error code and message, never tokens/credentials
+      console.error("[TipidAuth] Google Sign-In failed", { code: err?.code, message: err?.message });
+      throw err;
     } finally {
       releaseInFlight(claim);
     }
