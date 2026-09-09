@@ -28,6 +28,9 @@ const persistenceReady = setPersistence(auth, browserLocalPersistence).catch((er
 });
 
 const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: "select_account",
+});
 
 // Dev aid only — Firebase Auth itself still enforces its own domain/HTTPS
 // rules server-side, this just warns early in the console during local work.
@@ -270,8 +273,11 @@ function friendlyError(errOrCode) {
     "auth/invalid-credential": "Mali ang email o password.",
     "auth/too-many-requests": "Sobrang dami ng attempts. Subukan ulit mamaya.",
     "auth/popup-closed-by-user": "Na-cancel ang Google sign-in.",
+    "auth/popup-blocked": "Na-block ng browser ang Google sign-in popup. Payagan ang popups para sa site na ito at subukan ulit.",
+    "auth/operation-not-supported-in-this-environment": "Hindi suportado ng browser na ito ang Google sign-in popup. Subukan sa updated Chrome, Edge, o Safari.",
     "auth/unauthorized-domain": "Hindi authorized ang domain na ito para sa Google sign-in. Pakigamit ang production site.",
     "auth/network-request-failed": "Walang connection. Subukan ulit.",
+    "auth/account-exists-with-different-credential": "May account na gamit ang email na ito sa ibang sign-in method. Mag-log in gamit ang dati mong paraan.",
   };
   return map[code] || "May problema. Subukan ulit.";
 }

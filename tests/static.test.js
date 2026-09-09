@@ -72,7 +72,13 @@ test("production runtime contains no analytics or tag-manager integration", () =
 
   const auth = fs.readFileSync(path.join(root, "firebase-auth.js"), "utf8");
   assert.match(auth, /new GoogleAuthProvider\(\)/);
+  assert.match(auth, /googleProvider\.setCustomParameters\(\{\s*prompt:\s*["']select_account["']/);
   assert.match(auth, /signInWithPopup\(auth, googleProvider\)/);
+  assert.match(auth, /["']auth\/unauthorized-domain["']:\s*["'][^"']+["']/);
+  assert.match(auth, /["']auth\/popup-blocked["']:\s*["'][^"']+["']/);
+  assert.match(auth, /["']auth\/operation-not-supported-in-this-environment["']:\s*["'][^"']+["']/);
+  assert.match(auth, /["']auth\/account-exists-with-different-credential["']:\s*["'][^"']+["']/);
+  assert.doesNotMatch(auth, /signInWithRedirect|getRedirectResult/);
 });
 
 test("CSP policy in vercel.json is secure and permits required runtime origins", () => {
@@ -149,6 +155,7 @@ test("Service Worker implements safe precache, response guarantees, and private 
   assert.match(sw, /identitytoolkit\.googleapis\.com/);
   assert.match(sw, /securetoken\.googleapis\.com/);
   assert.match(sw, /accounts\.google\.com/);
+  assert.doesNotMatch(sw.match(/const RUNTIME_HOSTS\s*=\s*\[[\s\S]*?\];/)?.[0] || "", /apis\.google\.com/);
   assert.doesNotMatch(sw, /googletagmanager|google-analytics|\/g\/collect/i);
   assert.match(sw, /isPrivateOrApiRequest/);
 
