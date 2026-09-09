@@ -448,9 +448,9 @@
                 setLoading(true);
 
                 try {
-                    await window.TipidAuth.loginWithGoogle();
-
+                    const user = await window.TipidAuth.loginWithGoogle();
                     setLoading(false);
+                    if (!user) return;
 
                     await swalSuccess({
                         title: "Tagumpay!",

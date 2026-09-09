@@ -32,6 +32,15 @@ googleProvider.setCustomParameters({
   prompt: "select_account",
 });
 
+const GOOGLE_POPUP_CANCELLATION_CODES = new Set([
+  "auth/popup-closed-by-user",
+  "auth/cancelled-popup-request",
+]);
+
+function isGooglePopupCancellation(err) {
+  return GOOGLE_POPUP_CANCELLATION_CODES.has(err?.code);
+}
+
 // Dev aid only — Firebase Auth itself still enforces its own domain/HTTPS
 // rules server-side, this just warns early in the console during local work.
 if (location.protocol !== "https:" && !["localhost", "127.0.0.1"].includes(location.hostname)) {
@@ -330,6 +339,7 @@ window.TipidAuth = {
       const cred = await signInWithPopup(auth, googleProvider);
       return cred.user;
     } catch (err) {
+      if (isGooglePopupCancellation(err)) return null;
       // Safe diagnostic: log only the error code and message, never tokens/credentials
       console.error("[TipidAuth] Google Sign-In failed", { code: err?.code, message: err?.message });
       throw err;
