@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fil" class="scroll-smooth">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="/app.css">
@@ -193,19 +193,19 @@
                         <div className="max-w-[70%] sm:max-w-[65%] flex flex-col justify-center">
                             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/20 border border-white/20 mb-4 backdrop-blur-md w-max shadow-sm">
                                 <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-                                <span className="text-[11px] font-semibold text-white/90 uppercase tracking-widest">Daily Budget</span>
+                                <span className="text-[11px] font-semibold text-white/90 uppercase tracking-widest">Daily Pacing</span>
                             </div>
                             <h1 className="font-display text-4xl sm:text-5xl font-bold tracking-tight leading-[1.05] mb-3 drop-shadow-sm">
                                 Allowance
                             </h1>
                             <p className="text-sm sm:text-[15px] font-medium text-white/80 leading-relaxed max-w-sm">
-                                I-budget ang baon mo para umabot hanggang sa susunod na sahod o padala.
+                                Budget your allowance and pace daily spending until your next payday or funds arrival.
                             </p>
                         </div>
 
                         <div className="hidden sm:flex flex-col items-end shrink-0 pb-4">
                             <div className="speech-bubble bg-paper text-ink rounded-2xl px-4 py-3 text-xs font-bold leading-tight max-w-[160px] text-center border border-white/60">
-                                Iwas petsa de peligro! 💸
+                                Pace your budget wisely! 💸
                             </div>
                         </div>
                     </div>
@@ -217,18 +217,18 @@
             const tips = [
                 {
                     icon: "Activity", tone: "expense",
-                    title: "Alamin ang Daily Limit",
-                    body: "Hatiin ang baon sa bilang ng araw bago ang susunod na sahod para alam mo ang safe daily limit mo."
+                    title: "Know your daily limit",
+                    body: "Divide your remaining budget by days left until payday to calculate your safe daily spending allowance."
                 },
                 {
                     icon: "Pencil", tone: "gold",
-                    title: "I-track Kahit Barya",
-                    body: "Kahit barya lang yan o pamasahe sa trike, i-lista mo. Malaking bagay ang maliliit na gastos pag naipon."
+                    title: "Track micro-expenses",
+                    body: "Log everyday micro-purchases and transportation fares. Small unlogged expenses quickly add up over time."
                 },
                 {
                     icon: "Shield", tone: "peso",
                     title: "Save Before You Spend",
-                    body: "Magtabi agad ng ipon pagkatanggap ng allowance bago pa mag-umpisang gumastos."
+                    body: "Set aside your savings target immediately upon receiving your allowance before starting to spend."
                 }
             ];
 
@@ -242,7 +242,7 @@
                 <section className="mt-10 sm:mt-12 fade-up" style={{ animationDelay: "200ms" }} aria-labelledby="tips-heading">
                     <div className="flex items-center gap-3 mb-5 px-1">
                         <window.Icons.Info size={22} className="text-peso dark:text-pesoLight" />
-                        <h2 id="tips-heading" className="font-display text-xl font-bold text-ink dark:text-paper tracking-tight">Tipid hacks: baon edition</h2>
+                        <h2 id="tips-heading" className="font-display text-xl font-bold text-ink dark:text-paper tracking-tight">Smart budget pacing tips</h2>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">

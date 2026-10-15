@@ -202,7 +202,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
 
     const toggleNotifications = async () => {
         if (typeof Notification === "undefined") {
-            pushToast("Hindi supported ng browser mo ang notifications.", "warning");
+            pushToast("Notifications are not supported in your browser.", "warning");
             return;
         }
         if (notifEnabled) {
@@ -214,9 +214,9 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
         if (permission === "granted") {
             setNotifEnabled(true);
             if (uid) localStorage.setItem(`tipid_notif_${uid}`, "on");
-            pushToast("Naka-on na ang browser notifications.", "success");
+            pushToast("Browser notifications enabled.", "success");
         } else {
-            pushToast("Hindi pinayagan ang notifications sa browser settings.", "warning");
+            pushToast("Notifications were blocked in your browser settings.", "warning");
         }
     };
 
@@ -318,7 +318,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
     const isConfigured = numSalary > 0 && !!paydayDate;
 
     // ---------- Smart weekly insights ----------
-    const DAY_LABELS = ["Lin", "Lun", "Mar", "Miy", "Huw", "Biy", "Sab"];
+    const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
     const dailyHistory = useMemo(() => {
         const out = [];
@@ -392,17 +392,17 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
 
         if (isOverBudget && !flags.danger) {
             flags.danger = true; setDismissedBanner(false);
-            notifyBrowser("Sobra ka na sa daily budget!", `Nagastos mo na ang ₱${window.peso(spentToday)} ngayong araw, lagpas sa safe na ₱${window.peso(dailySafe)}.`);
+            notifyBrowser("Daily budget exceeded!", `You have spent ₱${window.peso(spentToday)} today, exceeding your safe daily limit of ₱${window.peso(dailySafe)}.`);
         } else if (!isOverBudget) { flags.danger = false; }
 
         if (isNearLimit && !flags.warning) {
             flags.warning = true; setDismissedBanner(false);
-            notifyBrowser("Malapit ka na sa daily limit", `Nagastos ka na ng ₱${window.peso(spentToday)} sa ₱${window.peso(dailySafe)} na safe daily spending mo.`);
+            notifyBrowser("Approaching daily limit", `You have spent ₱${window.peso(spentToday)} of your ₱${window.peso(dailySafe)} safe daily limit.`);
         } else if (!isNearLimit) { flags.warning = false; }
 
         if (isPaydaySoon && !flags.payday) {
             flags.payday = true; setDismissedBanner(false);
-            notifyBrowser("Papalapit na ang payday", `${daysLeft} araw na lang bago sumapit ang payday mo.`);
+            notifyBrowser("Payday approaching", `${daysLeft} ${daysLeft === 1 ? "day" : "days"} remaining until payday.`);
         } else if (!isPaydaySoon) { flags.payday = false; }
     }, [isOverBudget, isNearLimit, isPaydaySoon, loaded]);
 
@@ -415,8 +415,8 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
         if (amt > currentBalance) {
             return Swal.fire({
                 icon: 'error',
-                title: 'Kulang ang Balanse',
-                text: `Hindi mo pwedeng gamitin ang ${walletMeta(expMethod).name} dahil ₱${window.peso(currentBalance)} na lang ang laman nito.`,
+                title: 'Insufficient Balance',
+                text: `Cannot use ${walletMeta(expMethod).name} because its available balance is only ₱${window.peso(currentBalance)}.`,
                 confirmButtonColor: '#B5483B',
                 customClass: { popup: 'tipid-swal' }
             });
@@ -431,10 +431,10 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                 method: expMethod
             });
             setExpAmount(""); setExpNote("");
-            pushToast("Na-log ang gastos mo.", "success");
+            pushToast("Expense logged successfully.", "success");
         } catch (err) {
             console.error(err);
-            pushToast("Hindi na-save ang gastos. Subukan ulit.", "warning");
+            pushToast("Failed to save expense. Please try again.", "warning");
         } finally {
             setLoggingExpense(false);
         }
@@ -444,18 +444,18 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
         if (!uid || !window.TipidData) return;
         try {
             await window.TipidData.deleteEntry(uid, entryId);
-            pushToast("Naalis na ang expense.", "success");
+            pushToast("Expense removed.", "success");
         } catch (err) { console.error(err); }
     };
 
     let banner = null;
     if (!dismissedBanner) {
         if (isOverBudget) {
-            banner = { tone: "danger", title: "Sobra sa daily limit", message: `Lumagpas ka ng ₱${window.peso(Math.abs(remainingToday))} sa safe limit mo ngayong araw.` };
+            banner = { tone: "danger", title: "Daily limit exceeded", message: `You are ₱${window.peso(Math.abs(remainingToday))} over your safe daily limit today.` };
         } else if (isNearLimit) {
-            banner = { tone: "warning", title: "Malapit ka na sa limit", message: `Natitira ka na lang ng ₱${window.peso(Math.max(remainingToday, 0))} para sa araw na ito.` };
+            banner = { tone: "warning", title: "Approaching daily limit", message: `You have ₱${window.peso(Math.max(remainingToday, 0))} remaining for today.` };
         } else if (isPaydaySoon) {
-            banner = { tone: "info", title: "Papalapit na ang payday", message: `${daysLeft} ${daysLeft === 1 ? "araw" : "araw"} na lang bago sumapit ang payday mo.` };
+            banner = { tone: "info", title: "Payday approaching", message: `${daysLeft} ${daysLeft === 1 ? "day" : "days"} remaining until payday.` };
         }
     }
 
@@ -506,14 +506,14 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                     <div className="bento-card rounded-none px-6 sm:px-8 py-6 border-x border-black/5 dark:border-white/5">
                         <div className="flex items-center justify-between mb-5">
                             <h3 id="resibo-heading" className="font-mono text-[13px] font-bold tracking-widest text-ink dark:text-paper">
-                                RESIBO NG LINGGO
+                                WEEKLY RECEIPT
                             </h3>
                             <span className="font-mono text-[10px] text-ink2/50 dark:text-paper/40">{DAY_LABELS[dailyHistory[0]?.dow ?? 0]}–{DAY_LABELS[new Date().getDay()]}</span>
                         </div>
 
                         {!hasEnoughHistory ? (
                             <p className="text-[13px] text-ink2/60 dark:text-paper/50 leading-relaxed py-4 text-center">
-                                Mag-log pa ng ilang gastos para makabuo ng lingguhang pattern at makapagbigay ng payo.
+                                Log a few more expenses to establish your weekly pattern and receive insights.
                             </p>
                         ) : (
                             <>
@@ -536,7 +536,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                                                     />
                                                 </div>
                                                 <span className={`text-[9px] font-mono font-bold ${d.isToday ? "text-peso dark:text-pesoLight" : "text-ink2/40 dark:text-paper/30"}`}>
-                                                    {d.isToday ? "NGAYON" : DAY_LABELS[d.dow]}
+                                                    {d.isToday ? "TODAY" : DAY_LABELS[d.dow]}
                                                 </span>
                                             </div>
                                         );
@@ -544,20 +544,20 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                                 </div>
 
                                 <div className="border-t border-dashed border-ink/15 dark:border-paper/15 pt-1">
-                                    <ReceiptRow label="Karaniwang gastos / araw" value={`₱${window.peso(avgDailySpend)}`} />
+                                    <ReceiptRow label="Average daily spend" value={`₱${window.peso(avgDailySpend)}`} />
                                     {dailySafe > 0 && (
                                         <ReceiptRow
-                                            label="Kumpara sa safe daily limit"
-                                            value={paceVsSafePct <= 0 ? `${Math.abs(paceVsSafePct)}% mas mababa` : `${paceVsSafePct}% mas mataas`}
+                                            label="Compared to safe daily limit"
+                                            value={paceVsSafePct <= 0 ? `${Math.abs(paceVsSafePct)}% lower` : `${paceVsSafePct}% higher`}
                                             valueClass={paceVsSafePct <= 0 ? "text-[#1F6F54] dark:text-[#52C8A1]" : "text-[#D64045] dark:text-[#F38C80]"}
                                         />
                                     )}
                                     {topCategoryEntry && (
-                                        <ReceiptRow label="Pinaka-ginastusan" value={`${topCategoryEntry.name} · ₱${window.peso(topCategoryEntry.amount)}`} />
+                                        <ReceiptRow label="Top expense category" value={`${window.CATEGORY_DISPLAY ? (window.CATEGORY_DISPLAY[topCategoryEntry.name] || topCategoryEntry.name) : topCategoryEntry.name} · ₱${window.peso(topCategoryEntry.amount)}`} />
                                     )}
                                     <ReceiptRow
-                                        label="Sunod-sunod na araw sa loob ng budget"
-                                        value={`${budgetStreak} ${budgetStreak === 1 ? "araw" : "araw"}`}
+                                        label="Consecutive days within budget"
+                                        value={`${budgetStreak} ${budgetStreak === 1 ? "day" : "days"}`}
                                         valueClass={budgetStreak >= 3 ? "text-[#1F6F54] dark:text-[#52C8A1]" : ""}
                                     />
                                 </div>
@@ -568,8 +568,8 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                                         : "bg-[#E6F3EF] dark:bg-[#1F6F54]/15 text-[#1F6F54] dark:text-[#52C8A1]"
                                 }`}>
                                     {willRunOutEarly
-                                        ? `Sa kasalukuyang bilis ng paggastos, maaaring maubos ang budget mo ${shortfallDays} ${shortfallDays === 1 ? "araw" : "araw"} bago sumapit ang payday.`
-                                        : "Sa kasalukuyang bilis ng paggastos, sasapat ang budget mo hanggang sa payday. Ituloy lang."}
+                                        ? `At your current burn rate, your budget may run out ${shortfallDays} ${shortfallDays === 1 ? "day" : "days"} before payday.`
+                                        : "At your current burn rate, your budget will safely last until payday. Keep it up!"}
                                 </div>
                             </>
                         )}
@@ -618,9 +618,9 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                     <button
                         onClick={() => setDismissedBanner(true)}
                         className="text-[11px] font-bold opacity-60 hover:opacity-100 transition-opacity duration-150 shrink-0 mt-0.5 bg-black/5 dark:bg-white/10 px-2.5 py-1.5 rounded-md"
-                        aria-label="Isara ang alert"
+                        aria-label="Dismiss alert"
                     >
-                        Isara
+                        Dismiss
                     </button>
                 </div>
             )}
@@ -639,7 +639,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                             <h3 className="font-display text-[1.15rem] sm:text-[1.25rem] font-bold text-ink dark:text-paper leading-tight tracking-tight truncate">Configuration</h3>
                             <span className="text-[12px] font-medium text-ink2/60 dark:text-paper/50 flex items-center gap-1.5 mt-1 truncate">
                                 {saving && <span className="w-1.5 h-1.5 rounded-full bg-[#1F6F54] dark:bg-[#52C8A1] animate-pulse shrink-0" />}
-                                <span className="truncate">{saving ? "Nagse-sync..." : loaded ? "Nakatago at secure" : "Naglo-load..."}</span>
+                                <span className="truncate">{saving ? "Syncing..." : loaded ? "Saved & encrypted" : "Loading..."}</span>
                             </span>
                         </div>
                     </div>
@@ -653,7 +653,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                                 <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5 hidden sm:block" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
                                 </svg>
-                                {editOpen ? "Isara" : "I-edit"}
+                                {editOpen ? "Close" : "Edit"}
                             </button>
                         )}
                         <button
@@ -684,13 +684,13 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 mb-8 fade-up">
                         <div>
                             <label className="block text-[12px] font-semibold text-ink dark:text-paper mb-1 px-1">
-                                Sahod / Kita
+                                Income / Salary
                             </label>
-                            <p className="text-[11px] text-ink2/55 dark:text-paper/45 mb-2 px-1 leading-snug">Kabuuang pera na matatanggap mo sa araw na ito — sahod, padala, o kita.</p>
+                            <p className="text-[11px] text-ink2/55 dark:text-paper/45 mb-2 px-1 leading-snug">Total funds received this period — salary, allowance, or earnings.</p>
                             <FieldWrap icon={fieldIcon.salary}>
                                 <input
                                     type="number"
-                                    placeholder="hal. 15000"
+                                    placeholder="e.g. 15000"
                                     value={salary}
                                     onChange={e => setSalary(e.target.value)}
                                     className="w-full min-w-0 bg-transparent py-3.5 text-[15px] font-mono font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
@@ -699,13 +699,13 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                         </div>
                         <div>
                             <label className="block text-[12px] font-semibold text-ink dark:text-paper mb-1 px-1">
-                                Fixed na Bills
+                                Fixed Bills
                             </label>
-                            <p className="text-[11px] text-ink2/55 dark:text-paper/45 mb-2 px-1 leading-snug">Mga dapat bayaran bago gumastos ng baon — upa, kuryente, load, hulugan.</p>
+                            <p className="text-[11px] text-ink2/55 dark:text-paper/45 mb-2 px-1 leading-snug">Obligations due before discretionary spend — rent, utilities, subscriptions, loans.</p>
                             <FieldWrap icon={fieldIcon.bills}>
                                 <input
                                     type="number"
-                                    placeholder="hal. 3000"
+                                    placeholder="e.g. 3000"
                                     value={bills}
                                     onChange={e => setBills(e.target.value)}
                                     className="w-full min-w-0 bg-transparent py-3.5 text-[15px] font-mono font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
@@ -714,13 +714,13 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                         </div>
                         <div>
                             <label className="block text-[12px] font-semibold text-ink dark:text-paper mb-1 px-1">
-                                Ilalaan sa Ipon
+                                Savings Target
                             </label>
-                            <p className="text-[11px] text-ink2/55 dark:text-paper/45 mb-2 px-1 leading-snug">Magkano ang gusto mong itabi bago hatiin ang natitira sa baon. Kung wala munang itatabi, puwedeng iwan na 0.</p>
+                            <p className="text-[11px] text-ink2/55 dark:text-paper/45 mb-2 px-1 leading-snug">Amount to set aside into savings before calculating your daily allowance. Can be left as 0.</p>
                             <FieldWrap icon={fieldIcon.savings}>
                                 <input
                                     type="number"
-                                    placeholder="hal. 1000 (o 0 kung wala)"
+                                    placeholder="e.g. 1000 (or 0)"
                                     value={savings}
                                     onChange={e => setSavings(e.target.value)}
                                     className="w-full min-w-0 bg-transparent py-3.5 text-[15px] font-mono font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
@@ -730,15 +730,15 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                         <div>
                             <div className="flex items-center justify-between px-1 mb-1">
                                 <label className="block text-[12px] font-semibold text-ink dark:text-paper">
-                                    Susunod na Payday
+                                    Next Payday
                                 </label>
                                 {paydayDate && (
                                     <span className="text-[11px] font-bold text-[#1F6F54] dark:text-[#52C8A1] bg-[#E6F3EF] dark:bg-[#1F6F54]/20 px-2 py-0.5 rounded-md border border-[#1F6F54]/10 dark:border-[#52C8A1]/20">
-                                        {daysLeft} {daysLeft === 1 ? "araw" : "araw"} pa
+                                        {daysLeft} {daysLeft === 1 ? "day" : "days"} left
                                     </span>
                                 )}
                             </div>
-                            <p className="text-[11px] text-ink2/55 dark:text-paper/45 mb-2 px-1 leading-snug">Kailan mo matatanggap ang susunod na sahod o padala. Dito hahatiin ang badyet mo araw-araw.</p>
+                            <p className="text-[11px] text-ink2/55 dark:text-paper/45 mb-2 px-1 leading-snug">Target date for next payday or funds arrival to pace daily allowance.</p>
                             <FieldWrap icon={fieldIcon.payday}>
                                 <input
                                     type="date"
@@ -751,12 +751,12 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                     </div>
                 ) : (
                     <div className="flex flex-wrap gap-4 mb-8 fade-up">
-                        <StatChip label="Sahod" value={`₱${window.peso(numSalary)}`} />
+                        <StatChip label="Income" value={`₱${window.peso(numSalary)}`} />
                         <StatChip label="Bills" value={`₱${window.peso(numBills)}`} />
-                        <StatChip label="Ipon" value={`₱${window.peso(numSavings)}`} />
+                        <StatChip label="Savings" value={`₱${window.peso(numSavings)}`} />
                         <StatChip
                             label="Payday"
-                            value={paydayDate ? `${daysLeft} araw pa` : "Hindi pa naitatakda"}
+                            value={paydayDate ? `${daysLeft} ${daysLeft === 1 ? "day" : "days"} left` : "Not set yet"}
                             accent={paydayDate ? "text-[#1F6F54] dark:text-[#52C8A1]" : "text-ink2/40 dark:text-paper/40"}
                         />
                     </div>
@@ -765,7 +765,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                 <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-5 sm:gap-8 items-center pt-8 border-t border-black/5 dark:border-white/10">
                     <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-4">
                         <div className="bg-white/60 dark:bg-black/20 p-5 rounded-[1.25rem] border border-black/5 dark:border-white/5 shadow-sm min-w-0">
-                            <p className="text-[11px] font-semibold text-ink2/50 dark:text-paper/40 mb-2">Natitirang badyet</p>
+                            <p className="text-[11px] font-semibold text-ink2/50 dark:text-paper/40 mb-2">Remaining budget</p>
                             <p
                                 className={`font-mono text-2xl sm:text-3xl font-bold tracking-tight truncate ${remaining < 0 ? 'text-[#D64045] dark:text-[#F38C80]' : 'text-ink dark:text-paper'}`}
                                 title={`₱${window.peso(remaining)}`}
@@ -784,7 +784,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                             </p>
                             {loaded && isConfigured && daysLeft === 0 && (
                                 <p className="text-[11px] font-medium text-[#1F6F54]/70 dark:text-[#52C8A1]/70 mt-2 relative z-10 leading-snug">
-                                    Ngayon ang itinakdang payday mo — i-update ang petsa para makuha ang bagong daily limit.
+                                    Today is your scheduled payday — update the target date to calculate your new daily limit.
                                 </p>
                             )}
                         </div>
@@ -806,7 +806,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                                 </svg>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                                     <span className="font-mono text-3xl font-bold tracking-tighter text-ink dark:text-paper">{spendPct}%</span>
-                                    <span className="text-[11px] font-medium text-ink2/50 dark:text-paper/40 mt-1">nagamit ngayon</span>
+                                    <span className="text-[11px] font-medium text-ink2/50 dark:text-paper/40 mt-1">used today</span>
                                 </div>
                             </div>
                         </div>
@@ -824,13 +824,13 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                             <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
                         </svg>
                     </div>
-                    <h3 className="font-display text-[1.25rem] font-bold text-ink dark:text-paper tracking-tight">Ngayong Araw</h3>
+                    <h3 className="font-display text-[1.25rem] font-bold text-ink dark:text-paper tracking-tight">Today's Expenses</h3>
                 </div>
-                <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/50 mb-8 pl-[4rem] leading-snug">I-log ang ginastos mo para makita agad kung nasa loob ka pa ng safe daily limit.</p>
+                <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/50 mb-8 pl-[4rem] leading-snug">Log daily expenses to monitor your burn rate against your safe daily limit in real time.</p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                     <div className="bg-white/50 dark:bg-black/20 p-5 rounded-[1.25rem] border border-black/5 dark:border-white/5 shadow-sm min-w-0">
-                        <p className="text-[11px] font-semibold text-ink2/60 dark:text-paper/50 mb-2">Nagastos ngayon</p>
+                        <p className="text-[11px] font-semibold text-ink2/60 dark:text-paper/50 mb-2">Spent today</p>
                         <p className="font-mono text-2xl sm:text-3xl font-bold tracking-tight text-ink dark:text-paper truncate" title={`₱${window.peso(spentToday)}`}>₱{window.peso(spentToday)}</p>
                     </div>
                     <div className={`p-5 rounded-[1.25rem] border shadow-sm transition-colors duration-300 min-w-0 ${
@@ -841,7 +841,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                         <p className={`text-[11px] font-semibold mb-2 ${
                             remainingToday < 0 ? 'text-[#D64045] dark:text-[#F38C80]' : 'text-ink2/60 dark:text-paper/50'
                         }`}>
-                            {remainingToday < 0 ? 'Sobra sa budget' : 'Natitirang pwedeng gastusin'}
+                            {remainingToday < 0 ? 'Over daily limit' : 'Remaining safe spend'}
                         </p>
                         <p
                             className={`font-mono text-2xl sm:text-3xl font-bold tracking-tight truncate ${
@@ -861,7 +861,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                                 <input
                                     type="number"
                                     step="0.01"
-                                    placeholder="Halaga"
+                                    placeholder="Amount"
                                     value={expAmount}
                                     onChange={e => setExpAmount(e.target.value)}
                                     className="w-full min-w-0 bg-transparent py-4 text-[16px] font-mono font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
@@ -884,7 +884,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                                         onClick={() => setExpAmount("")}
                                         className="text-[11px] font-bold text-ink2/40 dark:text-paper/40 hover:text-expense dark:hover:text-[#F38C80] ml-auto transition-colors duration-150 bg-black/5 dark:bg-white/5 px-3 py-1.5 rounded-lg"
                                     >
-                                        I-clear
+                                        Clear
                                     </button>
                                 )}
                             </div>
@@ -892,7 +892,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                         <FieldWrap className="sm:flex-1 self-start" icon={<svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 shrink-0 text-ink2/40 dark:text-paper/40" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>}>
                             <input
                                 type="text"
-                                placeholder="Note (opsyonal)"
+                                placeholder="Note (optional)"
                                 value={expNote}
                                 onChange={e => setExpNote(e.target.value)}
                                 className="w-full min-w-0 bg-transparent py-4 text-[15px] font-medium text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
@@ -905,7 +905,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                         dashboard is automatically reduced, since it reads from the
                         same entries collection this write goes into. */}
                     <div className="flex flex-col gap-2">
-                        <p className="text-[10px] font-mono font-bold text-ink2/45 dark:text-paper/40 uppercase tracking-widest px-1">Bayad Gamit</p>
+                        <p className="text-[10px] font-mono font-bold text-ink2/45 dark:text-paper/40 uppercase tracking-widest px-1">Payment Method</p>
                         <div className="flex overflow-x-auto gap-2.5 pb-1 -mx-1 px-1" style={{ scrollbarWidth: "none" }}>
                             {walletIds.map(id => {
                                 const meta = walletMeta(id);
@@ -915,7 +915,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                             })}
                         </div>
                         <p className="text-[10.5px] text-ink2/45 dark:text-paper/40 px-1">
-                            Balanse ng {walletMeta(expMethod).name}: <span className="font-mono font-semibold text-ink dark:text-paper">₱{window.peso(walletBalances[expMethod] || 0)}</span>
+                            {walletMeta(expMethod).name} balance: <span className="font-mono font-semibold text-ink dark:text-paper">₱{window.peso(walletBalances[expMethod] || 0)}</span>
                         </p>
                     </div>
 
@@ -938,7 +938,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                                     <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 shrink-0" strokeWidth="2.5" stroke={active ? meta.color : "currentColor"} strokeLinecap="round" strokeLinejoin="round">
                                         {meta.icon}
                                     </svg>
-                                    {c}
+                                    {window.CATEGORY_DISPLAY ? (window.CATEGORY_DISPLAY[c] || c) : c}
                                 </button>
                             );
                         })}
@@ -954,7 +954,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                         ) : (
                             <>
                                 <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" strokeWidth="3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
-                                I-log ang gastos
+                                Log expense
                             </>
                         )}
                     </button>
@@ -991,7 +991,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                                     </span>
                                     <button
                                         onClick={() => handleDeleteExpense(exp.id)}
-                                        aria-label="Alisin"
+                                        aria-label="Delete expense"
                                         className="text-ink2/30 hover:text-expense dark:text-paper/30 dark:hover:text-[#F38C80] p-2.5 rounded-xl bg-white dark:bg-black/30 hover:bg-expense/10 dark:hover:bg-[#B5483B]/20 transition-all duration-200 shrink-0 border border-black/5 dark:border-white/5 active:scale-90"
                                     >
                                         <svg viewBox="0 0 24 24" fill="none" className="w-[18px] h-[18px]" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -1005,8 +1005,8 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                         <div className="w-14 h-14 rounded-2xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-ink2/30 dark:text-paper/20 mb-4 shadow-inner">
                             <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" /><path d="M14 2v6h6" /><path d="M9 13h6" /><path d="M9 17h6" /></svg>
                         </div>
-                        <p className="text-[14px] font-bold text-ink2/70 dark:text-paper/60">Walang na-log ngayon</p>
-                        <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/40 mt-2 leading-relaxed">Idagdag sa itaas para masubaybayan ang araw mo.</p>
+                        <p className="text-[14px] font-bold text-ink2/70 dark:text-paper/60">No expenses logged today</p>
+                        <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/40 mt-2 leading-relaxed">Add an expense above to track your daily progress.</p>
                     </div>
                 )}
             </div>

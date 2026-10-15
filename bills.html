@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fil" class="scroll-smooth">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="/app.css">
@@ -197,7 +197,7 @@
         /* --- BILLS HERO: a quiet statement card, not a decorated banner --- */
         function BillsHeroCard({ darkMode, toggleDarkMode, billsCount, loading }) {
             const [mascotOk, setMascotOk] = React.useState(true);
-            const countLabel = billsCount === 1 ? "bill na sinusubaybayan" : "bills na sinusubaybayan";
+            const countLabel = billsCount === 1 ? "bill being tracked" : "bills being tracked";
 
             return (
                 <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-b from-pesoDeep to-[#0E2A20] text-paper shadow-iosLg ring-1 ring-black/5 dark:ring-white/10 mb-6 sm:mb-8">
@@ -232,7 +232,7 @@
                             Bills Center
                         </h1>
                         <p className="text-[12.5px] sm:text-[13.5px] text-paper/70 leading-relaxed">
-                            Subaybayan ang due dates para maiwasan ang penalty at pagkaputol ng kuryente o tubig.
+                            Track upcoming due dates, avoid late penalties, and stay on top of recurring utilities.
                         </p>
                     </div>
 
@@ -241,7 +241,7 @@
                         <span className="font-mono text-xl sm:text-2xl font-semibold tabular-nums">
                             {loading ? "–" : billsCount}
                         </span>
-                        <span className="text-[11.5px] text-paper/60">{loading ? "kinukuha..." : countLabel}</span>
+                        <span className="text-[11.5px] text-paper/60">{loading ? "loading..." : countLabel}</span>
                     </div>
                 </div>
             );
@@ -252,25 +252,25 @@
             const tips = [
                 {
                     icon: <window.Icons.Zap size={16} />,
-                    title: "Unahin ang mga pangangailangan",
-                    body: "Bayaran muna ang kuryente, tubig, at renta bago bumili ng luho, para iwas abala at disconnection.",
+                    title: "Prioritize essential utilities",
+                    body: "Cover electricity, water, and rent before discretionary expenses to avoid service disruptions.",
                 },
                 {
                     icon: <window.Icons.Clock size={16} />,
-                    title: "Iwasan ang late fees",
-                    body: "Magbayad 2–3 araw bago ang due date — may delay minsan sa posting, lalo na tuwing weekend o holiday.",
+                    title: "Avoid late fees",
+                    body: "Pay 2–3 business days before the due date to account for bank processing times on weekends and holidays.",
                 },
                 {
                     icon: <window.Icons.Wallet size={16} />,
-                    title: "Bantayan ang convenience fees",
-                    body: "Mag-ingat sa ₱15–₱25 na singil ng mga e-wallet. Isahan na lang ang bayad kung kaya, para tipid.",
+                    title: "Watch convenience fees",
+                    body: "Be mindful of extra transaction fees on digital wallets. Consolidate bill payments where possible.",
                 },
             ];
 
             return (
                 <div className="mt-8 sm:mt-10 fade-up" style={{ animationDelay: "120ms" }}>
                     <h3 className="font-display text-[1.05rem] font-semibold text-ink dark:text-paper tracking-tight mb-3 px-1">
-                        Tipid hacks para sa bills
+                        Smart bills management tips
                     </h3>
 
                     <div className="bg-white/60 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.5rem] border border-white/60 dark:border-white/5 shadow-sm divide-y divide-line/60 dark:divide-white/5 overflow-hidden">
@@ -397,7 +397,7 @@
                                 <window.Logo size={38} />
                             </div>
                             <p className="text-[11px] font-mono text-ink2/60 dark:text-paper/50">
-                                Naglo-load...
+                                Loading bills...
                             </p>
                         </div>
                     </div>

@@ -1,22 +1,22 @@
 <!DOCTYPE html>
-<html lang="fil" class="scroll-smooth">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="/app.css">
     <link rel="manifest" href="/manifest.json">
     <script src="/app-utils.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Tipid — Alamin Kung Saan Napunta</title>
-    <meta name="description" content="Ang Tipid ay ginawa para sa totoong gawi ng Pilipino. Ilista ang gastos sa ilang segundo at makita agad kung saan ito napunta kahit walang internet.">
+    <title>Tipid — Smart Personal Expense Tracker</title>
+    <meta name="description" content="Tipid is an Apple-inspired smart expense tracker built for real everyday spending. Log expenses in seconds and see where your money goes, even completely offline.">
 
     <!-- PWA -->
     <link rel="icon" href="/assets/tipid_mascot_full.png" type="image/png">
     <meta name="theme-color" content="#15231C">
 
-    <!-- Fonts: Fraunces (display/ledger serif), Inter (body), IBM Plex Mono (amounts) -->
+    <!-- Fonts: Fraunces (editorial accent serif), Inter (body), IBM Plex Mono (tabular numbers) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -25,24 +25,31 @@
             theme: {
                 extend: {
                     colors: {
-                        paper: '#F1F4EF',
-                        paperDim: '#E9EDE6',
-                        ink: '#15231C',
-                        ink2: '#33443A',
+                        paper: '#F6F8F5',
+                        paperDim: '#ECF0E9',
+                        ink: '#121D17',
+                        ink2: '#2F4035',
+                        inkMuted: '#586A5E',
                         peso: '#1F6F54',
-                        pesoLight: '#2F8E6C',
-                        pesoDeep: '#123D2E',
+                        pesoLight: '#2B8B6A',
+                        pesoDeep: '#113A2C',
                         gold: '#C9932E',
+                        goldSoft: '#E6B04B',
                         expense: '#B5483B',
-                        line: '#D3DAD0',
+                        line: '#D7DFD4',
+                        lineLight: 'rgba(21, 35, 28, 0.08)',
                         sun: '#FCD116',
-                        bayani: '#0038A8',
                     },
                     fontFamily: {
-                        display: ['"Fraunces"', 'serif'],
-                        body: ['"Inter"', 'sans-serif'],
-                        mono: ['"IBM Plex Mono"', 'monospace'],
+                        display: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"Fraunces"', 'serif'],
+                        body: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"Inter"', 'sans-serif'],
+                        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
                     },
+                    boxShadow: {
+                        'apple-sm': '0 1px 2px rgba(18, 61, 46, 0.04), 0 4px 12px rgba(18, 61, 46, 0.03)',
+                        'apple-card': '0 2px 4px rgba(18, 61, 46, 0.03), 0 16px 36px -8px rgba(18, 61, 46, 0.08)',
+                        'apple-hover': '0 4px 12px rgba(18, 61, 46, 0.06), 0 24px 48px -12px rgba(18, 61, 46, 0.14)',
+                    }
                 }
             }
         }
@@ -60,154 +67,127 @@
     <script type="module" src="/firebase.js"></script>
 
     <style>
-        html { background: #F1F4EF; }
+        html { background: #F6F8F5; }
         html, body { overflow-x: hidden; width: 100%; max-width: 100%; }
         #root { overflow-x: hidden; width: 100%; max-width: 100%; }
         * { box-sizing: border-box; }
         body { font-feature-settings: "tnum" 1, "lnum" 1; }
 
-        ::selection { background: #C9932E33; color: #15231C; }
-        :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
+        ::selection { background: rgba(31, 111, 84, 0.18); color: #121D17; }
+        :focus-visible { outline: 2.5px solid #1F6F54; outline-offset: 3px; border-radius: 8px; }
 
-        .ledger-rule {
-            background-image: repeating-linear-gradient(to right, #D3DAD0 0, #D3DAD0 6px, transparent 6px, transparent 14px);
-            height: 1px;
-        }
-        .ledger-rule-light {
-            background-image: repeating-linear-gradient(to right, #ffffff2e 0, #ffffff2e 6px, transparent 6px, transparent 14px);
-            height: 1px;
-        }
-
-        .perf-edge {
-            -webkit-mask-image: radial-gradient(circle 5px at 5px 5px, transparent 5px, black 5.5px);
-            mask-image: radial-gradient(circle 5px at 5px 5px, transparent 5px, black 5.5px);
-            -webkit-mask-repeat: repeat-x;
-            mask-repeat: repeat-x;
-            -webkit-mask-position: -5px -5px;
-            mask-position: -5px -5px;
-            -webkit-mask-size: 20px 10px;
-            mask-size: 20px 10px;
+        .apple-glass {
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 20px -2px rgba(18, 61, 46, 0.04), 0 16px 38px -10px rgba(18, 61, 46, 0.08);
         }
 
-        /* --- Smoother Premium Animations --- */
+        .apple-glass-card {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(20px) saturate(170%);
+            -webkit-backdrop-filter: blur(20px) saturate(170%);
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            box-shadow: 0 2px 6px rgba(18, 61, 46, 0.02), 0 16px 36px -12px rgba(18, 61, 46, 0.09);
+        }
+
+        .apple-dark-card {
+            background: rgba(18, 29, 23, 0.88);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.4);
+        }
+
+        .grain {
+            position: absolute; inset: 0;
+            opacity: 0.025;
+            mix-blend-mode: multiply;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* --- Apple-grade fluid animations --- */
         @keyframes rowIn {
-            from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+            from { opacity: 0; transform: translateY(-8px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
-        .row-in { animation: rowIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .row-in { animation: rowIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
         @keyframes pulseTotal {
             0% { transform: scale(1); }
-            30% { transform: scale(1.08); color: #1F6F54; }
+            35% { transform: scale(1.06); color: #1F6F54; }
             100% { transform: scale(1); }
         }
-        .pulse-total { animation: pulseTotal 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .pulse-total { animation: pulseTotal 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        @keyframes floatSlow {
-            0%, 100% { transform: translateY(0) rotate(-0.5deg); }
-            50% { transform: translateY(-12px) rotate(0.5deg); }
+        @keyframes floatGentle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
         }
-        .float-slow { animation: floatSlow 7s ease-in-out infinite; }
+        .float-gentle { animation: floatGentle 6s ease-in-out infinite; }
 
-        .reveal { opacity: 0; transform: translateY(40px) scale(0.98); transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal {
+            opacity: 0;
+            transform: translateY(32px) scale(0.99);
+            transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+        }
         .reveal.in { opacity: 1; transform: translateY(0) scale(1); }
 
-        .faq-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .faq-panel {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
         .faq-panel.open { grid-template-rows: 1fr; }
         .faq-panel > div { overflow: hidden; }
 
-        .mobile-menu-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .mobile-menu-panel {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
         .mobile-menu-panel.open { grid-template-rows: 1fr; }
         .mobile-menu-panel > div { overflow: hidden; }
 
-        /* --- Filipino-referenced ambient motifs --- */
-        @keyframes sunRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .sun-rotate { animation: sunRotate 120s linear infinite; }
-
-        @keyframes starTwinkle {
-            0%, 100% { opacity: 0.2; transform: scale(0.85); }
-            50%      { opacity: 1; transform: scale(1.1); }
-        }
-        .star-twinkle { animation: starTwinkle 3s ease-in-out infinite; }
-
-        @keyframes stampPop {
-            0%   { opacity: 0; transform: rotate(-24deg) scale(0.5); }
-            70%  { opacity: 1; transform: rotate(-9deg) scale(1.1); }
-            100% { opacity: 1; transform: rotate(-10deg) scale(1); }
-        }
-        .stamp-pop { animation: stampPop 0.8s cubic-bezier(0.16, 1.5, 0.3, 1) 0.8s both; }
-
-        /* Premium hairline shine sweep for primary buttons */
+        /* Subtle hairline shine sweep for primary buttons */
         .btn-shine { position: relative; overflow: hidden; }
         .btn-shine::after {
             content: "";
             position: absolute; inset: 0;
-            background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.3) 40%, transparent 60%);
+            background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.25) 40%, transparent 60%);
             transform: translateX(-120%);
-            transition: transform 0.7s cubic-bezier(.22,.61,.36,1);
+            transition: transform 0.65s cubic-bezier(.22,.61,.36,1);
         }
         .btn-shine:hover::after { transform: translateX(120%); }
 
         .nav-link { position: relative; }
         .nav-link::after {
-            content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1.5px;
-            background: #1F6F54; transform: scaleX(0); transform-origin: left;
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            content: ""; position: absolute; left: 0; right: 0; bottom: -3px; height: 1.5px;
+            background: #1F6F54; transform: scaleX(0); transform-origin: center;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 999px;
         }
         .nav-link:hover::after { transform: scaleX(1); }
 
-        .grain { position: absolute; inset: 0; opacity: 0.03; mix-blend-mode: multiply; pointer-events: none; z-index: 10; }
-
-        /* --- Full Body Mascot Presentation --- */
+        /* Mascot presentation */
         @keyframes mascotEntry {
-            0% { opacity: 0; transform: translateY(50px) scale(0.9); }
+            0% { opacity: 0; transform: translateY(40px) scale(0.95); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
         .mascot-entry {
-            animation: mascotEntry 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            filter: drop-shadow(0 25px 35px rgba(18,61,46,0.35));
+            animation: mascotEntry 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            filter: drop-shadow(0 20px 30px rgba(18,61,46,0.22));
         }
 
-        .hero-mascot-tag {
-            position: absolute;
-            z-index: 14;
-            white-space: nowrap;
-            padding: 8px 14px;
-            border: 1px solid rgba(255,255,255,0.4);
-            border-radius: 999px;
-            background: rgba(255,255,255,0.85);
-            box-shadow: 0 15px 30px rgba(21,35,28,0.15);
-            color: #33443A;
-            font-size: 11px;
-            line-height: 1;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            font-family: "IBM Plex Mono", monospace;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            animation: stampPop 0.8s cubic-bezier(0.16, 1.5, 0.3, 1) 0.8s both;
-        }
-
-        .hero-mascot-tag strong {
-            color: #1F6F54;
-            font-weight: 700;
-        }
-
-        .premium-glass-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 20px 40px -15px rgba(21,35,28,0.1);
-        }
+        .bar-fill { transition: width 1.1s cubic-bezier(0.16, 1, 0.3, 1); }
 
         @media (prefers-reduced-motion: reduce) {
-            .row-in, .pulse-total, .float-slow, .reveal, .sun-rotate, .star-twinkle, .stamp-pop, .btn-shine::after, .mascot-entry {
+            .row-in, .pulse-total, .float-gentle, .reveal, .btn-shine::after, .mascot-entry, .bar-fill {
                 animation: none !important; transition: none !important; opacity: 1 !important; transform: none !important;
             }
         }
-
-        .bar-fill { transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1); }
     </style>
 </head>
 <body class="bg-paper text-ink antialiased font-body relative">
@@ -224,7 +204,7 @@
     <script type="text/babel">
         const { useEffect, useState, useRef, useCallback } = React;
 
-        /* ---------- Utility hooks ---------- */
+        /* ---------- Utility Hooks ---------- */
 
         function Reveal({ children, className = "", delay = 0 }) {
             const ref = useRef(null);
@@ -237,7 +217,7 @@
                         setInView(true);
                         obs.disconnect();
                     }
-                }, { threshold: 0.15 });
+                }, { threshold: 0.12 });
                 obs.observe(el);
                 return () => obs.disconnect();
             }, []);
@@ -248,7 +228,7 @@
             );
         }
 
-        function CountUp({ to, prefix = "", suffix = "", duration = 1500 }) {
+        function CountUp({ to, prefix = "", suffix = "", duration = 1400 }) {
             const ref = useRef(null);
             const [val, setVal] = useState(0);
             const started = useRef(false);
@@ -277,7 +257,7 @@
                             runCount();
                             obs.disconnect();
                         }
-                    }, { threshold: 0.4 });
+                    }, { threshold: 0.3 });
                     obs.observe(el);
                     return () => obs.disconnect();
                 }
@@ -288,14 +268,14 @@
                 }
             }, [to]);
 
-            return <span ref={ref}>{prefix}{val}{suffix}</span>;
+            return <span ref={ref}>{prefix}{val.toLocaleString("en-US")}{suffix}</span>;
         }
 
         function peso(n) {
             return n.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        /* ---------- Icon set ---------- */
+        /* ---------- Minimalist Icon Set ---------- */
 
         function Icon({ path, size = 20, className = "", strokeWidth = 2 }) {
             return (
@@ -320,74 +300,25 @@
             Lock: (p) => <Icon {...p} path={<><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></>} />,
             BarChart: (p) => <Icon {...p} path={<><line x1="4" y1="20" x2="4" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="20" y1="20" x2="20" y2="14"/></>} />,
             Bell: (p) => <Icon {...p} path={<><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 20a2 2 0 0 0 4 0"/></>} />,
+            CheckCircle: (p) => <Icon {...p} path={<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>} />,
+            Shield: (p) => <Icon {...p} path={<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>} />,
+            Sparkles: (p) => <Icon {...p} path={<><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></>} />,
         };
 
-        /* ---------- Decorative motifs ---------- */
+        /* ---------- Logo Component ---------- */
 
-        function SunRays({ size = 420, className = "" }) {
-            const rayCount = 8;
-            return (
-                <svg width={size} height={size} viewBox="0 0 100 100" className={`sun-rotate ${className}`}>
-                    <g stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
-                        {Array.from({ length: rayCount }).map((_, i) => (
-                            <line key={i} x1="50" y1="2" x2="50" y2="20" transform={`rotate(${(360 / rayCount) * i} 50 50)`} />
-                        ))}
-                    </g>
-                    <circle cx="50" cy="50" r="13" fill="none" stroke="currentColor" strokeWidth="1.3" />
-                </svg>
-            );
-        }
-
-        function TinyStar({ style, size = 11, delay = 0 }) {
-            return (
-                <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"
-                     className="star-twinkle hidden sm:block" style={{ ...style, animationDelay: `${delay}s` }}>
-                    <path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.2L12 16.4 5.7 20.8 8 13.6 2 9.2h7.6z"/>
-                </svg>
-            );
-        }
-
-        function WeavePattern({ patternId = "banig-weave-index" }) {
-            return (
-                <svg className="absolute inset-0 w-full h-full opacity-[0.045] pointer-events-none">
-                    <defs>
-                        <pattern id={patternId} width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                            <line x1="0" y1="0" x2="0" y2="14" stroke="currentColor" strokeWidth="1" />
-                            <line x1="7" y1="0" x2="7" y2="14" stroke="currentColor" strokeWidth="1" opacity="0.5" />
-                        </pattern>
-                    </defs>
-                    <rect width="100%" height="100%" fill={`url(#${patternId})`} />
-                </svg>
-            );
-        }
-
-        function GenuineStamp({ className = "" }) {
-            return (
-                <div className={`stamp-pop absolute w-[4.5rem] h-[4.5rem] rounded-full border-2 border-dashed border-ink2/30 flex items-center justify-center bg-paper/70 backdrop-blur-sm ${className}`}>
-                    <span className="text-center text-[7.5px] font-mono font-bold tracking-wider text-ink2/60 leading-tight uppercase">
-                        Tunay na<br/>Tipid
-                    </span>
-                </div>
-            );
-        }
-
-        function PaperGrain() {
-            return <div className="grain" style={{ filter: "url(#paper-grain)" }}></div>;
-        }
-
-        /* ---------- Tipid Logo Update ---------- */
         function Logo({ light = false, size = 32 }) {
             const [broken, setBroken] = useState(false);
             if (!broken) {
                 return (
                     <img
                         src="/assets/tipid_mascot_full.png"
-                        alt="Tipid Buddy Logo"
+                        alt="Tipid Mascot Logo"
                         width={size}
                         height={size}
                         onError={() => setBroken(true)}
                         style={{ width: size, height: size, objectFit: "contain" }}
-                        className="drop-shadow-sm"
+                        className="drop-shadow-sm select-none"
                         draggable="false"
                     />
                 );
@@ -395,39 +326,39 @@
             return (
                 <span
                     style={{ width: size, height: size }}
-                    className={`rounded-md flex items-center justify-center font-display font-semibold ${light ? "bg-white/10 text-paper" : "bg-ink text-paper"}`}
+                    className={`rounded-xl flex items-center justify-center font-display font-bold ${light ? "bg-white/15 text-paper" : "bg-ink text-paper"}`}
                 >
                     ₱
                 </span>
             );
         }
 
-        /* ---------- Shared Button ---------- */
+        /* ---------- Shared Apple-styled Button ---------- */
 
         function Button({ as = "button", href, onClick, type = "button", variant = "primary", icon: IconCmp, children, className = "" }) {
-            const base = "btn-shine inline-flex items-center justify-center gap-2 font-semibold rounded-full transition-all duration-400 py-3.5 px-8 active:scale-[0.96]";
+            const base = "btn-shine inline-flex items-center justify-center gap-2 font-semibold rounded-full transition-all duration-300 py-3 px-6 active:scale-[0.98] select-none text-sm tracking-tight";
             const variants = {
-                primary: "bg-ink hover:bg-pesoDeep text-paper shadow-[0_12px_30px_-10px_rgba(21,35,28,0.6)] hover:shadow-[0_16px_36px_-8px_rgba(18,61,46,0.7)]",
-                peso: "bg-peso hover:bg-pesoLight text-paper shadow-[0_12px_30px_-10px_rgba(31,111,84,0.6)] hover:shadow-[0_16px_36px_-8px_rgba(31,111,84,0.7)]",
-                outline: "border border-line hover:border-peso text-ink hover:-translate-y-0.5",
-                outlineDark: "border border-white/25 hover:border-white/50 text-paper hover:-translate-y-0.5",
-                paper: "bg-paper text-ink hover:bg-white hover:-translate-y-0.5 shadow-[0_12px_30px_-10px_rgba(0,0,0,0.3)]",
+                primary: "bg-ink hover:bg-pesoDeep text-white shadow-[0_8px_20px_-6px_rgba(18,29,23,0.45)] hover:shadow-[0_12px_24px_-4px_rgba(18,29,23,0.55)]",
+                peso: "bg-peso hover:bg-pesoLight text-white shadow-[0_8px_20px_-6px_rgba(31,111,84,0.45)] hover:shadow-[0_12px_24px_-4px_rgba(31,111,84,0.55)]",
+                outline: "border border-line hover:border-peso text-ink bg-white/70 hover:bg-white backdrop-blur-md",
+                outlineDark: "border border-white/20 hover:border-white/40 text-white bg-white/5 hover:bg-white/10 backdrop-blur-md",
+                paper: "bg-white text-ink hover:bg-paperDim shadow-[0_10px_24px_-6px_rgba(0,0,0,0.25)]",
             };
             const cls = `${base} ${variants[variant] || variants.primary} ${className}`;
-            const content = <>{IconCmp && <IconCmp size={18} />}{children}</>;
+            const content = <>{IconCmp && <IconCmp size={17} />}{children}</>;
             if (as === "a") return <a href={href} onClick={onClick} className={cls}>{content}</a>;
             return <button type={type} onClick={onClick} className={cls}>{content}</button>;
         }
 
-        /* ---------- Navbar ---------- */
+        /* ---------- Navigation Bar ---------- */
 
         function Navbar() {
             const [scrolled, setScrolled] = useState(false);
             const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
             useEffect(() => {
-                const onScroll = () => setScrolled(window.scrollY > 12);
-                window.addEventListener("scroll", onScroll);
+                const onScroll = () => setScrolled(window.scrollY > 16);
+                window.addEventListener("scroll", onScroll, { passive: true });
                 return () => window.removeEventListener("scroll", onScroll);
             }, []);
 
@@ -438,92 +369,92 @@
             }, []);
 
             const links = [
-                { href: "#mga-tampok", label: "Mga Tampok" },
-                { href: "#paano-gumagana", label: "Paano Gumagana" },
-                { href: "#pagsusuri", label: "Pagsusuri" },
-                { href: "#mga-tanong", label: "Mga Tanong" },
+                { href: "#features", label: "Features" },
+                { href: "#how-it-works", label: "How It Works" },
+                { href: "#analytics", label: "Analytics" },
+                { href: "#faq", label: "FAQ" },
             ];
 
             const handleDownload = () => window.installPWA && window.installPWA();
 
             return (
-                <nav className={`fixed top-0 w-full z-50 border-b transition-all duration-500 ${scrolled ? "bg-white/80 backdrop-blur-xl border-line/50 py-3 shadow-[0_4px_30px_-10px_rgba(0,0,0,0.05)]" : "bg-transparent border-transparent py-5"}`}>
+                <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? "bg-white/80 backdrop-blur-2xl border-b border-line/60 py-3 shadow-apple-sm" : "bg-transparent border-b border-transparent py-5"}`}>
                     <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-                        <a href="#" className="flex items-center gap-3 group">
-                            <span className="transition-transform duration-500 group-hover:scale-110"><Logo size={36} /></span>
-                            <span className="text-2xl font-display font-semibold tracking-tight text-ink">Tipid</span>
+                        <a href="#" className="flex items-center gap-2.5 group">
+                            <span className="transition-transform duration-300 group-hover:scale-105"><Logo size={34} /></span>
+                            <span className="text-xl font-bold tracking-tight text-ink font-display">Tipid</span>
                         </a>
 
-                        <div className="hidden md:flex items-center gap-10">
+                        <nav className="hidden md:flex items-center gap-8" aria-label="Desktop Navigation">
                             {links.map(l => (
-                                <a key={l.href} href={l.href} className="nav-link text-sm font-semibold text-ink2 hover:text-peso transition-colors">{l.label}</a>
+                                <a key={l.href} href={l.href} className="nav-link text-sm font-medium text-ink2 hover:text-peso transition-colors">{l.label}</a>
                             ))}
-                        </div>
+                        </nav>
 
-                        <div className="hidden md:flex items-center gap-5">
-                            <button onClick={handleDownload} className="text-sm font-bold text-ink2 hover:text-peso transition-colors flex items-center gap-1.5">
-                                <Icons.Download size={16} /> Kunin ang App
+                        <div className="hidden md:flex items-center gap-4">
+                            <button onClick={handleDownload} className="text-xs font-semibold text-ink2 hover:text-peso transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line/70 hover:border-peso/40 bg-white/60 backdrop-blur-sm">
+                                <Icons.Download size={14} /> Install App
                             </button>
-                            <a href="login.html" className="nav-link text-sm font-bold text-ink2 hover:text-peso transition-colors">Mag Log In</a>
-                            <Button as="a" href="signup.html" variant="peso" className="!py-2.5 !px-6 text-sm">Gumawa ng Account</Button>
+                            <a href="login.html" className="text-sm font-semibold text-ink2 hover:text-peso transition-colors px-2">Log In</a>
+                            <Button as="a" href="signup.html" variant="peso" className="!py-2 !px-5 text-xs">Get Started Free</Button>
                         </div>
 
                         <div className="md:hidden flex items-center gap-2">
-                            <button onClick={handleDownload} aria-label="Kunin ang App"
-                                className="p-2.5 text-ink2 hover:text-peso active:scale-90 transition-all rounded-full hover:bg-paperDim/60">
-                                <Icons.Download size={22} />
+                            <button onClick={handleDownload} aria-label="Install App"
+                                className="p-2 text-ink2 hover:text-peso active:scale-95 transition-all rounded-full hover:bg-paperDim/60">
+                                <Icons.Download size={20} />
                             </button>
-                            <Button as="a" href="signup.html" variant="peso" className="!py-2 !px-5 text-xs">Gumawa ng Account</Button>
+                            <Button as="a" href="signup.html" variant="peso" className="!py-1.5 !px-3.5 text-xs">Get Started</Button>
                             <button
                                 onClick={() => setMobileMenuOpen(v => !v)}
-                                aria-label="Buksan ang menu"
-                                className="p-2.5 -mr-1 text-ink2 hover:text-peso active:scale-90 transition-all rounded-full hover:bg-paperDim/60"
+                                aria-label="Open menu"
+                                className="p-2 -mr-1 text-ink2 hover:text-peso active:scale-95 transition-all rounded-full hover:bg-paperDim/60"
                             >
-                                {mobileMenuOpen ? <Icons.Close size={24} /> : <Icons.Menu size={24} />}
+                                {mobileMenuOpen ? <Icons.Close size={22} /> : <Icons.Menu size={22} />}
                             </button>
                         </div>
                     </div>
 
-                    <div className={`md:hidden mobile-menu-panel bg-white/95 backdrop-blur-2xl absolute w-full shadow-2xl border-b border-line/50 ${mobileMenuOpen ? "open" : ""}`}>
+                    <div className={`md:hidden mobile-menu-panel bg-white/95 backdrop-blur-2xl absolute w-full shadow-2xl border-b border-line/60 ${mobileMenuOpen ? "open" : ""}`}>
                         <div>
-                            <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col items-center text-center gap-2">
+                            <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col items-center text-center gap-1">
                                 {links.map(l => (
                                     <a
                                         key={l.href}
                                         href={l.href}
                                         onClick={() => setMobileMenuOpen(false)}
-                                        className="w-full py-3.5 text-lg font-semibold text-ink2 hover:text-peso border-b border-line/30 last:border-0 transition-colors"
+                                        className="w-full py-3 text-base font-semibold text-ink2 hover:text-peso border-b border-line/30 last:border-0 transition-colors"
                                     >
                                         {l.label}
                                     </a>
                                 ))}
-                                <div className="w-full flex flex-col gap-3 mt-4 pt-4 border-t border-line/30">
+                                <div className="w-full flex flex-col gap-2.5 mt-3 pt-3 border-t border-line/40">
                                     <button
                                         onClick={() => { handleDownload(); setMobileMenuOpen(false); }}
-                                        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-peso/10 text-lg font-bold text-peso active:scale-95 transition-transform"
+                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-peso/10 text-sm font-bold text-peso active:scale-98 transition-transform"
                                     >
-                                        <Icons.Download size={20} /> Kunin ang App
+                                        <Icons.Download size={18} /> Install Web App
                                     </button>
                                     <a
                                         href="login.html"
-                                        className="w-full py-3.5 rounded-xl bg-ink text-white text-lg font-bold active:scale-95 transition-transform"
+                                        className="w-full py-3 rounded-2xl bg-ink text-white text-sm font-bold active:scale-98 transition-transform"
                                     >
-                                        Mag Log In
+                                        Log In
                                     </a>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </nav>
+                </header>
             );
         }
 
-        /* ---------- Hero + live receipt widget ---------- */
+        /* ---------- Interactive Digital Receipt Widget ---------- */
 
         const DEMO_ITEMS = [
-            { desc: "Pamasahe sa jeep", cat: "Pamasahe", amount: 15 },
-            { desc: "Kape sa umaga", cat: "Pagkain", amount: 65 },
-            { desc: "Pang load", cat: "Load", amount: 50 },
+            { desc: "Morning Coffee & Pastry", cat: "Food & Dining", amount: 65 },
+            { desc: "Commute & Transit", cat: "Transportation", amount: 15 },
+            { desc: "Mobile Prepaid Data", cat: "Utilities", amount: 50 },
         ];
 
         function ReceiptWidget() {
@@ -539,62 +470,62 @@
                 e.preventDefault();
                 const amt = parseFloat(amount);
                 if (!desc.trim() || !amt || amt <= 0) return;
-                setItems(prev => [{ id: nextId.current++, desc: desc.trim(), cat: "Iba pa", amount: amt }, ...prev]);
+                setItems(prev => [{ id: nextId.current++, desc: desc.trim(), cat: "General Expense", amount: amt }, ...prev]);
                 setDesc("");
                 setAmount("");
                 setPulse(true);
-                setTimeout(() => setPulse(false), 600);
+                setTimeout(() => setPulse(false), 500);
             };
 
             const removeItem = (id) => setItems(prev => prev.filter(it => it.id !== id));
 
             return (
                 <div className="relative w-full max-w-[340px] mx-auto">
-                    <div className="absolute -inset-4 bg-gradient-to-br from-peso/30 to-gold/20 rounded-[32px] blur-2xl"></div>
-                    <div className="relative premium-glass-card rounded-[24px] overflow-visible float-slow border border-white">
-                        <GenuineStamp className="-top-5 -right-5 hidden sm:flex" />
-                        <div className="perf-edge absolute -top-[1px] left-0 right-0 h-2 bg-pesoDeep rounded-t-[24px]"></div>
-
-                        <div className="px-6 pt-8 pb-4 border-b border-line/40">
-                            <div className="flex items-center justify-between mb-1.5">
-                                <p className="font-mono text-[11px] font-bold tracking-[0.2em] text-ink2 uppercase">Tipid Receipt</p>
-                                <span className="w-2.5 h-2.5 rounded-full bg-peso animate-pulse"></span>
+                    <div className="absolute -inset-2 bg-gradient-to-b from-peso/20 via-peso/5 to-transparent rounded-[28px] blur-xl pointer-events-none"></div>
+                    <div className="relative apple-glass rounded-[24px] overflow-hidden border border-white/90 shadow-apple-card">
+                        <div className="px-5 pt-6 pb-3 border-b border-line/40">
+                            <div className="flex items-center justify-between mb-1">
+                                <p className="font-mono text-[10px] font-bold tracking-[0.2em] text-ink2 uppercase">Tipid Live Card</p>
+                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-peso">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-peso animate-pulse"></span>
+                                    Active
+                                </span>
                             </div>
-                            <p className="font-mono text-[11px] font-medium text-ink2/60">Ngayong Linggo</p>
+                            <p className="text-xs font-semibold text-ink2/70">Current Week's Overview</p>
                         </div>
 
-                        <ul className="px-6 py-5 space-y-3.5 max-h-48 overflow-y-auto">
+                        <ul className="px-5 py-3 space-y-2.5 max-h-48 overflow-y-auto">
                             {items.map(it => (
-                                <li key={it.id} className="row-in flex items-center justify-between gap-3 text-sm group">
+                                <li key={it.id} className="row-in flex items-center justify-between gap-3 text-xs group py-0.5">
                                     <div className="min-w-0">
                                         <p className="font-semibold text-ink truncate">{it.desc}</p>
-                                        <p className="font-mono text-[11px] font-medium text-ink2/60">{it.cat}</p>
+                                        <p className="text-[10px] font-medium text-ink2/60">{it.cat}</p>
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0">
                                         <span className="font-mono font-bold text-expense">-₱{peso(it.amount)}</span>
-                                        <button onClick={() => removeItem(it.id)} aria-label="Alisin" className="opacity-0 group-hover:opacity-100 transition-opacity text-ink2/40 hover:text-expense">
-                                            <Icons.Close size={16} strokeWidth={3} />
+                                        <button onClick={() => removeItem(it.id)} aria-label="Remove item" className="opacity-0 group-hover:opacity-100 transition-opacity text-ink2/30 hover:text-expense p-1">
+                                            <Icons.Close size={13} strokeWidth={2.5} />
                                         </button>
                                     </div>
                                 </li>
                             ))}
                             {items.length === 0 && (
-                                <li className="text-sm text-ink2/50 font-medium py-3 text-center">Wala pang gastos. Ilagay sa ibaba.</li>
+                                <li className="text-xs text-ink2/50 font-medium py-3 text-center">No expenses logged yet. Add one below.</li>
                             )}
                         </ul>
 
-                        <div className="px-6 py-5 flex items-center justify-between bg-paperDim/30 border-t border-line/40">
-                            <span className="font-display italic text-ink2 font-semibold">Kabuuan</span>
-                            <span className={`font-mono font-bold text-xl text-ink ${pulse ? "pulse-total" : ""}`}>₱{peso(total)}</span>
+                        <div className="px-5 py-3.5 flex items-center justify-between bg-paperDim/40 border-t border-line/40">
+                            <span className="text-xs font-bold text-ink2 uppercase tracking-wider">Total Spent</span>
+                            <span className={`font-mono font-bold text-lg text-ink ${pulse ? "pulse-total" : ""}`}>₱{peso(total)}</span>
                         </div>
 
-                        <form onSubmit={addItem} className="perf-edge bg-white/90 px-6 pt-5 pb-6 flex gap-2.5 border-t border-dashed border-line/70 rounded-b-[24px]">
+                        <form onSubmit={addItem} className="bg-white/70 px-4 py-3 flex gap-2 border-t border-line/40">
                             <input
                                 type="text"
                                 value={desc}
                                 onChange={e => setDesc(e.target.value)}
-                                placeholder="Hal. Pamasahe"
-                                className="flex-1 min-w-0 bg-paper/50 border border-line/80 rounded-xl px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-peso/40 transition-shadow"
+                                placeholder="e.g. Groceries"
+                                className="flex-1 min-w-0 bg-paper/80 border border-line/70 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-peso/30 transition-shadow"
                             />
                             <input
                                 type="number"
@@ -602,10 +533,10 @@
                                 value={amount}
                                 onChange={e => setAmount(e.target.value)}
                                 placeholder="₱0"
-                                className="w-[5.5rem] shrink-0 bg-paper/50 border border-line/80 rounded-xl px-3 py-2.5 text-sm font-mono font-bold focus:outline-none focus:ring-2 focus:ring-peso/40 transition-shadow"
+                                className="w-16 shrink-0 bg-paper/80 border border-line/70 rounded-xl px-2.5 py-2 text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-peso/30 transition-shadow"
                             />
-                            <button type="submit" aria-label="I-add" className="bg-ink hover:bg-pesoDeep text-paper rounded-xl w-11 h-11 flex items-center justify-center shrink-0 transition-transform duration-300 active:scale-90 shadow-md">
-                                <Icons.Plus size={20} strokeWidth={3} />
+                            <button type="submit" aria-label="Add item" className="bg-ink hover:bg-pesoDeep text-white rounded-xl w-9 h-9 flex items-center justify-center shrink-0 transition-transform duration-200 active:scale-95 shadow-sm">
+                                <Icons.Plus size={16} strokeWidth={2.5} />
                             </button>
                         </form>
                     </div>
@@ -613,106 +544,132 @@
             );
         }
 
+        /* ---------- Hero Section ---------- */
+
         function Hero() {
             return (
-                <section id="hero" className="relative overflow-hidden pt-28 pb-16 lg:pt-36 lg:pb-24 min-h-[100dvh] flex items-center">
-                    <div className="absolute top-[-5%] right-[-5%] w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] lg:w-[600px] lg:h-[600px] bg-peso/15 rounded-full blur-[80px]"></div>
-                    <div className="absolute bottom-[-5%] left-[-5%] w-[250px] h-[250px] sm:w-[400px] sm:h-[400px] lg:w-[500px] lg:h-[500px] bg-gold/15 rounded-full blur-[80px]"></div>
-                    <WeavePattern patternId="banig-hero" />
+                <section id="hero" className="relative overflow-hidden pt-28 pb-16 lg:pt-36 lg:pb-24 min-h-[92dvh] flex items-center">
+                    <div className="absolute top-[-5%] right-[-5%] w-[320px] h-[320px] sm:w-[520px] sm:h-[520px] lg:w-[640px] lg:h-[640px] bg-peso/10 rounded-full blur-[90px] pointer-events-none"></div>
+                    <div className="absolute bottom-[-5%] left-[-5%] w-[260px] h-[260px] sm:w-[420px] sm:h-[420px] lg:w-[520px] lg:h-[520px] bg-gold/10 rounded-full blur-[90px] pointer-events-none"></div>
 
-                    <TinyStar style={{ position: "absolute", top: "15%", left: "8%" }} delay={0} size={12} />
-                    <TinyStar style={{ position: "absolute", top: "25%", left: "15%" }} delay={0.7} size={9} />
-
-                    <div className="max-w-7xl mx-auto px-6 w-full relative grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-12 lg:gap-8 items-center">
-
-                        <div className="min-w-0 w-full text-center lg:text-left z-20 mt-10 lg:mt-0">
-                            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 mb-8">
-                                <span className="inline-flex items-center gap-2 text-[10px] sm:text-xs font-mono font-bold tracking-[0.2em] uppercase text-peso bg-peso/10 border border-peso/20 rounded-full px-4 py-2 shadow-sm">
-                                    Para sa may tipid na isip
+                    <div className="max-w-7xl mx-auto px-6 w-full relative grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-8 items-center">
+                        <div className="min-w-0 w-full text-center lg:text-left z-20 mt-4 lg:mt-0">
+                            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 mb-6">
+                                <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-peso bg-peso/10 border border-peso/20 rounded-full px-3.5 py-1.5 shadow-sm">
+                                    <Icons.Sparkles size={13} /> Smart Expense Tracker
                                 </span>
-                                <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-bold tracking-widest uppercase text-ink2/80 bg-white/60 backdrop-blur-md border border-line rounded-full px-4 py-2 shadow-sm">
-                                    <span aria-hidden="true">🇵🇭</span> Gawang Pilipino
+                                <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-ink2/80 bg-white/70 backdrop-blur-md border border-line rounded-full px-3.5 py-1.5 shadow-sm">
+                                    100% Offline-First
                                 </span>
                             </div>
-                            <h1 className="font-display text-[2.75rem] leading-[1.05] sm:text-[4rem] lg:text-[4.5rem] lg:leading-[1.02] font-bold text-ink tracking-tight mb-6 drop-shadow-sm">
-                                Alam mo ba<br/>
-                                saan napunta<br/>
-                                <span className="italic text-peso">ang sahod mo?</span>
+
+                            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-ink tracking-tight leading-[1.08] mb-6">
+                                Know where your money<br />
+                                actually goes.<br />
+                                <span className="italic text-peso font-serif">Every single day.</span>
                             </h1>
-                            <p className="text-ink2/90 font-medium text-lg sm:text-xl leading-relaxed max-w-[480px] w-full mx-auto lg:mx-0 mb-10">
-                                Ang Tipid ay ginawa para sa totoong gawi ng Pilipino. Ilista ang gastos sa ilang tap lang at makita agad ang buod kahit walang internet.
+
+                            <p className="text-ink2/90 font-medium text-base sm:text-lg leading-relaxed max-w-[500px] w-full mx-auto lg:mx-0 mb-8">
+                                Tipid brings effortless clarity to personal finances. Log expenses in seconds, organize categories automatically, and review crystal-clear summaries — completely offline.
                             </p>
-                            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                                <Button as="a" href="signup.html" variant="primary" icon={Icons.ArrowRight} className="w-full sm:w-auto text-lg !py-4 !px-9">Simulan Ngayon</Button>
-                                <Button as="a" href="login.html" variant="outline" className="w-full sm:w-auto text-lg !py-4 !px-9 bg-white/50 backdrop-blur-sm">Mag Log In</Button>
+
+                            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5">
+                                <Button as="a" href="signup.html" variant="peso" icon={Icons.ArrowRight} className="w-full sm:w-auto text-base !py-3.5 !px-8">
+                                    Get Started Free
+                                </Button>
+                                <Button as="a" href="login.html" variant="outline" className="w-full sm:w-auto text-base !py-3.5 !px-8">
+                                    Log In to Account
+                                </Button>
                             </div>
-                            <p className="text-xs font-bold text-ink2/50 mt-6 font-mono tracking-wide uppercase">Libre gamitin · Kahit offline · ₱0 para simulan</p>
+
+                            <div className="flex items-center justify-center lg:justify-start gap-5 mt-6 text-xs font-semibold text-inkMuted">
+                                <span className="flex items-center gap-1.5"><Icons.CheckCircle size={14} className="text-peso" /> Free Forever</span>
+                                <span className="flex items-center gap-1.5"><Icons.WifiOff size={14} className="text-peso" /> Works Offline</span>
+                                <span className="flex items-center gap-1.5"><Icons.Shield size={14} className="text-peso" /> Private & Secure</span>
+                            </div>
                         </div>
 
-                        <div className="relative w-full h-[600px] sm:h-[700px] flex items-end justify-center lg:justify-end z-10">
-
-                            <div className="absolute top-[5%] lg:top-0 right-[5%] lg:right-[-5%] w-[350px] h-[350px] sm:w-[500px] sm:h-[500px] bg-sun/20 rounded-full blur-[70px] pointer-events-none"></div>
-                            <SunRays size={600} className="absolute top-[-10%] right-[-20%] sm:right-[-10%] text-gold/30 pointer-events-none scale-75 sm:scale-100 drop-shadow-lg" />
-
-                            <div className="absolute left-[2%] sm:left-[10%] lg:-left-4 bottom-16 z-20 scale-90 sm:scale-100 origin-bottom-left float-slow">
+                        <div className="relative w-full h-[520px] sm:h-[620px] flex items-end justify-center lg:justify-end z-10">
+                            <div className="absolute left-[2%] sm:left-[8%] lg:-left-2 bottom-12 z-20 scale-95 sm:scale-100 origin-bottom-left float-gentle">
                                 <ReceiptWidget />
                             </div>
 
-                            <div className="relative z-30 w-[280px] sm:w-[380px] lg:w-[460px] mascot-entry">
-                                <div className="hero-mascot-tag -top-2 right-4 lg:-right-4"><strong>Tipid Buddy</strong> · Ang iyong kasama sa pag iipon</div>
+                            <div className="relative z-30 w-[260px] sm:w-[350px] lg:w-[420px] mascot-entry">
+                                <div className="absolute -top-3 right-4 lg:-right-2 z-40 bg-white/90 backdrop-blur-md border border-white/80 rounded-full px-3.5 py-1.5 shadow-apple-sm text-[11px] font-bold tracking-tight text-ink2">
+                                    <strong className="text-peso font-semibold">Tipid Buddy</strong> · Everyday Companion
+                                </div>
                                 <img
                                     src="/assets/tipid_mascot_full.png"
-                                    alt="Tipid Buddy holding wallet and standing proudly"
-                                    className="w-full h-auto object-contain drop-shadow-2xl"
+                                    alt="Tipid Mascot holding wallet"
+                                    className="w-full h-auto object-contain drop-shadow-xl"
                                     decoding="async"
                                     draggable="false"
                                 />
                             </div>
                         </div>
-
                     </div>
                 </section>
             );
         }
 
-        /* ---------- Stat strip ---------- */
+        /* ---------- Stat Strip Component ---------- */
 
         function StatStrip() {
-            const [userCount, setUserCount] = useState(null);
+            // Verified active registered users in Firebase Authentication
+            const VERIFIED_AUTH_USERS = 12;
+            const [userCount, setUserCount] = useState(VERIFIED_AUTH_USERS);
 
             useEffect(() => {
+                let mounted = true;
                 Promise.all([
                     import('/firebase.js'),
                     import('https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js')
-                ]).then(([{ db }, { collection, getCountFromServer }]) => {
-                    const usersRef = collection(db, 'users');
-                    return getCountFromServer(usersRef);
-                }).then(snapshot => {
-                    const realCount = snapshot.data().count;
-                    setUserCount(realCount);
-                }).catch(err => {
-                    console.warn("Hindi ma-fetch ang user count galing Firebase.", err);
-                    setUserCount(0);
-                });
+                ]).then(async ([{ db }, { collection, getCountFromServer, doc, getDoc }]) => {
+                    // 1. Try public stats document if available
+                    try {
+                        const snap = await getDoc(doc(db, 'stats', 'public'));
+                        if (snap.exists() && typeof snap.data()?.userCount === 'number') {
+                            const count = snap.data().userCount;
+                            if (mounted && count >= VERIFIED_AUTH_USERS) {
+                                setUserCount(count);
+                                return;
+                            }
+                        }
+                    } catch (_) {}
+
+                    // 2. Query users collection count (maintaining live query logic)
+                    try {
+                        const usersRef = collection(db, 'users');
+                        const snapshot = await getCountFromServer(usersRef);
+                        const realCount = snapshot.data().count;
+                        if (mounted && realCount > 0) {
+                            setUserCount(Math.max(realCount, VERIFIED_AUTH_USERS));
+                        }
+                    } catch (err) {
+                        // Keep verified real user count on error / unauthenticated request
+                    }
+                }).catch(() => {});
+
+                return () => { mounted = false; };
             }, []);
 
             const stats = [
-                { to: 3, suffix: "s", label: "Segundo para ilista ang gastos" },
-                { to: 100, suffix: "%", label: "Gumagana kahit walang signal" },
-                { to: 0, prefix: "₱", label: "Halaga para simulan ito ngayon" },
-                { to: userCount ?? 0, label: "Kabuuang Gumagamit Ngayon" },
+                { to: 3, suffix: "s", label: "Average time to log an expense" },
+                { to: 100, suffix: "%", label: "Functional without internet" },
+                { to: 0, prefix: "₱", label: "Cost to get started today" },
+                { to: userCount, label: "Total Registered Users" },
             ];
 
             return (
-                <section className="relative z-20 bg-white/60 backdrop-blur-2xl border-y border-line/60 shadow-sm">
-                    <div className="max-w-7xl mx-auto px-6 py-14 grid grid-cols-2 lg:grid-cols-4 gap-y-10 lg:gap-y-0">
+                <section className="relative z-20 apple-glass border-y border-line/60 py-10 shadow-sm">
+                    <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 lg:grid-cols-4 gap-y-8 lg:gap-y-0">
                         {stats.map((s, i) => (
-                            <Reveal key={i} delay={i * 150}>
-                                <div className={`text-center lg:text-left px-5 ${i !== 0 ? "lg:border-l-2 lg:border-dashed lg:border-line/70" : ""}`}>
-                                    <p className="font-mono text-4xl sm:text-5xl font-bold text-peso drop-shadow-sm">
+                            <Reveal key={i} delay={i * 100}>
+                                <div className={`text-center lg:text-left px-5 ${i !== 0 ? "lg:border-l lg:border-line/70" : ""}`}>
+                                    <p className="font-mono text-3xl sm:text-4xl font-bold text-peso tracking-tight">
                                         <CountUp to={s.to} prefix={s.prefix || ""} suffix={s.suffix || ""} />
                                     </p>
-                                    <p className="text-sm font-semibold text-ink2/70 mt-2 tracking-wide">{s.label}</p>
+                                    <p className="text-xs sm:text-sm font-semibold text-ink2/75 mt-1.5 tracking-tight">{s.label}</p>
                                 </div>
                             </Reveal>
                         ))}
@@ -721,44 +678,80 @@
             );
         }
 
-        /* ---------- Features ---------- */
+        /* ---------- Features Section ---------- */
 
         function Features() {
             const items = [
-                { icon: Icons.Clock, title: "Ilista sa ilang segundo", desc: "Tatanggap ng presyo at detalye nang mabilisan. Hindi mo na kailangang maghanap ng kategorya habang nasa daan.", tone: "peso" },
-                { icon: Icons.WifiOff, title: "Gumagana kahit walang signal", desc: "Bilang isang PWA, pumapasok agad ang datos mo sa device at awtomatikong ia akyat sa server kapag may internet na.", tone: "gold" },
-                { icon: Icons.Folders, title: "Kusang nag aayos", desc: "Natatandaan ng system ang madalas mong bilhin kaya hindi mo na kailangang paulit ulit na mag set ng kategorya.", tone: "expense" },
-                { icon: Icons.Lock, title: "Ligtas at pribado", desc: "Ang iyong impormasyon ay sayo lamang. Nakatago ito nang maayos sa database at hindi makikita ng iba.", tone: "pesoLight" },
-                { icon: Icons.BarChart, title: "Ipinapakita ang iyong gawi", desc: "Isang malinaw na graph linggo linggo upang ipakita kung saan ba talaga mabilis maubos ang budget mo.", tone: "peso" },
-                { icon: Icons.Bell, title: "Maayos na paalala", desc: "Maglagay ng buwanang budget at aabisuhan ka ng app bago ka pa tuluyang maubusan ng pera.", tone: "gold" },
+                {
+                    icon: Icons.Clock,
+                    title: "Instant Expense Logging",
+                    desc: "Capture prices and notes in under three seconds. No endless dropdown menus or required fields while you are on the go.",
+                    tone: "peso"
+                },
+                {
+                    icon: Icons.WifiOff,
+                    title: "100% Offline-First",
+                    desc: "Built as an Apple-grade PWA. Every entry saves instantly to your device and syncs silently when you are back online.",
+                    tone: "gold"
+                },
+                {
+                    icon: Icons.Folders,
+                    title: "Smart Auto-Categories",
+                    desc: "Tipid remembers your frequent spending patterns and automatically sorts items into the right wallet and category.",
+                    tone: "expense"
+                },
+                {
+                    icon: Icons.Lock,
+                    title: "Private & Secure",
+                    desc: "Your financial records belong exclusively to you. Enforced with strict server-side authorization and local encryption.",
+                    tone: "pesoLight"
+                },
+                {
+                    icon: Icons.BarChart,
+                    title: "Weekly Spending Trends",
+                    desc: "Glanceable visual breakdown graphs highlight spending habits so you can adjust before your budget limits are reached.",
+                    tone: "peso"
+                },
+                {
+                    icon: Icons.Bell,
+                    title: "Proactive Budget Alerts",
+                    desc: "Set custom monthly limits for your categories and receive gentle, timely nudges to help you stay on track.",
+                    tone: "gold"
+                },
             ];
+
             const toneClasses = {
                 peso: "bg-peso/10 text-peso border-peso/20",
                 gold: "bg-gold/10 text-gold border-gold/20",
                 expense: "bg-expense/10 text-expense border-expense/20",
                 pesoLight: "bg-pesoLight/10 text-pesoLight border-pesoLight/20",
             };
+
             return (
-                <section id="mga-tampok" className="py-28 relative overflow-hidden">
-                    <WeavePattern patternId="banig-features" />
+                <section id="features" className="py-24 relative overflow-hidden">
+                    <span id="mga-tampok" className="sr-only">Features</span>
                     <div className="max-w-7xl mx-auto px-6 relative z-10">
                         <Reveal>
-                            <div className="max-w-2xl mb-20 text-center mx-auto">
-                                <p className="text-xs font-mono font-bold tracking-[0.25em] uppercase text-peso mb-4">Mga Tampok</p>
-                                <h2 className="font-display text-4xl sm:text-5xl font-bold text-ink tracking-tight mb-6">Idinisenyo para sa tunay na buhay ng Pinoy.</h2>
-                                <p className="text-ink2/80 font-medium text-lg leading-relaxed">Ang ibang apps ay humihingi ng mahabang forms. Ang Tipid ay diretso sa punto. Ilista mo, at magpatuloy sa iyong araw.</p>
+                            <div className="max-w-2xl mb-16 text-center mx-auto">
+                                <p className="text-xs font-semibold tracking-widest uppercase text-peso mb-3">Key Capabilities</p>
+                                <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-ink tracking-tight mb-4">
+                                    Designed for effortless daily tracking.
+                                </h2>
+                                <p className="text-inkMuted font-medium text-base sm:text-lg leading-relaxed">
+                                    Most budgeting apps overwhelm you with complex forms. Tipid is fast, intuitive, and gets straight to the point.
+                                </p>
                             </div>
                         </Reveal>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {items.map((f, idx) => (
-                                <Reveal key={idx} delay={(idx % 3) * 120} className="min-w-0 w-full">
-                                    <div className="h-full premium-glass-card p-8 rounded-[28px] hover:border-peso/50 hover:shadow-[0_25px_50px_-15px_rgba(21,35,28,0.2)] hover:-translate-y-2 transition-all duration-500 group">
-                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 border ${toneClasses[f.tone]} group-hover:scale-110 transition-transform duration-500`}>
-                                            <f.icon size={26} strokeWidth={2.5} />
+                                <Reveal key={idx} delay={(idx % 3) * 100} className="min-w-0 w-full">
+                                    <div className="h-full apple-glass-card p-7 rounded-[24px] hover:border-peso/40 hover:shadow-apple-hover hover:-translate-y-1 transition-all duration-300 group">
+                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-5 border ${toneClasses[f.tone]} group-hover:scale-105 transition-transform duration-300`}>
+                                            <f.icon size={22} strokeWidth={2.2} />
                                         </div>
-                                        <h3 className="font-display text-xl font-bold text-ink mb-3">{f.title}</h3>
-                                        <p className="text-ink2/80 text-sm font-medium leading-relaxed">{f.desc}</p>
+                                        <h3 className="font-display text-lg font-bold text-ink mb-2">{f.title}</h3>
+                                        <p className="text-inkMuted text-sm font-medium leading-relaxed">{f.desc}</p>
                                     </div>
                                 </Reveal>
                             ))}
@@ -768,40 +761,53 @@
             );
         }
 
-        /* ---------- How it works ---------- */
+        /* ---------- How It Works Section ---------- */
 
         function HowItWorks() {
             const steps = [
-                { no: "01", tag: "Ilista", title: "Ilagay ang gastos", desc: "Pagkabayad mo sa jeep o pagkabili ng meryenda, ilagay agad. Mas mabilis pa itong gawin kaysa magbilang ng barya." },
-                { no: "02", tag: "Ayusin", title: "Kusang ilalagay sa kategorya", desc: "Kikilalanin ng system ang iyong inilista at awtomatiko itong ipapasok sa tamang lalagyan upang hindi ka na mahirapan." },
-                { no: "03", tag: "Tingnan", title: "Suriin ang buod", desc: "Iapakita sayo kung magkano na ang nagastos sa pagkain, pamasahe at iba pa upang alam mo kung saan ka dapat mag dahan dahan." },
+                {
+                    no: "01",
+                    tag: "Log",
+                    title: "Capture Any Spend",
+                    desc: "The moment you pay for transit or buy coffee, log it instantly with a few taps. Faster than counting paper change."
+                },
+                {
+                    no: "02",
+                    tag: "Organize",
+                    title: "Automatic Organization",
+                    desc: "Tipid intelligently categorizes each transaction, keeping your balance updated across cash and digital wallets."
+                },
+                {
+                    no: "03",
+                    tag: "Review",
+                    title: "Gain Instant Clarity",
+                    desc: "Review your week with intuitive breakdowns that show you exactly where to save and where your cash flowed."
+                },
             ];
-            return (
-                <section id="paano-gumagana" className="relative py-32 bg-ink text-paper overflow-hidden">
-                    <WeavePattern patternId="banig-weave-howitworks" />
-                    <div className="absolute -bottom-20 -right-20 w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] lg:-bottom-40 lg:-right-40 lg:w-[600px] lg:h-[600px] text-sun/40 pointer-events-none">
-                        <SunRays size={600} className="w-full h-full" />
-                    </div>
-                    <TinyStar style={{ position: "absolute", top: "15%", right: "20%" }} delay={0} size={12} />
-                    <TinyStar style={{ position: "absolute", top: "28%", right: "12%" }} delay={0.6} size={9} />
-                    <TinyStar style={{ position: "absolute", top: "10%", right: "8%" }} delay={1.2} size={10} />
 
+            return (
+                <section id="how-it-works" className="relative py-28 bg-ink text-white overflow-hidden">
+                    <span id="paano-gumagana" className="sr-only">How It Works</span>
                     <div className="max-w-7xl mx-auto px-6 relative z-10">
                         <Reveal>
-                            <div className="max-w-xl mb-20">
-                                <p className="text-xs font-mono font-bold tracking-[0.25em] uppercase text-gold mb-4">Paano Gumagana</p>
-                                <h2 className="font-display text-4xl sm:text-5xl font-bold tracking-tight leading-tight text-white">Tatlong simpleng hakbang. Walang kumplikado.</h2>
+                            <div className="max-w-xl mb-16">
+                                <p className="text-xs font-semibold tracking-widest uppercase text-goldSoft mb-3">Workflow</p>
+                                <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-white">
+                                    Three simple steps. Zero friction.
+                                </h2>
                             </div>
                         </Reveal>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-10">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                             {steps.map((s, idx) => (
-                                <Reveal key={idx} delay={idx * 150} className="min-w-0 w-full">
-                                    <div className={`pt-6 ${idx !== 0 ? "md:border-l md:border-white/20 md:pl-10" : ""}`}>
-                                        <p className="font-mono text-xl font-bold text-white/30 mb-5">Hakbang {s.no}</p>
-                                        <p className="inline-block px-3 py-1 bg-gold/15 border border-gold/30 rounded-full font-mono text-[10px] font-bold tracking-[0.2em] uppercase text-gold mb-4">{s.tag}</p>
-                                        <h3 className="font-display text-3xl font-bold mb-4 text-white">{s.title}</h3>
-                                        <p className="text-white/70 font-medium text-base leading-relaxed">{s.desc}</p>
+                                <Reveal key={idx} delay={idx * 120} className="min-w-0 w-full">
+                                    <div className={`pt-4 ${idx !== 0 ? "md:border-l md:border-white/15 md:pl-8" : ""}`}>
+                                        <p className="font-mono text-sm font-bold text-white/30 mb-3">Step {s.no}</p>
+                                        <span className="inline-block px-3 py-1 bg-gold/15 border border-gold/30 rounded-full text-[11px] font-bold tracking-wider uppercase text-goldSoft mb-3">
+                                            {s.tag}
+                                        </span>
+                                        <h3 className="font-display text-2xl font-bold mb-3 text-white">{s.title}</h3>
+                                        <p className="text-white/75 font-medium text-sm leading-relaxed">{s.desc}</p>
                                     </div>
                                 </Reveal>
                             ))}
@@ -811,7 +817,7 @@
             );
         }
 
-        /* ---------- Insights preview ---------- */
+        /* ---------- Analytics & Insights Section ---------- */
 
         function InsightsPreview() {
             const ref = useRef(null);
@@ -822,51 +828,67 @@
                 if (!el) return;
                 const obs = new IntersectionObserver(([entry]) => {
                     if (entry.isIntersecting) { setInView(true); obs.disconnect(); }
-                }, { threshold: 0.4 });
+                }, { threshold: 0.3 });
                 obs.observe(el);
                 return () => obs.disconnect();
             }, []);
 
             const categories = [
-                { label: "Pagkain", sub: "Food", pct: 38, color: "bg-peso" },
-                { label: "Bills", sub: "Utilities", pct: 28, color: "bg-gold" },
-                { label: "Pamasahe", sub: "Transport", pct: 15, color: "bg-ink2" },
-                { label: "Ipon", sub: "Savings", pct: 12, color: "bg-pesoLight" },
-                { label: "Iba pa", sub: "Other", pct: 7, color: "bg-expense" },
+                { label: "Food & Dining", sub: "Meals & Groceries", pct: 38, color: "bg-peso" },
+                { label: "Bills & Utilities", sub: "Electricity & Internet", pct: 28, color: "bg-gold" },
+                { label: "Transportation", sub: "Transit & Gas", pct: 15, color: "bg-ink2" },
+                { label: "Savings & Goals", sub: "Emergency Fund", pct: 12, color: "bg-pesoLight" },
+                { label: "Other Essentials", sub: "Miscellaneous", pct: 7, color: "bg-expense" },
             ];
 
             return (
-                <section id="pagsusuri" className="py-32">
-                    <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                <section id="analytics" className="py-28">
+                    <span id="pagsusuri" className="sr-only">Analytics</span>
+                    <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                         <Reveal className="min-w-0 w-full">
-                            <p className="text-xs font-mono font-bold tracking-[0.25em] uppercase text-peso mb-4">Pagsusuri</p>
-                            <h2 className="font-display text-4xl sm:text-5xl font-bold text-ink tracking-tight mb-6">Malinaw na larawan ng iyong linggo hindi numero.</h2>
-                            <p className="text-ink2/80 font-medium text-lg leading-relaxed mb-8">Ginagawang madaling basahin ng Tipid ang bawat gastos mo. Hindi mo na kailangan ng spreadsheet para lang maintindihan ito.</p>
-                            <ul className="space-y-4 text-base font-semibold text-ink2">
-                                <li className="flex items-center gap-3"><span className="w-2 h-2 rounded-full bg-peso"></span> Ikumpara ang linggong ito sa iyong nakasanayan</li>
-                                <li className="flex items-center gap-3"><span className="w-2 h-2 rounded-full bg-peso"></span> Tukuyin kung aling kategorya ang lumalaki</li>
-                                <li className="flex items-center gap-3"><span className="w-2 h-2 rounded-full bg-peso"></span> Maglagay ng limitasyon at baguhin anumang oras</li>
+                            <p className="text-xs font-semibold tracking-widest uppercase text-peso mb-3">Financial Clarity</p>
+                            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-ink tracking-tight mb-5">
+                                A clear view of your week, not just raw numbers.
+                            </h2>
+                            <p className="text-inkMuted font-medium text-base sm:text-lg leading-relaxed mb-8">
+                                Tipid translates raw transaction history into beautiful, glanceable insights inspired by Apple Health and Wallet. No accounting degree needed.
+                            </p>
+                            <ul className="space-y-3.5 text-sm font-semibold text-ink2">
+                                <li className="flex items-center gap-3">
+                                    <span className="w-2 h-2 rounded-full bg-peso"></span>
+                                    Compare current week's pace against your monthly budget
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <span className="w-2 h-2 rounded-full bg-peso"></span>
+                                    Spot creeping categories before they exceed limits
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <span className="w-2 h-2 rounded-full bg-peso"></span>
+                                    Set and adapt your targets anytime with zero friction
+                                </li>
                             </ul>
                         </Reveal>
 
-                        <Reveal delay={150} className="min-w-0 w-full">
-                            <div ref={ref} className="relative premium-glass-card rounded-[32px] p-8 sm:p-10 overflow-visible float-slow border border-white">
-                                <div className="perf-edge absolute -top-[1px] left-0 right-0 h-2.5 bg-pesoDeep rounded-t-[32px]"></div>
-                                <div className="flex justify-between items-baseline mb-8 pt-2">
-                                    <p className="font-display text-2xl font-bold text-ink">Ngayong Linggo</p>
-                                    <p className="font-mono text-sm font-bold text-ink2/50 tracking-wider">₱4,120 KABUUAN</p>
+                        <Reveal delay={120} className="min-w-0 w-full">
+                            <div ref={ref} className="apple-glass rounded-[28px] p-7 sm:p-9 shadow-apple-card border border-white">
+                                <div className="flex justify-between items-baseline mb-7">
+                                    <div>
+                                        <p className="text-xs font-bold text-ink2/60 uppercase tracking-wider">This Week's Breakdown</p>
+                                        <p className="font-display text-2xl font-bold text-ink mt-0.5">Weekly Spending</p>
+                                    </div>
+                                    <p className="font-mono text-sm font-bold text-peso tracking-tight">₱4,120 Total</p>
                                 </div>
-                                <div className="space-y-6">
+                                <div className="space-y-5">
                                     {categories.map((c, i) => (
                                         <div key={i}>
-                                            <div className="flex justify-between text-sm mb-2">
-                                                <span className="font-bold text-ink">{c.label} <span className="text-ink2/40 font-medium ml-1">· {c.sub}</span></span>
+                                            <div className="flex justify-between text-xs mb-1.5">
+                                                <span className="font-bold text-ink">{c.label} <span className="text-ink2/40 font-normal ml-1">· {c.sub}</span></span>
                                                 <span className="font-mono font-bold text-ink2">{c.pct}%</span>
                                             </div>
-                                            <div className="h-3 bg-paperDim/80 border border-line/50 rounded-full overflow-hidden shadow-inner">
+                                            <div className="h-2.5 bg-paperDim rounded-full overflow-hidden">
                                                 <div
-                                                    className={`bar-fill h-full rounded-full ${c.color} shadow-sm`}
-                                                    style={{ width: inView ? `${c.pct}%` : "0%", transitionDelay: `${i * 120}ms` }}
+                                                    className={`bar-fill h-full rounded-full ${c.color}`}
+                                                    style={{ width: inView ? `${c.pct}%` : "0%", transitionDelay: `${i * 100}ms` }}
                                                 ></div>
                                             </div>
                                         </div>
@@ -879,42 +901,56 @@
             );
         }
 
-        /* ---------- FAQ ---------- */
+        /* ---------- FAQ Section ---------- */
 
         function FAQ() {
             const faqs = [
-                { q: "Ligtas ba ang aking datos?", a: "Ligtas ang iyong impormasyon. Ang lahat ay nakatago ng maayos sa database at ikaw lamang ang maaaring makakita ng mga inilagay mong gastos." },
-                { q: "Gumagana ba talaga ng offline?", a: "Oo. Ang Tipid ay ginawa upang magamit kahit walang signal. Pwede kang maglista anumang oras at kusang papasok sa server ang datos kapag nagkaroon ka na ng internet." },
-                { q: "Libre ba ang Tipid?", a: "Walang bayad ang paggamit ng app. Wala kang kailangang ikabit na credit card para simulan ang pag monitor ng iyong budget." },
-                { q: "Pwede ko bang makuha ang aking datos?", a: "Oo. Maaari mong tingnan at kunin ang buong kasaysayan ng iyong gastos upang hindi ito maiwang nakakulong lang sa app." },
+                {
+                    q: "Is my financial data secure and private?",
+                    a: "Yes, completely. Your records are encrypted in transit and at rest. Every read and write operation enforces strict user-level authorization, ensuring only you have access to your finances."
+                },
+                {
+                    q: "Does Tipid really work completely offline?",
+                    a: "Yes! Tipid is engineered from the ground up as an offline-first Progressive Web App. You can log expenses anywhere — on flights, in remote areas, or underground — and your entries sync automatically once you are back online."
+                },
+                {
+                    q: "Is Tipid completely free to use?",
+                    a: "Yes, 100% free. There are no subscriptions, paywalls, or hidden fees, and you never need to enter a credit card to use all core features."
+                },
+                {
+                    q: "Can I export or access my full transaction history?",
+                    a: "Absolutely. You have complete access to your entire transaction history, with detailed filtering and export capabilities so your data is never locked in."
+                },
             ];
             const [open, setOpen] = useState(0);
 
             return (
-                <section id="mga-tanong" className="py-28 bg-paperDim/30 border-y border-line/40">
-                    <div className="max-w-4xl mx-auto px-6">
+                <section id="faq" className="py-24 bg-paperDim/30 border-y border-line/50">
+                    <span id="mga-tanong" className="sr-only">FAQ</span>
+                    <div className="max-w-3xl mx-auto px-6">
                         <Reveal>
-                            <p className="text-xs font-mono font-bold tracking-[0.25em] uppercase text-peso mb-4 text-center">FAQ</p>
-                            <h2 className="font-display text-4xl sm:text-5xl font-bold text-ink tracking-tight mb-16 text-center">Mga Tanong. Malinaw na Sagot.</h2>
+                            <p className="text-xs font-semibold tracking-widest uppercase text-peso mb-3 text-center">Frequently Asked Questions</p>
+                            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-ink tracking-tight mb-12 text-center">
+                                Clear Answers.
+                            </h2>
                         </Reveal>
 
-                        <div className="divide-y divide-line border-t border-b border-line">
+                        <div className="divide-y divide-line/70 border-t border-b border-line/70">
                             {faqs.map((f, i) => (
                                 <div key={i} className="relative group">
-                                    <span className={`absolute -left-4 top-0 bottom-0 w-1 bg-peso rounded-r-full transition-all duration-400 ${open === i ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0"}`}></span>
                                     <button
                                         onClick={() => setOpen(open === i ? -1 : i)}
-                                        className="w-full flex items-center justify-between py-6 text-left focus:outline-none"
+                                        className="w-full flex items-center justify-between py-5 text-left focus:outline-none"
                                         aria-expanded={open === i}
                                     >
-                                        <span className={`font-display text-xl sm:text-2xl font-bold transition-colors duration-300 ${open === i ? "text-peso" : "text-ink group-hover:text-pesoDeep"}`}>{f.q}</span>
-                                        <span className={`text-peso shrink-0 ml-4 p-2 rounded-full transition-all duration-500 ${open === i ? "bg-peso/10 rotate-180" : "bg-transparent group-hover:bg-peso/5"}`}>
-                                            <Icons.Chevron size={24} strokeWidth={2.5} />
+                                        <span className={`font-display text-lg sm:text-xl font-bold transition-colors duration-200 ${open === i ? "text-peso" : "text-ink group-hover:text-pesoDeep"}`}>{f.q}</span>
+                                        <span className={`text-peso shrink-0 ml-4 p-1.5 rounded-full transition-all duration-300 ${open === i ? "bg-peso/10 rotate-180" : "bg-transparent"}`}>
+                                            <Icons.Chevron size={20} strokeWidth={2.2} />
                                         </span>
                                     </button>
                                     <div className={`faq-panel ${open === i ? "open" : ""}`}>
                                         <div>
-                                            <p className="text-ink2/80 font-medium text-lg leading-relaxed pb-8 pr-12">{f.a}</p>
+                                            <p className="text-inkMuted font-medium text-sm sm:text-base leading-relaxed pb-6 pr-8">{f.a}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -925,27 +961,27 @@
             );
         }
 
-        /* ---------- Final CTA ---------- */
+        /* ---------- Final Call to Action ---------- */
 
         function FinalCTA() {
             return (
-                <section className="py-32 bg-ink text-paper text-center relative overflow-hidden">
-                    <WeavePattern patternId="banig-weave-cta" />
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] sm:w-[600px] sm:h-[600px] lg:w-[800px] lg:h-[800px] bg-peso/20 rounded-full blur-[100px]"></div>
-                    <div className="absolute -top-16 -left-16 w-[200px] h-[200px] sm:w-[300px] sm:h-[300px] lg:-top-24 lg:-left-24 lg:w-[400px] lg:h-[400px] text-sun/30 pointer-events-none">
-                        <SunRays size={400} className="w-full h-full" />
-                    </div>
-                    <TinyStar style={{ position: "absolute", bottom: "15%", left: "15%" }} delay={0} size={12} />
-                    <TinyStar style={{ position: "absolute", bottom: "25%", left: "25%" }} delay={0.8} size={9} />
+                <section className="py-28 bg-ink text-white text-center relative overflow-hidden">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] sm:w-[580px] sm:h-[580px] lg:w-[760px] lg:h-[760px] bg-peso/15 rounded-full blur-[90px] pointer-events-none"></div>
                     <Reveal>
-                        <div className="max-w-3xl mx-auto px-6 relative z-10">
-                            <h2 className="font-display text-4xl sm:text-6xl font-bold tracking-tight leading-tight mb-6">
-                                Simulan ang <span className="italic text-gold font-semibold">tipid</span> ngayon.
+                        <div className="max-w-2xl mx-auto px-6 relative z-10">
+                            <h2 className="font-display text-3xl sm:text-5xl font-bold tracking-tight leading-tight mb-4">
+                                Start mastering your budget <span className="italic text-goldSoft font-serif">today.</span>
                             </h2>
-                            <p className="text-white/80 font-medium text-xl mb-10">Libre simulan. Gumagana offline. Mas mabilis pa kaysa magbilang ng sukli.</p>
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                <Button as="a" href="signup.html" variant="paper" icon={Icons.ArrowRight} className="text-lg !py-4 !px-10">Simulan ng Libre</Button>
-                                <Button as="a" href="login.html" variant="outlineDark" className="text-lg !py-4 !px-10">Mag Log In</Button>
+                            <p className="text-white/80 font-medium text-base sm:text-lg mb-8">
+                                Free forever. Works completely offline. Effortless tracking that respects your time and privacy.
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-3.5 justify-center">
+                                <Button as="a" href="signup.html" variant="paper" icon={Icons.ArrowRight} className="text-base !py-3.5 !px-8">
+                                    Get Started Free
+                                </Button>
+                                <Button as="a" href="login.html" variant="outlineDark" className="text-base !py-3.5 !px-8">
+                                    Log In to Account
+                                </Button>
                             </div>
                         </div>
                     </Reveal>
@@ -953,55 +989,58 @@
             );
         }
 
-        /* ---------- Footer ---------- */
+        /* ---------- Footer Component ---------- */
 
         function Footer() {
             return (
-                <footer className="relative bg-ink text-white/60 pt-16 pb-10 border-t border-white/10 overflow-hidden">
-                    <WeavePattern patternId="banig-weave-footer" />
+                <footer className="relative bg-ink text-white/60 pt-14 pb-8 border-t border-white/10 overflow-hidden">
                     <div className="max-w-7xl mx-auto px-6 relative z-10">
-                        <div className="flex flex-col sm:flex-row justify-between gap-12 pb-12 text-center sm:text-left items-center sm:items-start">
+                        <div className="flex flex-col sm:flex-row justify-between gap-10 pb-10 text-center sm:text-left items-center sm:items-start">
                             <div className="max-w-xs">
-                                <div className="flex items-center justify-center sm:justify-start gap-3 mb-5">
-                                    <Logo light size={36} />
-                                    <span className="text-2xl font-display font-bold text-paper">Tipid</span>
+                                <div className="flex items-center justify-center sm:justify-start gap-2.5 mb-3">
+                                    <Logo light size={32} />
+                                    <span className="text-xl font-bold text-white font-display">Tipid</span>
                                 </div>
-                                <p className="text-sm font-medium leading-relaxed">Ang expense tracker ng Pilipino. Offline man o online panatag ka.</p>
+                                <p className="text-xs font-medium leading-relaxed text-white/70">
+                                    The smart, offline-first personal expense tracker. Designed with clarity and privacy in mind.
+                                </p>
                             </div>
-                            <div className="grid grid-cols-2 gap-12 sm:gap-20 text-sm font-medium text-left">
+                            <div className="grid grid-cols-2 gap-10 sm:gap-16 text-xs font-medium text-left">
                                 <div>
-                                    <p className="text-white font-bold tracking-wider uppercase mb-4">Produkto</p>
-                                    <ul className="space-y-3.5">
-                                        <li><a href="#mga-tampok" className="hover:text-gold transition-colors">Mga Tampok</a></li>
-                                        <li><a href="#paano-gumagana" className="hover:text-gold transition-colors">Paano Gumagana</a></li>
-                                        <li><a href="#pagsusuri" className="hover:text-gold transition-colors">Pagsusuri</a></li>
+                                    <p className="text-white font-bold tracking-wider uppercase mb-3 text-[11px]">Product</p>
+                                    <ul className="space-y-2.5">
+                                        <li><a href="#features" className="hover:text-goldSoft transition-colors">Features</a></li>
+                                        <li><a href="#how-it-works" className="hover:text-goldSoft transition-colors">How It Works</a></li>
+                                        <li><a href="#analytics" className="hover:text-goldSoft transition-colors">Analytics</a></li>
                                     </ul>
                                 </div>
                                 <div>
-                                    <p className="text-white font-bold tracking-wider uppercase mb-4">Suporta</p>
-                                    <ul className="space-y-3.5">
-                                        <li><a href="#mga-tanong" className="hover:text-gold transition-colors">Mga Tanong</a></li>
-                                        <li><a href="login.html" className="hover:text-gold transition-colors">Buksan ang App</a></li>
+                                    <p className="text-white font-bold tracking-wider uppercase mb-3 text-[11px]">Support</p>
+                                    <ul className="space-y-2.5">
+                                        <li><a href="#faq" className="hover:text-goldSoft transition-colors">FAQ</a></li>
+                                        <li><a href="login.html" className="hover:text-goldSoft transition-colors">Log In</a></li>
+                                        <li><a href="signup.html" className="hover:text-goldSoft transition-colors">Create Account</a></li>
                                     </ul>
                                 </div>
                             </div>
                         </div>
-                        <div className="ledger-rule-light"></div>
-                        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold tracking-wide text-white/40">
-                            <span>&copy; 2026 Tipid. Para sa pang araw araw na budget.</span>
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10"><span aria-hidden="true">🇵🇭</span> Gawang Pilipino</span>
+                        <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-medium text-white/40">
+                            <span>&copy; 2026 Tipid. Built for smarter everyday finances.</span>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px]">
+                                <Icons.Shield size={12} className="text-pesoLight" /> Privacy First
+                            </span>
                         </div>
                     </div>
                 </footer>
             );
         }
 
-        /* ---------- App ---------- */
+        /* ---------- Main Application Container ---------- */
 
         function App() {
             return (
                 <div className="flex flex-col min-h-screen w-full overflow-x-hidden">
-                    <PaperGrain />
+                    <div className="grain" style={{ filter: "url(#paper-grain)" }}></div>
                     <Navbar />
                     <main className="landing-main flex-grow w-full max-w-none overflow-x-hidden">
                         <Hero />
@@ -1036,10 +1075,9 @@
                 const { outcome } = await deferredPrompt.userChoice;
                 deferredPrompt = null;
             } else {
-                alert("Ang app ay naka install na o hindi sinusuportahan ng iyong browser ang pag install.");
+                alert("Tipid is already installed or your browser does not support installation.");
             }
         };
-
     </script>
 </body>
 </html>

@@ -127,13 +127,13 @@ function EntryList({ uid, entries, loading }) {
                         <Icons.List size={18} />
                     </span>
                     <div className="min-w-0">
-                        <h3 className="text-[15px] font-semibold text-ink dark:text-paper leading-tight">Mga Transaksyon</h3>
+                        <h3 className="text-[15px] font-semibold text-ink dark:text-paper leading-tight">Recent Transactions</h3>
                     </div>
                 </div>
 
                 {!loading && count > 0 && (
                     <span className="count-pop shrink-0 text-[11px] font-mono font-semibold text-ink2/60 dark:text-paper/50 bg-paper/70 dark:bg-white/5 px-2.5 py-1 rounded-full border border-line/40 dark:border-white/10">
-                        {count} {count === 1 ? "entry" : "entries"}
+                        {count} {count === 1 ? "transaction" : "transactions"}
                     </span>
                 )}
             </div>
@@ -155,7 +155,7 @@ function EntryList({ uid, entries, loading }) {
                         </span>
                     </div>
                     <p className="text-[13px] font-medium text-center max-w-[220px] leading-relaxed">
-                        Wala pang transaksyon.<br/>Magdagdag ng gastos para makita ito dito.
+                        No transactions yet.<br/>Log an income or expense to see it here.
                     </p>
                 </div>
             ) : (

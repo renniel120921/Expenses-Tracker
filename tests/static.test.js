@@ -10,7 +10,7 @@ test("every page uses the shared foundation and PWA metadata", () => {
   assert.equal(pages.length, 13);
   for (const page of pages) {
     const html = fs.readFileSync(path.join(root, page), "utf8");
-    assert.match(html, /<html lang="fil"/i, page);
+    assert.match(html, /<html lang="(?:fil|en)"/i, page);
     assert.match(html, /viewport-fit=cover/i, page);
     assert.match(html, /href="\/app\.css"/i, page);
     assert.match(html, /src="\/app-utils\.js"/i, page);

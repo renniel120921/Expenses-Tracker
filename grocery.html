@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="fil" class="scroll-smooth">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="/app.css">
     <link rel="manifest" href="/manifest.json">
     <script src="/app-utils.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Tipid Smart Palengke</title>
+    <title>Grocery List — Tipid</title>
     <meta name="theme-color" content="#1F6F54">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -220,10 +220,10 @@
                     {/* Main Content */}
                     <div className="relative z-10 px-6 sm:px-8 pt-7 sm:pt-8 pb-7 sm:pb-8 max-w-[75%] sm:max-w-[65%]">
                         <h1 className="font-display text-[1.75rem] sm:text-[2.35rem] font-semibold tracking-tight leading-[1.08] mb-2.5">
-                            Palengke List
+                            Smart Grocery List
                         </h1>
                         <p className="text-[12.5px] sm:text-[13.5px] text-paper/70 leading-relaxed">
-                            I-lista ang mga bibilhin at bantayan ang running total para hindi over-budget.
+                            Plan your shopping items and track running totals to stay on budget.
                         </p>
                     </div>
                 </div>
@@ -236,33 +236,33 @@
         window.PALENGKE_TIPS = [
             {
                 icon: "Clock",
-                title: "Mas maaga, mas sariwa",
-                text: "Pumunta bago mag-alas-otso ng umaga para sa pinakasariwang isda at gulay, bago maubos ang magagandang piraso."
+                title: "Shop early for freshness",
+                text: "Shop early in the morning for the freshest produce and best selections before prime items sell out."
             },
             {
                 icon: "Leaf",
-                title: "Tingnan ang sariwa",
-                text: "Sa isda, dapat malinaw ang mata at matigas ang katawan. Sa gulay, iwasan ang malambot o may batik na parte."
+                title: "Inspect produce quality",
+                text: "Check produce for firm texture and vibrant color. Avoid bruised vegetables or items past their peak."
             },
             {
                 icon: "Coins",
-                title: "Magdala ng barya",
-                text: "Karamihan sa mga tindera ay mahirap magsukli ng malaking bill. Magdala ng barya at maliliit na denomination."
+                title: "Keep small bills handy",
+                text: "Carrying smaller denominations and loose change makes checkout fast and hassle-free."
             },
             {
                 icon: "Bag",
-                title: "Sariling bag, tipid sa plastic",
-                text: "Magdala ng sariling eco bag o bayong. Mas madali ring buhatin at mas malinis kaysa sa maraming plastic bag."
+                title: "Bring reusable tote bags",
+                text: "Eco-friendly tote bags are sturdy, easier to carry, and reduce single-use plastic waste."
             },
             {
                 icon: "Sparkle",
-                title: "Ikumpara bago bumili",
-                text: "Maglakad-lakad muna sa dalawa o tatlong tindahan bago bumili, lalo na sa isda at karne. Malaki ang pagkakaiba ng presyo."
+                title: "Compare before buying",
+                text: "Check prices across 2 or 3 stalls or supermarket aisles before making bulk purchases."
             },
             {
                 icon: "Info",
-                title: "Sundan ang listahan",
-                text: "I-check ang mga item sa listahan habang binibili para hindi ka makaligtaan o makadoble ng bili."
+                title: "Stick to your checklist",
+                text: "Check items off as you shop to prevent impulse purchases or buying duplicates."
             }
         ];
 
@@ -291,19 +291,19 @@
                 >
                     <div className="flex items-center justify-between mb-3.5">
                         <h2 className="font-display text-[1.05rem] font-semibold text-ink dark:text-paper tracking-tight">
-                            Palengke tips
+                            Grocery tips
                         </h2>
                         <div className="flex items-center gap-1">
                             <button
                                 onClick={() => goTo(index - 1)}
-                                aria-label="Nakaraang tip"
+                                aria-label="Previous tip"
                                 className="tap-scale w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink2 dark:text-paper/70 hover:bg-black/10 dark:hover:bg-white/20 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-peso/40"
                             >
                                 <window.Icons.ChevronLeft size={14} />
                             </button>
                             <button
                                 onClick={() => goTo(index + 1)}
-                                aria-label="Susunod na tip"
+                                aria-label="Next tip"
                                 className="tap-scale w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink2 dark:text-paper/70 hover:bg-black/10 dark:hover:bg-white/20 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-peso/40"
                             >
                                 <window.Icons.ChevronRight size={14} />
@@ -408,7 +408,7 @@
                                 <window.Logo size={38} />
                             </div>
                             <p className="text-[11px] font-mono text-ink2/60 dark:text-paper/50">
-                                Naglo-load...
+                                Loading list...
                             </p>
                         </div>
                     </div>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fil" class="scroll-smooth">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="/app.css">
@@ -244,9 +244,17 @@
             return window.TipidCore.formatPeso(n);
         }
 
-        window.CATEGORIES = ["Pagkain", "Pamasahe", "Bills", "Load", "Ipon", "Project Components", "Iba pa"];
+        window.CATEGORY_DISPLAY = {
+            "Pagkain": "Food & Dining", "Pamasahe": "Transportation", "Bills": "Bills & Utilities", "Load": "Mobile & Data",
+            "Ipon": "Savings", "Project Components": "Projects", "Iba pa": "Other",
+            "Food & Dining": "Food & Dining", "Transportation": "Transportation", "Bills & Utilities": "Bills & Utilities",
+            "Mobile & Data": "Mobile & Data", "Savings": "Savings", "Projects": "Projects", "Other": "Other"
+        };
+        window.CATEGORIES = ["Food & Dining", "Transportation", "Bills & Utilities", "Mobile & Data", "Savings", "Projects", "Other"];
 
         window.CATEGORY_COLOR = {
+            "Food & Dining": "#E63946", "Transportation": "#F4A261", "Bills & Utilities": "#2F8E6C", "Mobile & Data": "#457B9D",
+            "Savings": "#D4AF37", "Projects": "#9B5DE5", "Other": "#8A9A90",
             "Pagkain": "#E63946", "Pamasahe": "#F4A261", "Bills": "#2F8E6C", "Load": "#457B9D",
             "Ipon": "#D4AF37", "Project Components": "#9B5DE5", "Iba pa": "#8A9A90"
         };
@@ -344,7 +352,7 @@
         }
 
         // 🌟 CUSTOM TIPID BUDDY MODAL HELPER FUNCTION 🌟
-        window.showTipidBuddyModal = function({ title, message, mode = "celebrate", confirmText = "Sige", cancelText = null, confirmColor = "#1F6F54" }) {
+        window.showTipidBuddyModal = function({ title, message, mode = "celebrate", confirmText = "OK", cancelText = null, confirmColor = "#1F6F54" }) {
             const animMap = {
                 celebrate: "mascot-anim-celebrate",
                 worry: "mascot-anim-worry",
@@ -446,7 +454,7 @@
                 if (!entries || entries.length === 0) {
                     setInsight({
                         tone: "neutral",
-                        message: "Wala ka pang nalo-log ngayong buwan. I-update na ang tracker para alam natin kung magkano pa ang pwede nating gastusin!"
+                        message: "No logs recorded yet this month. Update your tracker so we can pace your spending accurately!"
                     });
                     return;
                 }
@@ -466,7 +474,7 @@
                 currentMonthEntries.forEach(e => {
                     if (e.type === "expense") {
                         if (e.spendType === "luho") totalLuho += Number(e.amount) || 0;
-                        if (e.category === "Pagkain") totalFood += Number(e.amount) || 0;
+                        if (e.category === "Pagkain" || e.category === "Food & Dining") totalFood += Number(e.amount) || 0;
                     }
                 });
 
@@ -476,27 +484,27 @@
                 if (isOverBudget) {
                     setInsight({
                         tone: "danger",
-                        message: `Naku, lagpas na tayo sa budget natin na ₱${window.peso(monthlyBudget)}! Medyo tipid-tipid muna tayo sa mga susunod na araw, baka madelay ang ipon natin.`
+                        message: `Alert: You've exceeded your monthly budget of ₱${window.peso(monthlyBudget)}. Let's slow down on non-essential spending.`
                     });
                 } else if (luhoPct > 30) {
                     setInsight({
                         tone: "warning",
-                        message: `Pansin ko lang, umabot na ng ₱${window.peso(totalLuho)} ang nagastos natin sa 'Luho'. Baka pwede nating i-save na lang 'yan para sa ${goalName || 'Goal'} mo?`
+                        message: `Heads up: you've spent ₱${window.peso(totalLuho)} on 'Wants'. Consider redirecting some of this toward your ${goalName || 'Goal'}!`
                     });
                 } else if (foodPct > 40 && totalFood > 1000) {
                     setInsight({
                         tone: "warning",
-                        message: `₱${window.peso(totalFood)} na ang nagagastos natin sa Pagkain this month. Kape at food delivery ba 'yan? Baka pwedeng mag-luto muna tayo sa bahay?`
+                        message: `₱${window.peso(totalFood)} spent on Food & Dining this month. Consider home-cooked meals to optimize your savings rate.`
                     });
                 } else if (monthStats.savingsRate >= 20) {
                     setInsight({
                         tone: "success",
-                        message: `Ang ganda ng pacing natin! Pasok tayo sa budget at maganda ang savings rate (${Math.round(monthStats.savingsRate)}%). Keep it up para mabilis maabot ang ${goalName || 'Goal'}!`
+                        message: `Great financial discipline! You're within budget with a healthy ${Math.round(monthStats.savingsRate)}% savings rate. Keep it up for your ${goalName || 'Goal'}!`
                     });
                 } else {
                     setInsight({
                         tone: "neutral",
-                        message: "Going strong tayo this week. Patuloy lang sa pag-log ng gastos para laging updated ang ating budget pace."
+                        message: "Steady financial pacing this week. Keep logging transactions to keep your budget on target."
                     });
                 }
             }, [entries, monthStats, budget, goalName]);
@@ -600,8 +608,8 @@
                 if (!desc.trim()) {
                     triggerShake();
                     return window.showTipidBuddyModal({
-                        title: 'Teka muna!',
-                        message: 'Pakilagay kung ano ang binili o kinita mo bago natin i-save.',
+                        title: 'Hold on!',
+                        message: 'Please provide a description of what you bought or earned before saving.',
                         mode: 'worry',
                         confirmColor: '#1F6F54'
                     });
@@ -609,8 +617,8 @@
                 if (!parsedAmount || parsedAmount <= 0) {
                     triggerShake();
                     return window.showTipidBuddyModal({
-                        title: 'Teka muna!',
-                        message: 'Pakilagay ang tamang halaga para mai-record ko nang wasto.',
+                        title: 'Hold on!',
+                        message: 'Please enter a valid amount to record this transaction accurately.',
                         mode: 'worry',
                         confirmColor: '#1F6F54'
                     });
@@ -619,8 +627,8 @@
                 if (insufficient) {
                     triggerShake();
                     return window.showTipidBuddyModal({
-                        title: 'Kulang ang Balanse!',
-                        message: `Hindi mo pwedeng gamitin ang ${method} dahil ₱${window.peso(currentBalance)} na lamang ang laman nito.`,
+                        title: 'Insufficient Balance!',
+                        message: `Cannot use ${method} because only ₱${window.peso(currentBalance)} is remaining in this wallet.`,
                         mode: 'worry',
                         confirmColor: '#D64045'
                     });
@@ -630,12 +638,12 @@
                 if (!isIncome && method === savedGoalWallet) {
                     triggerShake();
                     const confirm = await window.showTipidBuddyModal({
-                        title: 'Wait, Ipon mo ito! 🛑',
-                        message: `Ang ${method} ay naka-set bilang iyong Ipon Wallet.\n\nSigurado ka bang babawasan mo ang ipon mo ng ₱${window.peso(parsedAmount)}?`,
+                        title: 'Wait, this is your Goal Wallet! 🛑',
+                        message: `${method} is set as your Target Goal Wallet.\n\nAre you sure you want to deduct ₱${window.peso(parsedAmount)} from your savings?`,
                         mode: 'caution',
                         confirmColor: '#D64045',
-                        confirmText: 'Oo, Ituloy ang Gastos',
-                        cancelText: 'Huwag, I-cancel'
+                        confirmText: 'Yes, proceed with expense',
+                        cancelText: 'Cancel'
                     });
 
                     if (!confirm.isConfirmed) return;
@@ -658,8 +666,8 @@
                     setTimeout(() => setJustAdded(false), 900);
 
                     window.showTipidBuddyModal({
-                        title: isIncome ? 'Kita Naitala! 🎉' : 'Gastos Naitala! 💸',
-                        message: `Matagumpay na naidagdag ang ₱${window.peso(parsedAmount)} bilang ${isIncome ? 'kita' : 'gastos'}.`,
+                        title: isIncome ? 'Income Recorded! 🎉' : 'Expense Recorded! 💸',
+                        message: `Successfully logged ₱${window.peso(parsedAmount)} as ${isIncome ? 'income' : 'expense'}.`,
                         mode: 'celebrate',
                         confirmColor: '#1F6F54'
                     });
@@ -667,8 +675,8 @@
                 } catch (err) {
                     triggerShake();
                     window.showTipidBuddyModal({
-                        title: 'May Error!',
-                        message: 'Hindi nai-save ang data sa server. Subukan ulit.',
+                        title: 'System Error',
+                        message: 'Failed to save entry to the server. Please try again.',
                         mode: 'worry',
                         confirmColor: '#D64045'
                     });
@@ -692,8 +700,8 @@
                                 <Icons.Plus size={18} />
                             </span>
                             <div>
-                                <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper leading-tight">Bagong Entry</h3>
-                                <p className="text-[11px] text-ink2/50 dark:text-paper/50">Itala ang bawat sentimo</p>
+                                <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper leading-tight">New Transaction</h3>
+                                <p className="text-[11px] text-ink2/50 dark:text-paper/50">Track every peso & centavo</p>
                             </div>
                         </div>
 
@@ -713,7 +721,7 @@
                                         !isIncome ? "text-expense dark:text-[#F38C80] font-semibold" : "text-ink2/50 dark:text-paper/50 hover:text-ink dark:hover:text-paper"
                                     }`}
                                 >
-                                    Gastos
+                                    Expense
                                 </button>
                                 <button
                                     type="button"
@@ -722,12 +730,12 @@
                                         isIncome ? "text-peso dark:text-[#52C8A1] font-semibold" : "text-ink2/50 dark:text-paper/50 hover:text-ink dark:hover:text-paper"
                                     }`}
                                 >
-                                    Kita
+                                    Income
                                 </button>
                             </div>
 
                             <span className="text-[10px] sm:text-[11px] font-mono font-medium text-ink2/50 dark:text-paper/40 px-1 bg-black/5 dark:bg-white/5 rounded-md py-0.5">
-                                Balanse ng {method}: <span className="text-ink dark:text-paper font-bold">₱{window.peso(currentBalance)}</span>
+                                Balance in {method}: <span className="text-ink dark:text-paper font-bold">₱{window.peso(currentBalance)}</span>
                             </span>
                         </div>
                     </div>
@@ -737,7 +745,7 @@
                         <FieldWrap icon={<Icons.Pencil size={16} className="text-ink2/40 dark:text-paper/40 shrink-0" />} ringClass={accent.ring}>
                             <input
                                 type="text" value={desc} onChange={e => setDesc(e.target.value)}
-                                placeholder={isIncome ? "Hal: Allowance galing kay Mama" : "Hal: Kape, Grab, Shopee Checkout"}
+                                placeholder={isIncome ? "e.g., Salary, Freelance, Allowance" : "e.g., Coffee, Grab, Grocery, Subscription"}
                                 className="w-full min-w-0 bg-transparent py-3.5 text-[15px] font-medium text-ink dark:text-paper placeholder:text-ink2/30 dark:placeholder:text-paper/30 focus:outline-none"
                             />
                         </FieldWrap>
@@ -745,10 +753,10 @@
                         {!isIncome && (
                             <div className="flex gap-2.5">
                                 <button type="button" onClick={() => setSpendType("need")} className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[14px] text-[13px] font-bold transition-all ring-1 shadow-sm ${spendType === "need" ? 'bg-[#E6F3EF] ring-[#2F8E6C]/30 text-[#1F6F54] dark:bg-[#1F6F54]/20 dark:text-[#52C8A1]' : 'bg-white/80 dark:bg-black/20 ring-black/5 text-ink2/50 dark:text-paper/40 hover:bg-black/5 dark:hover:bg-white/5'}`}>
-                                    <Icons.Check size={16} strokeWidth={3}/> Need <span className="hidden sm:inline">(Kailangan)</span>
+                                    <Icons.Check size={16} strokeWidth={3}/> Need
                                 </button>
                                 <button type="button" onClick={() => setSpendType("luho")} className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[14px] text-[13px] font-bold transition-all ring-1 shadow-sm ${spendType === "luho" ? 'bg-[#FAEDE9] ring-[#B5483B]/30 text-[#B5483B] dark:bg-[#B5483B]/20 dark:text-[#F38C80]' : 'bg-white/80 dark:bg-black/20 ring-black/5 text-ink2/50 dark:text-paper/40 hover:bg-black/5 dark:hover:bg-white/5'}`}>
-                                    {Icons.ShoppingBag ? <Icons.ShoppingBag size={16} strokeWidth={2.5}/> : <Icons.Category size={16} strokeWidth={2.5} />} Want <span className="hidden sm:inline">(Luho)</span>
+                                    {Icons.ShoppingBag ? <Icons.ShoppingBag size={16} strokeWidth={2.5}/> : <Icons.Category size={16} strokeWidth={2.5} />} Want
                                 </button>
                             </div>
                         )}
@@ -766,8 +774,8 @@
                                     <span className={`inline-flex items-center gap-1 text-[10px] font-mono px-1.5 transition-colors duration-200 ${insufficient ? "text-expense dark:text-[#F38C80] font-semibold animate-pulse" : "text-ink2/40 dark:text-paper/30 font-medium"}`}>
                                         {insufficient && <WarningGlyph size={11} />}
                                         {insufficient
-                                            ? `Kulang ng ₱${window.peso(parsedAmount - currentBalance)}`
-                                            : `Matitira: ₱${window.peso(matitira)}`}
+                                            ? `Short by ₱${window.peso(parsedAmount - currentBalance)}`
+                                            : `Remaining: ₱${window.peso(matitira)}`}
                                     </span>
                                 )}
                             </div>
@@ -788,7 +796,7 @@
                                         const cantAfford = isExpense && (parsedAmount > bal);
                                         return (
                                             <option key={m} value={m} disabled={cantAfford} className={`bg-paper dark:bg-ink ${cantAfford ? 'text-expense dark:text-[#F38C80]' : 'text-ink dark:text-paper'}`}>
-                                                {m} {cantAfford ? `(Kulang: ₱${window.peso(bal)} lang)` : ""}
+                                                {m} {cantAfford ? `(Short: ₱${window.peso(bal)} only)` : ""}
                                             </option>
                                         );
                                     })}
@@ -805,7 +813,7 @@
                                 <span key={saving ? "saving" : justAdded ? "added" : "idle"} className={justAdded ? "success-pop inline-flex" : "inline-flex"}>
                                     {saving ? <Icons.Loader size={18} className="spin" /> : justAdded ? <CheckGlyph size={18} /> : <Icons.Plus size={18} strokeWidth={2.5} />}
                                 </span>
-                                <span className="hidden sm:inline whitespace-nowrap">{saving ? "Sinasave..." : justAdded ? "Nadagdag!" : "Idagdag"}</span>
+                                <span className="hidden sm:inline whitespace-nowrap">{saving ? "Saving..." : justAdded ? "Saved!" : isIncome ? "Add Income" : "Add Expense"}</span>
                             </button>
                         </div>
                     </form>
@@ -848,9 +856,9 @@
 
         function timeGreeting() {
             const h = new Date().getHours();
-            if (h < 12) return "Magandang umaga";
-            if (h < 18) return "Magandang hapon";
-            return "Magandang gabi";
+            if (h < 12) return "Good morning";
+            if (h < 18) return "Good afternoon";
+            return "Good evening";
         }
 
         function scrollToId(id) {
@@ -952,29 +960,29 @@
             const handleBellClick = () => {
                 if (monthlyBudget === 0) {
                     window.showTipidBuddyModal({
-                        title: 'Walang Budget ⚙️',
-                        message: 'I-set muna ang iyong Monthly Budget sa ibaba para matulungan kitang mag-track.',
+                        title: 'No Budget Configured ⚙️',
+                        message: 'Set your monthly budget below so we can track and alert your spending pace.',
                         mode: 'float',
                         confirmColor: '#1F6F54'
                     });
                 } else if (isOverBudget) {
                     window.showTipidBuddyModal({
-                        title: 'Over Budget Ka Na! 🚨',
-                        message: `Ang budget mo ay ₱${window.peso(monthlyBudget)}, pero ang total gastos mo na ay ₱${window.peso(monthStats.expenseThis)}. Hinay-hinay muna tayo!`,
+                        title: 'Over Budget Alert! 🚨',
+                        message: `Your budget is ₱${window.peso(monthlyBudget)}, but total spend has reached ₱${window.peso(monthStats.expenseThis)}. Let's pause discretionary spending!`,
                         mode: 'worry',
                         confirmColor: '#D64045'
                     });
                 } else if (isOverDaily) {
                     window.showTipidBuddyModal({
-                        title: 'Alerto sa Gastos! ⚠️',
-                        message: `Ang safe daily limit mo ay ₱${window.peso(dailyBudget)}, pero naka-₱${window.peso(todayExpenses)} ka na ngayong araw.`,
+                        title: 'Daily Limit Exceeded! ⚠️',
+                        message: `Your recommended daily limit is ₱${window.peso(dailyBudget)}, but you have spent ₱${window.peso(todayExpenses)} today.`,
                         mode: 'worry',
                         confirmColor: '#D64045'
                     });
                 } else {
                     window.showTipidBuddyModal({
-                        title: 'Pasok sa Budget! 🎉',
-                        message: `Maganda ang pacing natin! Gastos ngayon: ₱${window.peso(todayExpenses)} (Limit: ₱${window.peso(dailyBudget)}/day).`,
+                        title: 'Within Budget! 🎉',
+                        message: `Healthy financial pacing! Spent today: ₱${window.peso(todayExpenses)} (Safe limit: ₱${window.peso(dailyBudget)}/day).`,
                         mode: 'celebrate',
                         confirmColor: '#1F6F54'
                     });
@@ -1094,11 +1102,6 @@
                     <div className="hero-command rounded-[2.5rem] md:col-span-8 p-7 sm:p-10 flex flex-col justify-between min-h-[260px] sm:min-h-[280px]">
                         <div className="hero-mesh" />
 
-                        <div className="absolute right-0 bottom-0 w-[160px] sm:w-[200px] h-full pointer-events-none z-0 overflow-visible opacity-90">
-                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-32 h-32 bg-white/20 blur-[40px] rounded-full"></div>
-                            <img src="/assets/tipid_mascot.png" alt="Tipid Buddy" className="absolute bottom-[-15px] sm:bottom-[-20px] right-[-10px] sm:right-4 w-full object-contain tipid-mascot-img" draggable="false" />
-                        </div>
-
                         <div className="relative z-10 flex justify-between items-start gap-4 pr-1">
                             <div className="flex items-center gap-4">
                                 <div className="relative shrink-0">
@@ -1112,15 +1115,24 @@
                                     <h1 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight drop-shadow-md">{firstName}.</h1>
                                 </div>
                             </div>
-                            <NotificationBell uid={user.uid} entries={entries} budget={budget} monthStats={monthStats} />
+                            <div className="flex items-center gap-2">
+                                <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/15 text-white/80 font-mono text-xs">
+                                    <Icons.Contactless size={16} />
+                                    <span>•••• {window.cosmeticRef(user.uid || "card")}</span>
+                                </span>
+                                <NotificationBell uid={user.uid} entries={entries} budget={budget} monthStats={monthStats} />
+                            </div>
                         </div>
 
-                        <div className="relative z-10 mt-10 w-full pr-16 sm:pr-24">
-                            <div className="flex items-center gap-2 mb-2">
-                                <p className="text-[11px] sm:text-xs font-mono font-bold text-white/70 tracking-widest uppercase">SYS.BAL // Net Worth</p>
-                                <button onClick={() => setHidden(h => !h)} className="text-white/50 hover:text-white transition-colors p-1 relative z-20 focus:outline-none">
-                                    {hidden ? <Icons.EyeOff size={14} /> : <Icons.Eye size={14} />}
-                                </button>
+                        <div className="relative z-10 mt-8 w-full">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                    <p className="text-[11px] sm:text-xs font-mono font-bold text-white/70 tracking-widest uppercase">Total Balance</p>
+                                    <button onClick={() => setHidden(h => !h)} aria-label="Toggle balance visibility" className="text-white/60 hover:text-white transition-colors p-1 relative z-20 focus:outline-none">
+                                        {hidden ? <Icons.EyeOff size={14} /> : <Icons.Eye size={14} />}
+                                    </button>
+                                </div>
+                                <span className="sm:hidden font-mono text-[11px] text-white/60">•••• {window.cosmeticRef(user.uid || "card")}</span>
                             </div>
                             <p className="font-fraunces text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white drop-shadow-lg break-words leading-none">
                                 {hidden ? "₱ ••••••" : <><span className="opacity-60 mr-1 text-2xl sm:text-4xl">₱</span>{window.peso(balance)}</>}
@@ -1143,7 +1155,7 @@
 
                         <div className="mt-5 pt-5 border-t border-line/60 dark:border-white/10 flex justify-between items-center">
                             <div>
-                                <p className="text-[10px] font-mono font-bold text-ink2/50 dark:text-paper/40 uppercase tracking-widest mb-1">Rate</p>
+                                <p className="text-[10px] font-mono font-bold text-ink2/50 dark:text-paper/40 uppercase tracking-widest mb-1">Savings Rate</p>
                                 <p className="font-mono text-xl font-bold text-ink dark:text-paper">{Math.max(Math.round(monthStats.savingsRate), 0)}%</p>
                             </div>
                             <Icons.Sparkle size={24} className={positiveNet ? "text-gold" : "text-ink2/20 dark:text-paper/20"} strokeWidth={2} />
@@ -1152,14 +1164,14 @@
 
                     <div className="bento-card rounded-[2rem] md:col-span-3 p-6 flex flex-col justify-center">
                         <p className="text-[10px] font-mono font-bold text-ink2/50 dark:text-paper/40 uppercase tracking-widest mb-3 flex justify-between items-center">
-                            INFLOW <TrendPill pct={monthStats.incomeChangePct} invertGood={false} />
+                            INCOME <TrendPill pct={monthStats.incomeChangePct} invertGood={false} />
                         </p>
                         <p className="font-mono text-2xl font-bold text-ink dark:text-paper tracking-tight truncate">₱{window.peso(monthStats.incomeThis)}</p>
                     </div>
 
                     <div className="bento-card rounded-[2rem] md:col-span-3 p-6 flex flex-col justify-center">
                         <p className="text-[10px] font-mono font-bold text-ink2/50 dark:text-paper/40 uppercase tracking-widest mb-3 flex justify-between items-center">
-                            OUTFLOW <TrendPill pct={monthStats.expenseChangePct} invertGood={true} />
+                            EXPENSES <TrendPill pct={monthStats.expenseChangePct} invertGood={true} />
                         </p>
                         <p className="font-mono text-2xl font-bold text-expense dark:text-[#F38C80] tracking-tight truncate">₱{window.peso(monthStats.expenseThis)}</p>
                     </div>
@@ -1167,8 +1179,8 @@
                     <div className={`bento-card rounded-[2rem] md:col-span-6 lg:col-span-${goalName ? '6' : '6'} p-6 flex flex-col justify-center relative overflow-hidden group`}>
                         <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-black/5 dark:from-white/5 to-transparent pointer-events-none" />
                         <div className="flex justify-between items-center mb-4">
-                            <p className="text-[10px] font-mono font-bold text-ink2/50 dark:text-paper/40 uppercase tracking-widest">Burn Rate // Pacing</p>
-                            {monthlyBudget > 0 ? <span className="text-[10px] font-mono font-bold bg-black/5 dark:bg-white/10 px-2 py-1 rounded-md text-peso dark:text-pesoLight truncate border border-black/5 dark:border-white/5">LIM: ₱{window.peso(monthlyBudget)}</span> : null}
+                            <p className="text-[10px] font-mono font-bold text-ink2/50 dark:text-paper/40 uppercase tracking-widest">Budget Pacing</p>
+                            {monthlyBudget > 0 ? <span className="text-[10px] font-mono font-bold bg-black/5 dark:bg-white/10 px-2 py-1 rounded-md text-peso dark:text-pesoLight truncate border border-black/5 dark:border-white/5">LIMIT: ₱{window.peso(monthlyBudget)}</span> : null}
                         </div>
                         {monthlyBudget > 0 ? (
                             <div className="flex flex-col gap-3">
@@ -1179,15 +1191,15 @@
                                 </div>
                                 <div className="flex items-center justify-between text-[11px] font-mono font-bold">
                                     <span className={monthStats.expenseThis > monthlyBudget ? 'text-expense dark:text-[#F38C80]' : 'text-ink2/60 dark:text-paper/50'}>
-                                        USED: ₱{window.peso(monthStats.expenseThis)}
+                                        SPENT: ₱{window.peso(monthStats.expenseThis)}
                                     </span>
                                     <span className="text-ink2/40 dark:text-paper/40">
-                                        {monthStats.expenseThis > monthlyBudget ? 'EXCEEDED' : `REM: ₱${window.peso(monthlyBudget - monthStats.expenseThis)}`}
+                                        {monthStats.expenseThis > monthlyBudget ? 'EXCEEDED' : `REMAINING: ₱${window.peso(monthlyBudget - monthStats.expenseThis)}`}
                                     </span>
                                 </div>
                             </div>
                         ) : (
-                            <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/50">System offline. Set budget to activate.</p>
+                            <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/50">No monthly budget set. Configure below to track pacing.</p>
                         )}
                     </div>
 
@@ -1220,12 +1232,12 @@
         function QuickActions() {
             return (
                 <div>
-                    <SectionHeader title="System Commands" subtitle="Quick Actions" />
+                    <SectionHeader title="Shortcuts" subtitle="Quick Actions" />
                     <div className="grid grid-cols-4 gap-3 sm:gap-5">
-                        <QuickActionButton icon={<Icons.Plus size={26} strokeWidth={2.5} />} label="Add" tone="peso" onClick={() => scrollToId("add-entry")} />
+                        <QuickActionButton icon={<Icons.Plus size={26} strokeWidth={2.5} />} label="Add Entry" tone="peso" onClick={() => scrollToId("add-entry")} />
                         <QuickActionButton icon={<Icons.Wallet size={26} strokeWidth={2} />} label="Budget" tone="gold" onClick={() => scrollToId("summary")} />
-                        <QuickActionButton icon={<Icons.Chart size={26} strokeWidth={2} />} label="Report" tone="expense" onClick={() => scrollToId("analytics")} />
-                        <QuickActionButton icon={<Icons.List size={26} strokeWidth={2} />} label="Logs" tone="ink" onClick={() => scrollToId("history")} />
+                        <QuickActionButton icon={<Icons.Chart size={26} strokeWidth={2} />} label="Analytics" tone="expense" onClick={() => scrollToId("analytics")} />
+                        <QuickActionButton icon={<Icons.List size={26} strokeWidth={2} />} label="Ledger" tone="ink" onClick={() => scrollToId("history")} />
                     </div>
                 </div>
             );
@@ -1287,7 +1299,7 @@
                             <span className="block mt-2 text-[9px] font-mono font-bold tracking-[0.3em] uppercase opacity-80">{theme.mono || theme.type}</span>
                         </div>
                         {!editing && (
-                            <button onClick={handleEdit} onMouseDown={stopPropagation} onTouchStart={stopPropagation} aria-label="I-edit ang balanse" className="opacity-40 hover:opacity-100 transition-opacity p-1.5 active:scale-90 shrink-0 bg-black/20 rounded-full backdrop-blur-sm">
+                            <button onClick={handleEdit} onMouseDown={stopPropagation} onTouchStart={stopPropagation} aria-label="Edit wallet balance" className="opacity-40 hover:opacity-100 transition-opacity p-1.5 active:scale-90 shrink-0 bg-black/20 rounded-full backdrop-blur-sm">
                                 <Icons.Pencil size={14} />
                             </button>
                         )}
@@ -1359,18 +1371,18 @@
                     <div className="bg-paper dark:bg-ink2 w-full max-w-md sm:rounded-[2rem] rounded-t-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[80vh] border border-white/20 dark:border-white/10">
                         <div className="w-12 h-1.5 bg-black/10 dark:bg-white/20 rounded-full mx-auto mt-4 sm:hidden" />
                         <div className="p-6 border-b border-line dark:border-white/10 flex items-center justify-between bg-white/50 dark:bg-black/20 backdrop-blur-md z-10">
-                            <h3 className="font-display font-bold text-xl text-ink dark:text-paper tracking-tight">Magdagdag ng Wallet</h3>
+                            <h3 className="font-display font-bold text-xl text-ink dark:text-paper tracking-tight">Add Wallet</h3>
                             <button onClick={onClose} className="p-2 bg-black/5 dark:bg-white/10 rounded-full text-ink2 dark:text-paper hover:bg-expense/10 hover:text-expense transition-colors"><Icons.X size={18} strokeWidth={2.5} /></button>
                         </div>
                         <div className="p-5 border-b border-line dark:border-white/10 bg-white/30 dark:bg-black/10 backdrop-blur-md z-10">
                             <div className="relative">
                                 <Icons.Plus size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink2/40 dark:text-paper/40 rotate-45" />
-                                <input type="text" placeholder="Hanapin ang bangko o e-wallet..." value={search} onChange={e => setSearch(e.target.value)} className="w-full bg-white dark:bg-black/30 border border-line dark:border-white/10 rounded-[14px] pl-11 pr-4 py-3.5 text-[15px] font-medium focus:outline-none focus:ring-2 focus:ring-peso/40 text-ink dark:text-paper shadow-inner" />
+                                <input type="text" placeholder="Search bank or e-wallet..." value={search} onChange={e => setSearch(e.target.value)} className="w-full bg-white dark:bg-black/30 border border-line dark:border-white/10 rounded-[14px] pl-11 pr-4 py-3.5 text-[15px] font-medium focus:outline-none focus:ring-2 focus:ring-peso/40 text-ink dark:text-paper shadow-inner" />
                             </div>
                         </div>
                         <div className="overflow-y-auto p-4 space-y-2.5 bg-paper dark:bg-ink2 flex-1">
                             {filtered.length === 0 ? (
-                                <p className="text-center text-sm font-mono font-medium text-ink2/50 dark:text-paper/40 py-12 uppercase tracking-widest">Wala nahanap.</p>
+                                <p className="text-center text-sm font-mono font-medium text-ink2/50 dark:text-paper/40 py-12 uppercase tracking-widest">No wallets found.</p>
                             ) : (
                                 filtered.map(w => (
                                     <button key={w.id} onClick={() => onAdd(w.id)} className="w-full flex items-center gap-4 p-3.5 rounded-[1.25rem] hover:bg-white dark:hover:bg-black/20 transition-all text-left group bg-white/50 dark:bg-black/10 border border-black/[0.04] dark:border-white/5 shadow-sm hover:shadow-md active:scale-95">
@@ -1437,10 +1449,10 @@
                         });
                     }
                     const Toast = Swal.mixin({ toast: true, position: "top-end", showConfirmButton: false, timer: 2000, timerProgressBar: true, customClass: { popup: 'tipid-swal text-sm font-body' } });
-                    Toast.fire({ icon: "success", title: "Na-update ang wallet" });
+                    Toast.fire({ icon: "success", title: "Wallet updated" });
                 } catch (err) {
                     setBaseBalances(baseBalances);
-                    Swal.fire({ icon: 'error', title: 'Error', text: 'Hindi ma-save ang balance.', customClass: { popup: 'tipid-swal' }});
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Could not save wallet balance.', customClass: { popup: 'tipid-swal' }});
                 }
             };
 
@@ -1457,19 +1469,20 @@
                     }
                 } catch (err) {
                     setBaseBalances(baseBalances);
-                    Swal.fire({ icon: 'error', title: 'Error', text: 'Hindi maalis ang wallet.', customClass: { popup: 'tipid-swal' }});
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Could not remove wallet.', customClass: { popup: 'tipid-swal' }});
                 }
             };
 
             const handleAddWallet = async (methodId) => {
                 setShowAddModal(false);
                 const { value: initialBalance, isConfirmed } = await Swal.fire({
-                    title: "Magkano ang laman?",
+                    title: "Starting Balance",
                     input: "number",
-                    inputPlaceholder: "Hal: 5000",
+                    inputPlaceholder: "e.g., 5000",
                     showCancelButton: true,
                     confirmButtonColor: "#1F6F54",
-                    confirmButtonText: "I-save",
+                    confirmButtonText: "Save",
+                    cancelButtonText: "Cancel",
                     customClass: { popup: 'tipid-swal' }
                 });
 
@@ -1477,13 +1490,13 @@
 
                 let balance;
                 try { balance = window.TipidCore.money(initialBalance, { allowZero: true }); }
-                catch (_) { return Swal.fire({ icon: 'warning', title: 'Maling halaga', text: 'Maglagay ng valid na balanse.', customClass: { popup: 'tipid-swal' } }); }
+                catch (_) { return Swal.fire({ icon: 'warning', title: 'Invalid Amount', text: 'Please enter a valid balance.', customClass: { popup: 'tipid-swal' } }); }
                 await handleSaveBase(methodId, balance);
             };
 
             return (
                 <div>
-                    <SectionHeader title="Storage" subtitle="Aking mga Wallet" />
+                    <SectionHeader title="Accounts" subtitle="My Wallets & Accounts" />
                     <div ref={scrollRef} className={`flex overflow-x-auto gap-5 sm:gap-6 pb-8 pt-2 hide-scroll snap-x snap-mandatory ${isDragging ? 'is-dragging' : 'scroll-grab'}`} style={{ paddingLeft: '4px', paddingRight: '20px' }} onMouseDown={handleMouseDown} onMouseLeave={handleMouseLeave} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove}>
                         {methods.map((method) => (
                             <div key={method} className="snap-start pointer-events-auto shrink-0">
@@ -1547,28 +1560,28 @@
                     bg: "radial-gradient(circle at 30% 20%, #1A2B21 0%, #0B130E 60%), linear-gradient(180deg, #0B130E, #060A08)",
                     animClass: "mascot-anim-sleep",
                     caption: null,
-                    sub: "Tulog pa si Tipid Buddy...",
+                    sub: "Tipid Buddy is resting...",
                 },
                 waking: {
                     img: "/assets/wakeup_mascot.png",
                     bg: "radial-gradient(circle at 30% 20%, #1F6F54 0%, #123D2E 55%, #0B1F17 100%)",
                     animClass: "mascot-anim-wake",
-                    caption: "Gising na!",
-                    sub: "Sandali lang, gigising muna si Tipid Buddy...",
+                    caption: "Waking up!",
+                    sub: "Getting things ready for you...",
                 },
                 greeting: {
                     img: "/assets/greetings_mascot.png",
                     bg: "radial-gradient(circle at 30% 15%, #2F8E6C 0%, #164C38 50%, #0E2E22 100%)",
                     animClass: "mascot-anim-celebrate",
-                    caption: `Kumusta, ${firstName}!`,
-                    sub: "Handa ka na bang mag-ipon ngayon?",
+                    caption: `Welcome back, ${firstName}!`,
+                    sub: "Ready to track your finances today?",
                 },
                 working: {
                     img: "/assets/working_mascot.png",
                     bg: "radial-gradient(circle at 30% 15%, #1F6F54 0%, #123D2E 60%, #0B130E 100%)",
                     animClass: "mascot-anim-float",
-                    caption: "Inaayos na...",
-                    sub: "Ini-lo-load ang iyong Tipid Dashboard",
+                    caption: "Setting up...",
+                    sub: "Loading your financial dashboard...",
                 },
             };
 
@@ -1752,17 +1765,17 @@
                                 <img src="/assets/tipid_mascot.png" alt="Tipid Buddy" class="w-16 h-16 object-contain mascot-anim-float drop-shadow-md" />
                                 <span class="absolute -top-1 -right-1 text-2xl">🪄</span>
                             </div>
-                            <h3 class="font-display text-2xl font-bold text-ink dark:text-paper mb-1">Smart SMS Paste</h3>
-                            <p class="text-[13px] text-ink2/70 dark:text-paper/70 font-medium mb-3">I-paste ang buong text mula sa GCash, Maya, o Bank alert.</p>
+                            <h3 class="font-display text-2xl font-bold text-ink dark:text-paper mb-1">Smart SMS Import</h3>
+                            <p class="text-[13px] text-ink2/70 dark:text-paper/70 font-medium mb-3">Paste transaction SMS notifications from GCash, Maya, or your bank.</p>
                         </div>
                     `,
                     input: 'textarea',
-                    inputPlaceholder: 'Hal: You have paid PHP 150.00 to 7-Eleven ref no...',
+                    inputPlaceholder: 'e.g., You have paid PHP 150.00 to 7-Eleven ref no...',
                     showCancelButton: true,
                     confirmButtonColor: '#1F6F54',
                     cancelButtonColor: '#4A5568',
-                    confirmButtonText: 'I-extract',
-                    cancelButtonText: 'Kanselahin',
+                    confirmButtonText: 'Extract',
+                    cancelButtonText: 'Cancel',
                     customClass: { popup: 'tipid-swal' }
                 });
 
@@ -1809,8 +1822,8 @@
                     }));
 
                     window.showTipidBuddyModal({
-                        title: 'Na-extract na! 🪄',
-                        message: `Nailagay na sa form: <b>₱${window.peso(extractedAmount || 0)}</b>. Paki-check kung tama bago i-save.`,
+                        title: 'Extracted! 🪄',
+                        message: `Populated form with: <b>₱${window.peso(extractedAmount || 0)}</b>. Please review before saving.`,
                         mode: 'celebrate',
                         confirmColor: '#1F6F54'
                     });
@@ -1865,7 +1878,7 @@
                     <window.Navbar user={user} onLogout={logout} activeTab="home" />
                     {showOnboarding && <window.OnboardingModal uid={user.uid} onComplete={() => setShowOnboarding(false)} />}
 
-                    <main className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 lg:px-8 pt-24 md:pt-32 pb-36 md:pb-24 space-y-10 sm:space-y-14" style={{ paddingLeft: 'max(1rem, calc(var(--sal) + 1rem))', paddingRight: 'max(1rem, calc(var(--sar) + 1rem))', paddingBottom: 'calc(8rem + var(--sab))' }}>
+                    <main className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 lg:px-8 pt-24 md:pt-10 pb-36 md:pb-20 space-y-10 sm:space-y-14" style={{ paddingLeft: 'max(1rem, calc(var(--sal) + 1rem))', paddingRight: 'max(1rem, calc(var(--sar) + 1rem))', paddingBottom: 'calc(8rem + var(--sab))' }}>
 
                         <CommandCenter
                             user={user}
@@ -1893,19 +1906,19 @@
                         </div>
 
                         <div id="summary" className="fade-up scroll-mt-28" style={{ animationDelay: "120ms" }}>
-                            <SectionHeader title="Metrics" subtitle="Buod ng Buwan" />
+                            <SectionHeader title="Performance" subtitle="Monthly Summary" />
                             <window.SmartSummary uid={user.uid} entries={entries} budget={budget} />
                         </div>
 
                         <div id="analytics" className="fade-up scroll-mt-28" style={{ animationDelay: "180ms" }}>
-                            <SectionHeader title="Insights" subtitle="Uso ng Paggastos" />
+                            <SectionHeader title="Analytics" subtitle="Spending Trends" />
                             <window.ExpenseChart entries={entries} />
                         </div>
 
                         <div id="add-entry" className="fade-up scroll-mt-28" style={{ animationDelay: "240ms" }}>
                             <SectionHeader
-                                title="Interface"
-                                subtitle="Magdagdag ng Gastos"
+                                title="Transactions"
+                                subtitle="Log Transaction"
                                 action={
                                     <button onClick={handleSmartPaste} className="flex items-center gap-2 bg-black/5 dark:bg-white/10 hover:bg-peso hover:text-white dark:hover:bg-pesoLight text-ink dark:text-paper font-bold text-[11px] px-3.5 py-2 rounded-xl transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-peso/50">
                                         <Icons.Wand size={16} strokeWidth={2.5}/> Auto-Fill via SMS
@@ -1916,7 +1929,7 @@
                         </div>
 
                         <div id="history" className="fade-up scroll-mt-28" style={{ animationDelay: "300ms" }}>
-                            <SectionHeader title="Database" subtitle="Kasaysayan" action={<span className="text-[10px] font-mono font-bold tracking-widest uppercase bg-white/50 dark:bg-black/20 border border-black/5 dark:border-white/5 px-3 py-1.5 rounded-lg text-ink2/70 dark:text-paper/70 shrink-0">{entries.length} LOGS</span>} />
+                            <SectionHeader title="Ledger" subtitle="Recent History" action={<span className="text-[10px] font-mono font-bold tracking-widest uppercase bg-white/50 dark:bg-black/20 border border-black/5 dark:border-white/5 px-3 py-1.5 rounded-lg text-ink2/70 dark:text-paper/70 shrink-0">{entries.length} LOGS</span>} />
                             <window.EntryList uid={user.uid} entries={entries} loading={loadingEntries} />
                         </div>
                     </main>

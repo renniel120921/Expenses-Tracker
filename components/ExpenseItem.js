@@ -18,16 +18,16 @@ window.ExpenseItem = function ExpenseItem({ item, entry, uid }) {
     // Relative date label (Ngayon / Kahapon / short date) instead of laging buong petsa —
     // mas madaling ma-scan sa isang tingin, katulad ng modern banking apps.
     const getDateLabel = (createdAt) => {
-        if (!createdAt || !createdAt.toDate) return "Kamakailan";
+        if (!createdAt || !createdAt.toDate) return "Recent";
         const date = createdAt.toDate();
         const now = new Date();
         const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
         const diffDays = Math.round((startOfDay(now) - startOfDay(date)) / 86400000);
 
         if (diffDays === 0) {
-            return `Ngayon, ${date.toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" })}`;
+            return `Today, ${date.toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" })}`;
         }
-        if (diffDays === 1) return "Kahapon";
+        if (diffDays === 1) return "Yesterday";
         return date.toLocaleDateString("en-PH", {
             month: "short",
             day: "numeric",
@@ -44,21 +44,21 @@ window.ExpenseItem = function ExpenseItem({ item, entry, uid }) {
             return Swal.fire({
                 icon: 'error',
                 title: 'System Error',
-                text: 'Hindi mahanap ang User ID. Paki-refresh ang pahina.',
+                text: 'User ID not found. Please refresh the page.',
                 confirmButtonColor: '#B5483B',
                 customClass: { popup: 'tipid-swal' }
             });
         }
 
         Swal.fire({
-            title: 'Sigurado ka ba?',
-            text: `Buburahin mo ang record para sa “${data.desc}” (₱${window.peso(data.amount)}). Hindi na ito maibabalik.`,
+            title: 'Delete Entry?',
+            text: `Are you sure you want to delete "${data.desc}" (₱${window.peso(data.amount)})? This cannot be undone.`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#B5483B',
             cancelButtonColor: '#33443A',
-            confirmButtonText: 'Oo, burahin',
-            cancelButtonText: 'Kanselahin',
+            confirmButtonText: 'Yes, delete',
+            cancelButtonText: 'Cancel',
             customClass: { popup: 'tipid-swal' },
             reverseButtons: true
         }).then((result) => {
@@ -67,8 +67,8 @@ window.ExpenseItem = function ExpenseItem({ item, entry, uid }) {
                     .then(() => {
                         Swal.fire({
                             icon: 'success',
-                            title: 'Nabura na!',
-                            text: 'Ang record ay matagumpay na tinanggal sa iyong history.',
+                            title: 'Deleted!',
+                            text: 'The entry was successfully removed from your records.',
                             confirmButtonColor: '#1F6F54',
                             timer: 1500,
                             showConfirmButton: false,
@@ -80,7 +80,7 @@ window.ExpenseItem = function ExpenseItem({ item, entry, uid }) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Oops!',
-                            text: 'Hindi mabura ang record. May error sa server.',
+                            text: 'Could not delete entry. Server error.',
                             confirmButtonColor: '#B5483B',
                             customClass: { popup: 'tipid-swal' }
                         });
@@ -119,13 +119,13 @@ window.ExpenseItem = function ExpenseItem({ item, entry, uid }) {
                                     ? 'bg-[#FAEDE9] text-[#B5483B] ring-1 ring-[#B5483B]/20 dark:bg-[#B5483B]/20 dark:text-[#F38C80] dark:ring-[#F38C80]/30'
                                     : 'bg-[#E6F3EF] text-[#1F6F54] ring-1 ring-[#1F6F54]/20 dark:bg-[#1F6F54]/20 dark:text-[#52C8A1] dark:ring-[#52C8A1]/30'
                             }`}>
-                                {data.spendType === 'luho' ? '🛍️ Luho' : '✅ Need'}
+                                {data.spendType === 'luho' ? '🛍️ Want' : '✅ Need'}
                             </span>
                         )}
 
                         <span className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-mono font-semibold tracking-wide px-2.5 py-1 rounded-full bg-ink/[0.04] dark:bg-white/10 text-ink2/70 dark:text-paper/70 uppercase">
                             <span className={`w-1.5 h-1.5 rounded-full ${accent.bg}`} aria-hidden="true"></span>
-                            {data.category}
+                            {window.CATEGORY_DISPLAY ? (window.CATEGORY_DISPLAY[data.category] || data.category) : data.category}
                         </span>
 
                         <span className="text-[10px] sm:text-[11px] font-medium text-ink2/40 dark:text-paper/40">
@@ -147,7 +147,7 @@ window.ExpenseItem = function ExpenseItem({ item, entry, uid }) {
 
                 <button
                     onClick={handleDelete}
-                    aria-label="Burahin ang entry"
+                    aria-label="Delete entry"
                     className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 p-2 sm:p-2.5 rounded-full text-ink2/30 hover:text-expense hover:bg-expense/10 hover:scale-105 dark:text-paper/30 dark:hover:text-[#F38C80] dark:hover:bg-[#B5483B]/20 active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-expense/40 shrink-0"
                 >
                     <window.Icons.Trash size={18} strokeWidth={2.2} />

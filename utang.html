@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="fil" class="scroll-smooth">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="/app.css">
     <link rel="manifest" href="/manifest.json">
     <script src="/app-utils.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Utang Tracker — Tipid</title>
+    <title>Debts & Loans — Tipid</title>
     <meta name="theme-color" content="#1F6F54">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -196,7 +196,7 @@
 
         /* --- UTANG HERO: a quiet statement card, not a decorated banner --- */
         function UtangHeroCard({ darkMode, toggleDarkMode, utangCount, loading }) {
-            const countLabel = utangCount === 1 ? "utang na nakalista" : "mga utang na nakalista";
+            const countLabel = utangCount === 1 ? "record being tracked" : "records being tracked";
 
             return (
                 <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-b from-pesoDeep to-[#0E2A20] text-paper shadow-iosLg ring-1 ring-black/5 dark:ring-white/10 mb-6 sm:mb-8">
@@ -217,10 +217,10 @@
                     {/* Main Content */}
                     <div className="relative z-10 px-6 sm:px-8 pt-7 sm:pt-8 pb-6 sm:pb-7 max-w-[75%] sm:max-w-[65%]">
                         <h1 className="font-display text-[1.75rem] sm:text-[2.35rem] font-semibold tracking-tight leading-[1.08] mb-2.5">
-                            Utang Tracker
+                            Debts & Receivables
                         </h1>
                         <p className="text-[12.5px] sm:text-[13.5px] text-paper/70 leading-relaxed">
-                            Subaybayan kung sino ang may utang sa'yo at kung magkano pa ang utang mo sa iba.
+                            Track money you owe to others and receivables owed to you.
                         </p>
                     </div>
 
@@ -229,7 +229,7 @@
                         <span className="font-mono text-xl sm:text-2xl font-semibold tabular-nums">
                             {loading ? "–" : utangCount}
                         </span>
-                        <span className="text-[11.5px] text-paper/60">{loading ? "kinukuha..." : countLabel}</span>
+                        <span className="text-[11.5px] text-paper/60">{loading ? "loading..." : countLabel}</span>
                     </div>
                 </div>
             );
@@ -240,25 +240,25 @@
             const tips = [
                 {
                     icon: <window.Icons.Shield size={16} />,
-                    title: "Magtakda ng limitasyon",
-                    body: "Okay lang tumanggi kung wala talagang extra — unahin ang sariling budget at emergency fund bago magpautang.",
+                    title: "Set clear boundaries",
+                    body: "It's okay to say no if money is tight — prioritize your personal budget and emergency fund before lending.",
                 },
                 {
                     icon: <window.Icons.Clock size={16} />,
-                    title: "Kusang magbayad",
-                    body: "Bayaran ang utang sa napagkasunduang araw bago pa singilin — nakakasira ng tiwala ang pagtatago.",
+                    title: "Pay on time",
+                    body: "Settle debts on or before the agreed date — prompt repayment builds financial credibility and trust.",
                 },
                 {
                     icon: <window.Icons.Users size={16} />,
-                    title: "Iwas kalimutan sa KKB",
-                    body: "Kung may ambagan o kanya-kanyang bayad, i-lista agad dito para walang makakalimot pagkatapos.",
+                    title: "Track shared split bills",
+                    body: "Log shared group meals and split expenses immediately so everyone's share stays transparent.",
                 },
             ];
 
             return (
                 <div className="mt-8 sm:mt-10 fade-up" style={{ animationDelay: "120ms" }}>
                     <h3 className="font-display text-[1.05rem] font-semibold text-ink dark:text-paper tracking-tight mb-3 px-1">
-                        Tipid hacks para sa utang
+                        Smart debt management tips
                     </h3>
 
                     <div className="bg-white/60 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.5rem] border border-white/60 dark:border-white/5 shadow-sm divide-y divide-line/60 dark:divide-white/5 overflow-hidden">
@@ -391,7 +391,7 @@
                                 <window.Logo size={38} />
                             </div>
                             <p className="text-[11px] font-mono text-ink2/60 dark:text-paper/50">
-                                Naglo-load...
+                                Loading debts...
                             </p>
                         </div>
                     </div>

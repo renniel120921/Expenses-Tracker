@@ -87,9 +87,9 @@ function getDueBadge(bill) {
     const diffDays = Math.round((bDate - today) / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0 || diffDays > 3) return null;
-    if (diffDays === 0) return { label: "Due Ngayon", tone: "text-[#B5483B] bg-[#FAEDE9] border-[#B5483B]/20 dark:text-[#F38C80] dark:bg-[#B5483B]/20 dark:border-[#F38C80]/30" };
-    if (diffDays === 1) return { label: "Bukas", tone: "text-[#C9932E] bg-[#FDF6E3] border-[#C9932E]/20 dark:text-[#E8C071] dark:bg-[#C9932E]/20 dark:border-[#E8C071]/30" };
-    return { label: `Sa loob ng ${diffDays} araw`, tone: "text-[#1F6F54] bg-[#E6F3EF] border-[#1F6F54]/20 dark:text-[#52C8A1] dark:bg-[#1F6F54]/20 dark:border-[#52C8A1]/30" };
+    if (diffDays === 0) return { label: "Due Today", tone: "text-[#B5483B] bg-[#FAEDE9] border-[#B5483B]/20 dark:text-[#F38C80] dark:bg-[#B5483B]/20 dark:border-[#F38C80]/30" };
+    if (diffDays === 1) return { label: "Tomorrow", tone: "text-[#C9932E] bg-[#FDF6E3] border-[#C9932E]/20 dark:text-[#E8C071] dark:bg-[#C9932E]/20 dark:border-[#E8C071]/30" };
+    return { label: `Due in ${diffDays} days`, tone: "text-[#1F6F54] bg-[#E6F3EF] border-[#1F6F54]/20 dark:text-[#52C8A1] dark:bg-[#1F6F54]/20 dark:border-[#52C8A1]/30" };
 }
 
 const BillsCenterFallbackIcons = {
@@ -110,7 +110,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
     const [title, setTitle] = useState("");
     const [amount, setAmount] = useState("");
     const [dueDate, setDueDate] = useState("");
-    const [category, setCategory] = useState("Kuryente");
+    const [category, setCategory] = useState("Bills");
     const [saving, setSaving] = useState(false);
 
     const Icons = { ...BillsCenterFallbackIcons, ...(window.Icons || {}) };
@@ -155,15 +155,15 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                 }
                 if (upcoming.length) {
                     if (lines.length) lines.push("");
-                    lines.push("Paparating:", ...upcoming.map(b => {
-                        const dayLabel = b.diffDays === 0 ? "Ngayong araw" : b.diffDays === 1 ? "Bukas" : `Sa loob ng ${b.diffDays} araw`;
+                    lines.push("Upcoming:", ...upcoming.map(b => {
+                        const dayLabel = b.diffDays === 0 ? "Due today" : b.diffDays === 1 ? "Due tomorrow" : `Due in ${b.diffDays} days`;
                         return `${b.title} — ₱${window.peso(b.amount)} (${dayLabel})`;
                     }));
                 }
                 Swal.fire({
-                    title: 'May Babayaran Ka',
+                    title: 'Upcoming Bills',
                     text: lines.join("\n"),
-                    confirmButtonText: 'Sige, Titingnan Ko',
+                    confirmButtonText: 'Got It',
                     confirmButtonColor: '#1F6F54',
                     customClass: { popup: 'tipid-swal' }
                 });
@@ -178,8 +178,8 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
         if (!title.trim() || !amount || !dueDate) {
             return Swal.fire({
                 icon: 'warning',
-                title: 'Kulang ang Detalye',
-                text: 'Pakilagay ang pangalan ng bill, halaga, at due date.',
+                title: 'Missing Information',
+                text: 'Please provide the bill title, amount, and due date.',
                 confirmButtonColor: '#1F6F54',
                 customClass: { popup: 'tipid-swal' }
             });
@@ -200,15 +200,15 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
 
             Swal.fire({
                 icon: 'success',
-                title: 'Naidagdag na! 📅',
-                text: 'Matagumpay na naitala ang iyong bill.',
+                title: 'Bill Added! 📅',
+                text: 'Your bill has been recorded successfully.',
                 confirmButtonColor: '#1F6F54',
                 timer: 1500,
                 showConfirmButton: false,
                 customClass: { popup: 'tipid-swal' }
             });
         } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Hindi ma-save ang bill. Subukan ulit.', confirmButtonColor: '#B5483B', customClass: { popup: 'tipid-swal' }});
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to save bill. Please try again.', confirmButtonColor: '#B5483B', customClass: { popup: 'tipid-swal' }});
         } finally {
             setSaving(false);
         }
@@ -225,14 +225,14 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
 
     const handleDelete = async (billId) => {
         Swal.fire({
-            title: 'Burahin ang Bill na ito?',
-            text: 'Hindi na ito maibabalik.',
+            title: 'Delete this bill?',
+            text: 'This action cannot be undone.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#B5483B',
             cancelButtonColor: '#33443A',
-            confirmButtonText: 'Oo, burahin',
-            cancelButtonText: 'Kanselahin',
+            confirmButtonText: 'Yes, delete',
+            cancelButtonText: 'Cancel',
             customClass: { popup: 'tipid-swal' },
             reverseButtons: true
         }).then(async (result) => {
@@ -254,7 +254,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                     <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-gold/10 rounded-full blur-xl group-hover:bg-gold/20 transition-colors"></div>
                     <div className="flex items-center gap-3 mb-4 relative z-10">
                         <StatIcon tone="gold" icon={<Icons.Wallet size={16} />} />
-                        <p className="text-[10px] sm:text-[11px] font-mono uppercase font-semibold tracking-wider text-ink2/50 dark:text-paper/50">Total na Babayaran</p>
+                        <p className="text-[10px] sm:text-[11px] font-mono uppercase font-semibold tracking-wider text-ink2/50 dark:text-paper/50">Total Outstanding</p>
                     </div>
                     <AnimatedAmount value={totalUnpaid} className="relative z-10 font-mono text-[1.7rem] sm:text-3xl font-bold tracking-tight text-ink dark:text-paper" />
                 </div>
@@ -268,7 +268,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                         <p className="text-[10px] sm:text-[11px] font-mono uppercase font-semibold tracking-wider text-[#B5483B] dark:text-[#F38C80]">Overdue Bills</p>
                     </div>
                     <p className="relative z-10 font-display text-[1.7rem] sm:text-3xl font-bold text-expense dark:text-[#F38C80]">
-                        {overdueCount} <span className="text-[15px] font-body font-medium opacity-80">mga bill</span>
+                        {overdueCount} <span className="text-[15px] font-body font-medium opacity-80">bills</span>
                     </p>
                 </div>
 
@@ -278,10 +278,10 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                     <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-peso/5 rounded-full blur-xl group-hover:bg-peso/10 transition-colors"></div>
                     <div className="flex items-center gap-3 mb-4 relative z-10">
                         <StatIcon tone="peso" icon={<Icons.Check size={18} />} />
-                        <p className="text-[10px] sm:text-[11px] font-mono uppercase font-semibold tracking-wider text-[#1F6F54] dark:text-[#52C8A1]">Bayad na (Paid)</p>
+                        <p className="text-[10px] sm:text-[11px] font-mono uppercase font-semibold tracking-wider text-[#1F6F54] dark:text-[#52C8A1]">Paid Bills</p>
                     </div>
                     <p className="relative z-10 font-display text-[1.7rem] sm:text-3xl font-bold text-peso dark:text-[#52C8A1]">
-                        {paidCount} <span className="text-[15px] font-body font-medium opacity-80">naitala</span>
+                        {paidCount} <span className="text-[15px] font-body font-medium opacity-80">recorded</span>
                     </p>
                 </div>
             </div>
@@ -294,19 +294,19 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                         <Icons.Pencil size={18} />
                     </span>
                     <div>
-                        <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper leading-tight">Magdagdag ng Bill</h3>
-                        <p className="text-[11px] text-ink2/50 dark:text-paper/50">Itala ang iyong mga babayarin</p>
+                        <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper leading-tight">Add New Bill</h3>
+                        <p className="text-[11px] text-ink2/50 dark:text-paper/50">Schedule and track upcoming expenses</p>
                     </div>
                 </div>
 
                 <form onSubmit={handleAddBill} className="flex flex-col gap-3 sm:gap-3.5 relative z-10">
 
                     <FieldWrap icon={<Icons.Pencil size={16} className="text-ink2/40 dark:text-paper/40 shrink-0" />}>
-                        <label htmlFor="bill-title" className="sr-only">Pangalan ng bill</label>
+                        <label htmlFor="bill-title" className="sr-only">Bill title</label>
                         <input
                             id="bill-title"
                             type="text"
-                            placeholder="Pangalan ng Bill (Hal: Kuryente)"
+                            placeholder="Bill Name (e.g. Electricity)"
                             value={title}
                             onChange={e => setTitle(e.target.value)}
                             className="w-full min-w-0 bg-transparent py-3.5 text-[15px] font-medium text-ink dark:text-paper placeholder:text-ink2/30 dark:placeholder:text-paper/30 focus:outline-none"
@@ -315,12 +315,12 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
 
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-3.5">
                         <FieldWrap className="sm:w-[150px]" icon={<span className="text-ink2/40 dark:text-paper/40 font-mono text-[15px] shrink-0">₱</span>}>
-                            <label htmlFor="bill-amount" className="sr-only">Halaga</label>
+                            <label htmlFor="bill-amount" className="sr-only">Amount</label>
                             <input
                                 id="bill-amount"
                                 type="number"
                                 step="0.01"
-                                placeholder="Halaga"
+                                placeholder="Amount"
                                 value={amount}
                                 onChange={e => setAmount(e.target.value)}
                                 className="w-full min-w-0 bg-transparent py-3.5 text-base font-mono font-bold text-ink dark:text-paper placeholder:text-ink2/25 dark:placeholder:text-paper/25 placeholder:font-medium focus:outline-none"
@@ -341,7 +341,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
 
                         {/* Category Select */}
                         <FieldWrap className="sm:w-[150px] relative" icon={<Icons.Category size={15} className="text-ink2/40 dark:text-paper/40 shrink-0" />}>
-                            <label htmlFor="bill-category" className="sr-only">Kategorya</label>
+                            <label htmlFor="bill-category" className="sr-only">Category</label>
                             <select
                                 id="bill-category"
                                 value={category}
@@ -349,13 +349,13 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                                 className="w-full min-w-0 bg-transparent py-3.5 text-[14px] font-medium text-ink dark:text-paper focus:outline-none appearance-none pr-2 cursor-pointer"
                             >
                                 <option value="Bills" className="bg-paper dark:bg-ink dark:text-paper">Bills</option>
-                                <option value="Kuryente" className="bg-paper dark:bg-ink dark:text-paper">Kuryente</option>
-                                <option value="Tubig" className="bg-paper dark:bg-ink dark:text-paper">Tubig</option>
+                                <option value="Kuryente" className="bg-paper dark:bg-ink dark:text-paper">Electricity</option>
+                                <option value="Tubig" className="bg-paper dark:bg-ink dark:text-paper">Water</option>
                                 <option value="Internet" className="bg-paper dark:bg-ink dark:text-paper">Internet</option>
-                                <option value="Rent / Bahay" className="bg-paper dark:bg-ink dark:text-paper">Rent / Bahay</option>
+                                <option value="Rent / Bahay" className="bg-paper dark:bg-ink dark:text-paper">Rent / Housing</option>
                                 <option value="Credit Card" className="bg-paper dark:bg-ink dark:text-paper">Credit Card</option>
-                                <option value="Utang/Loan" className="bg-paper dark:bg-ink dark:text-paper">Utang/Loan</option>
-                                <option value="Iba pa" className="bg-paper dark:bg-ink dark:text-paper">Iba pa</option>
+                                <option value="Utang/Loan" className="bg-paper dark:bg-ink dark:text-paper">Loan / Debt</option>
+                                <option value="Iba pa" className="bg-paper dark:bg-ink dark:text-paper">Other</option>
                             </select>
                             <SelectChevron />
                         </FieldWrap>
@@ -363,11 +363,11 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                         <button
                             type="submit"
                             disabled={saving}
-                            aria-label={saving ? "Sinasave" : "Idagdag ang bill"}
+                            aria-label={saving ? "Saving..." : "Add bill"}
                             className="bg-gradient-to-r from-peso to-pesoLight hover:shadow-lg hover:shadow-peso/20 active:scale-95 disabled:opacity-60 text-white font-semibold rounded-[14px] px-6 py-3.5 text-[14px] transition-all duration-200 shrink-0 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50"
                         >
                             {saving ? <Icons.Loader size={18} className="spin" /> : <Icons.Plus size={18} />}
-                            <span className="hidden sm:inline">{saving ? "Sinasave..." : "Idagdag"}</span>
+                            <span className="hidden sm:inline">{saving ? "Saving..." : "Add Bill"}</span>
                         </button>
                     </div>
                 </form>
@@ -378,11 +378,11 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                 <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
                     <div className="flex items-center gap-2.5">
                         <div className="w-2 h-6 rounded-full bg-peso dark:bg-pesoLight"></div>
-                        <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper">Listahan ng mga Bills</h3>
+                        <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper">Bills Schedule</h3>
                     </div>
                     {!loading && bills.length > 0 && (
                         <span className="text-[11px] font-mono font-medium bg-black/5 dark:bg-white/10 border border-black/5 dark:border-white/5 px-3 py-1.5 rounded-lg text-ink2/60 dark:text-paper/50">
-                            {paidCount}/{bills.length} bayad na
+                            {paidCount}/{bills.length} paid
                         </span>
                     )}
                 </div>
@@ -392,7 +392,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                     <div className="mb-7 relative">
                         <div
                             role="progressbar"
-                            aria-label="Porsyento ng mga bills na bayad na"
+                            aria-label="Percentage of bills paid"
                             aria-valuenow={paidPct}
                             aria-valuemin={0}
                             aria-valuemax={100}
@@ -406,7 +406,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                 )}
 
                 {loading ? (
-                    <div role="status" aria-label="Naglo-load ng mga bills" className="py-12 flex items-center justify-center text-ink2/40 dark:text-paper/30">
+                    <div role="status" aria-label="Loading bills" className="py-12 flex items-center justify-center text-ink2/40 dark:text-paper/30">
                         <Icons.Loader size={24} className="spin" />
                     </div>
                 ) : bills.length === 0 ? (
@@ -414,7 +414,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                         <div aria-hidden="true" className="w-16 h-16 rounded-2xl bg-gradient-to-br from-paperDim to-paperDim/50 dark:from-ink2/60 dark:to-ink2/20 border border-dashed border-line dark:border-white/15 flex items-center justify-center">
                             <Icons.Inbox size={26} className="text-ink2/30 dark:text-paper/25" />
                         </div>
-                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/50">Wala pang naka-set na bills.<br/>Magdagdag sa itaas.</p>
+                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/50">No bills scheduled yet.<br/>Add a bill above to get started.</p>
                     </div>
                 ) : (
                     <div className="space-y-3">
@@ -445,8 +445,8 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                                         <button
                                             onClick={() => toggleStatus(bill)}
                                             aria-pressed={isPaid}
-                                            aria-label={isPaid ? `Markahan bilang hindi pa bayad: ${bill.title}` : `Markahan bilang bayad na: ${bill.title}`}
-                                            title={isPaid ? "Markahan bilang hindi pa bayad" : "Markahan bilang bayad na"}
+                                            aria-label={isPaid ? `Mark as unpaid: ${bill.title}` : `Mark as paid: ${bill.title}`}
+                                            title={isPaid ? "Mark as unpaid" : "Mark as paid"}
                                             className={`w-6 h-6 sm:w-[1.65rem] sm:h-[1.65rem] rounded-full flex items-center justify-center shrink-0 transition-all duration-300 active:scale-90 ${
                                                 isPaid
                                                     ? 'bg-[#1F6F54] border-2 border-[#1F6F54] text-white shadow-sm'
@@ -462,7 +462,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                                             </p>
                                             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                                                 <span className={`text-[9px] sm:text-[10px] font-mono font-semibold tracking-wide px-2 py-0.5 rounded-md uppercase border ${isPaid ? 'bg-black/5 dark:bg-white/5 text-ink2/30 dark:text-paper/20 border-transparent' : 'bg-white dark:bg-black/20 text-ink2/70 dark:text-paper/70 border-black/5 dark:border-white/10'}`}>
-                                                    {bill.category}
+                                                    {window.CATEGORY_DISPLAY ? (window.CATEGORY_DISPLAY[bill.category] || bill.category) : bill.category}
                                                 </span>
                                                 <span className={`text-[10px] sm:text-[11px] font-medium ${isPaid ? 'text-ink2/30 dark:text-paper/20' : 'text-ink2/50 dark:text-paper/40'}`}>
                                                     Due: {formatDueDate(bill.dueDate)}
@@ -487,7 +487,7 @@ window.BillsCenter = function BillsCenter({ uid, bills = [], loading }) {
                                         </span>
                                         <button
                                             onClick={() => handleDelete(bill.id)}
-                                            aria-label={`Burahin ang bill: ${bill.title}`}
+                                            aria-label={`Delete bill: ${bill.title}`}
                                             className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-200 p-2 rounded-full text-ink2/30 hover:text-expense hover:bg-expense/10 dark:text-paper/30 dark:hover:text-[#F38C80] dark:hover:bg-[#B5483B]/20 active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-expense/40"
                                         >
                                             <Icons.Trash size={18} strokeWidth={2.2} />

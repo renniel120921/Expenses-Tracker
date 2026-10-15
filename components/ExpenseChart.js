@@ -61,6 +61,9 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
         const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
         const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
         const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999).getTime();
+        const dayOfWeek = (now.getDay() + 6) % 7;
+        const startOfThisWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek).getTime();
+        const startOfThisYear = new Date(now.getFullYear(), 0, 1).getTime();
 
         return entries.filter(e => {
             if (dateFilter === "all") return true;
@@ -71,7 +74,9 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
 
             if (!entryTime || isNaN(entryTime)) return true; // fallback kung walang date
 
+            if (dateFilter === "thisWeek") return entryTime >= startOfThisWeek;
             if (dateFilter === "thisMonth") return entryTime >= startOfThisMonth;
+            if (dateFilter === "thisYear") return entryTime >= startOfThisYear;
             if (dateFilter === "lastMonth") return entryTime >= startOfLastMonth && entryTime <= endOfLastMonth;
 
             return true;
@@ -112,6 +117,7 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
         return analytics.catLabels
             .map((label, i) => ({
                 label,
+                displayLabel: window.CATEGORY_DISPLAY ? (window.CATEGORY_DISPLAY[label] || label) : label,
                 amount: analytics.categories[i],
                 color: analytics.catColors[i],
                 pct: total > 0 ? (analytics.categories[i] / total) * 100 : 0,
@@ -124,13 +130,13 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
     // Plain-language chart description for screen readers
     const chartSummary = useMemo(() => {
         if (view === "category") {
-            if (!hasCategoryData) return "Walang gastos na naitala sa napiling panahon.";
+            if (!hasCategoryData) return "No expenses recorded in the selected period.";
             const top = sortedCategories.slice(0, 3)
-                .map(c => `${c.label} ₱${peso(c.amount)}, ${c.pct.toFixed(0)} porsyento`)
+                .map(c => `${c.displayLabel || c.label} ₱${peso(c.amount)}, ${c.pct.toFixed(0)} percent`)
                 .join("; ");
-            return `Doughnut chart ng gastos ayon sa kategorya. Kabuuang gastos: ₱${peso(analytics.totalExpense)}. Pangunahing kategorya: ${top}.`;
+            return `Doughnut chart of expenses by category. Total expenses: ₱${peso(analytics.totalExpense)}. Top categories: ${top}.`;
         }
-        return `Bar chart ng cash flow. Kita: ₱${peso(analytics.totalIncome)}. Gastos: ₱${peso(analytics.totalExpense)}. ${analytics.net >= 0 ? "Natitira" : "Kulang"}: ₱${peso(Math.abs(analytics.net))}.`;
+        return `Cash flow bar chart. Income: ₱${peso(analytics.totalIncome)}. Expenses: ₱${peso(analytics.totalExpense)}. ${analytics.net >= 0 ? "Surplus" : "Deficit"}: ₱${peso(Math.abs(analytics.net))}.`;
     }, [view, hasCategoryData, sortedCategories, analytics, peso]);
 
     // 3. Render Chart
@@ -153,7 +159,7 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
             config = {
                 type: 'doughnut',
                 data: {
-                    labels: analytics.catLabels,
+                    labels: analytics.catLabels.map(l => window.CATEGORY_DISPLAY ? (window.CATEGORY_DISPLAY[l] || l) : l),
                     datasets: [{
                         data: analytics.categories,
                         backgroundColor: analytics.catColors,
@@ -173,9 +179,9 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
             config = {
                 type: 'bar',
                 data: {
-                    labels: ['Kita', 'Gastos'],
+                    labels: ['Income', 'Expenses'],
                     datasets: [{
-                        label: 'Halaga',
+                        label: 'Amount',
                         data: [analytics.totalIncome, analytics.totalExpense],
                         backgroundColor: ['#2F8E6C', '#B5483B'],
                         borderRadius: 8,
@@ -199,7 +205,7 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
         return () => { if (chartInstance.current) chartInstance.current.destroy(); };
     }, [view, analytics, filteredEntries]);
 
-    const filterLabel = { thisMonth: "ngayong buwan", lastMonth: "nakaraang buwan", all: "lahat ng oras" }[dateFilter];
+    const filterLabel = { thisWeek: "this week", thisMonth: "this month", thisYear: "this year", lastMonth: "last month", all: "all time" }[dateFilter] || "this period";
 
     return (
         <div className="relative overflow-hidden bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios p-5 sm:p-7 mb-6 fade-up">
@@ -214,16 +220,18 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
                     </span>
                     <div>
                         <h2 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper tracking-tight leading-tight">Analytics</h2>
-                        <p className="text-[11px] text-ink2/50 dark:text-paper/50">Batay sa {filterLabel}</p>
+                        <p className="text-[11px] text-ink2/50 dark:text-paper/50">Based on {filterLabel}</p>
                     </div>
                 </div>
 
                 {/* iOS-Style Segmented Date Control */}
-                <div role="group" aria-label="Saklaw ng petsa" className="flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-full text-[12px] font-medium w-full sm:w-auto">
+                <div role="group" aria-label="Date range" className="flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-full text-[12px] font-medium w-full sm:w-auto">
                     {[
-                        { key: "thisMonth", label: "This Month" },
-                        { key: "lastMonth", label: "Last Month" },
-                        { key: "all", label: "All Time" }
+                        { key: "thisWeek", label: "Week" },
+                        { key: "thisMonth", label: "Month" },
+                        { key: "thisYear", label: "Year" },
+
+                        { key: "all", label: "All" }
                     ].map(opt => (
                         <button
                             key={opt.key}
@@ -250,11 +258,11 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
                             <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-black/5 dark:bg-white/10 mb-2">
                                 <span className="text-[9px] font-bold uppercase tracking-widest text-ink/70 dark:text-paper/70">Guilt Tracker</span>
                             </div>
-                            <h3 className="font-display text-[1.1rem] font-semibold text-ink dark:text-paper leading-none">Need vs Luho</h3>
+                            <h3 className="font-display text-[1.1rem] font-semibold text-ink dark:text-paper leading-none">Need vs Want</h3>
                         </div>
                         <div className="text-right">
                             <span className="font-mono text-2xl font-bold text-[#B5483B] dark:text-[#F38C80] leading-none block mb-0.5">{analytics.luhoPct}%</span>
-                            <p className="text-[10px] font-medium text-ink2/60 dark:text-paper/50">napunta sa Luho</p>
+                            <p className="text-[10px] font-medium text-ink2/60 dark:text-paper/50">allocated to Wants</p>
                         </div>
                     </div>
 
@@ -263,8 +271,8 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
                     </div>
 
                     <div className="flex justify-between mt-2.5 text-[11px] font-mono font-medium">
-                        <span className="text-[#B5483B] dark:text-[#F38C80]">Luho: ₱{peso(analytics.luhoTotal)}</span>
-                        <span className="text-[#1F6F54] dark:text-[#52C8A1]">Need: ₱{peso(analytics.needsTotal)}</span>
+                        <span className="text-[#B5483B] dark:text-[#F38C80]">Wants: ₱{peso(analytics.luhoTotal)}</span>
+                        <span className="text-[#1F6F54] dark:text-[#52C8A1]">Needs: ₱{peso(analytics.needsTotal)}</span>
                     </div>
                 </div>
             )}
@@ -273,13 +281,13 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
             <div key={`stats-${dateFilter}`} className="stat-pop flex items-center gap-2.5 sm:gap-4 mb-6 flex-wrap">
                 <div className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#E6F3EF] dark:bg-[#1F6F54]/15">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#2F8E6C]"></span>
-                    <span className="text-[11px] font-medium text-[#1F6F54] dark:text-[#52C8A1]">Kita:</span>
+                    <span className="text-[11px] font-medium text-[#1F6F54] dark:text-[#52C8A1]">Income:</span>
                     <span className="font-mono text-xs font-bold text-[#1F6F54] dark:text-[#52C8A1]">₱{peso(analytics.totalIncome)}</span>
                 </div>
 
                 <div className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#FAEDE9] dark:bg-[#B5483B]/15">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#B5483B]"></span>
-                    <span className="text-[11px] font-medium text-[#B5483B] dark:text-[#F38C80]">Gastos:</span>
+                    <span className="text-[11px] font-medium text-[#B5483B] dark:text-[#F38C80]">Expenses:</span>
                     <span className="font-mono text-xs font-bold text-[#B5483B] dark:text-[#F38C80]">₱{peso(analytics.totalExpense)}</span>
                 </div>
 
@@ -290,12 +298,12 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
                 }`}>
                     <TrendGlyph up={analytics.net >= 0} />
                     <span className="font-mono text-xs font-bold">₱{peso(Math.abs(analytics.net))}</span>
-                    <span className="text-[10px] font-medium opacity-70">{analytics.net >= 0 ? "natitira" : "kulang"}</span>
+                    <span className="text-[10px] font-medium opacity-70">{analytics.net >= 0 ? "surplus" : "deficit"}</span>
                 </div>
             </div>
 
             {/* View Toggles (Category vs Cash Flow) */}
-            <div role="group" aria-label="Uri ng tsart" className="flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-[14px] mb-6">
+            <div role="group" aria-label="Chart view" className="flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-[14px] mb-6">
                 <button
                     onClick={() => setView("category")}
                     aria-pressed={view === "category"}
@@ -303,7 +311,7 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
                         view === "category" ? 'bg-white dark:bg-ink2 text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink dark:hover:text-paper'
                     }`}
                 >
-                    <window.Icons.Category size={14} /> Kategorya
+                    <window.Icons.Category size={14} /> Category
                 </button>
                 <button
                     onClick={() => setView("flow")}
@@ -324,7 +332,7 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
                 {!chartLoaded && (
                     <div className="h-56 flex flex-col items-center justify-center gap-3 text-center bg-white/40 dark:bg-black/10 rounded-2xl">
                         <window.Icons.AlertCircle size={22} className="text-expense" />
-                        <p className="text-[13px] text-expense font-medium">Hindi ma-load ang chart library.<br/>Paki-refresh ang pahina.</p>
+                        <p className="text-[13px] text-expense font-medium">Failed to load chart library.<br/>Please refresh the page.</p>
                     </div>
                 )}
 
@@ -336,7 +344,7 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
                                 <window.Icons.Inbox size={24} className="text-peso/60 dark:text-pesoLight/60" />
                             </span>
                         </div>
-                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/50">Walang data sa panahong ito.</p>
+                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/50">No data recorded for this period.</p>
                     </div>
                 )}
 
@@ -345,7 +353,7 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
                         <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-paperDim to-paperDim/50 dark:from-ink2/60 dark:to-ink2/20 border border-dashed border-line dark:border-white/15 flex items-center justify-center">
                             <window.Icons.Inbox size={24} className="text-ink2/40 dark:text-paper/30" />
                         </div>
-                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/50">Walang gastos na naitala sa panahong ito.</p>
+                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/50">No expenses recorded for this period.</p>
                     </div>
                 )}
 
@@ -355,7 +363,7 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
                         <div className="relative h-48 w-48 sm:h-52 sm:w-52 shrink-0 drop-shadow-md">
                             <canvas ref={chartRef} role="img" aria-label={chartSummary}></canvas>
                             <div key={`center-${dateFilter}-${analytics.totalExpense}`} aria-hidden="true" className="stat-pop absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-1">
-                                <span className="text-[9px] font-mono font-semibold uppercase tracking-[0.1em] text-ink2/50 dark:text-paper/50 mb-0.5">Kabuuang Gastos</span>
+                                <span className="text-[9px] font-mono font-semibold uppercase tracking-[0.1em] text-ink2/50 dark:text-paper/50 mb-0.5">Total Expenses</span>
                                 <span className="font-mono text-lg font-bold text-ink dark:text-paper">₱{peso(analytics.totalExpense)}</span>
                             </div>
                         </div>
@@ -365,7 +373,7 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
                             {sortedCategories.map((c, i) => (
                                 <div key={c.label} className="legend-row flex items-center gap-3 bg-white/40 dark:bg-white/[0.03] p-2 rounded-xl transition-colors hover:bg-white/60 dark:hover:bg-white/10" style={{ animationDelay: `${i * 50}ms` }}>
                                     <div className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: c.color }}></div>
-                                    <span className="text-[13px] font-medium text-ink2/80 dark:text-paper/80 flex-1 min-w-0 truncate">{c.label}</span>
+                                    <span className="text-[13px] font-medium text-ink2/80 dark:text-paper/80 flex-1 min-w-0 truncate">{c.displayLabel || c.label}</span>
 
                                     <span className="text-[10px] font-mono text-ink2/40 dark:text-paper/40 w-7 text-right shrink-0">{c.pct.toFixed(0)}%</span>
 

@@ -1,18 +1,19 @@
 <!DOCTYPE html>
-<html lang="fil" class="scroll-smooth">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="/app.css">
     <link rel="manifest" href="/manifest.json">
     <script src="/app-utils.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Mag-log In — Tipid</title>
+    <title>Log In — Tipid</title>
+    <meta name="description" content="Log in to your Tipid account to manage your everyday finances, track spending, and review budgets.">
     <meta name="theme-color" content="#123D2E">
-    <link rel="icon" href="/assets/login_mascot.png" type="image/svg+xml">
+    <link rel="icon" href="/assets/login_mascot.png" type="image/png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -20,13 +21,13 @@
             theme: {
                 extend: {
                     colors: {
-                        paper: '#F1F4EF', paperDim: '#E9EDE6', ink: '#15231C', ink2: '#33443A',
-                        peso: '#1F6F54', pesoLight: '#2F8E6C', pesoDeep: '#123D2E',
-                        gold: '#C9932E', expense: '#B5483B', line: '#D3DAD0',
+                        paper: '#F4F6F3', paperDim: '#EAEFE7', ink: '#121D17', ink2: '#2F4035',
+                        peso: '#1F6F54', pesoLight: '#2B8B6A', pesoDeep: '#113A2C',
+                        gold: '#C9932E', expense: '#B5483B', line: '#D7DFD4',
                     },
                     fontFamily: {
-                        display: ['"Fraunces"', 'serif'],
-                        body: ['"Inter"', 'sans-serif'],
+                        display: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"Segoe UI"', 'Roboto', 'sans-serif'],
+                        body: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"Segoe UI"', 'Roboto', 'sans-serif'],
                     },
                 }
             }
@@ -42,10 +43,10 @@
     <script type="module" src="./firebase-auth.js"></script>
 
     <style>
-        html { background: #FFFFFF; }
+        html { background: #F4F6F3; }
         body { font-feature-settings: "tnum" 1, "lnum" 1; }
-        ::selection { background: #C9932E33; color: #15231C; }
-        :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
+        ::selection { background: rgba(31, 111, 84, 0.18); color: #121D17; }
+        :focus-visible { outline: 2.5px solid #1F6F54; outline-offset: 3px; border-radius: 8px; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.8s linear infinite; }
@@ -56,21 +57,21 @@
             30%, 50%, 70% { transform: translateX(-4px); }
             40%, 60% { transform: translateX(4px); }
         }
-        .shake { animation: shake 0.5s; }
+        .shake { animation: shake 0.45s; }
 
         @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(14px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(12px) scale(0.99); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
-        .fade-up { animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .fade-up { animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
         @keyframes floatSm {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
+            50% { transform: translateY(-3px); }
         }
-        .float-sm { animation: floatSm 3.4s ease-in-out infinite; }
+        .float-sm { animation: floatSm 3.5s ease-in-out infinite; }
 
-        .panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s ease; }
+        .panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
         .panel.open { grid-template-rows: 1fr; }
         .panel > div { overflow: hidden; }
 
@@ -81,60 +82,63 @@
             align-items: center;
             justify-content: center;
             padding: 32px 18px;
-            background: #FFFFFF;
+            background: #F4F6F3;
         }
 
         .auth-card {
             width: 100%;
-            max-width: 428px;
-            background: #FFFFFF;
-            border: 1px solid #EDF1EB;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.86);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.95);
             border-radius: 28px;
-            padding: 30px 30px 28px;
-            box-shadow: 0 30px 70px -40px rgba(18,61,46,.18);
+            padding: 32px 30px 28px;
+            box-shadow: 0 4px 6px -1px rgba(18,61,46,0.03), 0 24px 50px -12px rgba(18,61,46,0.12);
         }
 
         .back-btn {
-            width: 34px;
-            height: 34px;
+            width: 36px;
+            height: 36px;
             border-radius: 999px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            color: #33443A;
-            background: #FFFFFF;
-            border: 1.5px solid #E9EDE6;
-            transition: background-color .18s ease, border-color .18s ease, transform .18s ease;
+            color: #2F4035;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1.5px solid rgba(215, 223, 212, 0.85);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            transition: background-color .18s ease, border-color .18s ease, transform .16s ease, color .18s ease;
         }
-        .back-btn:hover { background: #F7FAF7; border-color: #D3DAD0; }
-        .back-btn:active { transform: scale(.94); }
+        .back-btn:hover { background: #FFFFFF; border-color: #1F6F54; color: #1F6F54; }
+        .back-btn:active { transform: scale(.92); }
 
         .welcome-row {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-top: 18px;
-            margin-bottom: 6px;
+            margin-top: 20px;
+            margin-bottom: 8px;
         }
 
         .mascot-wrap {
             position: relative;
-            width: 60px;
-            height: 60px;
+            width: 58px;
+            height: 58px;
             flex-shrink: 0;
         }
 
         .mascot-glow {
             position: absolute;
-            inset: -6px;
+            inset: -4px;
             border-radius: 999px;
-            background: radial-gradient(circle, rgba(31,111,84,.16), transparent 70%);
+            background: radial-gradient(circle, rgba(31,111,84,.14), transparent 70%);
         }
 
         .mascot-avatar {
             position: relative;
-            width: 60px;
-            height: 60px;
+            width: 58px;
+            height: 58px;
             object-fit: contain;
             object-position: center bottom;
         }
@@ -142,60 +146,71 @@
         .mascot-bubble {
             position: relative;
             background: #FFFFFF;
-            border: 1.5px solid #E9EDE6;
+            border: 1.5px solid #D7DFD4;
             border-radius: 14px;
-            padding: 9px 12px;
-            font: 600 12.5px/1.4 'Inter', sans-serif;
-            color: #33443A;
+            padding: 9px 13px;
+            font-size: 12.5px;
+            line-height: 1.4;
+            font-weight: 600;
+            color: #2F4035;
+            box-shadow: 0 2px 8px rgba(18,61,46,0.04);
         }
 
         .mascot-bubble::before {
             content: "";
             position: absolute;
             left: -6px;
-            top: 16px;
+            top: 15px;
             width: 10px;
             height: 10px;
             background: #FFFFFF;
-            border-left: 1.5px solid #E9EDE6;
-            border-bottom: 1.5px solid #E9EDE6;
+            border-left: 1.5px solid #D7DFD4;
+            border-bottom: 1.5px solid #D7DFD4;
             transform: rotate(45deg);
             border-radius: 2px;
         }
 
         .auth-title {
-            font: 700 1.6rem/1.18 'Fraunces', serif;
-            letter-spacing: -.02em;
-            color: #15231C;
+            font-size: 1.65rem;
+            line-height: 1.2;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            color: #121D17;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
         }
 
         .auth-subtitle {
-            margin-top: 6px;
-            color: rgba(51,68,58,.62);
-            font: 500 13.5px/1.5 'Inter', sans-serif;
+            margin-top: 4px;
+            color: #586A5E;
+            font-size: 13.5px;
+            line-height: 1.45;
+            font-weight: 500;
         }
 
         .field-label {
             display: block;
-            margin-bottom: 7px;
-            font: 600 13px/1 'Inter', sans-serif;
-            color: #33443A;
+            margin-bottom: 6px;
+            font-size: 13px;
+            line-height: 1;
+            font-weight: 600;
+            color: #2F4035;
         }
 
         .field-shell {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             min-width: 0;
-            background: #FFFFFF;
-            border: 1.5px solid #E2E8DF;
-            border-radius: 14px;
+            background: rgba(244, 246, 243, 0.75);
+            border: 1.5px solid rgba(215, 223, 212, 0.85);
+            border-radius: 16px;
             padding: 0 15px;
             transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease;
         }
 
         .field-shell:focus-within {
-            border-color: rgba(31,111,84,.5);
+            background: #FFFFFF;
+            border-color: #1F6F54;
             box-shadow: 0 0 0 4px rgba(31,111,84,.08);
         }
 
@@ -207,27 +222,28 @@
             background: transparent;
             padding: 13px 0;
             font-size: 14.5px;
-            color: #15231C;
+            color: #121D17;
             outline: none;
         }
 
         .field-shell input::placeholder { color: rgba(51,68,58,.38); }
-
         .field-shell.compact input { padding: 11px 0; font-size: 13.5px; }
 
         .submit-btn {
             width: 100%;
             border-radius: 999px;
-            padding: 15px 16px;
-            font: 700 14.5px 'Inter', sans-serif;
-            color: #F8FAF8;
+            padding: 14px 18px;
+            font-size: 14.5px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: #FFFFFF;
             background: #1F6F54;
-            box-shadow: 0 18px 32px -18px rgba(31,111,84,.65);
+            box-shadow: 0 8px 20px -6px rgba(31,111,84,.45);
             transition: background-color .2s ease, transform .16s ease, box-shadow .2s ease;
         }
-        .submit-btn:hover:not(:disabled) { background: #226A50; box-shadow: 0 20px 36px -16px rgba(31,111,84,.7); }
-        .submit-btn:active:not(:disabled) { transform: scale(.985); }
-        .submit-btn:disabled { opacity: .55; }
+        .submit-btn:hover:not(:disabled) { background: #165A43; box-shadow: 0 12px 24px -4px rgba(31,111,84,.55); }
+        .submit-btn:active:not(:disabled) { transform: scale(.98); }
+        .submit-btn:disabled { opacity: .55; cursor: not-allowed; }
 
         .oauth-circle {
             width: 52px;
@@ -237,26 +253,29 @@
             align-items: center;
             justify-content: center;
             background: #FFFFFF;
-            border: 1px solid #D3DAD0;
+            border: 1.5px solid rgba(215, 223, 212, 0.9);
+            box-shadow: 0 2px 8px rgba(18,61,46,.04);
             transition: border-color .18s ease, transform .16s ease, box-shadow .2s ease;
         }
-        .oauth-circle:hover:not(:disabled) { border-color: rgba(21,35,28,.22); box-shadow: 0 12px 26px -18px rgba(18,61,46,.4); }
-        .oauth-circle:active:not(:disabled) { transform: scale(.95); }
-        .oauth-circle:disabled { opacity: .5; }
+        .oauth-circle:hover:not(:disabled) { border-color: #1F6F54; box-shadow: 0 6px 16px rgba(18,61,46,.1); }
+        .oauth-circle:active:not(:disabled) { transform: scale(.94); }
+        .oauth-circle:disabled { opacity: .5; cursor: not-allowed; }
 
         @media (prefers-reduced-motion: reduce) {
             .spin, .shake, .fade-up, .float-sm { animation: none !important; transition: none !important; }
         }
 
         .swal2-popup.tipid-swal {
-            border-radius: 20px !important;
-            font-family: 'Inter', sans-serif;
+            border-radius: 24px !important;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+            border: 1px solid rgba(215, 223, 212, 0.9) !important;
+            box-shadow: 0 20px 48px rgba(18,61,46,0.14) !important;
         }
-        .tipid-swal .swal2-title { font-family: 'Fraunces', serif; color: #15231C; }
-        .tipid-swal .swal2-html-container { color: #33443A; }
+        .tipid-swal .swal2-title { font-weight: 700; color: #121D17; letter-spacing: -0.02em; }
+        .tipid-swal .swal2-html-container { color: #2F4035; font-size: 14.5px; }
         .tipid-swal .swal2-confirm {
             border-radius: 999px !important;
-            padding: 0.65em 1.6em !important;
+            padding: 0.65em 1.8em !important;
             font-weight: 600 !important;
             box-shadow: none !important;
         }
@@ -305,12 +324,12 @@
             if (!broken) {
                 return (
                     <img
-                        src="/assets/logo.svg"
+                        src="/assets/tipid_mascot_full.png"
                         alt="Tipid logo"
                         width={size}
                         height={size}
                         onError={() => setBroken(true)}
-                        style={{ width: size, height: size }}
+                        style={{ width: size, height: size, objectFit: "contain" }}
                         className="rounded-md"
                     />
                 );
@@ -319,7 +338,7 @@
             return (
                 <span
                     style={{ width: size, height: size }}
-                    className="rounded-md flex items-center justify-center font-display font-semibold bg-ink text-paper"
+                    className="rounded-xl flex items-center justify-center font-display font-semibold bg-ink text-paper"
                 >
                     ₱
                 </span>
@@ -344,13 +363,35 @@
             return { ready, timedOut };
         }
 
+        function getAuthErrorMessage(code) {
+            const map = {
+                "auth/email-already-in-use": "An account already exists with this email address.",
+                "auth/invalid-email": "Please enter a valid email address.",
+                "auth/weak-password": "Password must be at least 6 characters.",
+                "auth/missing-password": "Password is required.",
+                "auth/user-not-found": "Incorrect email or password.",
+                "auth/wrong-password": "Incorrect email or password.",
+                "auth/invalid-credential": "Incorrect email or password.",
+                "auth/too-many-requests": "Too many failed attempts. Please try again later.",
+                "auth/popup-closed-by-user": "Google sign-in was cancelled.",
+                "auth/popup-blocked": "Google sign-in popup was blocked by your browser. Please allow popups.",
+                "auth/operation-not-supported-in-this-environment": "Google sign-in is not supported in this browser. Please use Chrome, Edge, or Safari.",
+                "auth/unauthorized-domain": "This domain is not authorized for Google sign-in. Please use the production site.",
+                "auth/network-request-failed": "Network error. Please check your internet connection.",
+                "auth/account-exists-with-different-credential": "An account already exists with this email under a different sign-in method.",
+                "app/offline": "You are currently offline. Please reconnect to the internet.",
+                "app/rate-limit": "Too many requests. Please wait a few seconds and try again.",
+            };
+            return map[code] || (window.TipidAuth ? window.TipidAuth.friendlyError(code) : "Unable to complete request. Please try again.");
+        }
+
         function swalSuccess({ title, text, confirmButtonText }) {
             return Swal.fire({
                 icon: "success",
                 title, text, confirmButtonText,
                 confirmButtonColor: "#1F6F54",
-                background: "#F1F4EF",
-                color: "#15231C",
+                background: "#FFFFFF",
+                color: "#121D17",
                 customClass: { popup: "tipid-swal" },
             });
         }
@@ -358,12 +399,12 @@
         function swalError(text) {
             return Swal.fire({
                 icon: "error",
-                title: "Hindi Matagumpay",
+                title: "Unable to Sign In",
                 text,
-                confirmButtonText: "Sige",
-                confirmButtonColor: "#B5483B",
-                background: "#F1F4EF",
-                color: "#15231C",
+                confirmButtonText: "OK",
+                confirmButtonColor: "#1F6F54",
+                background: "#FFFFFF",
+                color: "#121D17",
                 customClass: { popup: "tipid-swal" },
             });
         }
@@ -386,7 +427,7 @@
                 e.preventDefault();
                 if (!/^\S+@\S+\.\S+$/.test(email)) {
                     setStatus("error");
-                    setMsg("Hindi valid ang email address.");
+                    setMsg("Please enter a valid email address.");
                     return;
                 }
                 setStatus("sending");
@@ -396,31 +437,31 @@
                     setStatus("sent");
                 } catch (err) {
                     setStatus("error");
-                    setMsg(window.TipidAuth.friendlyError(err.code || err));
+                    setMsg(getAuthErrorMessage(err.code || err));
                 }
             };
 
             return (
                 <div className={`panel ${open ? "open" : ""}`}>
                     <div>
-                        <div className="mt-1 pt-4 border-t border-dashed border-line">
+                        <div className="mt-2 pt-4 border-t border-dashed border-line">
                             {status === "sent" ? (
                                 <div className="space-y-3">
-                                    <div className="flex items-start gap-2 bg-peso/10 text-peso text-sm rounded-xl px-3.5 py-3">
+                                    <div className="flex items-start gap-2 bg-peso/10 text-peso text-xs sm:text-sm rounded-2xl px-3.5 py-3">
                                         <Icons.CheckCircle size={16} className="shrink-0 mt-0.5" />
-                                        <span>Kung rehistrado ang <strong>{email}</strong>, naipadala na ang password reset link. Pakitingnan ang iyong <strong>Inbox</strong> o <strong>Spam / Junk folder</strong>.</span>
+                                        <span>If an account exists for <strong>{email}</strong>, a password reset link has been sent. Please check your inbox or spam folder.</span>
                                     </div>
                                     <button type="button" onClick={() => { setStatus("idle"); setEmail(""); onClose(); }} className="text-xs font-semibold text-peso hover:underline">
-                                        Isara ang form
+                                        Close form
                                     </button>
                                 </div>
                             ) : (
                                 <form onSubmit={send} className="space-y-3">
-                                    <p className="text-sm text-ink2">Ilagay ang email mo, papadalhan ka namin ng reset link.</p>
+                                    <p className="text-xs sm:text-sm text-ink2/80 font-medium">Enter your email and we will send you a secure password reset link.</p>
 
                                     {status === "error" && (
-                                        <div className="flex items-start gap-2 bg-expense/10 text-expense text-sm rounded-xl px-3.5 py-2.5">
-                                            <Icons.AlertCircle size={15} className="shrink-0 mt-0.5" />
+                                        <div className="flex items-start gap-2 bg-expense/10 text-expense text-xs rounded-xl px-3 py-2">
+                                            <Icons.AlertCircle size={14} className="shrink-0 mt-0.5" />
                                             <span>{msg}</span>
                                         </div>
                                     )}
@@ -430,17 +471,18 @@
                                             type="email"
                                             value={email}
                                             onChange={e => setEmail(e.target.value)}
-                                            placeholder="Email address"
+                                            placeholder="name@example.com"
+                                            autoComplete="email"
                                         />
                                     </Field>
 
-                                    <div className="flex gap-2.5">
+                                    <div className="flex gap-2">
                                         <button type="submit" disabled={status === "sending"}
-                                                className="flex-1 bg-ink hover:bg-pesoDeep disabled:opacity-60 text-paper text-sm font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2">
+                                                className="flex-1 bg-ink hover:bg-pesoDeep disabled:opacity-60 text-white text-xs font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm">
                                             {status === "sending" && <Icons.Loader size={14} className="spin" />}
-                                            {status === "sending" ? "Pinapadala..." : "Ipadala ang link"}
+                                            {status === "sending" ? "Sending link..." : "Send Reset Link"}
                                         </button>
-                                        <button type="button" onClick={onClose} className="text-sm font-semibold text-ink2 px-3">Kansela</button>
+                                        <button type="button" onClick={onClose} className="text-xs font-semibold text-ink2 px-3 py-2 rounded-xl hover:bg-paperDim/50">Cancel</button>
                                     </div>
                                 </form>
                             )}
@@ -475,8 +517,8 @@
                 setError("");
                 setFieldErr({});
 
-                if (!/^\S+@\S+\.\S+$/.test(email)) return fail("Hindi valid ang email address.", "email");
-                if (!password) return fail("Ilagay ang password.", "password");
+                if (!/^\S+@\S+\.\S+$/.test(email)) return fail("Please enter a valid email address.", "email");
+                if (!password) return fail("Please enter your password.", "password");
 
                 setLoading(true);
                 try {
@@ -484,15 +526,15 @@
                     setLoading(false);
 
                     await swalSuccess({
-                        title: "Balik ka na!",
-                        text: "Matagumpay kang naka-log in. Papasok ka na sa dashboard mo.",
-                        confirmButtonText: "Sige",
+                        title: "Welcome Back!",
+                        text: "Signed in successfully. Redirecting to your dashboard...",
+                        confirmButtonText: "Continue",
                     });
 
                     window.location.href = "dashboard.html";
                 } catch (err) {
                     setLoading(false);
-                    swalError(window.TipidAuth.friendlyError(err.code));
+                    swalError(getAuthErrorMessage(err.code || err));
                 }
             };
 
@@ -506,15 +548,15 @@
                     if (!user) return;
 
                     await swalSuccess({
-                        title: "Balik ka na!",
-                        text: "Naka-log in ka gamit ang Google. Papasok ka na sa dashboard mo.",
-                        confirmButtonText: "Sige",
+                        title: "Welcome Back!",
+                        text: "Signed in successfully with Google. Redirecting to your dashboard...",
+                        confirmButtonText: "Continue",
                     });
 
                     window.location.href = "dashboard.html";
                 } catch (err) {
                     setLoading(false);
-                    swalError(window.TipidAuth.friendlyError(err.code));
+                    swalError(getAuthErrorMessage(err.code || err));
                 }
             };
 
@@ -523,14 +565,14 @@
                     <div className={`auth-card fade-up ${shake ? "shake" : ""}`}>
 
                         <div className="flex items-center justify-between">
-                            <a href="index.html" className="back-btn" aria-label="Bumalik">
+                            <a href="index.html" className="back-btn" aria-label="Go Back">
                                 <Icons.ArrowLeft size={17} />
                             </a>
                             <div className="flex items-center gap-2">
-                                <Logo size={34} />
-                                <span className="text-lg font-display font-semibold tracking-tight text-ink">Tipid</span>
+                                <Logo size={32} />
+                                <span className="text-lg font-bold tracking-tight text-ink font-display">Tipid</span>
                             </div>
-                            <span className="w-[34px]"></span>
+                            <span className="w-[36px]"></span>
                         </div>
 
                         <div className="welcome-row">
@@ -548,33 +590,33 @@
                                     <div className="mascot-avatar rounded-full bg-peso/10 flex items-center justify-center text-2xl">👋</div>
                                 )}
                             </div>
-                            <div className="mascot-bubble">Kamusta! Balik ka na ba para mag-tipid? </div>
+                            <div className="mascot-bubble">Welcome back! Ready to track your savings?</div>
                         </div>
 
-                        <h1 className="auth-title">Mag-log in</h1>
-                        <p className="auth-subtitle">Masaya kaming makita kang muli.</p>
+                        <h1 className="auth-title">Log in</h1>
+                        <p className="auth-subtitle">We are glad to see you again.</p>
 
                         {timedOut && !authReady && (
-                            <div className="mt-5 flex items-start gap-2 bg-expense/10 text-expense text-sm rounded-xl px-3.5 py-3">
+                            <div className="mt-4 flex items-start gap-2 bg-expense/10 text-expense text-xs sm:text-sm rounded-2xl px-3.5 py-3">
                                 <Icons.AlertCircle size={16} className="shrink-0 mt-0.5" />
-                                <span>Hindi ma-connect sa auth system. Paki-refresh ang page o subukan ulit mamaya.</span>
+                                <span>Unable to connect to the authentication service. Please refresh or try again later.</span>
                             </div>
                         )}
 
                         {error && (
-                            <div className="mt-5 flex items-start gap-2 bg-expense/10 text-expense text-sm rounded-xl px-3.5 py-3">
+                            <div className="mt-4 flex items-start gap-2 bg-expense/10 text-expense text-xs sm:text-sm rounded-2xl px-3.5 py-3">
                                 <Icons.AlertCircle size={16} className="shrink-0 mt-0.5" />
                                 <span>{error}</span>
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                        <form id="loginForm" onSubmit={handleSubmit} className="mt-5 space-y-4">
                             <Field label="Email" error={fieldErr.email}>
                                 <input
                                     type="email"
                                     value={email}
                                     onChange={e => setEmail(e.target.value)}
-                                    placeholder="juandelacruz@gmail.com"
+                                    placeholder="name@example.com"
                                     autoComplete="email"
                                 />
                             </Field>
@@ -590,8 +632,8 @@
                                 <button
                                     type="button"
                                     onClick={() => setShowPw(v => !v)}
-                                    className="text-ink2/50 hover:text-ink2 shrink-0 transition-colors duration-200"
-                                    aria-label="Ipakita ang password"
+                                    className="text-ink2/50 hover:text-ink2 shrink-0 transition-colors p-1"
+                                    aria-label={showPw ? "Hide password" : "Show password"}
                                 >
                                     {showPw ? <Icons.EyeOff size={17} /> : <Icons.Eye size={17} />}
                                 </button>
@@ -603,7 +645,7 @@
                                     onClick={() => setForgotOpen(v => !v)}
                                     className="text-xs font-semibold text-peso hover:underline"
                                 >
-                                    Nakalimutan ang password?
+                                    Forgot password?
                                 </button>
                             </div>
 
@@ -612,35 +654,36 @@
                             <button
                                 type="submit"
                                 disabled={loading || !authReady}
-                                className="submit-btn flex items-center justify-center gap-2 mt-1"
+                                className="submit-btn flex items-center justify-center gap-2 mt-2"
                             >
                                 {loading && <Icons.Loader size={16} className="spin" />}
-                                {loading ? "Nag-lo-log in..." : "Mag-log In"}
+                                {loading ? "Logging in..." : "Log In"}
                             </button>
                         </form>
 
-                        <div className="flex items-center gap-3 my-6">
+                        <div className="flex items-center gap-3 my-5">
                             <div className="h-px flex-1 bg-line/70"></div>
-                            <span className="text-[12px] text-ink2/50">o mag-log in gamit</span>
+                            <span className="text-[11px] font-medium text-ink2/50 uppercase tracking-wider">or log in with</span>
                             <div className="h-px flex-1 bg-line/70"></div>
                         </div>
 
                         <div className="flex items-center justify-center">
                             <button
+                                id="googleLoginBtn"
                                 onClick={handleGoogle}
                                 disabled={loading || !authReady}
                                 type="button"
                                 className="oauth-circle"
-                                aria-label="Mag-log in gamit ang Google"
+                                aria-label="Sign in with Google"
                             >
                                 <GoogleIcon size={20} />
                             </button>
                         </div>
 
-                        <p className="text-center text-sm text-ink2 mt-7">
-                            Wala pang account?
+                        <p className="text-center text-xs sm:text-sm text-ink2 mt-6">
+                            Don't have an account?
                             <a href="signup.html" className="text-peso font-semibold hover:underline ml-1">
-                                Gumawa ng account
+                                Create an account
                             </a>
                         </p>
                     </div>

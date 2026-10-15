@@ -124,6 +124,46 @@ button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: no
   margin-inline: auto;
 }
 
+@media (min-width: 768px) {
+  body.has-tipid-sidebar {
+    padding-left: 260px;
+    box-sizing: border-box;
+  }
+}
+
+.tipid-desktop-sidebar {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  border-right: 1px solid rgba(220, 228, 221, 0.7) !important;
+  box-shadow: 4px 0 24px -8px rgba(0, 0, 0, 0.04) !important;
+}
+
+html.dark .tipid-desktop-sidebar,
+.dark .tipid-desktop-sidebar {
+  background-color: rgba(14, 23, 18, 0.96) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 4px 0 32px -8px rgba(0, 0, 0, 0.5) !important;
+}
+
+.tipid-mobile-header,
+.tipid-bottom-nav {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+}
+
+html.dark .tipid-mobile-header,
+.dark .tipid-mobile-header,
+html.dark .tipid-bottom-nav,
+.dark .tipid-bottom-nav {
+  background-color: rgba(14, 23, 18, 0.96) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }

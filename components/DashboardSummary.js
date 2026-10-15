@@ -140,11 +140,11 @@ function DeltaChip({ pct, invert = false }) {
     const isGood = invert ? !positive : positive;
     // The arrow direction carries real meaning here (di gaya ng ibang icon sa file na pure
     // decoration), kaya isinasama sa aria-label — hindi pwedeng umasa lang sa kulay/anyo ng icon.
-    const directionWord = positive ? "pagtaas" : "pagbaba";
+    const directionWord = positive ? "increase" : "decrease";
     return (
         <span
-            title="kumpara sa nakaraang buwan"
-            aria-label={`${Math.abs(pct)}% na ${directionWord} kumpara sa nakaraang buwan`}
+            title="vs last month"
+            aria-label={`${Math.abs(pct)}% ${directionWord} vs last month`}
             className={`inline-flex items-center gap-1 text-[10.5px] font-mono font-bold px-2 py-1 rounded-lg shrink-0 transition-colors shadow-sm border border-white/20 dark:border-white/5 ${
                 isGood
                     ? "text-[#1F6F54] bg-gradient-to-r from-[#E6F3EF] to-[#D5EBE3] dark:text-[#52C8A1] dark:from-[#1F6F54]/30 dark:to-[#1F6F54]/10"
@@ -188,13 +188,13 @@ function BudgetEditor({ uid, budget }) {
                 <span className="bg-peso/10 dark:bg-pesoLight/20 p-1.5 rounded-lg text-peso dark:text-pesoLight">
                     <Icons.Pencil size={12} />
                 </span>
-                {budget ? "Baguhin ang budget" : "Magtakda ng buwanang budget"}
+                {budget ? "Edit budget" : "Set monthly budget"}
             </button>
         );
     }
     return (
         <form onSubmit={save} className="editor-pop inline-flex items-center gap-2">
-            <label htmlFor="tipid-budget-input" className="sr-only">Bagong halaga ng buwanang budget</label>
+            <label htmlFor="tipid-budget-input" className="sr-only">New monthly budget amount</label>
             <input
                 id="tipid-budget-input"
                 type="number" inputMode="decimal" autoFocus value={value}
@@ -239,7 +239,7 @@ function SmartSummary({ uid, entries, budget }) {
     const income = window.TipidCore.sumMoney(thisMonth.filter(e => e.type === "income").map(e => e.amount));
     const spent = window.TipidCore.sumMoney(thisMonth.filter(e => e.type !== "income").map(e => e.amount));
     const remaining = budget != null ? budget - spent : income - spent;
-    const remainingLabel = budget != null ? "Natitirang Budget" : "Natitira (Kita − Gastos)";
+    const remainingLabel = budget != null ? "Remaining Budget" : "Net Balance (Income − Expenses)";
     const overBudget = budget != null && remaining < 0;
     const budgetPct = budget ? Math.min(100, Math.round((spent / budget) * 100)) : null;
 
@@ -293,7 +293,7 @@ function SmartSummary({ uid, entries, budget }) {
                     <div className="flex items-start justify-between gap-2.5 mb-4 sm:mb-5 mt-1">
                         <div className="flex items-center gap-3">
                             <IconChip tone="peso" icon={<Icons.TrendUp size={16} />} />
-                            <p className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wider uppercase text-ink2/60 dark:text-paper/60">Kita Ngayon</p>
+                            <p className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wider uppercase text-ink2/60 dark:text-paper/60">Total Income</p>
                         </div>
                         <DeltaChip pct={incomeDelta} />
                     </div>
@@ -306,7 +306,7 @@ function SmartSummary({ uid, entries, budget }) {
                     <div className="flex items-start justify-between gap-2.5 mb-4 sm:mb-5 mt-1">
                         <div className="flex items-center gap-3">
                             <IconChip tone="expense" icon={<Icons.TrendDown size={16} />} />
-                            <p className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wider uppercase text-ink2/60 dark:text-paper/60">Gastos Ngayon</p>
+                            <p className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wider uppercase text-ink2/60 dark:text-paper/60">Total Expenses</p>
                         </div>
                         <DeltaChip pct={spentDelta} invert />
                     </div>
@@ -338,7 +338,7 @@ function SmartSummary({ uid, entries, budget }) {
                         <div className="mt-5">
                             <div
                                 role="progressbar"
-                                aria-label="Porsyento ng buwanang budget na nagastos na"
+                                aria-label="Percentage of monthly budget spent"
                                 aria-valuenow={budgetPct}
                                 aria-valuemin={0}
                                 aria-valuemax={100}
@@ -351,7 +351,7 @@ function SmartSummary({ uid, entries, budget }) {
                             </div>
                             <div className="flex justify-between items-center mt-2.5">
                                 <p role="status" aria-live="polite" className={`text-[11px] font-mono font-bold ${overBudget ? "text-expense dark:text-[#F38C80]" : nearingBudget ? "text-[#C9932E] dark:text-[#E8C071]" : "text-ink2/60 dark:text-paper/50"}`}>
-                                    {budgetPct}% nagastos{nearingBudget ? " — hinay-hinay lang" : ""}
+                                    {budgetPct}% spent{nearingBudget ? " — pacing alert" : ""}
                                 </p>
                                 <span className="text-[10px] font-mono text-ink2/40 dark:text-paper/30 font-medium">100%</span>
                             </div>
@@ -369,11 +369,11 @@ function SmartSummary({ uid, entries, budget }) {
                 <div className="flex items-end justify-between gap-3 mb-6 sm:mb-7 flex-wrap">
                     <div className="flex items-center gap-2.5">
                         <div className="w-2 h-6 rounded-full bg-peso dark:bg-pesoLight"></div>
-                        <h3 className="text-[14px] sm:text-[16px] font-display tracking-[0.1em] font-bold uppercase text-ink dark:text-paper">Breakdown ng Gastos</h3>
+                        <h3 className="text-[14px] sm:text-[16px] font-display tracking-[0.1em] font-bold uppercase text-ink dark:text-paper">Expense Breakdown</h3>
                     </div>
                     {byCategory.length > 0 && (
                         <p className="text-[11.5px] sm:text-xs text-ink2/60 dark:text-paper/50 font-mono font-medium bg-black/5 dark:bg-white/10 px-3 py-1.5 rounded-lg border border-black/5 dark:border-white/5">
-                            <span className="font-bold text-ink dark:text-paper">{byCategory.length}</span> kategorya · ₱{window.peso(spent)}
+                            <span className="font-bold text-ink dark:text-paper">{byCategory.length}</span> {byCategory.length === 1 ? "category" : "categories"} · ₱{window.peso(spent)}
                         </p>
                     )}
                 </div>
@@ -381,7 +381,7 @@ function SmartSummary({ uid, entries, budget }) {
                 {byCategory.length === 0 ? (
                     <div className="py-10 flex flex-col items-center justify-center gap-4 text-ink2/40 dark:text-paper/30 bg-black/[0.02] dark:bg-white/[0.02] rounded-2xl border border-dashed border-black/10 dark:border-white/10">
                         <Icons.Wallet size={28} className="opacity-40" aria-hidden="true" />
-                        <p className="text-[14px] font-medium text-center">Wala pang gastos ngayong buwan.</p>
+                        <p className="text-[14px] font-medium text-center">No expenses recorded this month.</p>
                     </div>
                 ) : (
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
@@ -396,7 +396,7 @@ function SmartSummary({ uid, entries, budget }) {
                                         <div className="flex items-center gap-2.5">
                                             <div className="w-3 h-3 rounded-full shadow-inner" style={{ backgroundColor: catColor }}></div>
                                             <span className="font-bold text-[14px] sm:text-[15px] text-ink dark:text-paper flex items-center gap-2">
-                                                {c.label}
+                                                {window.CATEGORY_DISPLAY ? (window.CATEGORY_DISPLAY[c.label] || c.label) : c.label}
                                                 {isHighest && (
                                                     <span className="text-[9px] font-mono font-bold tracking-wider uppercase text-[#C9932E] dark:text-[#E8C071] bg-[#FDF6E3] dark:bg-[#C9932E]/15 rounded-md px-1.5 py-0.5 border border-gold/20 dark:border-[#E8C071]/20">
                                                         Top

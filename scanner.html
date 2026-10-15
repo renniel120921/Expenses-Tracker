@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fil" class="scroll-smooth">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="/app.css">
@@ -120,6 +120,15 @@
         window.peso = (num) => { if (isNaN(num)) return "0.00"; return Number(num).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
 
         window.CATEGORIES = ["Pagkain", "Pamasahe", "Bills", "Load", "Ipon", "Project Components", "Iba pa"];
+        window.CATEGORY_DISPLAY = {
+            Pagkain: "Food & Dining",
+            Pamasahe: "Transportation",
+            Bills: "Utilities & Bills",
+            Load: "Mobile & Data",
+            Ipon: "Savings & Investments",
+            "Project Components": "Project Components",
+            "Iba pa": "Other Expenses"
+        };
 
         window.useAuthReady = function useAuthReady() {
             const [ready, setReady] = React.useState(!!window.TipidAuth);
@@ -161,7 +170,7 @@
                                 AI Receipt Scanner
                             </h1>
                             <p className="text-[13px] font-medium text-white/70 leading-relaxed max-w-sm">
-                                Hayaang si AI ang mag-type ng gastos mo mula sa picture ng resibo.
+                                Scan receipts instantly and let AI extract amounts and categories automatically.
                             </p>
                         </div>
                     </div>
@@ -249,7 +258,7 @@
                                 <span className="absolute inset-0 rounded-full bg-peso/20 dark:bg-pesoLight/20 halo-pulse" />
                                 <window.Logo size={42} />
                             </div>
-                            <p className="text-[11px] font-mono font-bold text-ink2/60 dark:text-paper/50 tracking-widest uppercase">Warming up AI...</p>
+                            <p className="text-[11px] font-mono font-bold text-ink2/60 dark:text-paper/50 tracking-widest uppercase">Initializing scanner...</p>
                         </div>
                     </div>
                 );
@@ -261,7 +270,7 @@
             return (
                 <div className="min-h-dvh flex flex-col relative">
                     <AmbientBackground />
-                    <AppNavbar user={user} onLogout={handleLogout} activeTab="more" />
+                    <AppNavbar user={user} onLogout={handleLogout} activeTab="scanner" />
 
                     <main className="max-w-[768px] mx-auto w-full px-4 sm:px-8 pt-[6.5rem] md:pt-10 pb-36 md:pb-20 flex-1 z-10"
                         style={{ paddingLeft: 'max(1rem, calc(var(--sal) + 1rem))', paddingRight: 'max(1rem, calc(var(--sar) + 1rem))', paddingBottom: 'calc(8rem + var(--sab))' }}>

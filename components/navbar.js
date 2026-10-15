@@ -10,16 +10,16 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
     const initial = userName.charAt(0).toUpperCase();
 
     const tabs = [
-        { id: "home", href: "dashboard.html", label: "Home", icon: HomeIcon },
-        { id: "bills", href: "bills.html", label: "Bills", icon: BillsIcon },
-        { id: "utang", href: "utang.html", label: "Utang", icon: UtangIcon },
-        { id: "grocery", href: "grocery.html", label: "Palengke", icon: CartIcon },
-        { id: "scanner", href: "scanner.html", label: "Resibo", icon: ScanIcon },
-        { id: "budget", href: "allowance.html", label: "Budget", icon: BudgetIcon },
-        { id: "analytics", href: "chart.html", label: "Analytics", icon: AnalyticsIcon },
-        { id: "history", href: "history.html", label: "History", icon: HistoryIcon },
-        { id: "installments", href: "installments.html", label: "Hulugan", icon: InstallmentIcon },
-        { id: "account", href: "profile.html", label: "Account", icon: AccountIcon },
+        { id: "home", href: "dashboard.html", label: "Home", icon: HomeIcon, group: "main" },
+        { id: "bills", href: "bills.html", label: "Bills", icon: BillsIcon, group: "main" },
+        { id: "utang", href: "utang.html", label: "Debts", icon: UtangIcon, group: "main" },
+        { id: "grocery", href: "grocery.html", label: "Groceries", icon: CartIcon, group: "main" },
+        { id: "scanner", href: "scanner.html", label: "Receipts", icon: ScanIcon, group: "main" },
+        { id: "budget", href: "allowance.html", label: "Budget", icon: BudgetIcon, group: "finance" },
+        { id: "analytics", href: "chart.html", label: "Analytics", icon: AnalyticsIcon, group: "finance" },
+        { id: "history", href: "history.html", label: "History", icon: HistoryIcon, group: "finance" },
+        { id: "installments", href: "installments.html", label: "Installments", icon: InstallmentIcon, group: "finance" },
+        { id: "account", href: "profile.html", label: "Account", icon: AccountIcon, group: "account" },
     ];
 
     // Mobile Partition: 4 main tabs, 6 "more" tabs
@@ -29,6 +29,15 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
     const [isScrolled, setIsScrolled] = React.useState(false);
     const [reducedMotion, setReducedMotion] = React.useState(false);
+
+    const [isDark, setIsDark] = React.useState(() => {
+        try {
+            return localStorage.getItem("tipid_theme") === "dark" ||
+                (!localStorage.getItem("tipid_theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        } catch (_) {
+            return false;
+        }
+    });
 
     const [displayActiveTab, setDisplayActiveTab] = React.useState(() => {
         try {
@@ -44,9 +53,13 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
 
     const isMoreActive = moreMobileTabs.some(t => t.id === displayActiveTab);
 
-    const linkRefs = React.useRef({});
-    const navContainerRef = React.useRef(null);
-    const [pillStyle, setPillStyle] = React.useState({ left: 0, top: 0, width: 0, height: 0, opacity: 0, isInitial: true });
+    // Apply sidebar body class on desktop
+    React.useEffect(() => {
+        document.body.classList.add("has-tipid-sidebar");
+        return () => {
+            document.body.classList.remove("has-tipid-sidebar");
+        };
+    }, []);
 
     React.useEffect(() => {
         const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -70,7 +83,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
             setOverlayVisible(false);
         }, reducedMotion ? 0 : 70);
         return () => window.clearTimeout(settle);
-    }, []);
+    }, [activeTab, reducedMotion]);
 
     React.useEffect(() => {
         let ticking = false;
@@ -105,48 +118,35 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
         window.setTimeout(() => { window.location.href = href; }, TIPID_TRANSITION_MS);
     }, [activeTab, reducedMotion]);
 
-    const measurePill = React.useCallback(() => {
-        const el = linkRefs.current[displayActiveTab];
-        const container = el?.parentElement;
-        if (el && container) {
-            const elRect = el.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
-            const style = window.getComputedStyle(container);
+    const toggleTheme = () => {
+        const nextDark = !isDark;
+        setIsDark(nextDark);
+        try {
+            if (nextDark) {
+                document.documentElement.classList.add("dark");
+                localStorage.setItem("tipid_theme", "dark");
+            } else {
+                document.documentElement.classList.remove("dark");
+                localStorage.setItem("tipid_theme", "light");
+            }
+        } catch (_) { }
+    };
 
-            const borderLeft = parseFloat(style.borderLeftWidth) || 0;
-            const borderTop = parseFloat(style.borderTopWidth) || 0;
-
-            setPillStyle(prev => {
-                const newLeft = elRect.left - containerRect.left - borderLeft;
-                const newTop = elRect.top - containerRect.top - borderTop;
-
-                if (prev.left === newLeft && prev.top === newTop && prev.width === elRect.width && prev.height === elRect.height && !prev.isInitial) {
-                    return prev;
-                }
-                return { left: newLeft, top: newTop, width: elRect.width, height: elRect.height, opacity: 1, isInitial: false };
-            });
-        }
-    }, [displayActiveTab]);
-
-    React.useLayoutEffect(() => {
-        measurePill();
-        if (document.fonts && document.fonts.ready) document.fonts.ready.then(measurePill);
-        window.addEventListener("resize", measurePill);
-        return () => window.removeEventListener("resize", measurePill);
-    }, [measurePill]);
+    const isTabActive = (tab) => {
+        if (displayActiveTab === tab.id) return true;
+        if (tab.id === "budget" && displayActiveTab === "allowance") return true;
+        if (tab.id === "scanner" && (displayActiveTab === "scanner" || displayActiveTab === "more")) return true;
+        try {
+            const currentFile = window.location.pathname.split("/").pop() || "dashboard.html";
+            if (currentFile === tab.href) return true;
+        } catch (_) { }
+        return false;
+    };
 
     React.useEffect(() => {
-        const container = navContainerRef.current;
-        if (!container || typeof ResizeObserver === "undefined") return;
-        const ro = new ResizeObserver(() => measurePill());
-        ro.observe(container);
-        return () => ro.disconnect();
-    }, [measurePill]);
-
-    React.useEffect(() => {
-        if (isMobileMenuOpen) document.body.style.overflow = 'hidden';
-        else document.body.style.overflow = 'auto';
-        return () => { document.body.style.overflow = 'auto'; };
+        if (isMobileMenuOpen) document.body.style.overflow = "hidden";
+        else document.body.style.overflow = "auto";
+        return () => { document.body.style.overflow = "auto"; };
     }, [isMobileMenuOpen]);
 
     React.useEffect(() => {
@@ -155,6 +155,10 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
         window.addEventListener("keydown", onKey);
         return () => window.removeEventListener("keydown", onKey);
     }, [isMobileMenuOpen]);
+
+    const mainGroupTabs = tabs.filter(t => t.group === "main");
+    const financeGroupTabs = tabs.filter(t => t.group === "finance");
+    const accountGroupTabs = tabs.filter(t => t.group === "account");
 
     return (
         <React.Fragment>
@@ -168,6 +172,41 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                 @media (prefers-reduced-motion: reduce) {
                     .tipid-sheet-item { animation: none !important; }
                 }
+                @media (min-width: 768px) {
+                    body.has-tipid-sidebar {
+                        padding-left: 260px !important;
+                        box-sizing: border-box !important;
+                    }
+                }
+                .tipid-desktop-sidebar {
+                    background-color: rgba(255, 255, 255, 0.9) !important;
+                    backdrop-filter: blur(28px) saturate(180%) !important;
+                    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+                    border-right: 1px solid rgba(220, 228, 221, 0.7) !important;
+                    box-shadow: 4px 0 24px -8px rgba(0, 0, 0, 0.04) !important;
+                }
+                html.dark .tipid-desktop-sidebar,
+                .dark .tipid-desktop-sidebar {
+                    background-color: rgba(14, 23, 18, 0.96) !important;
+                    backdrop-filter: blur(28px) saturate(180%) !important;
+                    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+                    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+                    box-shadow: 4px 0 32px -8px rgba(0, 0, 0, 0.5) !important;
+                }
+                .tipid-mobile-header,
+                .tipid-bottom-nav {
+                    background-color: rgba(255, 255, 255, 0.92) !important;
+                    backdrop-filter: blur(28px) saturate(180%) !important;
+                    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+                }
+                html.dark .tipid-mobile-header,
+                .dark .tipid-mobile-header,
+                html.dark .tipid-bottom-nav,
+                .dark .tipid-bottom-nav {
+                    background-color: rgba(14, 23, 18, 0.96) !important;
+                    backdrop-filter: blur(28px) saturate(180%) !important;
+                    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+                }
             `}</style>
 
             <div
@@ -175,55 +214,137 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                 className={`fixed inset-0 z-[70] bg-paper dark:bg-ink2 transition-opacity ease-out ${reducedMotion ? "duration-0" : "duration-[220ms]"} ${overlayVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
             />
 
-            {/* ---------- Desktop nav ---------- */}
-            <nav className={`hidden md:flex justify-center bg-white/80 dark:bg-ink2/80 backdrop-blur-2xl text-ink dark:text-paper w-full sticky top-0 z-50 border-b transition-[box-shadow,border-color] duration-500 ${isScrolled ? "border-line/60 dark:border-white/15 shadow-[0_8px_30px_-14px_rgba(0,0,0,0.18)]" : "border-line/40 dark:border-white/10 shadow-[0_4px_24px_-12px_rgba(0,0,0,0.06)]"}`}>
-                <div className={`w-full max-w-[1200px] px-4 md:px-5 lg:px-6 flex justify-between items-center gap-3 transition-[padding] duration-500 ${isScrolled ? "py-2.5 lg:py-3" : "py-3 lg:py-4"}`}>
-                    <div className="flex-none flex justify-start shrink-0">
-                        <a href="dashboard.html" onClick={(e) => handleNavigate(e, "dashboard.html")} className="flex items-center gap-2.5 lg:gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 rounded-xl">
-                            <div className="transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-1">
-                                <window.Logo size={28} />
-                            </div>
-                            <span className="hidden lg:inline font-display font-semibold text-xl tracking-tight">Tipid</span>
-                        </a>
-                    </div>
+            {/* ---------- Desktop Apple HIG Sidebar ---------- */}
+            <aside
+                className="hidden md:flex flex-col fixed inset-y-0 left-0 w-[260px] z-40 select-none tipid-desktop-sidebar"
+                aria-label="Sidebar Navigation"
+            >
+                {/* Brand Header */}
+                <div className="h-16 px-5 flex items-center justify-between border-b border-line/40 dark:border-white/5 shrink-0">
+                    <a
+                        href="dashboard.html"
+                        onClick={(e) => handleNavigate(e, "dashboard.html")}
+                        className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 rounded-xl"
+                    >
+                        <div className="transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-2">
+                            <window.Logo size={30} />
+                        </div>
+                        <div className="flex flex-col leading-none">
+                            <span className="font-display font-bold text-lg tracking-tight text-ink dark:text-paper">Tipid</span>
+                            <span className="text-[10px] font-semibold text-peso dark:text-pesoLight uppercase tracking-wider mt-0.5">Tracker</span>
+                        </div>
+                    </a>
+                </div>
 
-                    <div className="flex-1 min-w-0 flex justify-center px-1">
-                        <div ref={navContainerRef} className="flex relative flex-nowrap items-center gap-0.5 lg:gap-1 max-w-full overflow-x-auto hide-scroll-nav py-1">
-                            <div
-                                className="absolute bottom-0 h-[2.5px] rounded-full bg-gradient-to-r from-peso to-pesoLight dark:from-pesoLight dark:to-gold pointer-events-none"
-                                style={{
-                                    left: pillStyle.left,
-                                    width: pillStyle.width,
-                                    opacity: pillStyle.opacity,
-                                    transition: pillStyle.isInitial || reducedMotion ? "none" : "all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                                }}
-                            />
-                            {tabs.map((tab) => (
-                                <DesktopNavLink key={tab.id} innerRef={(el) => (linkRefs.current[tab.id] = el)} href={tab.href} label={tab.label} active={displayActiveTab === tab.id} onClick={(e) => handleNavigate(e, tab.href)} icon={<tab.icon active={displayActiveTab === tab.id} size={16} />} />
+                {/* Scrollable Navigation Groups */}
+                <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-6 hide-scroll-nav">
+                    <div>
+                        <div className="text-[10.5px] font-bold uppercase tracking-wider text-ink2/50 dark:text-paper/45 px-3 pb-2">
+                            Menu
+                        </div>
+                        <div className="space-y-1">
+                            {mainGroupTabs.map((tab) => (
+                                <SidebarNavLink
+                                    key={tab.id}
+                                    href={tab.href}
+                                    label={tab.label}
+                                    active={isTabActive(tab)}
+                                    onClick={(e) => handleNavigate(e, tab.href)}
+                                    icon={<tab.icon size={18} />}
+                                />
                             ))}
                         </div>
                     </div>
 
-                    <div className="flex-none flex items-center justify-end gap-3 lg:gap-6 shrink-0">
-                        <a href="profile.html" onClick={(e) => handleNavigate(e, "profile.html")} className="flex items-center gap-2.5 lg:gap-3 min-w-0 active:scale-95 transition-transform rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 group">
-                            <div className="w-9 h-9 rounded-full p-[1.5px] bg-gradient-to-br from-peso/50 via-peso/15 to-transparent dark:from-pesoLight/40 dark:via-white/10 shrink-0 transition-shadow duration-300 group-hover:shadow-[0_0_0_3px_rgba(31,111,84,0.15)]">
-                                <div className="w-full h-full rounded-full bg-gradient-to-br from-peso/15 to-pesoLight/5 dark:from-white/15 dark:to-white/5 flex items-center justify-center text-peso dark:text-paper font-bold text-sm shadow-inner overflow-hidden">
+                    <div>
+                        <div className="text-[10.5px] font-bold uppercase tracking-wider text-ink2/50 dark:text-paper/45 px-3 pb-2">
+                            Planning
+                        </div>
+                        <div className="space-y-1">
+                            {financeGroupTabs.map((tab) => (
+                                <SidebarNavLink
+                                    key={tab.id}
+                                    href={tab.href}
+                                    label={tab.label}
+                                    active={isTabActive(tab)}
+                                    onClick={(e) => handleNavigate(e, tab.href)}
+                                    icon={<tab.icon size={18} />}
+                                />
+                            ))}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div className="text-[10.5px] font-bold uppercase tracking-wider text-ink2/50 dark:text-paper/45 px-3 pb-2">
+                            Settings
+                        </div>
+                        <div className="space-y-1">
+                            {accountGroupTabs.map((tab) => (
+                                <SidebarNavLink
+                                    key={tab.id}
+                                    href={tab.href}
+                                    label={tab.label}
+                                    active={isTabActive(tab)}
+                                    onClick={(e) => handleNavigate(e, tab.href)}
+                                    icon={<tab.icon size={18} />}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Sidebar Footer / User section */}
+                <div className="p-3 border-t border-line/50 dark:border-white/10 shrink-0 space-y-2.5 bg-paper/30 dark:bg-black/30">
+                    {/* Theme Quick Toggle */}
+                    <button
+                        type="button"
+                        onClick={toggleTheme}
+                        className="flex items-center justify-between w-full px-3 py-2 rounded-xl text-xs font-semibold text-ink2/70 dark:text-paper/70 hover:text-ink dark:hover:text-paper hover:bg-black/[0.04] dark:hover:bg-white/[0.07] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40"
+                        aria-label="Toggle theme mode"
+                    >
+                        <span className="flex items-center gap-2.5">
+                            {isDark ? <SunIcon size={16} /> : <MoonIcon size={16} />}
+                            <span>{isDark ? "Light Mode" : "Dark Mode"}</span>
+                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 uppercase tracking-wider font-bold text-ink2/60 dark:text-paper/60">
+                            {isDark ? "Dark" : "Light"}
+                        </span>
+                    </button>
+
+                    {/* User Card & Logout */}
+                    <div className="flex items-center justify-between gap-2 p-2 rounded-2xl bg-white dark:bg-white/[0.05] border border-line/60 dark:border-white/10 shadow-sm">
+                        <a
+                            href="profile.html"
+                            onClick={(e) => handleNavigate(e, "profile.html")}
+                            className="flex items-center gap-2.5 min-w-0 flex-1 group focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 rounded-xl"
+                            title="View Profile"
+                        >
+                            <div className="w-8 h-8 rounded-full p-[1.5px] bg-gradient-to-br from-peso/50 via-peso/15 to-transparent dark:from-pesoLight/40 dark:via-white/10 shrink-0">
+                                <div className="w-full h-full rounded-full bg-gradient-to-br from-peso/15 to-pesoLight/5 dark:from-white/15 dark:to-white/5 flex items-center justify-center text-peso dark:text-paper font-bold text-xs shadow-inner overflow-hidden">
                                     {user && user.photoURL ? <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" /> : initial}
                                 </div>
                             </div>
-                            <span className="hidden xl:block text-sm font-semibold text-ink2 dark:text-paper/80 truncate max-w-[120px]">{userName}</span>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-xs font-bold text-ink dark:text-paper truncate group-hover:text-peso dark:group-hover:text-pesoLight transition-colors">{userName}</span>
+                                <span className="text-[10px] text-ink2/50 dark:text-paper/50 truncate">Account</span>
+                            </div>
                         </a>
-                        <button onClick={onLogout} aria-label="Log out" className="flex items-center gap-1.5 text-sm font-semibold text-ink2/50 dark:text-paper/45 hover:text-expense hover:bg-expense/10 active:scale-95 transition-all duration-300 shrink-0 pl-2 lg:pl-3 pr-2 lg:pr-3.5 py-2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-expense/40">
-                            <LogOutIcon size={15} />
-                            <span className="hidden lg:inline">Logout</span>
+
+                        <button
+                            onClick={onLogout}
+                            aria-label="Log out"
+                            title="Log out"
+                            className="p-1.5 text-ink2/40 dark:text-paper/50 hover:text-expense hover:bg-expense/10 active:scale-95 transition-all rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-expense/40 shrink-0"
+                        >
+                            <LogOutIcon size={16} />
                         </button>
                     </div>
                 </div>
-            </nav>
+            </aside>
 
             {/* ---------- Mobile header ---------- */}
             <header
-                className={`md:hidden bg-white/85 dark:bg-ink2/85 backdrop-blur-2xl px-5 flex justify-between items-center fixed top-0 w-full z-50 border-b transition-[padding,box-shadow,border-color] duration-500 ${isScrolled ? "pb-2.5 border-line/50 dark:border-white/15 shadow-[0_6px_28px_-14px_rgba(0,0,0,0.14)]" : "pb-3.5 border-line/30 dark:border-white/10 shadow-[0_4px_24px_-12px_rgba(0,0,0,0.08)]"}`}
+                className={`md:hidden tipid-mobile-header px-5 flex justify-between items-center fixed top-0 w-full z-50 border-b transition-[padding,box-shadow,border-color] duration-500 ${isScrolled ? "pb-2.5 border-line/50 dark:border-white/15 shadow-[0_6px_28px_-14px_rgba(0,0,0,0.14)]" : "pb-3.5 border-line/30 dark:border-white/10 shadow-[0_4px_24px_-12px_rgba(0,0,0,0.08)]"}`}
                 style={{ paddingTop: isScrolled ? 'max(0.75rem, calc(env(safe-area-inset-top) + 0.5rem))' : 'max(1rem, calc(env(safe-area-inset-top) + 0.65rem))' }}
             >
                 <a href="profile.html" onClick={(e) => handleNavigate(e, "profile.html")} className="flex items-center gap-3.5 min-w-0 active:scale-95 transition-transform rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40">
@@ -234,7 +355,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                     </div>
                     <div className="flex flex-col min-w-0">
                         <span className="font-bold text-ink dark:text-paper text-[15px] truncate tracking-tight">Hello, {userName}!</span>
-                        <span className="text-[10px] font-medium text-peso dark:text-pesoLight uppercase tracking-wider">Tingnan ang Profile</span>
+                        <span className="text-[10px] font-medium text-peso dark:text-pesoLight uppercase tracking-wider">View Profile</span>
                     </div>
                 </a>
                 <button onClick={onLogout} aria-label="Log out" className="text-ink2/40 dark:text-paper/40 hover:text-expense hover:bg-expense/10 rounded-full p-2 active:scale-90 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-expense/40 shrink-0">
@@ -244,7 +365,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
 
             {/* ---------- MINIMAL, REALISTIC BOTTOM TAB BAR (reference-matched) ---------- */}
             <nav
-                className="md:hidden fixed left-0 right-0 bottom-0 z-40 bg-white/95 dark:bg-ink2/95 backdrop-blur-2xl border-t border-line/70 dark:border-white/10"
+                className="md:hidden fixed left-0 right-0 bottom-0 z-40 tipid-bottom-nav border-t border-line/70 dark:border-white/10"
                 style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
             >
                 <div className="flex items-stretch justify-between max-w-[480px] mx-auto px-1">
@@ -274,12 +395,12 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                 <div
                     role="dialog"
                     aria-modal="true"
-                    aria-label="Iba pang menu"
+                    aria-label="More Menu"
                     className={`absolute bottom-0 left-0 right-0 bg-paper dark:bg-ink2 rounded-t-[2rem] px-6 pt-4 shadow-2xl transition-transform duration-400 ease-[cubic-bezier(0.34,1.1,0.64,1)] ${isMobileMenuOpen ? "translate-y-0" : "translate-y-full"}`}
                     style={{ paddingBottom: 'max(2rem, calc(env(safe-area-inset-bottom) + 2rem))' }}
                 >
                     <div className="w-12 h-1.5 bg-line dark:bg-white/20 rounded-full mx-auto mb-6" />
-                    <h3 className="font-display text-[1.35rem] font-semibold mb-5 text-ink dark:text-paper px-1 tracking-tight">Iba pang Menu</h3>
+                    <h3 className="font-display text-[1.35rem] font-semibold mb-5 text-ink dark:text-paper px-1 tracking-tight">More Features</h3>
                     <div className="grid grid-cols-3 gap-3 sm:gap-4">
                         {moreMobileTabs.map((tab, i) => (
                             <a
@@ -302,9 +423,25 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
     );
 };
 
-const DesktopNavLink = ({ href, label, active, icon, innerRef, onClick }) => (
-    <a ref={innerRef} href={href} onClick={onClick} aria-current={active ? "page" : undefined} title={label} className={`relative flex items-center gap-1.5 lg:gap-2 whitespace-nowrap shrink-0 transition-all duration-300 px-2.5 lg:px-3.5 py-2 lg:py-2.5 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 ${active ? 'font-semibold text-peso dark:text-pesoLight' : 'font-medium text-ink2/55 dark:text-paper/45 hover:text-ink dark:hover:text-paper'}`}>
-        {icon} <span className="hidden lg:inline text-[13px] lg:text-sm">{label}</span>
+const SidebarNavLink = ({ href, label, active, icon, onClick }) => (
+    <a
+        href={href}
+        onClick={onClick}
+        aria-current={active ? "page" : undefined}
+        title={label}
+        className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 ${
+            active
+                ? "bg-peso text-white font-semibold shadow-[0_4px_14px_-2px_rgba(31,111,84,0.35)] dark:bg-pesoLight dark:text-white"
+                : "text-ink2/70 dark:text-paper/70 hover:text-ink dark:hover:text-paper hover:bg-black/[0.04] dark:hover:bg-white/[0.07] active:scale-[0.98]"
+        }`}
+    >
+        <span className={`shrink-0 transition-transform duration-200 group-hover:scale-110 ${active ? "text-white" : "text-ink2/60 dark:text-paper/60"}`}>
+            {icon}
+        </span>
+        <span className="truncate flex-1 tracking-tight">{label}</span>
+        {active && (
+            <span className="w-1.5 h-1.5 rounded-full bg-white opacity-90 shrink-0" />
+        )}
     </a>
 );
 
@@ -330,26 +467,28 @@ const BottomNavBtn = ({ href, icon, label, active, onClick, as = "a" }) => {
     );
 };
 
-/* --- CLEAN, UNIFORM LINE ICONS (outline-only, color communicates active state — like the reference) --- */
-const HomeIcon = ({ size = 24 }) => (
+/* --- CLEAN, UNIFORM LINE ICONS --- */
+const HomeIcon = ({ size = 20 }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9.5l9-7 9 7v10.5a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg>
 );
-const BillsIcon = ({ size = 24 }) => (
+const BillsIcon = ({ size = 20 }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z"/><path d="M16 14h-8"/><path d="M16 10h-8"/></svg>
 );
-const UtangIcon = ({ size = 24 }) => (
+const UtangIcon = ({ size = 20 }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
 );
-const CartIcon = ({ size = 24 }) => (
+const CartIcon = ({ size = 20 }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
 );
-const MenuIcon = ({ size = 24 }) => (
+const MenuIcon = ({ size = 20 }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
 );
-const ScanIcon = ({ size = 24 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg>);
-const BudgetIcon = ({ size = 24 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>);
-const AnalyticsIcon = ({ size = 24 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg>);
-const HistoryIcon = ({ size = 24 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>);
-const InstallmentIcon = ({ size = 24 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>);
-const AccountIcon = ({ size = 24 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>);
-const LogOutIcon = ({ size = 24 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>);
+const ScanIcon = ({ size = 20 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg>);
+const BudgetIcon = ({ size = 20 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>);
+const AnalyticsIcon = ({ size = 20 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg>);
+const HistoryIcon = ({ size = 20 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>);
+const InstallmentIcon = ({ size = 20 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>);
+const AccountIcon = ({ size = 20 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>);
+const LogOutIcon = ({ size = 20 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>);
+const SunIcon = ({ size = 20 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>);
+const MoonIcon = ({ size = 20 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>);

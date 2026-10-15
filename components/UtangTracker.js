@@ -53,7 +53,7 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
             setNotes("");
             Swal.fire({
                 icon: "success",
-                title: "Na-log na ang utang",
+                title: "Debt entry logged",
                 timer: 1400,
                 showConfirmButton: false,
                 customClass: { popup: "tipid-swal" }
@@ -62,8 +62,8 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
             console.error("Failed to add utang:", err);
             Swal.fire({
                 icon: "error",
-                title: "Hindi na-save",
-                text: "Subukan ulit mamaya.",
+                title: "Failed to save",
+                text: "Please try again later.",
                 confirmButtonColor: "#1F6F54",
                 customClass: { popup: "tipid-swal" }
             });
@@ -76,11 +76,11 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
         if (!uid || !window.TipidData) return;
         const result = await Swal.fire({
             icon: "question",
-            title: item.direction === "i_owe" ? "Bayad na ba?" : "Nabayaran ka na ba?",
+            title: item.direction === "i_owe" ? "Has this debt been paid?" : "Has this payment been received?",
             text: `₱${window.peso(item.amount)} — ${item.name}`,
             showCancelButton: true,
-            confirmButtonText: "Oo, tapos na",
-            cancelButtonText: "Hindi pa",
+            confirmButtonText: "Yes, settled",
+            cancelButtonText: "Not yet",
             confirmButtonColor: "#1F6F54",
             cancelButtonColor: "#B5483B",
             customClass: { popup: "tipid-swal" }
@@ -106,11 +106,11 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
         if (!uid || !window.TipidData) return;
         const result = await Swal.fire({
             icon: "warning",
-            title: "Alisin ang record na ito?",
+            title: "Delete this record?",
             text: `${item.name} — ₱${window.peso(item.amount)}`,
             showCancelButton: true,
-            confirmButtonText: "Alisin",
-            cancelButtonText: "Kanselahin",
+            confirmButtonText: "Delete",
+            cancelButtonText: "Cancel",
             confirmButtonColor: "#B5483B",
             cancelButtonColor: "#33443A",
             customClass: { popup: "tipid-swal" }
@@ -143,10 +143,10 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
     }, [utangList, filter]);
 
     const FILTERS = [
-        { id: "all", label: "Lahat" },
-        { id: "owed_to_me", label: "Sa Akin" },
-        { id: "i_owe", label: "Inutang Ko" },
-        { id: "settled", label: "Bayad Na" },
+        { id: "all", label: "All" },
+        { id: "owed_to_me", label: "Owed to Me" },
+        { id: "i_owe", label: "I Owe" },
+        { id: "settled", label: "Settled" },
     ];
 
     return (
@@ -161,18 +161,18 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
                         <window.Icons.Wallet size={19} strokeWidth={2.3} />
                     </div>
                     <div>
-                        <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper leading-tight">Buod ng Utang</h3>
+                        <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper leading-tight">Debt Summary</h3>
                         <span className="text-[11px] font-mono text-ink2/50 dark:text-paper/40">{loading ? "Loading..." : `${utangList.filter(u => u.status !== "Paid").length} pending`}</span>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="bg-gradient-to-br from-[#E6F3EF] to-[#D5EBE3] dark:from-[#1F6F54]/20 dark:to-[#1F6F54]/10 p-5 rounded-2xl border border-[#1F6F54]/10 dark:border-[#52C8A1]/20">
-                        <p className="text-[10px] font-mono uppercase font-semibold tracking-wider text-[#1F6F54] dark:text-[#52C8A1] mb-1.5">Pinagkakautangan sa Akin</p>
+                        <p className="text-[10px] font-mono uppercase font-semibold tracking-wider text-[#1F6F54] dark:text-[#52C8A1] mb-1.5">Owed to Me</p>
                         <p className="font-mono text-2xl font-bold tracking-tight text-[#1F6F54] dark:text-[#52C8A1]">₱{window.peso(totals.owedToMe)}</p>
                     </div>
                     <div className="bg-[#FAEDE9] dark:bg-[#B5483B]/15 p-5 rounded-2xl border border-[#B5483B]/10 dark:border-[#F38C80]/20">
-                        <p className="text-[10px] font-mono uppercase font-semibold tracking-wider text-[#B5483B] dark:text-[#F38C80] mb-1.5">Inutang Ko</p>
+                        <p className="text-[10px] font-mono uppercase font-semibold tracking-wider text-[#B5483B] dark:text-[#F38C80] mb-1.5">I Owe</p>
                         <p className="font-mono text-2xl font-bold tracking-tight text-[#B5483B] dark:text-[#F38C80]">₱{window.peso(totals.iOwe)}</p>
                     </div>
                     <div className="bg-white/60 dark:bg-black/20 p-5 rounded-2xl border border-black/5 dark:border-white/5">
@@ -186,7 +186,7 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
 
             {/* Add + list card */}
             <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios p-5 sm:p-7">
-                <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper mb-5">Mag-log ng Utang</h3>
+                <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper mb-5">Record Debt / Loan</h3>
 
                 <form onSubmit={handleAdd} className="flex flex-col gap-3.5 mb-7">
                     {/* Direction toggle */}
@@ -200,7 +200,7 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
                                     : "text-ink2/50 dark:text-paper/40"
                             }`}
                         >
-                            May Utang sa Akin
+                            Owed to Me
                         </button>
                         <button
                             type="button"
@@ -211,7 +211,7 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
                                     : "text-ink2/50 dark:text-paper/40"
                             }`}
                         >
-                            May Inutang Ako
+                            I Owe
                         </button>
                     </div>
 
@@ -220,7 +220,7 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
                             <input
                                 ref={inputRef}
                                 type="text"
-                                placeholder="Pangalan"
+                                placeholder="Person / Counterparty"
                                 value={name}
                                 onChange={e => setName(e.target.value)}
                                 className="w-full min-w-0 bg-transparent py-3.5 text-[14px] text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
@@ -230,7 +230,7 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
                             <input
                                 type="number"
                                 step="0.01"
-                                placeholder="Halaga"
+                                placeholder="Amount"
                                 value={amount}
                                 onChange={e => setAmount(e.target.value)}
                                 className="w-full min-w-0 bg-transparent py-3.5 text-[14px] font-mono font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
@@ -250,7 +250,7 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
                         <FieldWrap className="sm:flex-1" icon={<span className="text-ink2/40 dark:text-paper/40 shrink-0"><window.Icons.Category size={15} strokeWidth={2.3} /></span>}>
                             <input
                                 type="text"
-                                placeholder="Note (opsyonal)"
+                                placeholder="Note (optional)"
                                 value={notes}
                                 onChange={e => setNotes(e.target.value)}
                                 className="w-full min-w-0 bg-transparent py-3.5 text-[14px] text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
@@ -268,7 +268,7 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
                         ) : (
                             <>
                                 <window.Icons.Plus size={16} strokeWidth={2.5} />
-                                I-log ang Utang
+                                Record Entry
                             </>
                         )}
                     </button>
@@ -339,12 +339,12 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
                                                 onClick={() => handleReopen(item)}
                                                 className="text-[10.5px] font-mono font-semibold uppercase tracking-wide text-ink2/50 dark:text-paper/40 hover:text-ink dark:hover:text-paper bg-black/5 dark:bg-white/10 px-2.5 py-1.5 rounded-full transition-colors duration-150"
                                             >
-                                                Buksan Ulit
+                                                Reopen
                                             </button>
                                         ) : (
                                             <button
                                                 onClick={() => handleSettle(item)}
-                                                aria-label="Markahan bilang bayad"
+                                                aria-label="Mark as settled"
                                                 className="text-[#1F6F54] dark:text-[#52C8A1] p-1.5 rounded-full hover:bg-[#1F6F54]/10 dark:hover:bg-[#52C8A1]/20 transition-all duration-200 active:scale-90"
                                             >
                                                 <window.Icons.Check size={17} />
@@ -352,7 +352,7 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
                                         )}
                                         <button
                                             onClick={() => handleDelete(item)}
-                                            aria-label="Alisin"
+                                            aria-label="Delete"
                                             className="text-ink2/30 hover:text-expense dark:text-paper/30 dark:hover:text-[#F38C80] p-1.5 rounded-full hover:bg-expense/10 dark:hover:bg-[#B5483B]/20 transition-all duration-200 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 active:scale-90"
                                         >
                                             <window.Icons.Trash size={16} />
@@ -367,8 +367,8 @@ window.UtangTracker = function UtangTracker({ uid, utangList = [], loading }) {
                         <div className="w-12 h-12 rounded-[14px] bg-black/5 dark:bg-white/5 flex items-center justify-center text-ink2/30 dark:text-paper/20 mb-3">
                             <window.Icons.Inbox size={22} strokeWidth={2} />
                         </div>
-                        <p className="text-[13px] font-semibold text-ink2/70 dark:text-paper/60">Walang record dito</p>
-                        <p className="text-[11.5px] text-ink2/50 dark:text-paper/40 mt-1">I-log ang unang utang mo sa itaas.</p>
+                        <p className="text-[13px] font-semibold text-ink2/70 dark:text-paper/60">No records found</p>
+                        <p className="text-[11.5px] text-ink2/50 dark:text-paper/40 mt-1">Record your first debt or receivable above.</p>
                     </div>
                 )}
             </div>

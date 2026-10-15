@@ -173,7 +173,7 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
         localStorage.setItem(`tipid_installments_${uid}`, JSON.stringify(items));
     }, [items, uid]);
 
-    const platforms = ["SPayLater", "LazPayLater", "Home Credit", "Billease", "Motorcycle", "Iba pa"];
+    const platforms = ["SPayLater", "LazPayLater", "Home Credit", "Billease", "Motorcycle", "Credit Card", "Other"];
 
     // Live preview numbers for the price section, so mistakes (like typing
     // the monthly amount into "Kabuuang Babayaran" instead of the total)
@@ -193,11 +193,11 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
         const srpVal = srp.trim() === "" ? null : parseFloat(srp);
 
         if (!name.trim() || isNaN(amt) || amt <= 0 || isNaN(t) || t <= 0) {
-            return Swal.fire({ icon: 'warning', title: 'Teka muna!', text: 'Kumpletuhin ang detalye ng hulugan.', confirmButtonColor: '#1F6F54', customClass: { popup: 'tipid-swal' }});
+            return Swal.fire({ icon: 'warning', title: 'Hold on!', text: 'Please complete the installment details.', confirmButtonColor: '#1F6F54', customClass: { popup: 'tipid-swal' }});
         }
 
         if (srpVal !== null && (isNaN(srpVal) || srpVal <= 0)) {
-            return Swal.fire({ icon: 'warning', title: 'Mali ang Presyo', text: 'Paki-check ang cash price ng item.', confirmButtonColor: '#1F6F54', customClass: { popup: 'tipid-swal' }});
+            return Swal.fire({ icon: 'warning', title: 'Invalid Price', text: 'Please check the cash price of the item.', confirmButtonColor: '#1F6F54', customClass: { popup: 'tipid-swal' }});
         }
 
         // If the first payment's due date has already passed, ask how many
@@ -210,21 +210,21 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
         if (suggested > 0) {
             const { value: confirmedPaid, isConfirmed } = await Swal.fire({
                 icon: 'question',
-                title: 'Ilang buwan na ba ang nabayaran mo?',
-                text: `Ang unang bayad ay noong ${formatDatePH(new Date(startDate))}. Base dito, malamang ${suggested} buwan na ang dapat mong nabayaran hanggang ngayon. I-adjust kung iba.`,
+                title: 'How many months have you already paid?',
+                text: `The first payment was due on ${formatDatePH(new Date(startDate))}. Based on this, you would have paid approximately ${suggested} months up to now. Adjust if different.`,
                 input: 'number',
                 inputValue: suggested,
                 inputAttributes: { min: 0, max: String(t), step: 1 },
                 showCancelButton: true,
-                confirmButtonText: 'Tama, ganito',
-                cancelButtonText: 'Wala pa akong bayad',
+                confirmButtonText: 'Confirm',
+                cancelButtonText: 'No payments made yet',
                 confirmButtonColor: '#1F6F54',
                 cancelButtonColor: '#33443A',
                 customClass: { popup: 'tipid-swal' },
                 inputValidator: (value) => {
-                    if (value === '' || value === null || value === undefined) return 'Maglagay ng number';
+                    if (value === '' || value === null || value === undefined) return 'Please enter a number';
                     const n = Number(value);
-                    if (isNaN(n) || n < 0 || n > t) return `Dapat nasa pagitan ng 0 at ${t}`;
+                    if (isNaN(n) || n < 0 || n > t) return `Must be between 0 and ${t}`;
                 }
             });
             if (isConfirmed) paidMonths = Number(confirmedPaid);
@@ -251,7 +251,7 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
         setTerms("");
         setStartDate(new Date().toISOString().split("T")[0]);
 
-        Swal.fire({ icon: 'success', title: 'Naidagdag!', text: 'Nai-log na ang bagong hulugan.', confirmButtonColor: '#1F6F54', timer: 1500, showConfirmButton: false, customClass: { popup: 'tipid-swal' } });
+        Swal.fire({ icon: 'success', title: 'Added!', text: 'New installment plan has been saved.', confirmButtonColor: '#1F6F54', timer: 1500, showConfirmButton: false, customClass: { popup: 'tipid-swal' } });
     };
 
     const handlePay = (id) => {
@@ -263,8 +263,8 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
         }));
         Swal.fire({
             icon: 'success',
-            title: 'Nice!',
-            text: 'Nabawasan na ang hulugan mo. Lapit na matapos!',
+            title: 'Great job!',
+            text: 'Payment recorded. You are one step closer!',
             confirmButtonColor: '#1F6F54',
             timer: 2000,
             showConfirmButton: false,
@@ -274,14 +274,14 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
 
     const handleDelete = (id) => {
         Swal.fire({
-            title: 'Burahin ito?',
-            text: 'Mawawala ang record ng hulugan na ito.',
+            title: 'Delete this plan?',
+            text: 'This installment record will be permanently deleted.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#B5483B',
             cancelButtonColor: '#33443A',
-            confirmButtonText: 'Oo, burahin',
-            cancelButtonText: 'Kanselahin',
+            confirmButtonText: 'Yes, delete',
+            cancelButtonText: 'Cancel',
             customClass: { popup: 'tipid-swal' },
             reverseButtons: true
         }).then((result) => {
@@ -300,8 +300,8 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
                         <window.Icons.Plus size={18} />
                     </span>
                     <div>
-                        <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper leading-tight">Bagong Hulugan</h3>
-                        <p className="text-[11px] text-ink2/50 dark:text-paper/50">I-track ang progress para gumaan ang pakiramdam</p>
+                        <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper leading-tight">New Installment Plan</h3>
+                        <p className="text-[11px] text-ink2/50 dark:text-paper/50">Track your repayment timeline with ease</p>
                     </div>
                 </div>
 
@@ -309,10 +309,10 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
 
                     {/* Item + provider */}
                     <div className="flex flex-col gap-3">
-                        <p className="text-[10px] font-mono font-bold text-ink2/45 dark:text-paper/40 uppercase tracking-widest px-1">Ano ang Hinuhulugan</p>
+                        <p className="text-[10px] font-mono font-bold text-ink2/45 dark:text-paper/40 uppercase tracking-widest px-1">Item & Provider</p>
                         <div className="flex items-center gap-2.5 bg-black/5 dark:bg-white/5 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-3.5 focus-within:ring-2 focus-within:ring-peso/40 transition-all">
                             <window.Icons.Pencil size={16} className="text-ink2/40 dark:text-paper/40 shrink-0" />
-                            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Hal: iPhone 15 Pro, PC Build" className="w-full bg-transparent py-3.5 text-[14px] focus:outline-none text-ink dark:text-paper" />
+                            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. iPhone 15 Pro, Laptop, Appliance" className="w-full bg-transparent py-3.5 text-[14px] focus:outline-none text-ink dark:text-paper" />
                         </div>
                         <div className="flex items-center gap-2.5 bg-black/5 dark:bg-white/5 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-3.5 focus-within:ring-2 focus-within:ring-peso/40 transition-all relative">
                             <window.Icons.Wallet size={16} className="text-ink2/40 dark:text-paper/40 shrink-0" />
@@ -324,49 +324,49 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
 
                     {/* Price */}
                     <div className="flex flex-col gap-3">
-                        <p className="text-[10px] font-mono font-bold text-ink2/45 dark:text-paper/40 uppercase tracking-widest px-1">Presyo</p>
+                        <p className="text-[10px] font-mono font-bold text-ink2/45 dark:text-paper/40 uppercase tracking-widest px-1">Pricing & Financing</p>
                         <div className="flex flex-col sm:flex-row gap-3">
                             <div className="flex-1 flex items-center gap-2.5 bg-black/5 dark:bg-white/5 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-3.5 focus-within:ring-2 focus-within:ring-peso/40 transition-all">
                                 <span className="text-ink2/40 dark:text-paper/40 font-mono text-[15px] shrink-0">₱</span>
-                                <input type="number" step="0.01" value={srp} onChange={e => setSrp(e.target.value)} placeholder="Presyo Cash / SRP (opsyonal)" className="w-full bg-transparent py-3.5 text-[14px] font-mono focus:outline-none text-ink dark:text-paper" />
+                                <input type="number" step="0.01" value={srp} onChange={e => setSrp(e.target.value)} placeholder="Cash Price / SRP (optional)" className="w-full bg-transparent py-3.5 text-[14px] font-mono focus:outline-none text-ink dark:text-paper" />
                             </div>
                             <div className="flex-1 flex items-center gap-2.5 bg-black/5 dark:bg-white/5 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-3.5 focus-within:ring-2 focus-within:ring-peso/40 transition-all">
                                 <span className="text-ink2/40 dark:text-paper/40 font-mono text-[15px] shrink-0">₱</span>
-                                <input type="number" step="0.01" value={totalAmount} onChange={e => setTotalAmount(e.target.value)} placeholder="Kabuuang Babayaran (lahat ng buwan, hindi per-buwan)" className="w-full bg-transparent py-3.5 text-[14px] font-mono focus:outline-none text-ink dark:text-paper" />
+                                <input type="number" step="0.01" value={totalAmount} onChange={e => setTotalAmount(e.target.value)} placeholder="Total Financing Cost (all months combined)" className="w-full bg-transparent py-3.5 text-[14px] font-mono focus:outline-none text-ink dark:text-paper" />
                             </div>
                         </div>
-                        <p className="text-[10.5px] text-ink2/45 dark:text-paper/40 pl-1">Ilagay ang Presyo Cash kung gusto mong makita kung magkano ang dagdag/interest ng hulugan.</p>
+                        <p className="text-[10.5px] text-ink2/45 dark:text-paper/40 pl-1">Enter the cash price to calculate interest and financing markups.</p>
                         <p className="text-[10.5px] text-ink2/45 dark:text-paper/40 pl-1">
-                            <span className="font-semibold text-ink2/60 dark:text-paper/55">Paano kwentahin ang Kabuuang Babayaran:</span> buwanang bayad × ilang buwan. Hal: kung ₱1,500 kada buwan sa loob ng 12 buwan, ilagay dito ang ₱18,000 (hindi yung ₱1,500).
+                            <span className="font-semibold text-ink2/60 dark:text-paper/55">How to calculate Total Cost:</span> monthly payment × number of months. e.g. If ₱1,500/mo for 12 months, enter ₱18,000 (not ₱1,500).
                         </p>
 
                         {/* Live preview — catches the "nailagay ko yung monthly sa total" mistake immediately */}
                         {previewMonthly !== null && (
                             <p className="text-[11px] font-mono font-medium text-peso dark:text-pesoLight pl-1">
-                                = ₱{previewMonthly.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / buwan sa loob ng {termsNum} buwan
+                                = ₱{previewMonthly.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / month across {termsNum} months
                             </p>
                         )}
                         {cheaperThanCash && (
                             <p className="text-[11px] font-medium text-[#B5483B] dark:text-[#F38C80] pl-1">
-                                ⚠️ Mas mababa ang Kabuuang Babayaran kaysa sa Presyo Cash — hindi karaniwan (madalas mas mataas ito dahil sa interest). Baka na-type mo yung buwanang bayad sa halip na total — paki-check.
+                                ⚠️ Total financing cost is lower than the cash price — this is uncommon. Please verify whether you entered the monthly installment instead of the total.
                             </p>
                         )}
                     </div>
 
                     {/* Terms + start date */}
                     <div className="flex flex-col gap-3">
-                        <p className="text-[10px] font-mono font-bold text-ink2/45 dark:text-paper/40 uppercase tracking-widest px-1">Ilang Buwan at Simula</p>
+                        <p className="text-[10px] font-mono font-bold text-ink2/45 dark:text-paper/40 uppercase tracking-widest px-1">Duration & First Due Date</p>
                         <div className="flex flex-col sm:flex-row gap-3">
                             <div className="flex-1 flex items-center gap-2.5 bg-black/5 dark:bg-white/5 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-3.5 focus-within:ring-2 focus-within:ring-peso/40 transition-all">
                                 <window.Icons.Calendar size={16} className="text-ink2/40 dark:text-paper/40 shrink-0" />
-                                <input type="number" value={terms} onChange={e => setTerms(e.target.value)} placeholder="Ilang Buwan? (Terms)" className="w-full bg-transparent py-3.5 text-[14px] focus:outline-none text-ink dark:text-paper" />
+                                <input type="number" value={terms} onChange={e => setTerms(e.target.value)} placeholder="Duration (Months)" className="w-full bg-transparent py-3.5 text-[14px] focus:outline-none text-ink dark:text-paper" />
                             </div>
                             <div className="flex-1 flex items-center gap-2.5 bg-black/5 dark:bg-white/5 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-3.5 focus-within:ring-2 focus-within:ring-peso/40 transition-all">
                                 <window.Icons.Calendar size={16} className="text-ink2/40 dark:text-paper/40 shrink-0" />
                                 <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full bg-transparent py-3.5 text-[14px] font-mono focus:outline-none text-ink dark:text-paper" />
                             </div>
                         </div>
-                        <p className="text-[10.5px] text-ink2/45 dark:text-paper/40 pl-1">Petsa ng unang bayad (hindi petsa ng pagkabili) — dito babatayan ang susunod na due date at kung kailan matatapos. Kung nakaraan na ang petsang ito, itatanong namin kung ilang buwan ka na nakabayad bago i-save.</p>
+                        <p className="text-[10.5px] text-ink2/45 dark:text-paper/40 pl-1">Due date of the first payment (not purchase date) — determines upcoming due dates and completion timing.</p>
                     </div>
 
                     {/* Payment method — pulled from the user's actual bank cards / e-wallets */}
@@ -375,7 +375,7 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
                             .hulugan-scroll { -ms-overflow-style: none; scrollbar-width: none; }
                             .hulugan-scroll::-webkit-scrollbar { display: none; }
                         `}</style>
-                        <p className="text-[10px] font-mono font-bold text-ink2/45 dark:text-paper/40 uppercase tracking-widest px-1">Bayad Gamit</p>
+                        <p className="text-[10px] font-mono font-bold text-ink2/45 dark:text-paper/40 uppercase tracking-widest px-1">Funding Account / Card</p>
                         <div className="hulugan-scroll flex overflow-x-auto gap-2.5 pb-1 -mx-1 px-1">
                             {walletIds.map(id => {
                                 const meta = walletMeta(id);
@@ -384,11 +384,11 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
                                 );
                             })}
                         </div>
-                        <p className="text-[10.5px] text-ink2/45 dark:text-paper/40 pl-1">Ito ang wallet o card na gagamitin mo pambayad ng buwanang hulugan.</p>
+                        <p className="text-[10.5px] text-ink2/45 dark:text-paper/40 pl-1">Select the payment method used to pay this monthly installment.</p>
                     </div>
 
                     <button type="submit" className="w-full bg-gradient-to-r from-peso to-pesoLight text-white py-3.5 rounded-[14px] font-semibold text-[14px] shadow-md hover:shadow-lg transition-all active:scale-95 mt-1">
-                        I-save ang Hulugan
+                        Save Installment Plan
                     </button>
                 </form>
             </div>
@@ -400,7 +400,7 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
                         <div className="w-14 h-14 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center text-ink2/30 dark:text-paper/30 mb-3">
                             <window.Icons.Check size={24} />
                         </div>
-                        <p className="text-[13px] font-medium text-ink2/50 dark:text-paper/50">Wala kang aktibong hulugan. Congrats!</p>
+                        <p className="text-[13px] font-medium text-ink2/50 dark:text-paper/50">No active installment plans. All clear!</p>
                     </div>
                 ) : (
                     items.map(item => {
@@ -440,11 +440,11 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
                                                 <span className={`w-1.5 h-1.5 rounded-full bg-gradient-to-br ${method.color}`} />
                                                 {method.name || method.text}
                                             </span>
-                                            {isDone && <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-[#1F6F54] text-white">Tapos Na!</span>}
+                                            {isDone && <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-[#1F6F54] text-white">Completed!</span>}
                                             {isOverdue && <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-[#B5483B] text-white">Overdue</span>}
                                         </div>
                                         <h4 className={`text-base font-bold ${isDone ? 'line-through text-ink2/60 dark:text-paper/60' : 'text-ink dark:text-paper'}`}>{item.name}</h4>
-                                        <p className="text-xs text-ink2/50 dark:text-paper/50 font-mono mt-0.5">₱{window.peso(item.monthly)} / buwan</p>
+                                        <p className="text-xs text-ink2/50 dark:text-paper/50 font-mono mt-0.5">₱{window.peso(item.monthly)} / month</p>
                                     </div>
                                     <button onClick={() => handleDelete(item.id)} className="text-ink2/30 hover:text-expense p-1">
                                         <window.Icons.Trash size={16} />
@@ -465,7 +465,7 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
                                         {markup !== null ? (
                                             <div className="bg-black/[0.03] dark:bg-white/[0.04] rounded-lg px-2.5 py-2">
                                                 <p className="text-ink2/50 dark:text-paper/45 text-[9.5px] uppercase tracking-wider mb-0.5">
-                                                    {isDiscount ? "Diskwento" : "Dagdag (Interest)"}
+                                                    {isDiscount ? "Discount" : "Interest Markup"}
                                                 </p>
                                                 <p className={`font-semibold ${isDiscount ? 'text-[#1F6F54] dark:text-pesoLight' : (markup > 0 ? 'text-[#B5483B] dark:text-[#F38C80]' : 'text-ink dark:text-paper')}`}>
                                                     {isDiscount ? '-' : (markup > 0 ? '+' : '')}₱{window.peso(Math.abs(markup))}
@@ -500,7 +500,7 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
                                             <window.Icons.Calendar size={16} />
                                         </span>
                                         <div className="min-w-0">
-                                            <p className="text-[9.5px] font-bold uppercase tracking-widest text-ink2/50 dark:text-paper/45">{isDone ? "Natapos Noong" : "Matatapos Sa"}</p>
+                                            <p className="text-[9.5px] font-bold uppercase tracking-widest text-ink2/50 dark:text-paper/45">{isDone ? "Completed In" : "Target Payoff"}</p>
                                             <p className="font-display text-[16px] font-bold text-ink dark:text-paper leading-tight truncate">
                                                 {completionDate.toLocaleDateString("en-PH", { month: "long", year: "numeric" })}
                                             </p>
@@ -508,17 +508,17 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
                                     </div>
                                     {!isDone && (
                                         <span className="text-[10.5px] font-mono font-semibold text-ink2/55 dark:text-paper/45 shrink-0 text-right whitespace-nowrap">
-                                            {Math.max(item.terms - item.paidMonths, 0)} buwan na lang
+                                            {Math.max(item.terms - item.paidMonths, 0)} mos left
                                         </span>
                                     )}
                                 </div>
 
                                 {/* Remaining balance + next due date */}
                                 <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3 text-[11px] font-mono text-ink2/60 dark:text-paper/55">
-                                    {!isDone && <span>Natitira: <span className="font-semibold text-ink dark:text-paper">₱{window.peso(remaining)}</span></span>}
+                                    {!isDone && <span>Remaining: <span className="font-semibold text-ink dark:text-paper">₱{window.peso(remaining)}</span></span>}
                                     {!isDone && nextDueDate && (
                                         <span className={isOverdue ? "text-[#B5483B] dark:text-[#F38C80] font-semibold" : ""}>
-                                            Susunod na Bayaran: {formatDatePH(nextDueDate)}
+                                            Next Due: {formatDatePH(nextDueDate)}
                                         </span>
                                     )}
                                 </div>
@@ -528,7 +528,7 @@ window.InstallmentTracker = function InstallmentTracker({ uid }) {
                                         onClick={() => handlePay(item.id)}
                                         className="w-full py-2.5 bg-black/5 dark:bg-white/5 hover:bg-peso hover:text-white dark:hover:bg-pesoLight text-ink dark:text-paper text-[13px] font-semibold rounded-xl transition-colors mt-2 flex items-center justify-center gap-2"
                                     >
-                                        <window.Icons.Check size={16} /> Bayad na 1 Buwan
+                                        <window.Icons.Check size={16} /> Mark 1 Month Paid
                                     </button>
                                 )}
                             </div>

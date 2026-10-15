@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fil" class="scroll-smooth">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="/app.css">
@@ -215,8 +215,8 @@
             return ready;
         }
 
-        function swalSuccess(title, text) { return Swal.fire({ icon: "success", title, text, confirmButtonText: "Sige", confirmButtonColor: "#1F6F54", customClass: { popup: "tipid-swal" }}); }
-        function swalError(text) { return Swal.fire({ icon: "error", title: "Error", text, confirmButtonText: "Sige", confirmButtonColor: "#B5483B", customClass: { popup: "tipid-swal" }}); }
+        function swalSuccess(title, text) { return Swal.fire({ icon: "success", title, text, confirmButtonText: "OK", confirmButtonColor: "#1F6F54", customClass: { popup: "tipid-swal" }}); }
+        function swalError(text) { return Swal.fire({ icon: "error", title: "Error", text, confirmButtonText: "OK", confirmButtonColor: "#B5483B", customClass: { popup: "tipid-swal" }}); }
 
         window.TIPID_TRANSLATIONS = {
             tl: {
@@ -292,7 +292,7 @@
             );
         }
 
-        function SubPage({ title, onBack, children, backLabel = "Bumalik" }) {
+        function SubPage({ title, onBack, children, backLabel = "Back" }) {
             return (
                 <div className="fixed inset-0 z-50 bg-paper dark:bg-ink flex flex-col slide-in">
                     <div className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+16px)] pb-4 border-b border-line/60 dark:border-white/10 bg-white/80 dark:bg-[#1A2620]/80 backdrop-blur-xl sticky top-0 z-20">
@@ -374,7 +374,7 @@
             const [goalStart, setGoalStart] = React.useState("");
             const [savingGoals, setSavingGoals] = React.useState(false);
 
-            const [lang, setLang] = React.useState('tl');
+            const [lang, setLang] = React.useState('en');
             const [defaultWallet, setDefaultWallet] = React.useState('Cash');
             const [hideCentavos, setHideCentavos] = React.useState(false);
 
@@ -387,7 +387,7 @@
             const [deleteConfirmText, setDeleteConfirmText] = React.useState("");
             const [deletingAccount, setDeletingAccount] = React.useState(false);
 
-            const t = window.TIPID_TRANSLATIONS[lang] || window.TIPID_TRANSLATIONS.tl;
+            const t = window.TIPID_TRANSLATIONS[lang] || window.TIPID_TRANSLATIONS.en;
 
             React.useEffect(() => {
                 if (!authReady) return;
@@ -418,7 +418,7 @@
                 setGoalWallet(scoped('goal_wallet') || "GCash");
                 setGoalContrib(scoped('goal_contrib') || "");
                 setGoalFreq(scoped('goal_freq') || "sahod");
-                setLang(scoped('lang') || 'tl');
+                setLang(scoped('lang') || 'en');
                 setDefaultWallet(scoped('default_wallet') || 'Cash');
                 setHideCentavos(scoped('hide_centavos') === '1');
                 setNotifDaily(scoped('notif_daily') !== '0');
@@ -464,13 +464,13 @@
             const handleLogout = async () => {
                 Swal.fire({
                     title: 'Log out?',
-                    text: 'Sigurado ka bang gusto mong mag-log out?',
+                    text: 'Are you sure you want to log out?',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#B5483B',
                     cancelButtonColor: '#33443A',
-                    confirmButtonText: 'Oo, Log out',
-                    cancelButtonText: 'Kanselahin',
+                    confirmButtonText: 'Yes, Log out',
+                    cancelButtonText: 'Cancel',
                     customClass: { popup: 'tipid-swal' }
                 }).then(async (result) => {
                     if (result.isConfirmed) {
@@ -482,16 +482,16 @@
 
             const handleUpdateProfile = async (e) => {
                 e.preventDefault();
-                if (!displayName.trim()) return swalError("Paki-lagay ang iyong pangalan.");
+                if (!displayName.trim()) return swalError("Please enter your display name.");
                 setSavingProfile(true);
                 try {
                     const { auth, authMod } = await getFirebaseHandles();
                     const liveUser = auth.currentUser || user;
                     await authMod.updateProfile(liveUser, { displayName: displayName.trim() });
                     setUser({ ...user, displayName: displayName.trim() });
-                    swalSuccess("Tagumpay", "Na-update na ang iyong pangalan.");
+                    swalSuccess("Success", "Your profile name has been updated.");
                 } catch (err) {
-                    swalError("Hindi ma-update ang profile. Subukan ulit.");
+                    swalError("Failed to update profile. Please try again.");
                 } finally {
                     setSavingProfile(false);
                 }
@@ -500,7 +500,7 @@
             const handlePasswordReset = async () => {
                 try {
                     await window.TipidAuth.resetPassword(user.email);
-                    swalSuccess("Tingnan ang inbox", "Kung eligible ang account mo, nagpadala ang Firebase ng password reset link.");
+                    swalSuccess("Check your inbox", "If your account is eligible, a password reset link has been sent to your email.");
                 } catch (err) {
                     swalError(window.TipidAuth.friendlyError(err));
                 }
@@ -512,7 +512,7 @@
                 const targetAmt = parseFloat(goalAmount);
                 const contribAmt = parseFloat(goalContrib);
 
-                if (isNaN(amt) || amt <= 0) return swalError("Maglagay ng tamang halaga para sa budget.");
+                if (isNaN(amt) || amt <= 0) return swalError("Please enter a valid amount for the budget limit.");
 
                 setSavingGoals(true);
                 try {
@@ -526,9 +526,9 @@
                     if (goalFreq) localStorage.setItem(key('goal_freq'), goalFreq);
                     if (goalStart && window.TipidCore.isDateKey(goalStart)) localStorage.setItem(key('goal_start'), goalStart);
 
-                    swalSuccess("Tagumpay", "Na-update na ang iyong Financial Goals.");
+                    swalSuccess("Success", "Your Financial Goals have been updated.");
                 } catch (err) {
-                    swalError("Hindi ma-save. Subukan ulit.");
+                    swalError("Failed to save goals. Please try again.");
                 } finally {
                     setSavingGoals(false);
                 }
@@ -542,14 +542,14 @@
             const toggleNotifOverbudget = () => { const next = !notifOverbudget; setNotifOverbudget(next); localStorage.setItem(prefKey('notif_overbudget'), next ? '1' : '0'); };
 
             const handleExportData = () => {
-                if (!window.TipidData || !window.TipidData.subscribeEntries) return swalError("Hindi available ang data export sa ngayon.");
+                if (!window.TipidData || !window.TipidData.subscribeEntries) return swalError("Data export is currently unavailable.");
                 setExporting(true);
                 let unsub = () => {};
                 unsub = window.TipidData.subscribeEntries(
                     user.uid,
                     (list) => {
                         unsub(); setExporting(false);
-                        if (!list || list.length === 0) return Swal.fire({ icon: "info", title: "Wala pang datos", text: "Wala ka pang naitatalang gastos o kita.", confirmButtonColor: "#1F6F54", customClass: { popup: "tipid-swal" } });
+                        if (!list || list.length === 0) return Swal.fire({ icon: "info", title: "No transactions yet", text: "You haven't logged any income or expenses yet.", confirmButtonColor: "#1F6F54", customClass: { popup: "tipid-swal" } });
                         const header = ["date", "type", "category", "method", "amount", "description"];
                         const rows = list.map(e => {
                             const date = window.TipidCore.entryDate(e);
@@ -566,35 +566,35 @@
                         const a = document.createElement("a");
                         a.href = url; a.download = `tipid-entries-${new Date().toISOString().slice(0, 10)}.csv`;
                         document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-                        swalSuccess("Na-export!", "Na-download na ang iyong datos bilang CSV.");
+                        swalSuccess("Exported!", "Your transaction history has been downloaded as a CSV file.");
                     },
-                    () => { unsub(); setExporting(false); swalError("Hindi na-export ang datos. Subukan ulit."); }
+                    () => { unsub(); setExporting(false); swalError("Failed to export data. Please try again."); }
                 );
             };
 
             const handleClearLocalPrefs = () => {
                 Swal.fire({
-                    title: "I-clear ang lokal na preferences?",
-                    text: "Mabubura ang iyong naka-save na Goal, Default Wallet, at Display settings sa device na ito. Hindi maaapektuhan ang iyong datos sa cloud.",
+                    title: "Clear local preferences?",
+                    text: "This will remove your saved Goal, Default Wallet, and Display settings on this device. Your cloud data remains safe.",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#B5483B",
                     cancelButtonColor: "#33443A",
-                    confirmButtonText: "Oo, i-clear",
-                    cancelButtonText: "Kanselahin",
+                    confirmButtonText: "Yes, clear",
+                    cancelButtonText: "Cancel",
                     customClass: { popup: "tipid-swal" }
                 }).then((result) => {
                     if (!result.isConfirmed) return;
                     ["goal_name", "goal_amount", "goal_wallet", "goal_contrib", "goal_freq", "goal_start", "default_wallet", "hide_centavos", "lang", "notif_daily", "notif_overbudget"].forEach(name => localStorage.removeItem(prefKey(name)));
-                    setGoalName(""); setGoalAmount(""); setGoalContrib(""); setGoalWallet("GCash"); setDefaultWallet("Cash"); setHideCentavos(false); setLang("tl");
+                    setGoalName(""); setGoalAmount(""); setGoalContrib(""); setGoalWallet("GCash"); setDefaultWallet("Cash"); setHideCentavos(false); setLang("en");
                     setNotifDaily(true); setNotifOverbudget(true);
-                    swalSuccess("Nabura na", "Na-reset na ang mga lokal na preferences.");
+                    swalSuccess("Cleared", "Local preferences have been reset.");
                 });
             };
 
             const handleSendFeedback = (e) => {
                 e.preventDefault();
-                if (!feedbackText.trim()) return swalError("Maglagay muna ng mensahe.");
+                if (!feedbackText.trim()) return swalError("Please enter a message first.");
                 setSendingFeedback(true);
                 try {
                     const key = prefKey("feedback_drafts");
@@ -602,7 +602,7 @@
                     existing.push({ text: feedbackText.trim(), at: new Date().toISOString() });
                     localStorage.setItem(key, JSON.stringify(existing.slice(-20)));
                     setFeedbackText("");
-                    swalSuccess("Na-save sa device", "Naka-save bilang draft ang feedback mo. Walang remote feedback service ang app sa ngayon.");
+                    swalSuccess("Saved locally", "Your feedback draft has been saved locally.");
                 } finally {
                     setSendingFeedback(false);
                 }
@@ -610,7 +610,7 @@
 
             const handleDeleteAccount = async () => {
                 if (deleteConfirmText.trim().toUpperCase() !== "DELETE") {
-                    return swalError('I-type ang salitang "DELETE" para kumpirmahin.');
+                    return swalError('Please type "DELETE" to confirm.');
                 }
                 setDeletingAccount(true);
                 try {
@@ -620,9 +620,9 @@
                     window.location.href = "login.html";
                 } catch (err) {
                     if (err && err.code === "auth/requires-recent-login") {
-                        swalError("Kailangan mo munang mag-log out at mag-log in ulit bago tanggalin ang account, para sa seguridad.");
+                        swalError("For security reasons, please log out and sign in again before deleting your account.");
                     } else {
-                        swalError("Hindi natanggal ang account. Subukan ulit.");
+                        swalError("Failed to delete account. Please try again.");
                     }
                 } finally {
                     setDeletingAccount(false);
@@ -635,10 +635,10 @@
                 return (
                     <SubPage title={t.menuManageProfile} backLabel={t.back} onBack={() => setActiveMenu(null)}>
                         <form onSubmit={handleUpdateProfile} className="bento-card p-6 rounded-2xl">
-                            <InputField label="Display Name" icon={<window.Icons.User size={18} />} value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Pangalan mo" />
+                            <InputField label="Display Name" icon={<window.Icons.User size={18} />} value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Your name" />
                             <InputField label="Email Address" icon={<window.Icons.Globe size={18} />} value={user.email} disabled={true} />
                             <button type="submit" disabled={savingProfile} className="w-full mt-4 bg-gradient-to-r from-pesoLight to-peso text-white font-bold py-4 rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50">
-                                {savingProfile ? "Nagsa-save..." : "I-save ang Profile"}
+                                {savingProfile ? "Saving..." : "Save Profile"}
                             </button>
                         </form>
                     </SubPage>
@@ -651,22 +651,22 @@
                         <form onSubmit={handleUpdatePreferences} className="bento-card p-5 sm:p-7 rounded-[1.5rem]">
 
                             <div className="mb-8">
-                                <h3 className="font-display text-[18px] font-bold text-ink dark:text-paper mb-1">Buwanang Budget</h3>
-                                <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mb-5">I-set ang limitasyon sa paggastos kada buwan.</p>
-                                <InputField label="Budget Limit (₱)" icon={<window.Icons.Wallet size={18} />} type="number" step="0.01" value={budgetInput} onChange={e => setBudgetInput(e.target.value)} placeholder="Hal: 15000" />
+                                <h3 className="font-display text-[18px] font-bold text-ink dark:text-paper mb-1">Monthly Budget</h3>
+                                <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mb-5">Set your monthly spending ceiling.</p>
+                                <InputField label="Budget Limit (₱)" icon={<window.Icons.Wallet size={18} />} type="number" step="0.01" value={budgetInput} onChange={e => setBudgetInput(e.target.value)} placeholder="e.g. 15000" />
                             </div>
 
                             <hr className="border-line/60 dark:border-white/10 mb-8" />
 
                             <div className="mb-6">
-                                <h3 className="font-display text-[18px] font-bold text-ink dark:text-paper mb-1">Ipon Target (Estimator)</h3>
-                                <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mb-6 leading-relaxed">Awtomatikong makikita sa Dashboard kung kailan mo maaabot ang goal na ito base sa iyong paghuhulog.</p>
+                                <h3 className="font-display text-[18px] font-bold text-ink dark:text-paper mb-1">Savings Goal (Estimator)</h3>
+                                <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mb-6 leading-relaxed">The dashboard automatically projects when you will reach this goal based on your contributions.</p>
 
-                                <InputField label="Pangalan ng Pinag-iipunan" icon={<window.Icons.Target size={18} />} value={goalName} onChange={e => setGoalName(e.target.value)} placeholder="Hal: Bagong PC, Pang-bakasyon" />
-                                <InputField label="Target Amount (₱)" icon={<span className="font-mono text-[16px] font-bold">₱</span>} type="number" step="0.01" value={goalAmount} onChange={e => setGoalAmount(e.target.value)} placeholder="Hal: 50000" />
+                                <InputField label="Savings Goal Name" icon={<window.Icons.Target size={18} />} value={goalName} onChange={e => setGoalName(e.target.value)} placeholder="e.g. Emergency Fund, Travel" />
+                                <InputField label="Target Amount (₱)" icon={<span className="font-mono text-[16px] font-bold">₱</span>} type="number" step="0.01" value={goalAmount} onChange={e => setGoalAmount(e.target.value)} placeholder="e.g. 50000" />
 
                                 <div className="mb-5">
-                                    <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Saan ilalagay ang ipon?</label>
+                                    <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Target Savings Wallet</label>
                                     <div className="flex items-center gap-3 bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 transition-all relative">
                                         <window.Icons.Wallet size={18} className="text-ink2/40 dark:text-paper/40" />
                                         <select value={goalWallet} onChange={e => setGoalWallet(e.target.value)} className="w-full bg-transparent py-3.5 text-[15px] font-semibold text-ink dark:text-paper focus:outline-none appearance-none cursor-pointer">
@@ -674,23 +674,23 @@
                                         </select>
                                         <window.Icons.ChevronRight size={16} className="absolute right-4 text-ink2/30 rotate-90 pointer-events-none" />
                                     </div>
-                                    <p className="text-[11px] font-medium mt-2 ml-1 text-ink2/50 dark:text-paper/40">Babantayan ng system ang balanse ng wallet na ito sa dashboard.</p>
+                                    <p className="text-[11px] font-medium mt-2 ml-1 text-ink2/50 dark:text-paper/40">The dashboard tracks this wallet's balance toward your goal.</p>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4 mb-5">
                                     <div>
-                                        <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Paghuhulog (₱)</label>
+                                        <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Contribution (₱)</label>
                                         <div className="flex items-center gap-2 bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 transition-all">
                                             <span className="font-mono font-bold text-[15px] text-ink2/40 dark:text-paper/40">₱</span>
-                                            <input type="number" step="0.01" value={goalContrib} onChange={e => setGoalContrib(e.target.value)} placeholder="Hal: 1000" className="w-full bg-transparent py-3.5 text-[15px] font-semibold text-ink dark:text-paper focus:outline-none" />
+                                            <input type="number" step="0.01" value={goalContrib} onChange={e => setGoalContrib(e.target.value)} placeholder="e.g. 1000" className="w-full bg-transparent py-3.5 text-[15px] font-semibold text-ink dark:text-paper focus:outline-none" />
                                         </div>
                                     </div>
                                     <div className="relative">
-                                        <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Dalas</label>
+                                        <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Frequency</label>
                                         <div className="flex items-center bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 transition-all">
                                             <select value={goalFreq} onChange={e => setGoalFreq(e.target.value)} className="w-full bg-transparent py-3.5 text-[14px] font-semibold text-ink dark:text-paper focus:outline-none appearance-none cursor-pointer">
-                                                <option value="sahod" className="bg-paper dark:bg-ink">Kada Sahod (2x/mo)</option>
-                                                <option value="monthly" className="bg-paper dark:bg-ink">Kada Buwan</option>
+                                                <option value="sahod" className="bg-paper dark:bg-ink">Per Payday (2x/mo)</option>
+                                                <option value="monthly" className="bg-paper dark:bg-ink">Monthly</option>
                                             </select>
                                             <window.Icons.ChevronRight size={16} className="absolute right-4 text-ink2/30 rotate-90 pointer-events-none" />
                                         </div>
@@ -698,7 +698,7 @@
                                 </div>
 
                                 <div className="mb-2">
-                                    <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Kailan mag-uumpisa?</label>
+                                    <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Start Date</label>
                                     <div className="flex items-center gap-3 bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 transition-all">
                                         <window.Icons.Calendar size={18} className="text-ink2/40 dark:text-paper/40" />
                                         <input type="date" value={goalStart} onChange={e => setGoalStart(e.target.value)} className="w-full bg-transparent py-3.5 text-[15px] font-mono font-semibold text-ink dark:text-paper focus:outline-none" />
@@ -708,7 +708,7 @@
                             </div>
 
                             <button type="submit" disabled={savingGoals} className="w-full mt-4 bg-gradient-to-r from-goldLight to-gold hover:shadow-lg hover:shadow-gold/20 text-[#111] font-bold py-4 rounded-xl transition-all disabled:opacity-50 text-[15px] shadow-sm active:scale-95">
-                                {savingGoals ? "Nagsa-save..." : "I-save ang Goals"}
+                                {savingGoals ? "Saving..." : "Save Goals"}
                             </button>
                         </form>
                     </SubPage>
@@ -722,10 +722,10 @@
                             <div className="w-20 h-20 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center mx-auto mb-5 text-ink2/40 dark:text-paper/40 ring-1 ring-black/5 dark:ring-white/10 shadow-inner">
                                 <window.Icons.Lock size={32} />
                             </div>
-                            <h3 className="font-display font-bold text-xl text-ink dark:text-paper mb-2">I-secure ang iyong Account</h3>
-                            <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-8 leading-relaxed px-2">Kung gumamit ka ng Google sa pag-login, hindi mo na kailangang mag-alala sa password. Kung gumamit ka ng email, maaari kang mag-request ng password reset.</p>
+                            <h3 className="font-display font-bold text-xl text-ink dark:text-paper mb-2">Secure Your Account</h3>
+                            <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-8 leading-relaxed px-2">If you signed in with Google, authentication is handled securely by your identity provider. If using email and password, you can request a password reset link.</p>
                              <button onClick={handlePasswordReset} className="w-full bg-black/5 dark:bg-white/10 text-ink dark:text-paper font-bold py-4 rounded-xl hover:bg-black/10 dark:hover:bg-white/20 transition-all shadow-sm active:scale-95">
-                                Magpadala ng Reset Link
+                                Send Password Reset Link
                             </button>
                         </div>
                     </SubPage>
@@ -739,14 +739,14 @@
                             <div className="flex items-center justify-between p-5 rounded-t-xl">
                                 <div>
                                     <p className="font-bold text-[15px] text-ink dark:text-paper">Daily Reminders</p>
-                                    <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/50 mt-1">Hindi pa available ang scheduled background reminders.</p>
+                                    <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/50 mt-1">Scheduled background reminders are coming soon.</p>
                                 </div>
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-ink2/50 dark:text-paper/50">Coming soon</span>
                             </div>
                             <div className="flex items-center justify-between p-5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors rounded-b-xl">
                                 <div>
                                     <p className="font-bold text-[15px] text-ink dark:text-paper">Overbudget Alerts</p>
-                                    <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/50 mt-1">I-notify ka kapag malapit na maubos ang budget</p>
+                                    <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/50 mt-1">Notify when approaching or exceeding monthly spending limits</p>
                                 </div>
                                 <Switch checked={notifOverbudget} onChange={toggleNotifOverbudget} label="Overbudget Alerts" />
                             </div>
@@ -764,7 +764,7 @@
                             <h2 className="font-display font-bold text-3xl text-ink dark:text-paper mb-1 tracking-tight">Tipid Buddy</h2>
                             <p className="text-[12px] font-mono font-bold tracking-widest uppercase text-peso dark:text-pesoLight mb-6 bg-peso/10 dark:bg-pesoLight/10 inline-block px-3 py-1 rounded-full">Version 1.0.0</p>
                             <p className="text-[14px] font-medium text-ink2/70 dark:text-paper/70 leading-relaxed mb-8 px-2">
-                                Ang Tipid ay isang personal na expense tracker na ginawa para sa mga Pilipino. Tinutulungan ka nitong subaybayan ang iyong pera, i-manage ang mga utang, at maabot ang iyong financial goals nang libre at walang ads.
+                                Tipid is a modern personal expense tracker designed for mindful money management. Track expenses, manage debts, monitor recurring commitments, and reach financial goals — cleanly, privately, and ad-free.
                             </p>
                             <p className="text-[12px] font-semibold text-ink2/40 dark:text-paper/40">© 2026 Tipid App. All rights reserved.</p>
                         </div>
@@ -778,16 +778,16 @@
                         <h3 className="font-bold text-[13px] tracking-widest uppercase text-ink2/50 dark:text-paper/40 mb-4 px-1 mt-2">Frequently Asked Questions</h3>
                         <div className="space-y-4">
                             <div className="bento-card p-6 rounded-2xl">
-                                <p className="font-bold text-[15px] text-ink dark:text-paper mb-2">Paano magdagdag ng wallet?</p>
-                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Pumunta sa Home Dashboard, i-scroll sa "Aking mga Wallet" section, at i-click ang Plus (+) icon sa pinakadulo ng mga cards.</p>
+                                <p className="font-bold text-[15px] text-ink dark:text-paper mb-2">How do I add a new wallet?</p>
+                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Head over to the Dashboard, scroll to the Wallets carousel, and tap the Plus (+) card.</p>
                             </div>
                             <div className="bento-card p-6 rounded-2xl">
-                                <p className="font-bold text-[15px] text-ink dark:text-paper mb-2">Paano mag-edit ng maling gastos?</p>
-                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Hanapin ang maling entry sa 'Kasaysayan' sa Home, i-swipe o i-tap ang delete (trash) icon, at i-log na lang ulit ang tamang halaga.</p>
+                                <p className="font-bold text-[15px] text-ink dark:text-paper mb-2">How do I remove or edit an expense?</p>
+                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Locate the entry in History or Recent Transactions, tap the delete (trash) icon, and log the updated transaction if needed.</p>
                             </div>
                             <div className="bento-card p-6 rounded-2xl">
-                                <p className="font-bold text-[15px] text-ink dark:text-paper mb-2">Kailangan ba ng internet para magamit ang app?</p>
-                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Kailangan ng internet para mag-save sa cloud, pero kapag naka-install ang app sa phone mo, pwede mo itong buksan kahit offline.</p>
+                                <p className="font-bold text-[15px] text-ink dark:text-paper mb-2">Can I use Tipid offline?</p>
+                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Tipid is a Progressive Web App (PWA). You can open it offline to view cached records; cloud sync resumes once your connection is restored.</p>
                             </div>
                         </div>
                     </SubPage>
@@ -797,7 +797,7 @@
             if (activeMenu === 'language') {
                 return (
                     <SubPage title={t.menuLanguage} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-4 px-1 mt-2">Piliin ang wika ng mga label sa Account page. Ang ibang page ay Tagalog-first pa rin.</p>
+                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-4 px-1 mt-2">Select your interface language preference.</p>
                         <OptionList value={lang} onSelect={handleSelectLang} options={[{ value: "tl", label: "Tagalog" }, { value: "en", label: "English" }]} />
                     </SubPage>
                 );
@@ -806,7 +806,7 @@
             if (activeMenu === 'defaultWallet') {
                 return (
                     <SubPage title={t.menuDefaultWallet} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-4 px-1 mt-2">Ito ang paraan ng bayad na paunang napipili tuwing magdadagdag ka ng gastos.</p>
+                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-4 px-1 mt-2">Default payment method pre-selected when logging new expenses.</p>
                         <OptionList value={defaultWallet} onSelect={handleSelectDefaultWallet} options={COMMON_WALLETS.map(w => ({ value: w, label: w }))} />
                     </SubPage>
                 );
@@ -822,11 +822,11 @@
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-[16px] text-ink dark:text-paper">Export My Data</h3>
-                                    <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/50 mt-0.5">I-download ang lahat ng entries mo bilang CSV</p>
+                                    <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/50 mt-0.5">Download all your logged transactions as a CSV file</p>
                                 </div>
                             </div>
                             <button onClick={handleExportData} disabled={exporting} className="w-full bg-gradient-to-r from-pesoLight to-peso hover:shadow-lg hover:shadow-peso/20 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95">
-                                {exporting ? <><window.Icons.Loader size={18} className="spin" /> Ini-export...</> : "I-export bilang CSV"}
+                                {exporting ? <><window.Icons.Loader size={18} className="spin" /> Exporting...</> : "Export as CSV"}
                             </button>
                         </div>
                         <div className="bento-card p-6 rounded-2xl">
@@ -836,11 +836,11 @@
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-[16px] text-ink dark:text-paper">Clear Local Preferences</h3>
-                                    <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/50 mt-0.5">Bura ang naka-save na Goal, Default Wallet, atbp. sa device na ito</p>
+                                    <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/50 mt-0.5">Reset saved goals, default wallet, and UI preferences on this device</p>
                                 </div>
                             </div>
                             <button onClick={handleClearLocalPrefs} className="w-full bg-black/5 dark:bg-white/10 text-ink dark:text-paper font-bold py-4 rounded-xl hover:bg-black/10 dark:hover:bg-white/20 transition-all active:scale-95">
-                                I-clear ang Local Preferences
+                                Clear Local Preferences
                             </button>
                         </div>
                     </SubPage>
@@ -851,17 +851,17 @@
                 return (
                     <SubPage title={t.menuSendFeedback} backLabel={t.back} onBack={() => setActiveMenu(null)}>
                         <form onSubmit={handleSendFeedback} className="bento-card p-6 rounded-2xl">
-                            <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-5">May suggestion, bug, o reaction ka ba? Sabihin mo dito.</p>
-                            <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Iyong Mensahe</label>
+                            <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-5">Have a suggestion, bug report, or idea? Share it with us.</p>
+                            <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Your Message</label>
                             <textarea
                                 value={feedbackText}
                                 onChange={e => setFeedbackText(e.target.value)}
-                                placeholder="Isulat dito ang iyong feedback..."
+                                placeholder="Type your feedback here..."
                                 rows={5}
                                 className="w-full bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 py-3.5 text-[15px] font-medium text-ink dark:text-paper placeholder-ink2/30 focus:outline-none focus:ring-2 focus:ring-peso/50 transition-all resize-none mb-4 shadow-sm"
                             />
                             <button type="submit" disabled={sendingFeedback} className="w-full bg-gradient-to-r from-pesoLight to-peso hover:shadow-lg hover:shadow-peso/20 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-50 active:scale-95">
-                                {sendingFeedback ? "Sine-save..." : "I-save bilang Draft"}
+                                {sendingFeedback ? "Saving..." : "Save as Draft"}
                             </button>
                         </form>
                     </SubPage>
@@ -873,16 +873,16 @@
                     <SubPage title={t.menuTermsPrivacy} backLabel={t.back} onBack={() => setActiveMenu(null)}>
                         <div className="bento-card p-7 rounded-2xl space-y-6">
                             <div>
-                                <h3 className="font-bold text-[16px] text-ink dark:text-paper mb-1.5">Paggamit ng App</h3>
-                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Ang Tipid ay libreng gamitin para sa personal na pagsubaybay ng gastos. Ikaw ang may pananagutan sa katumpakan ng datos na iyong ilalagay.</p>
+                                <h3 className="font-bold text-[16px] text-ink dark:text-paper mb-1.5">Terms of Service</h3>
+                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Tipid is provided for personal expense and budget management. You are responsible for ensuring the accuracy and ownership of financial records you log.</p>
                             </div>
                             <div>
-                                <h3 className="font-bold text-[16px] text-ink dark:text-paper mb-1.5">Privacy</h3>
-                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Ang iyong mga entry, budget, at profile ay naka-store sa user-scoped Firebase paths. Ang device-only preferences ay hiwalay rin ayon sa account. Dapat i-deploy ang kasamang Firestore rules bago ilabas ang app.</p>
+                                <h3 className="font-bold text-[16px] text-ink dark:text-paper mb-1.5">Data Privacy</h3>
+                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Your transactions, budgets, debts, and profile data are securely isolated under user-scoped Cloud Firestore paths. Local preferences remain stored strictly on this device.</p>
                             </div>
                             <div>
-                                <h3 className="font-bold text-[16px] text-ink dark:text-paper mb-1.5">Pagbabago</h3>
-                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Maaaring magbago ang mga tuntuning ito paminsan-minsan. Palaging susuriin ang pahinang ito para sa pinakabagong bersyon.</p>
+                                <h3 className="font-bold text-[16px] text-ink dark:text-paper mb-1.5">Updates</h3>
+                                <p className="text-[13.5px] font-medium text-ink2/60 dark:text-paper/60 leading-relaxed">Terms may be periodically updated as new features roll out. Check this section anytime for the latest terms.</p>
                             </div>
                         </div>
                     </SubPage>
@@ -896,10 +896,10 @@
                             <div className="w-20 h-20 bg-expense/10 rounded-full flex items-center justify-center mx-auto mb-5 text-expense ring-1 ring-expense/20 shadow-inner">
                                 <window.Icons.ShieldAlert size={32} />
                             </div>
-                            <h3 className="font-display font-bold text-xl text-expense dark:text-[#F38C80] mb-2">Permanenteng aalisin ang account mo</h3>
-                            <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-6 leading-relaxed">Tatanggalin nito ang iyong Firebase sign-in account. Hindi awtomatikong nabubura ng kasalukuyang app ang Firestore records o lokal na feature data. Maaaring kailanganin mong mag-log in ulit bago ituloy.</p>
+                            <h3 className="font-display font-bold text-xl text-expense dark:text-[#F38C80] mb-2">Permanently Delete Account</h3>
+                            <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-6 leading-relaxed">This will permanently delete your authentication credentials. Cloud financial records remain protected under user-scoped Firestore rules. You may need to sign in again before proceeding.</p>
                             <InputField
-                                label='I-type ang "DELETE" para kumpirmahin'
+                                label='Type "DELETE" to confirm'
                                 value={deleteConfirmText}
                                 onChange={e => setDeleteConfirmText(e.target.value)}
                                 placeholder="DELETE"
@@ -909,7 +909,7 @@
                                 disabled={deletingAccount || deleteConfirmText.trim().toUpperCase() !== "DELETE"}
                                 className="w-full bg-expense hover:bg-[#9C3C31] text-white font-bold py-4 rounded-xl transition-all disabled:opacity-40 active:scale-95 shadow-md mt-2"
                             >
-                                {deletingAccount ? "Tinatanggal..." : "Permanenteng Tanggalin ang Account"}
+                                {deletingAccount ? "Deleting..." : "Permanently Delete Account"}
                             </button>
                         </div>
                     </SubPage>
@@ -919,7 +919,7 @@
             // ---- MAIN MENU LIST ---- //
             return (
                 <div className="min-h-dvh flex flex-col pb-[6rem]">
-                    <div className="flex-1 max-w-[600px] w-full mx-auto px-4 sm:px-6 pt-[6.5rem] md:pt-[7.5rem]">
+                    <div className="flex-1 max-w-[600px] w-full mx-auto px-4 sm:px-6 pt-[6.5rem] md:pt-10">
 
                         {/* Premium Hero Profile Card */}
                         <div className="hero-command bento-card rounded-[2rem] p-6 sm:p-8 flex items-center gap-5 sm:gap-6 mb-8 fade-up-bento relative overflow-hidden">
