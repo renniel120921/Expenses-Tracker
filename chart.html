@@ -6,7 +6,7 @@
     <link rel="manifest" href="/manifest.json">
     <script src="/app-utils.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Chart — Tipid</title>
+    <title>Financial Analytics & Charts — Tipid</title>
     <meta name="theme-color" content="#1F6F54">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,7 +15,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Global Dark Mode Script Initializer -->
     <script>
@@ -39,9 +39,9 @@
                         gold: '#C9932E', expense: '#B5483B', line: '#D3DAD0',
                     },
                     fontFamily: {
-                        display: ['"Fraunces"', 'serif'],
-                        body: ['"Inter"', 'sans-serif'],
-                        mono: ['"IBM Plex Mono"', 'monospace'],
+                        display: ['Fraunces', 'serif'],
+                        body: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
                     },
                     boxShadow: {
                         'ios': '0 2px 10px rgba(18,61,46,0.06), 0 16px 32px -12px rgba(18,61,46,0.15)',
@@ -78,111 +78,55 @@
             --sal: env(safe-area-inset-left, 0px);
             --ease-ios: cubic-bezier(0.22, 1, 0.36, 1);
             --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-            --page-bg: #F1F4EF;
         }
 
         html { background: #F1F4EF; transition: background-color 0.3s var(--ease-ios); }
-        html.dark { background: #111A15; color: #F1F4EF; --page-bg: #111A15; }
+        html.dark { background: #111A15; color: #F1F4EF; }
+        body { font-family: 'Inter', sans-serif; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
 
-        body { font-feature-settings: "tnum" 1, "lnum" 1; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
-        ::selection { background: #C9932E33; color: #15231C; }
-        :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 4px; }
-        html.dark :focus-visible { outline-color: #52C8A1; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-up { animation: fadeIn 0.6s var(--ease-ios) both; }
 
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-up { animation: fadeUp 0.7s var(--ease-ios) both; }
+        .spin { animation: spin 0.9s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .spin { animation: spin 0.85s linear infinite; }
-
-        @keyframes logoBreathe {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.08); opacity: 0.85; }
-        }
-        .logo-breathe { animation: logoBreathe 1.7s ease-in-out infinite; }
-
-        @keyframes haloPulse {
-            0% { transform: scale(0.9); opacity: 0.35; }
-            70% { opacity: 0; }
-            100% { transform: scale(1.7); opacity: 0; }
-        }
-        .halo-pulse { animation: haloPulse 2s var(--ease-ios) infinite; }
-
-        @keyframes heroFloat {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(0, -10px); }
-        }
-        .hero-float { animation: heroFloat 6s ease-in-out infinite; }
-
-        @keyframes tipidDotPulse {
-            0%, 100% { transform: scale(0.85); opacity: 0.35; }
-            50% { transform: scale(1); opacity: 1; }
-        }
-        .tipid-dot { animation: tipidDotPulse 1.1s ease-in-out infinite; }
-
-        .glass-panel {
-            background: rgba(255,255,255,0.7);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.8);
-        }
-        html.dark .glass-panel {
-            background: rgba(24,38,31,0.55);
-            border: 1px solid rgba(255,255,255,0.08);
-        }
+        @keyframes haloPulse { 0% { transform: scale(0.9); opacity: 0.35; } 70% { opacity: 0; } 100% { transform: scale(1.6); opacity: 0; } }
+        .halo-pulse { animation: haloPulse 1.9s var(--ease-ios) infinite; }
 
         .tap-scale { transition: transform 0.15s var(--ease-spring); }
-        .tap-scale:active { transform: scale(0.92); }
+        .tap-scale:active { transform: scale(0.94); }
 
-        .tipid-swal { border-radius: 28px !important; font-family: 'Inter', sans-serif !important; }
+        .tipid-swal { border-radius: 1.5rem !important; font-family: 'Inter', sans-serif !important; }
 
-        /* --- Resibo perforation: torn-receipt seam under the hero card, on-brand with Tipid's perf-edge motif --- */
-        .receipt-edge { position: relative; }
-        .receipt-edge::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: -9px;
-            height: 18px;
-            background-image: radial-gradient(circle at 9px 9px, var(--page-bg) 9px, transparent 9.5px);
-            background-size: 18px 18px;
-            background-repeat: repeat-x;
-            pointer-events: none;
-            z-index: 5;
-        }
+        @keyframes mascotHover { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+        .analytics-mascot-img { animation: mascotHover 4s ease-in-out infinite; filter: drop-shadow(0 15px 25px rgba(18,61,46,0.35)); }
 
-        /* --- Mascot Animations --- */
-        @keyframes mascotHover {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
-        }
-        .analytics-mascot-img {
-            animation: mascotHover 4s ease-in-out infinite;
-            filter: drop-shadow(0 15px 25px rgba(18,61,46,0.35));
-        }
-        .speech-bubble {
-            animation: fadeUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
-            box-shadow: 0 10px 25px -5px rgba(18, 61, 46, 0.25);
+        .speech-bubble { box-shadow: 0 10px 25px -5px rgba(18, 61, 46, 0.25); }
+        .tip-fade { animation: fadeIn 0.45s var(--ease-ios) both; }
+
+        /* Material grain overlay */
+        .grain-overlay {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            mix-blend-mode: overlay;
         }
 
         @media (prefers-reduced-motion: reduce) {
-            .spin, .fade-up, .logo-breathe, .halo-pulse, .hero-float, .tap-scale, .analytics-mascot-img, .speech-bubble, .tipid-dot {
-                animation: none !important; transition: none !important;
+            .fade-up, .spin, .halo-pulse, .tap-scale, .analytics-mascot-img, .tip-fade {
+                animation: none !important;
+                transition: none !important;
             }
         }
     </style>
 </head>
-<body class="bg-paper dark:bg-ink text-ink dark:text-paper antialiased font-body min-h-screen transition-colors duration-300">
+<body class="bg-paper dark:bg-ink text-ink dark:text-paper min-h-screen flex flex-col transition-colors duration-300">
+
     <div id="root"></div>
 
     <script type="text/babel">
         window.useState = React.useState;
         window.useEffect = React.useEffect;
         window.useMemo = React.useMemo;
-        window.useRef = React.useRef;
 
-        // --- COMPREHENSIVE GLOBAL ICONS ---
         function Icon({ path, size = 20, className = "", strokeWidth = 2.2 }) {
             return (
                 <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -195,36 +139,20 @@
         window.Icons = {
             Sun: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>} />,
             Moon: (p) => <Icon {...p} path={<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>} />,
-            Trash: (p) => <Icon {...p} path={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></>} />,
-            Plus: (p) => <Icon {...p} path={<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>} />,
-            Pencil: (p) => <Icon {...p} path={<><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></>} />,
-            Calendar: (p) => <Icon {...p} path={<><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>} />,
-            Category: (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
-            Wallet: (p) => <Icon {...p} path={<><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></>} />,
-            AlertCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />,
-            Check: (p) => <Icon {...p} path={<><polyline points="20 6 9 17 4 12"/></>} strokeWidth={3} />,
-            Inbox: (p) => <Icon {...p} path={<><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></>} />,
-            Loader: (p) => <Icon {...p} path={<><path d="M12 2a10 10 0 0 1 10 10"/></>} />,
-            TrendUp: (p) => <Icon {...p} path={<><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>} />,
-            TrendDown: (p) => <Icon {...p} path={<><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></>} />,
-            Home: (p) => <Icon {...p} path={<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>} />,
             Chart: (p) => <Icon {...p} path={<><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></>} />,
-            List: (p) => <Icon {...p} path={<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>} />,
-            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />
+            Category: (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>} />,
+            Sparkle: (p) => <Icon {...p} path={<><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></>} />,
+            ChevronLeft: (p) => <Icon {...p} path={<><polyline points="15 18 9 12 15 6"/></>} />,
+            ChevronRight: (p) => <Icon {...p} path={<><polyline points="9 18 15 12 9 6"/></>} />
         };
 
         window.Logo = function Logo({ size = 30 }) {
-            const [broken, setBroken] = React.useState(false);
-            if (!broken) {
-                return <img src="/assets/logo.svg" alt="Tipid logo" width={size} height={size}
-                            onError={() => setBroken(true)} style={{ width: size, height: size }} className="rounded-md" />;
-            }
-            return <span style={{ width: size, height: size }} className="rounded-md bg-ink text-paper flex items-center justify-center font-display font-semibold">₱</span>;
-        }
+            return <span style={{ width: size, height: size }} className="rounded-[10px] bg-peso text-paper flex items-center justify-center font-display font-semibold shadow-sm">₱</span>;
+        };
 
         window.peso = function peso(n) {
-            return (n || 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
+            return Number(n || 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
 
         window.CATEGORY_DISPLAY = {
             "Pagkain": "Food & Dining", "Pamasahe": "Transportation", "Bills": "Bills & Utilities", "Load": "Mobile & Data",
@@ -234,245 +162,372 @@
         };
         window.CATEGORIES = ["Food & Dining", "Transportation", "Bills & Utilities", "Mobile & Data", "Savings", "Projects", "Other"];
         window.CATEGORY_COLOR = {
-            "Food & Dining": "#1F6F54", "Transportation": "#33443A", "Bills & Utilities": "#C9932E",
-            "Mobile & Data": "#123D2E", "Savings": "#2F8E6C", "Projects": "#15231C", "Other": "#B5483B",
-            Pagkain: "#1F6F54", Pamasahe: "#33443A", Bills: "#C9932E",
-            Load: "#123D2E", Ipon: "#2F8E6C", "Project Components": "#15231C", "Iba pa": "#B5483B",
+            "Food & Dining": "#1F6F54", "Transportation": "#0284C7", "Bills & Utilities": "#E11D48",
+            "Mobile & Data": "#7C3AED", "Savings": "#059669", "Projects": "#D97706", "Other": "#64748B",
+            Pagkain: "#1F6F54", Pamasahe: "#0284C7", Bills: "#E11D48",
+            Load: "#7C3AED", Ipon: "#059669", "Project Components": "#D97706", "Iba pa": "#64748B",
         };
 
-        // Subtle scroll parallax on the two ambient blobs — adds depth without competing for attention.
-        // Respects prefers-reduced-motion (the effect simply never attaches its scroll listener).
         function AmbientBackground() {
-            const [offset, setOffset] = React.useState(0);
-            const [reducedMotion, setReducedMotion] = React.useState(false);
-
-            React.useEffect(() => {
-                const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-                setReducedMotion(mq.matches);
-                const handler = (e) => setReducedMotion(e.matches);
-                mq.addEventListener ? mq.addEventListener("change", handler) : mq.addListener(handler);
-                return () => (mq.removeEventListener ? mq.removeEventListener("change", handler) : mq.removeListener(handler));
-            }, []);
-
-            React.useEffect(() => {
-                if (reducedMotion) return;
-                let ticking = false;
-                const onScroll = () => {
-                    if (ticking) return;
-                    ticking = true;
-                    requestAnimationFrame(() => {
-                        setOffset(window.scrollY);
-                        ticking = false;
-                    });
-                };
-                window.addEventListener("scroll", onScroll, { passive: true });
-                return () => window.removeEventListener("scroll", onScroll);
-            }, [reducedMotion]);
-
             return (
-                <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div
-                        className="absolute -top-24 -right-16 w-[380px] h-[380px] bg-peso/[0.07] dark:bg-pesoLight/[0.07] rounded-full blur-[90px]"
-                        style={{ transform: `translateY(${offset * 0.06}px)` }}
-                    />
-                    <div
-                        className="absolute top-[40%] -left-24 w-[300px] h-[300px] bg-gold/[0.07] dark:bg-gold/[0.04] rounded-full blur-[100px]"
-                        style={{ transform: `translateY(${offset * -0.04}px)` }}
-                    />
+                <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10" aria-hidden="true">
+                    <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-peso/10 dark:bg-pesoLight/[0.08] rounded-full blur-[140px]" />
                 </div>
             );
         }
 
-        /* --- ANALYTICS HERO CARD ---
-           No dark mode toggle here — that control lives on profile.html only,
-           and this page just reflects whatever theme is already set. */
-        function AnalyticsHeroCard() {
+        /* --- HERO HEADER CARD: APPLE HIG FINTECH AESTHETICS --- */
+        function AnalyticsHeroCard({ darkMode, toggleDarkMode, stats = {} }) {
+            const [mascotOk, setMascotOk] = React.useState(true);
+
+            const totalExpense = stats.totalExpense || 0;
+            const totalIncome = stats.totalIncome || 0;
+            const net = stats.net || 0;
+            const topCategory = stats.topCategory || "None";
+            const savingsRate = stats.savingsRate || 0;
+
+            const mascotMessage = React.useMemo(() => {
+                if (totalExpense > 0 && topCategory !== "None") {
+                    return `Pinakamalaki ang bawas sa ${topCategory}. Suriin ang category breakdown para ma-optimize ang savings!`;
+                }
+                if (net > 0) {
+                    return `Nice! May positive surplus kang ₱${window.peso(net)} ngayong period. Tuloy-tuloy lang sa pag-ipon!`;
+                }
+                if (totalExpense > 0 && net < 0) {
+                    return `Pansin: Mas mataas ang nagastos kaysa kita ng ₱${window.peso(Math.abs(net))}. Tignan kung may luho na pwedeng bawas-bawasan!`;
+                }
+                return "Suriin ang iyong cashflow, spending velocity, at wallet breakdown sa mga interactive graphs sa ibaba!";
+            }, [totalExpense, topCategory, net]);
+
             return (
-                <div className="relative receipt-edge mb-6 sm:mb-8">
-                <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-5 sm:p-7 shadow-iosLg ring-1 ring-white/15 min-h-[220px] sm:min-h-[240px] flex flex-col justify-between">
+                <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#124231] via-[#17523E] to-[#0A261C] text-paper shadow-iosLg ring-1 ring-white/10 mb-6 sm:mb-8">
+                    {/* Material grain overlay */}
+                    <div className="absolute inset-0 grain-overlay opacity-[0.06] pointer-events-none" />
 
-                    {/* Ambient Glows Inside Card */}
-                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/[0.08] rounded-full blur-[50px] hero-float" />
-                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-gold/[0.12] rounded-full blur-[60px]" />
+                    {/* Ambient light glow */}
+                    <div className="absolute -top-24 -left-24 w-72 h-72 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-pesoLight/15 rounded-full blur-3xl pointer-events-none" />
 
-                    {/* Mascot Container */}
-                    <div className="absolute right-0 bottom-0 w-[140px] sm:w-[190px] h-full pointer-events-none z-0 overflow-visible">
-                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-24 h-24 bg-white/15 blur-2xl rounded-full"></div>
-                        <img
-                            src="/assets/chart_mascot.png"
-                            alt="Tipid Buddy with an Idea"
-                            className="absolute bottom-[-5px] sm:bottom-[0px] right-[-10px] sm:right-2 w-full object-contain analytics-mascot-img"
-                            draggable="false"
-                        />
-                        {/* Speech Bubble */}
-                        <div className="speech-bubble absolute top-[10%] right-[60%] sm:right-[70%] bg-paper text-ink rounded-2xl px-3 py-2 text-[10px] sm:text-xs font-medium leading-tight w-max max-w-[120px] sm:max-w-[140px] border border-white/50">
-                            <strong className="block font-bold text-[#C9932E] mb-0.5">Buddy's Tip</strong>
-                            Where is most of your money going this period?
-                            <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-paper rotate-45 border-r border-b border-white/50"></div>
+                    {/* Top Bar with Status Tag & Dark Mode Toggle */}
+                    <div className="relative z-20 flex items-center justify-between px-6 sm:px-8 pt-6 sm:pt-7">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] font-mono tracking-wider uppercase text-white/90">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                            <span>Financial Intelligence & Spending Analytics</span>
                         </div>
+
+                        <button
+                            onClick={toggleDarkMode}
+                            aria-label="Toggle dark mode"
+                            className="tap-scale w-10 h-10 rounded-full bg-white/10 hover:bg-white/15 border border-white/15 flex items-center justify-center text-white/90 backdrop-blur-md transition-all outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                        >
+                            {darkMode ? <window.Icons.Sun size={17} /> : <window.Icons.Moon size={17} />}
+                        </button>
                     </div>
 
-                    {/* Main Content */}
-                    <div className="relative z-10 flex flex-col h-full gap-4 sm:gap-6 max-w-[60%] sm:max-w-[62%]">
-                        <div className="mt-2 sm:mt-4">
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/15 border border-white/10 text-white mb-3 backdrop-blur-sm">
-                                <span className="w-1.5 h-1.5 rounded-full bg-gold shadow-[0_0_0_2px_rgba(201,147,46,0.3)] animate-pulse" />
-                                <span className="text-[10.5px] font-medium text-paper/85">Tipid Buddy</span>
-                            </div>
-                            <h1 className="font-display text-[1.6rem] sm:text-[2.5rem] font-bold tracking-tight leading-[1.1] mb-2 sm:mb-3">
-                                Analytics
+                    {/* Main Hero Body */}
+                    <div className="relative z-10 px-6 sm:px-8 pt-5 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div className="max-w-xl">
+                            <h1 className="font-display text-[1.85rem] sm:text-[2.5rem] font-semibold tracking-tight leading-[1.08] mb-2 text-white">
+                                Financial Analytics
                             </h1>
-                            <p className="text-[11px] sm:text-[13px] font-medium text-white/80 leading-relaxed pr-2">
-                                Visualize your cash flow, track spending breakdown, and see where your money goes.
+                            <p className="text-[13px] sm:text-[14px] text-paper/75 leading-relaxed mb-5">
+                                Visualize your net cash flow, analyze category distributions, monitor daily burn trajectory, and track your essential needs vs discretionary wants.
                             </p>
-                        </div>
-                    </div>
-                </div>
-                </div>
-            );
-        }
 
-        // Small eyebrow + heading pair that gives the chart section its own identity,
-        // instead of the chart just appearing directly under the hero with no context.
-        function ChartSectionHeader() {
-            return (
-                <div className="flex items-center gap-3 mb-4 sm:mb-5 px-1">
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-peso/10 dark:bg-pesoLight/10 flex items-center justify-center text-peso dark:text-pesoLight shrink-0">
-                        <window.Icons.Chart size={17} />
-                    </div>
-                    <div className="min-w-0">
-                        <p className="text-[10.5px] font-medium text-ink2/55 dark:text-paper/45">Breakdown</p>
-                        <h2 className="font-display text-[1.1rem] sm:text-[1.35rem] font-semibold text-ink dark:text-paper tracking-tight leading-tight">
-                            Where your money goes
-                        </h2>
-                    </div>
-                </div>
-            );
-        }
+                            {/* Net Flow Pacing Card */}
+                            <div className="bg-black/20 backdrop-blur-md border border-white/10 rounded-2xl p-4 sm:p-5 max-w-md">
+                                <p className="text-[10px] sm:text-[11px] font-mono uppercase font-semibold text-emerald-300 tracking-wider mb-1">
+                                    Net Savings Surplus
+                                </p>
+                                <div className="flex items-baseline gap-2 mb-2">
+                                    <span className={`font-mono text-2xl sm:text-4xl font-bold tracking-tight ${
+                                        net >= 0 ? "text-white" : "text-rose-300"
+                                    }`}>
+                                        {net < 0 ? '-' : ''}₱{window.peso(Math.abs(net))}
+                                    </span>
+                                </div>
 
-        window.useAuthReady = function useAuthReady() {
-            const [ready, setReady] = React.useState(!!window.TipidAuth);
-            React.useEffect(() => {
-                if (window.TipidAuth) { setReady(true); return; }
-                const h = () => setReady(true);
-                window.addEventListener("tipid-auth-ready", h, { once: true });
-                return () => window.removeEventListener("tipid-auth-ready", h);
-            }, []);
-            return ready;
-        }
-
-        window.useDataReady = function useDataReady() {
-            const [ready, setReady] = React.useState(!!window.TipidData);
-            React.useEffect(() => {
-                if (window.TipidData) { setReady(true); return; }
-                const h = () => setReady(true);
-                window.addEventListener("tipid-data-ready", h, { once: true });
-                return () => window.removeEventListener("tipid-data-ready", h);
-            }, []);
-            return ready;
-        }
-
-        function ChartApp() {
-            const authReady = window.useAuthReady();
-            const dataReady = window.useDataReady();
-            const [user, setUser] = React.useState(undefined);
-            const [entries, setEntries] = React.useState([]);
-
-            // Theme is read-only on this page — the toggle lives on profile.html.
-            // We just reflect whatever's saved there, and pick up live changes
-            // if the person flips it on another tab.
-            React.useEffect(() => {
-                const applyTheme = () => {
-                    const isDark = localStorage.getItem("tipid_theme") === "dark" ||
-                        (!localStorage.getItem("tipid_theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
-                    document.documentElement.classList.toggle("dark", isDark);
-                };
-                applyTheme();
-                window.addEventListener("storage", applyTheme);
-                return () => window.removeEventListener("storage", applyTheme);
-            }, []);
-
-            React.useEffect(() => {
-                if (!authReady) return;
-                let unsubscribe;
-                let cancelled = false;
-
-                window.TipidAuth.ready.then(() => {
-                    if (cancelled) return;
-                    unsubscribe = window.TipidAuth.onChange((u) => setUser(u || null));
-                });
-
-                return () => {
-                    cancelled = true;
-                    if (unsubscribe) unsubscribe();
-                };
-            }, [authReady]);
-            
-            React.useEffect(() => {
-                if (user === null) window.location.href = "login.html";
-            }, [user]);
-
-            React.useEffect(() => {
-                if (!dataReady || !user) return;
-                return window.TipidData.subscribeEntries(
-                    user.uid,
-                    (list) => setEntries(list),
-                    (err) => console.error(err)
-                );
-            }, [dataReady, user]);
-
-            if (user === undefined || user === null) {
-                return (
-                    <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
-                        <div className="glass-panel flex flex-col items-center gap-4 rounded-[32px] px-10 py-10 shadow-ios">
-                            <div className="relative flex items-center justify-center">
-                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/25 halo-pulse" />
-                                <div className="relative logo-breathe">
-                                    <window.Logo size={44} />
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-medium ${
+                                        net >= 0
+                                            ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-200"
+                                            : "bg-rose-500/20 border-rose-400/30 text-rose-200"
+                                    }`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${net >= 0 ? "bg-emerald-400" : "bg-rose-400 animate-pulse"}`} />
+                                        <span>{net >= 0 ? `+${savingsRate}% Savings Margin` : 'Net Deficit (Expenses > Income)'}</span>
+                                    </span>
                                 </div>
                             </div>
-                            <p className="text-[11px] font-mono font-medium tracking-wide text-ink2 dark:text-paper/60 text-center">
-                                Loading chart
-                            </p>
-                            <div className="flex items-center gap-1.5">
-                                <span className="tipid-dot w-1.5 h-1.5 rounded-full bg-peso/70 dark:bg-pesoLight/70" style={{ animationDelay: "0ms" }} />
-                                <span className="tipid-dot w-1.5 h-1.5 rounded-full bg-peso/70 dark:bg-pesoLight/70" style={{ animationDelay: "150ms" }} />
-                                <span className="tipid-dot w-1.5 h-1.5 rounded-full bg-peso/70 dark:bg-pesoLight/70" style={{ animationDelay: "300ms" }} />
+                        </div>
+
+                        {/* Right Side: Tipid Mascot with Dynamic Speech Bubble */}
+                        {mascotOk && (
+                            <div className="relative shrink-0 flex flex-col items-center sm:items-end self-center md:self-end mt-2 md:mt-0">
+                                <div className="speech-bubble relative bg-white/95 text-ink text-[11.5px] font-medium px-3.5 py-2 rounded-2xl max-w-[210px] text-center mb-2.5 border border-white/40">
+                                    {mascotMessage}
+                                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 md:left-auto md:right-8 w-3 h-3 bg-white/95 rotate-45 border-r border-b border-white/40" />
+                                </div>
+                                <img
+                                    src="/assets/chart_mascot.png"
+                                    alt="Tipid Mascot"
+                                    onError={(e) => {
+                                        if (!e.target.dataset.fallback) {
+                                            e.target.dataset.fallback = "true";
+                                            e.target.src = "/assets/tipid_mascot.png";
+                                        } else {
+                                            setMascotOk(false);
+                                        }
+                                    }}
+                                    className="analytics-mascot-img w-20 h-20 sm:w-24 sm:h-24 object-contain pointer-events-none drop-shadow-md"
+                                    draggable="false"
+                                />
                             </div>
+                        )}
+                    </div>
+
+                    {/* Bottom Strip: 3 Metrics Mini-Cards */}
+                    <div className="relative z-10 grid grid-cols-3 gap-2 px-6 sm:px-8 pb-6 pt-3 border-t border-white/10 text-center">
+                        <div className="bg-white/5 backdrop-blur-md rounded-xl p-2.5 border border-white/5">
+                            <p className="text-[10px] font-mono uppercase text-paper/60">Total Inflow</p>
+                            <p className="font-mono text-xs sm:text-base font-bold text-white mt-0.5">
+                                ₱{window.peso(totalIncome)}
+                            </p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-md rounded-xl p-2.5 border border-white/5">
+                            <p className="text-[10px] font-mono uppercase text-paper/60">Total Outflow</p>
+                            <p className="font-mono text-xs sm:text-base font-bold text-rose-300 mt-0.5">
+                                ₱{window.peso(totalExpense)}
+                            </p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-md rounded-xl p-2.5 border border-white/5">
+                            <p className="text-[10px] font-mono uppercase text-paper/60">Top Category</p>
+                            <p className="font-mono text-xs sm:text-base font-bold text-amber-300 mt-0.5 truncate px-1">
+                                {topCategory}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        /* --- SMART ANALYTICS PRINCIPLES CAROUSEL --- */
+        window.ANALYTICS_TIPS = [
+            {
+                icon: "Chart",
+                title: "Maintain a Positive Cashflow Surplus",
+                text: "Target to retain at least 20% to 30% of all monthly revenue as net surplus. A positive cash flow shields you against emergency expenses."
+            },
+            {
+                icon: "Category",
+                title: "Keep Needs & Groceries Under 65%",
+                text: "When your core food, bills, and transit expenses exceed 65% of your total spend, look for high-impact subscriptions or utility leaks to adjust."
+            },
+            {
+                icon: "Sparkle",
+                title: "Spotting Weekend Spend Surges",
+                text: "Use the Timeline Curve to detect weekend spending spikes. Casual social dinners and shopping deliveries usually account for 40%+ of outflow."
+            },
+            {
+                icon: "Chart",
+                title: "Multi-Wallet Cash Visibility",
+                text: "Check your Payment Channel breakdown to see whether GCash, Maya, or physical Cash is causing the fastest money velocity."
+            }
+        ];
+
+        function AnalyticsTipsCarousel() {
+            const tips = window.ANALYTICS_TIPS;
+            const [index, setIndex] = React.useState(0);
+            const [paused, setPaused] = React.useState(false);
+
+            React.useEffect(() => {
+                if (paused) return;
+                const t = setInterval(() => setIndex(i => (i + 1) % tips.length), 6500);
+                return () => clearInterval(t);
+            }, [paused, tips.length]);
+
+            const tip = tips[index];
+            const TipIcon = window.Icons[tip.icon] || window.Icons.Sparkle;
+            const goTo = (i) => setIndex(((i % tips.length) + tips.length) % tips.length);
+
+            return (
+                <div
+                    className="fade-up bg-white/70 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.75rem] border border-white/80 dark:border-white/10 shadow-ios p-5 sm:p-6 mb-6 sm:mb-8"
+                    style={{ animationDelay: "60ms" }}
+                    onMouseEnter={() => setPaused(true)}
+                    onMouseLeave={() => setPaused(false)}
+                >
+                    <div className="flex items-center justify-between mb-3.5">
+                        <div className="flex items-center gap-2">
+                            <span className="text-peso dark:text-pesoLight">
+                                <window.Icons.Sparkle size={16} />
+                            </span>
+                            <h2 className="font-display text-[1.1rem] font-semibold text-ink dark:text-paper tracking-tight">
+                                Cash Flow Analytics Principles
+                            </h2>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <button
+                                onClick={() => goTo(index - 1)}
+                                aria-label="Previous tip"
+                                className="tap-scale w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink2 dark:text-paper/70 hover:bg-black/10 dark:hover:bg-white/20 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-peso/40"
+                            >
+                                <window.Icons.ChevronLeft size={14} />
+                            </button>
+                            <button
+                                onClick={() => goTo(index + 1)}
+                                aria-label="Next tip"
+                                className="tap-scale w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink2 dark:text-paper/70 hover:bg-black/10 dark:hover:bg-white/20 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-peso/40"
+                            >
+                                <window.Icons.ChevronRight size={14} />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div key={index} className="tip-fade flex items-start gap-3.5">
+                        <div className="shrink-0 w-9 h-9 rounded-xl bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center border border-peso/20 dark:border-pesoLight/20">
+                            <TipIcon size={18} />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[13.5px] font-semibold text-ink dark:text-paper mb-0.5">{tip.title}</p>
+                            <p className="text-[12px] text-ink2/70 dark:text-paper/60 leading-relaxed">{tip.text}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-1.5 mt-4">
+                        {tips.map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => goTo(i)}
+                                aria-label={`Tip ${i + 1}`}
+                                className={`h-1.5 rounded-full transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-peso/40 ${i === index ? "w-6 bg-peso dark:bg-pesoLight" : "w-1.5 bg-black/10 dark:bg-white/15"}`}
+                            />
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        /* --- ROOT CHART APP --- */
+        function ChartApp() {
+            const [user, setUser] = React.useState(undefined);
+            const [entries, setEntries] = React.useState([]);
+            const [authChecking, setAuthChecking] = React.useState(true);
+            const [componentsReady, setComponentsReady] = React.useState(false);
+            const [sharedStats, setSharedStats] = React.useState({});
+
+            const [darkMode, setDarkMode] = React.useState(() => {
+                return localStorage.getItem("tipid_theme") === "dark" ||
+                    (!localStorage.getItem("tipid_theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+            });
+
+            React.useEffect(() => {
+                if (darkMode) {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem("tipid_theme", "dark");
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem("tipid_theme", "light");
+                }
+            }, [darkMode]);
+
+            const toggleDarkMode = () => setDarkMode(!darkMode);
+
+            React.useEffect(() => {
+                const interval = setInterval(() => {
+                    if (window.ExpenseChart && window.Navbar) {
+                        setComponentsReady(true);
+                        clearInterval(interval);
+                    }
+                }, 50);
+                return () => clearInterval(interval);
+            }, []);
+
+            React.useEffect(() => {
+                let unsub = null;
+                let isMounted = true;
+                const checkAuth = () => {
+                    if (window.TipidAuth) {
+                        window.TipidAuth.ready.then(() => {
+                            if (!isMounted) return;
+                            unsub = window.TipidAuth.onChange((currentUser) => {
+                                if (!isMounted) return;
+                                if (!currentUser) {
+                                    window.location.href = "./login.html";
+                                } else {
+                                    setUser(currentUser);
+                                    setAuthChecking(false);
+                                }
+                            });
+                        });
+                    } else {
+                        setTimeout(checkAuth, 50);
+                    }
+                };
+                checkAuth();
+                return () => { isMounted = false; if (typeof unsub === "function") unsub(); };
+            }, []);
+
+            React.useEffect(() => {
+                if (!user || !window.TipidData) return;
+                return window.TipidData.subscribeEntries(
+                    user.uid,
+                    (list) => setEntries(list || []),
+                    (err) => console.error(err)
+                );
+            }, [user]);
+
+            const handleLogout = async () => {
+                await window.TipidAuth.logOut();
+                window.location.href = "./login.html";
+            };
+
+            if (authChecking || !componentsReady) {
+                return (
+                    <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="relative flex items-center justify-center w-14 h-14">
+                                <span className="absolute inset-0 rounded-full bg-peso/20 dark:bg-pesoLight/20 halo-pulse" />
+                                <window.Logo size={38} />
+                            </div>
+                            <p className="text-[11px] font-mono text-ink2/60 dark:text-paper/50">
+                                Loading analytics engine...
+                            </p>
                         </div>
                     </div>
                 );
             }
 
-            const logout = async () => {
-                await window.TipidAuth.logOut();
-                window.location.href = "login.html";
-            };
+            const AppChart = window.ExpenseChart;
+            const AppNavbar = window.Navbar;
 
             return (
                 <div className="min-h-dvh flex flex-col relative">
                     <AmbientBackground />
-
-                    <window.Navbar user={user} onLogout={logout} activeTab="analytics" />
+                    <AppNavbar user={user} onLogout={handleLogout} activeTab="analytics" />
 
                     <main
-                        className="max-w-[1000px] mx-auto w-full px-5 sm:px-8 pt-[6.5rem] md:pt-10 pb-36 md:pb-20 flex-1"
+                        className="max-w-[840px] mx-auto w-full px-5 sm:px-8 pt-[6.5rem] md:pt-10 pb-36 md:pb-24 flex-1 z-10"
                         style={{
                             paddingLeft: 'max(1.25rem, calc(var(--sal) + 1.25rem))',
                             paddingRight: 'max(1.25rem, calc(var(--sar) + 1.25rem))',
                             paddingBottom: 'calc(8rem + var(--sab))',
                         }}
                     >
-                        <div className="fade-up" style={{ animationDelay: "0ms" }}>
-                            <AnalyticsHeroCard />
+                        <div className="fade-up">
+                            <AnalyticsHeroCard
+                                darkMode={darkMode}
+                                toggleDarkMode={toggleDarkMode}
+                                stats={sharedStats}
+                            />
                         </div>
 
-                        <div className="fade-up" style={{ animationDelay: "70ms" }}>
-                            <ChartSectionHeader />
-                        </div>
+                        <AnalyticsTipsCarousel />
 
-                        <div className="fade-up" style={{ animationDelay: "160ms" }}>
-                            <window.ExpenseChart entries={entries} />
+                        <div className="fade-up" style={{ animationDelay: "100ms" }}>
+                            <AppChart
+                                entries={entries}
+                                onStatsChange={setSharedStats}
+                            />
                         </div>
                     </main>
                 </div>
@@ -480,29 +535,15 @@
         }
 
         function mountWhenComponentsReady(attempt = 0) {
-            const missingNames = [];
-            if (typeof window.Navbar !== "function") missingNames.push("Navbar");
-            if (typeof window.ExpenseChart !== "function") missingNames.push("ExpenseChart");
-
-            if (missingNames.length === 0) {
+            if (typeof window.Navbar === "function" && typeof window.ExpenseChart === "function") {
                 ReactDOM.createRoot(document.getElementById("root")).render(<ChartApp />);
                 return;
             }
-            if (attempt > 100) {
-                document.getElementById("root").innerHTML =
-                    `<div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:Inter,sans-serif;text-align:center;color:#15231C;">
-                        <div>
-                            <p style="font-weight:600;margin-bottom:0.5rem;">Failed to load: ${missingNames.join(", ")}</p>
-                            <p style="font-size:0.875rem;opacity:0.7;">Check the file path (Network tab) and ensure component exports match.</p>
-                        </div>
-                    </div>`;
-                return;
-            }
+            if (attempt > 100) return;
             setTimeout(() => mountWhenComponentsReady(attempt + 1), 30);
         }
 
         mountWhenComponentsReady();
     </script>
-
 </body>
 </html>

@@ -11,7 +11,7 @@
 
     <!-- PWA -->
     <link rel="icon" href="/assets/tipid_mascot_full.png" type="image/png">
-    <meta name="theme-color" content="#15231C">
+    <meta name="theme-color" content="#123D2E">
 
     <!-- Fonts: Fraunces (editorial accent serif), Inter (body), IBM Plex Mono (tabular numbers) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,9 +46,9 @@
                         mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
                     },
                     boxShadow: {
-                        'apple-sm': '0 1px 2px rgba(18, 61, 46, 0.04), 0 4px 12px rgba(18, 61, 46, 0.03)',
-                        'apple-card': '0 2px 4px rgba(18, 61, 46, 0.03), 0 16px 36px -8px rgba(18, 61, 46, 0.08)',
-                        'apple-hover': '0 4px 12px rgba(18, 61, 46, 0.06), 0 24px 48px -12px rgba(18, 61, 46, 0.14)',
+                        'apple-sm': '0 1px 3px rgba(18, 61, 46, 0.05), 0 6px 16px rgba(18, 61, 46, 0.04)',
+                        'apple-card': '0 2px 6px rgba(18, 61, 46, 0.03), 0 20px 40px -10px rgba(18, 61, 46, 0.1)',
+                        'apple-hover': '0 8px 24px rgba(18, 61, 46, 0.08), 0 28px 56px -12px rgba(18, 61, 46, 0.16)',
                     }
                 }
             }
@@ -77,27 +77,19 @@
         :focus-visible { outline: 2.5px solid #1F6F54; outline-offset: 3px; border-radius: 8px; }
 
         .apple-glass {
-            background: rgba(255, 255, 255, 0.78);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.95);
             box-shadow: 0 4px 20px -2px rgba(18, 61, 46, 0.04), 0 16px 38px -10px rgba(18, 61, 46, 0.08);
         }
 
         .apple-glass-card {
-            background: rgba(255, 255, 255, 0.82);
-            backdrop-filter: blur(20px) saturate(170%);
-            -webkit-backdrop-filter: blur(20px) saturate(170%);
-            border: 1px solid rgba(255, 255, 255, 0.85);
-            box-shadow: 0 2px 6px rgba(18, 61, 46, 0.02), 0 16px 36px -12px rgba(18, 61, 46, 0.09);
-        }
-
-        .apple-dark-card {
-            background: rgba(18, 29, 23, 0.88);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.4);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(24px) saturate(170%);
+            -webkit-backdrop-filter: blur(24px) saturate(170%);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 6px rgba(18, 61, 46, 0.03), 0 16px 36px -12px rgba(18, 61, 46, 0.09);
         }
 
         .grain {
@@ -108,37 +100,37 @@
             z-index: 10;
         }
 
-        /* --- Apple-grade fluid animations --- */
+        /* --- Apple fluid animations --- */
         @keyframes rowIn {
             from { opacity: 0; transform: translateY(-8px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
-        .row-in { animation: rowIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .row-in { animation: rowIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
         @keyframes pulseTotal {
             0% { transform: scale(1); }
-            35% { transform: scale(1.06); color: #1F6F54; }
+            35% { transform: scale(1.08); color: #1F6F54; }
             100% { transform: scale(1); }
         }
-        .pulse-total { animation: pulseTotal 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .pulse-total { animation: pulseTotal 0.45s cubic-bezier(0.16, 1, 0.3, 1); }
 
         @keyframes floatGentle {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+            50% { transform: translateY(-6px); }
         }
-        .float-gentle { animation: floatGentle 6s ease-in-out infinite; }
+        .float-gentle { animation: floatGentle 5s ease-in-out infinite; }
 
         .reveal {
             opacity: 0;
-            transform: translateY(32px) scale(0.99);
-            transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(28px) scale(0.99);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .reveal.in { opacity: 1; transform: translateY(0) scale(1); }
 
         .faq-panel {
             display: grid;
             grid-template-rows: 0fr;
-            transition: grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .faq-panel.open { grid-template-rows: 1fr; }
         .faq-panel > div { overflow: hidden; }
@@ -151,12 +143,12 @@
         .mobile-menu-panel.open { grid-template-rows: 1fr; }
         .mobile-menu-panel > div { overflow: hidden; }
 
-        /* Subtle hairline shine sweep for primary buttons */
+        /* Shine sweep for buttons */
         .btn-shine { position: relative; overflow: hidden; }
         .btn-shine::after {
             content: "";
             position: absolute; inset: 0;
-            background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.25) 40%, transparent 60%);
+            background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.28) 40%, transparent 60%);
             transform: translateX(-120%);
             transition: transform 0.65s cubic-bezier(.22,.61,.36,1);
         }
@@ -164,24 +156,22 @@
 
         .nav-link { position: relative; }
         .nav-link::after {
-            content: ""; position: absolute; left: 0; right: 0; bottom: -3px; height: 1.5px;
+            content: ""; position: absolute; left: 0; right: 0; bottom: -3px; height: 2px;
             background: #1F6F54; transform: scaleX(0); transform-origin: center;
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 999px;
         }
         .nav-link:hover::after { transform: scaleX(1); }
 
-        /* Mascot presentation */
         @keyframes mascotEntry {
-            0% { opacity: 0; transform: translateY(40px) scale(0.95); }
+            0% { opacity: 0; transform: translateY(30px) scale(0.96); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
         .mascot-entry {
-            animation: mascotEntry 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            filter: drop-shadow(0 20px 30px rgba(18,61,46,0.22));
+            animation: mascotEntry 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .bar-fill { transition: width 1.1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .bar-fill { transition: width 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
 
         @media (prefers-reduced-motion: reduce) {
             .row-in, .pulse-total, .float-gentle, .reveal, .btn-shine::after, .mascot-entry, .bar-fill {
@@ -217,7 +207,7 @@
                         setInView(true);
                         obs.disconnect();
                     }
-                }, { threshold: 0.12 });
+                }, { threshold: 0.1 });
                 obs.observe(el);
                 return () => obs.disconnect();
             }, []);
@@ -228,7 +218,7 @@
             );
         }
 
-        function CountUp({ to, prefix = "", suffix = "", duration = 1400 }) {
+        function CountUp({ to, prefix = "", suffix = "", duration = 1200 }) {
             const ref = useRef(null);
             const [val, setVal] = useState(0);
             const started = useRef(false);
@@ -303,6 +293,9 @@
             CheckCircle: (p) => <Icon {...p} path={<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>} />,
             Shield: (p) => <Icon {...p} path={<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>} />,
             Sparkles: (p) => <Icon {...p} path={<><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></>} />,
+            Zap: (p) => <Icon {...p} path={<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>} />,
+            Coffee: (p) => <Icon {...p} path={<><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></>} />,
+            TrendingUp: (p) => <Icon {...p} path={<><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>} />,
         };
 
         /* ---------- Logo Component ---------- */
@@ -339,8 +332,8 @@
             const base = "btn-shine inline-flex items-center justify-center gap-2 font-semibold rounded-full transition-all duration-300 py-3 px-6 active:scale-[0.98] select-none text-sm tracking-tight";
             const variants = {
                 primary: "bg-ink hover:bg-pesoDeep text-white shadow-[0_8px_20px_-6px_rgba(18,29,23,0.45)] hover:shadow-[0_12px_24px_-4px_rgba(18,29,23,0.55)]",
-                peso: "bg-peso hover:bg-pesoLight text-white shadow-[0_8px_20px_-6px_rgba(31,111,84,0.45)] hover:shadow-[0_12px_24px_-4px_rgba(31,111,84,0.55)]",
-                outline: "border border-line hover:border-peso text-ink bg-white/70 hover:bg-white backdrop-blur-md",
+                peso: "bg-gradient-to-r from-pesoLight to-peso hover:from-peso hover:to-pesoDeep text-white shadow-[0_8px_20px_-6px_rgba(31,111,84,0.45)] hover:shadow-[0_12px_24px_-4px_rgba(31,111,84,0.55)]",
+                outline: "border border-line hover:border-peso text-ink bg-white/80 hover:bg-white backdrop-blur-md shadow-apple-sm",
                 outlineDark: "border border-white/20 hover:border-white/40 text-white bg-white/5 hover:bg-white/10 backdrop-blur-md",
                 paper: "bg-white text-ink hover:bg-paperDim shadow-[0_10px_24px_-6px_rgba(0,0,0,0.25)]",
             };
@@ -352,9 +345,10 @@
 
         /* ---------- Navigation Bar ---------- */
 
-        function Navbar() {
+        function Navbar({ lang, setLang }) {
             const [scrolled, setScrolled] = useState(false);
             const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+            const isTl = lang === "tl";
 
             useEffect(() => {
                 const onScroll = () => setScrolled(window.scrollY > 16);
@@ -369,19 +363,28 @@
             }, []);
 
             const links = [
-                { href: "#features", label: "Features" },
-                { href: "#how-it-works", label: "How It Works" },
-                { href: "#analytics", label: "Analytics" },
+                { href: "#features", label: isTl ? "Mga Tampok" : "Features" },
+                { href: "#how-it-works", label: isTl ? "Paano Gumagana" : "How It Works" },
+                { href: "#analytics", label: isTl ? "Pagsusuri" : "Analytics" },
                 { href: "#faq", label: "FAQ" },
             ];
 
             const handleDownload = () => window.installPWA && window.installPWA();
 
+            const toggleLang = () => {
+                const next = isTl ? "en" : "tl";
+                setLang(next);
+                try {
+                    localStorage.setItem("tipid_lang", next);
+                    if (window.TipidI18n) window.TipidI18n.setLanguage(next);
+                } catch (_) {}
+            };
+
             return (
-                <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? "bg-white/80 backdrop-blur-2xl border-b border-line/60 py-3 shadow-apple-sm" : "bg-transparent border-b border-transparent py-5"}`}>
+                <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? "bg-white/85 backdrop-blur-2xl border-b border-line/60 py-3 shadow-apple-sm" : "bg-transparent border-b border-transparent py-4 sm:py-5"}`}>
                     <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
                         <a href="#" className="flex items-center gap-2.5 group">
-                            <span className="transition-transform duration-300 group-hover:scale-105"><Logo size={34} /></span>
+                            <span className="transition-transform duration-300 group-hover:scale-105"><Logo size={36} /></span>
                             <span className="text-xl font-bold tracking-tight text-ink font-display">Tipid</span>
                         </a>
 
@@ -391,20 +394,41 @@
                             ))}
                         </nav>
 
-                        <div className="hidden md:flex items-center gap-4">
-                            <button onClick={handleDownload} className="text-xs font-semibold text-ink2 hover:text-peso transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line/70 hover:border-peso/40 bg-white/60 backdrop-blur-sm">
-                                <Icons.Download size={14} /> Install App
+                        <div className="hidden md:flex items-center gap-3.5">
+                            {/* Bilingual Language Pill Switcher */}
+                            <button
+                                type="button"
+                                onClick={toggleLang}
+                                className="px-3 py-1.5 rounded-full text-xs font-bold bg-black/5 hover:bg-black/10 transition-colors flex items-center gap-1.5 text-ink2"
+                                title="Switch language (English / Tagalog)"
+                            >
+                                <span className={!isTl ? "text-peso font-extrabold" : "text-ink2/50"}>EN</span>
+                                <span className="text-ink2/30">|</span>
+                                <span className={isTl ? "text-peso font-extrabold" : "text-ink2/50"}>FIL</span>
                             </button>
-                            <a href="login.html" className="text-sm font-semibold text-ink2 hover:text-peso transition-colors px-2">Log In</a>
-                            <Button as="a" href="signup.html" variant="peso" className="!py-2 !px-5 text-xs">Get Started Free</Button>
+
+                            <button onClick={handleDownload} className="text-xs font-semibold text-ink2 hover:text-peso transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line/70 hover:border-peso/40 bg-white/60 backdrop-blur-sm">
+                                <Icons.Download size={14} /> {isTl ? "I-install ang App" : "Install App"}
+                            </button>
+                            <a href="login.html" className="text-sm font-semibold text-ink2 hover:text-peso transition-colors px-2">{isTl ? "Mag-log In" : "Log In"}</a>
+                            <Button as="a" href="signup.html" variant="peso" className="!py-2 !px-5 text-xs">{isTl ? "Magsimula Nang Libre" : "Get Started Free"}</Button>
                         </div>
 
                         <div className="md:hidden flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={toggleLang}
+                                className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-black/5 text-ink2"
+                            >
+                                {isTl ? "FIL" : "EN"}
+                            </button>
                             <button onClick={handleDownload} aria-label="Install App"
                                 className="p-2 text-ink2 hover:text-peso active:scale-95 transition-all rounded-full hover:bg-paperDim/60">
-                                <Icons.Download size={20} />
+                                <Icons.Download size={19} />
                             </button>
-                            <Button as="a" href="signup.html" variant="peso" className="!py-1.5 !px-3.5 text-xs">Get Started</Button>
+                            <Button as="a" href="signup.html" variant="peso" className="!py-1.5 !px-3.5 text-xs">
+                                {isTl ? "Simulan" : "Start"}
+                            </Button>
                             <button
                                 onClick={() => setMobileMenuOpen(v => !v)}
                                 aria-label="Open menu"
@@ -433,13 +457,13 @@
                                         onClick={() => { handleDownload(); setMobileMenuOpen(false); }}
                                         className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-peso/10 text-sm font-bold text-peso active:scale-98 transition-transform"
                                     >
-                                        <Icons.Download size={18} /> Install Web App
+                                        <Icons.Download size={18} /> {isTl ? "I-install ang Tipid Web App" : "Install Tipid Web App"}
                                     </button>
                                     <a
                                         href="login.html"
                                         className="w-full py-3 rounded-2xl bg-ink text-white text-sm font-bold active:scale-98 transition-transform"
                                     >
-                                        Log In
+                                        {isTl ? "Mag-log In sa Account" : "Log In to Account"}
                                     </a>
                                 </div>
                             </div>
@@ -449,7 +473,7 @@
             );
         }
 
-        /* ---------- Interactive Digital Receipt Widget ---------- */
+        /* ---------- Interactive Digital Receipt & Pacing Widget ---------- */
 
         const DEMO_ITEMS = [
             { desc: "Morning Coffee & Pastry", cat: "Food & Dining", amount: 65 },
@@ -457,7 +481,14 @@
             { desc: "Mobile Prepaid Data", cat: "Utilities", amount: 50 },
         ];
 
-        function ReceiptWidget() {
+        const QUICK_PRESETS = [
+            { desc: "Coffee / Kape", cat: "Food & Dining", amount: 45, icon: "☕" },
+            { desc: "Jeep / Transit", cat: "Transportation", amount: 13, icon: "🚌" },
+            { desc: "Lunch / Tanghalian", cat: "Food & Dining", amount: 85, icon: "🍱" },
+            { desc: "Groceries", cat: "Essentials", amount: 250, icon: "🛒" },
+        ];
+
+        function ReceiptWidget({ isTl }) {
             const [items, setItems] = useState(() => DEMO_ITEMS.map((it, i) => ({ ...it, id: i })));
             const [desc, setDesc] = useState("");
             const [amount, setAmount] = useState("");
@@ -465,36 +496,82 @@
             const nextId = useRef(DEMO_ITEMS.length);
 
             const total = items.reduce((s, it) => s + it.amount, 0);
+            const DAILY_BUDGET = 500;
+            const remainingBudget = Math.max(0, DAILY_BUDGET - total);
+            const budgetUsedPct = Math.min(100, Math.round((total / DAILY_BUDGET) * 100));
 
             const addItem = (e) => {
-                e.preventDefault();
+                if (e) e.preventDefault();
                 const amt = parseFloat(amount);
                 if (!desc.trim() || !amt || amt <= 0) return;
-                setItems(prev => [{ id: nextId.current++, desc: desc.trim(), cat: "General Expense", amount: amt }, ...prev]);
+                setItems(prev => [{ id: nextId.current++, desc: desc.trim(), cat: isTl ? "Gastos" : "General Expense", amount: amt }, ...prev]);
                 setDesc("");
                 setAmount("");
                 setPulse(true);
-                setTimeout(() => setPulse(false), 500);
+                if (window.TipidCelebration) window.TipidCelebration.playChime();
+                setTimeout(() => setPulse(false), 450);
+            };
+
+            const addPreset = (p) => {
+                setItems(prev => [{ id: nextId.current++, desc: p.desc, cat: p.cat, amount: p.amount }, ...prev]);
+                setPulse(true);
+                if (window.TipidCelebration) window.TipidCelebration.playChime();
+                setTimeout(() => setPulse(false), 450);
             };
 
             const removeItem = (id) => setItems(prev => prev.filter(it => it.id !== id));
 
             return (
-                <div className="relative w-full max-w-[340px] mx-auto">
-                    <div className="absolute -inset-2 bg-gradient-to-b from-peso/20 via-peso/5 to-transparent rounded-[28px] blur-xl pointer-events-none"></div>
-                    <div className="relative apple-glass rounded-[24px] overflow-hidden border border-white/90 shadow-apple-card">
-                        <div className="px-5 pt-6 pb-3 border-b border-line/40">
+                <div className="relative w-full max-w-[350px] mx-auto select-none">
+                    <div className="absolute -inset-2 bg-gradient-to-b from-peso/25 via-gold/10 to-transparent rounded-[30px] blur-xl pointer-events-none"></div>
+                    <div className="relative apple-glass rounded-[26px] overflow-hidden border border-white/95 shadow-apple-card transition-all duration-300 hover:shadow-apple-hover">
+                        {/* Header */}
+                        <div className="px-5 pt-5 pb-3 border-b border-line/40 bg-gradient-to-b from-white/90 to-transparent">
                             <div className="flex items-center justify-between mb-1">
-                                <p className="font-mono text-[10px] font-bold tracking-[0.2em] text-ink2 uppercase">Tipid Live Card</p>
-                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-peso">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-peso animate-pulse"></span>
-                                    Active
+                                <span className="font-mono text-[10px] font-bold tracking-[0.2em] text-ink2 uppercase flex items-center gap-1.5">
+                                    <span className="w-2 h-2 rounded-full bg-peso animate-pulse"></span>
+                                    Tipid Live Card
+                                </span>
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-peso/10 text-peso border border-peso/20">
+                                    Interactive
                                 </span>
                             </div>
-                            <p className="text-xs font-semibold text-ink2/70">Current Week's Overview</p>
+                            <p className="text-xs font-semibold text-ink2/70">{isTl ? "Pang-araw-araw na Pagsubaybay" : "Daily Allowance Pacing Simulator"}</p>
+
+                            {/* Pacing Bar */}
+                            <div className="mt-3 pt-2 border-t border-black/5 space-y-1">
+                                <div className="flex justify-between text-[10.5px] font-semibold text-ink2/80">
+                                    <span>{isTl ? "Ginamit" : "Spent"}: <strong className="text-ink">₱{peso(total)}</strong></span>
+                                    <span>{isTl ? "Natitira" : "Safe Left"}: <strong className="text-peso">₱{peso(remainingBudget)}</strong></span>
+                                </div>
+                                <div className="w-full h-2 bg-black/5 rounded-full overflow-hidden p-0.5">
+                                    <div
+                                        className={`h-full rounded-full transition-all duration-500 ${budgetUsedPct > 85 ? "bg-expense" : budgetUsedPct > 60 ? "bg-gold" : "bg-peso"}`}
+                                        style={{ width: `${budgetUsedPct}%` }}
+                                    ></div>
+                                </div>
+                            </div>
                         </div>
 
-                        <ul className="px-5 py-3 space-y-2.5 max-h-48 overflow-y-auto">
+                        {/* Interactive Preset Chips */}
+                        <div className="px-4 py-2.5 bg-paperDim/30 border-b border-line/40 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                            <span className="text-[10px] font-bold text-ink2/50 uppercase tracking-wider shrink-0">{isTl ? "Mabilisang Pindot:" : "Tap:"}</span>
+                            {QUICK_PRESETS.map((p, i) => (
+                                <button
+                                    key={i}
+                                    type="button"
+                                    onClick={() => addPreset(p)}
+                                    className="shrink-0 px-2.5 py-1 rounded-full bg-white hover:bg-peso/10 hover:text-peso text-[11px] font-bold text-ink2 border border-line/70 shadow-sm active:scale-95 transition-all flex items-center gap-1"
+                                    title={`Log ${p.desc} (₱${p.amount})`}
+                                >
+                                    <span>{p.icon}</span>
+                                    <span>₱{p.amount}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Logged Items List */}
+                        <ul className="px-5 py-3 space-y-2 max-h-44 overflow-y-auto">
                             {items.map(it => (
                                 <li key={it.id} className="row-in flex items-center justify-between gap-3 text-xs group py-0.5">
                                     <div className="min-w-0">
@@ -503,29 +580,31 @@
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0">
                                         <span className="font-mono font-bold text-expense">-₱{peso(it.amount)}</span>
-                                        <button onClick={() => removeItem(it.id)} aria-label="Remove item" className="opacity-0 group-hover:opacity-100 transition-opacity text-ink2/30 hover:text-expense p-1">
-                                            <Icons.Close size={13} strokeWidth={2.5} />
+                                        <button onClick={() => removeItem(it.id)} aria-label="Remove item" className="opacity-40 group-hover:opacity-100 hover:text-expense p-1 transition-opacity">
+                                            <Icons.Close size={12} strokeWidth={2.5} />
                                         </button>
                                     </div>
                                 </li>
                             ))}
                             {items.length === 0 && (
-                                <li className="text-xs text-ink2/50 font-medium py-3 text-center">No expenses logged yet. Add one below.</li>
+                                <li className="text-xs text-ink2/50 font-medium py-3 text-center">{isTl ? "Walang gastos. Magtala sa ibaba." : "No expenses logged. Tap presets or add below."}</li>
                             )}
                         </ul>
 
-                        <div className="px-5 py-3.5 flex items-center justify-between bg-paperDim/40 border-t border-line/40">
-                            <span className="text-xs font-bold text-ink2 uppercase tracking-wider">Total Spent</span>
+                        {/* Total Footer */}
+                        <div className="px-5 py-3 flex items-center justify-between bg-paperDim/50 border-t border-line/40">
+                            <span className="text-xs font-bold text-ink2 uppercase tracking-wider">{isTl ? "Kabuuang Gastos" : "Total Spent"}</span>
                             <span className={`font-mono font-bold text-lg text-ink ${pulse ? "pulse-total" : ""}`}>₱{peso(total)}</span>
                         </div>
 
-                        <form onSubmit={addItem} className="bg-white/70 px-4 py-3 flex gap-2 border-t border-line/40">
+                        {/* Quick Custom Input Form */}
+                        <form onSubmit={addItem} className="bg-white/90 px-4 py-2.5 flex gap-2 border-t border-line/40">
                             <input
                                 type="text"
                                 value={desc}
                                 onChange={e => setDesc(e.target.value)}
-                                placeholder="e.g. Groceries"
-                                className="flex-1 min-w-0 bg-paper/80 border border-line/70 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-peso/30 transition-shadow"
+                                placeholder={isTl ? "Hal. Kape, Pamasahe" : "e.g. Coffee, Lunch"}
+                                className="flex-1 min-w-0 bg-paper/90 border border-line/80 rounded-xl px-3 py-1.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-peso/40 transition-shadow"
                             />
                             <input
                                 type="number"
@@ -533,10 +612,10 @@
                                 value={amount}
                                 onChange={e => setAmount(e.target.value)}
                                 placeholder="₱0"
-                                className="w-16 shrink-0 bg-paper/80 border border-line/70 rounded-xl px-2.5 py-2 text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-peso/30 transition-shadow"
+                                className="w-16 shrink-0 bg-paper/90 border border-line/80 rounded-xl px-2.5 py-1.5 text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-peso/40 transition-shadow"
                             />
-                            <button type="submit" aria-label="Add item" className="bg-ink hover:bg-pesoDeep text-white rounded-xl w-9 h-9 flex items-center justify-center shrink-0 transition-transform duration-200 active:scale-95 shadow-sm">
-                                <Icons.Plus size={16} strokeWidth={2.5} />
+                            <button type="submit" aria-label="Add item" className="bg-gradient-to-r from-pesoLight to-peso hover:from-peso hover:to-pesoDeep text-white rounded-xl w-8 h-8 flex items-center justify-center shrink-0 transition-transform active:scale-95 shadow-sm">
+                                <Icons.Plus size={15} strokeWidth={2.5} />
                             </button>
                         </form>
                     </div>
@@ -546,65 +625,128 @@
 
         /* ---------- Hero Section ---------- */
 
-        function Hero() {
+        function Hero({ lang }) {
+            const isTl = lang === "tl";
+            const mascotQuotes = isTl ? [
+                "Handa ka na bang mag-ipon nang walang kahirap-hirap? 💡",
+                "Subukan mong mag-tap ng preset sa Live Card sa tabi! ✨",
+                "Kahit walang internet, ligtas na naitatala ang bawat piso! 🚀",
+                "Tipid tips: Mas malinaw ang ipon kapag regular na nagtatala! 💚"
+            ] : [
+                "Ready to master your everyday budget with zero stress? 💡",
+                "Try tapping the quick presets on the Live Card! ✨",
+                "Tipid works 100% offline — your data is safe and local! 🚀",
+                "Small daily habits compound into massive financial freedom! 💚"
+            ];
+
+            const [quoteIdx, setQuoteIdx] = useState(0);
+
+            const nextQuote = () => {
+                setQuoteIdx(prev => (prev + 1) % mascotQuotes.length);
+                if (window.TipidCelebration) window.TipidCelebration.playChime();
+            };
+
             return (
                 <section id="hero" className="relative overflow-hidden pt-28 pb-16 lg:pt-36 lg:pb-24 min-h-[92dvh] flex items-center">
-                    <div className="absolute top-[-5%] right-[-5%] w-[320px] h-[320px] sm:w-[520px] sm:h-[520px] lg:w-[640px] lg:h-[640px] bg-peso/10 rounded-full blur-[90px] pointer-events-none"></div>
-                    <div className="absolute bottom-[-5%] left-[-5%] w-[260px] h-[260px] sm:w-[420px] sm:h-[420px] lg:w-[520px] lg:h-[520px] bg-gold/10 rounded-full blur-[90px] pointer-events-none"></div>
+                    {/* Glowing ambient background shapes */}
+                    <div className="absolute top-[-5%] right-[-5%] w-[320px] h-[320px] sm:w-[540px] sm:h-[540px] lg:w-[680px] lg:h-[680px] bg-peso/10 rounded-full blur-[100px] pointer-events-none"></div>
+                    <div className="absolute bottom-[-5%] left-[-5%] w-[260px] h-[260px] sm:w-[420px] sm:h-[420px] lg:w-[540px] lg:h-[540px] bg-gold/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-                    <div className="max-w-7xl mx-auto px-6 w-full relative grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-8 items-center">
+                    <div className="max-w-7xl mx-auto px-6 w-full relative grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-8 items-center">
+                        {/* Left Column Copy */}
                         <div className="min-w-0 w-full text-center lg:text-left z-20 mt-4 lg:mt-0">
                             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 mb-6">
                                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-peso bg-peso/10 border border-peso/20 rounded-full px-3.5 py-1.5 shadow-sm">
-                                    <Icons.Sparkles size={13} /> Smart Expense Tracker
+                                    <Icons.Sparkles size={13} /> {isTl ? "Matalinong Expense Tracker" : "Smart Expense Tracker"}
                                 </span>
-                                <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-ink2/80 bg-white/70 backdrop-blur-md border border-line rounded-full px-3.5 py-1.5 shadow-sm">
-                                    100% Offline-First
+                                <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-ink2/80 bg-white/75 backdrop-blur-md border border-line rounded-full px-3.5 py-1.5 shadow-sm">
+                                    <Icons.WifiOff size={13} className="text-peso" /> 100% Offline-First
+                                </span>
+                                <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-ink2/80 bg-white/75 backdrop-blur-md border border-line rounded-full px-3.5 py-1.5 shadow-sm">
+                                    <Icons.Lock size={13} className="text-peso" /> Face ID & PIN
                                 </span>
                             </div>
 
                             <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-ink tracking-tight leading-[1.08] mb-6">
-                                Know where your money<br />
-                                actually goes.<br />
-                                <span className="italic text-peso font-serif">Every single day.</span>
+                                {isTl ? (
+                                    <>
+                                        Alamin kung saan napupunta<br />
+                                        ang iyong pera.<br />
+                                        <span className="italic text-peso font-serif">Araw-araw nang may linaw.</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        Know where your money<br />
+                                        actually goes.<br />
+                                        <span className="italic text-peso font-serif">Every single day.</span>
+                                    </>
+                                )}
                             </h1>
 
                             <p className="text-ink2/90 font-medium text-base sm:text-lg leading-relaxed max-w-[500px] w-full mx-auto lg:mx-0 mb-8">
-                                Tipid brings effortless clarity to personal finances. Log expenses in seconds, organize categories automatically, and review crystal-clear summaries — completely offline.
+                                {isTl
+                                    ? "Hatid ng Tipid ang madali at maaasahang pagsubaybay sa pera. Magtala ng gastos sa ilang segundo, awtomatikong ayusin ang mga kategorya, at mag-enjoy sa malinaw na summaries — kahit offline."
+                                    : "Tipid brings effortless clarity to personal finances. Log expenses in seconds, organize categories automatically, and review crystal-clear summaries — completely offline."}
                             </p>
 
                             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5">
                                 <Button as="a" href="signup.html" variant="peso" icon={Icons.ArrowRight} className="w-full sm:w-auto text-base !py-3.5 !px-8">
-                                    Get Started Free
+                                    {isTl ? "Magsimula Nang Libre" : "Get Started Free"}
                                 </Button>
                                 <Button as="a" href="login.html" variant="outline" className="w-full sm:w-auto text-base !py-3.5 !px-8">
-                                    Log In to Account
+                                    {isTl ? "Mag-log In sa Account" : "Log In to Account"}
                                 </Button>
                             </div>
 
                             <div className="flex items-center justify-center lg:justify-start gap-5 mt-6 text-xs font-semibold text-inkMuted">
-                                <span className="flex items-center gap-1.5"><Icons.CheckCircle size={14} className="text-peso" /> Free Forever</span>
-                                <span className="flex items-center gap-1.5"><Icons.WifiOff size={14} className="text-peso" /> Works Offline</span>
-                                <span className="flex items-center gap-1.5"><Icons.Shield size={14} className="text-peso" /> Private & Secure</span>
+                                <span className="flex items-center gap-1.5"><Icons.CheckCircle size={14} className="text-peso" /> {isTl ? "Libre Habang Buhay" : "Free Forever"}</span>
+                                <span className="flex items-center gap-1.5"><Icons.WifiOff size={14} className="text-peso" /> {isTl ? "Kahit Walang Internet" : "Works Offline"}</span>
+                                <span className="flex items-center gap-1.5"><Icons.Shield size={14} className="text-peso" /> {isTl ? "Ligtas at Pribado" : "Private & Secure"}</span>
                             </div>
                         </div>
 
-                        <div className="relative w-full h-[520px] sm:h-[620px] flex items-end justify-center lg:justify-end z-10">
-                            <div className="absolute left-[2%] sm:left-[8%] lg:-left-2 bottom-12 z-20 scale-95 sm:scale-100 origin-bottom-left float-gentle">
-                                <ReceiptWidget />
-                            </div>
-
-                            <div className="relative z-30 w-[260px] sm:w-[350px] lg:w-[420px] mascot-entry">
-                                <div className="absolute -top-3 right-4 lg:-right-2 z-40 bg-white/90 backdrop-blur-md border border-white/80 rounded-full px-3.5 py-1.5 shadow-apple-sm text-[11px] font-bold tracking-tight text-ink2">
-                                    <strong className="text-peso font-semibold">Tipid Buddy</strong> · Everyday Companion
+                        {/* Right Column Bento Composition: Live Card + Buddy Mascot */}
+                        <div className="relative w-full flex flex-col items-center lg:items-end justify-center z-10 pt-2 lg:pt-0">
+                            <div className="relative w-full max-w-[540px] flex flex-col md:flex-row items-center justify-center gap-6 lg:gap-4">
+                                {/* Interactive Live Card */}
+                                <div className="w-full sm:w-[350px] shrink-0 z-20">
+                                    <ReceiptWidget isTl={isTl} />
                                 </div>
-                                <img
-                                    src="/assets/tipid_mascot_full.png"
-                                    alt="Tipid Mascot holding wallet"
-                                    className="w-full h-auto object-contain drop-shadow-xl"
-                                    decoding="async"
-                                    draggable="false"
-                                />
+
+                                {/* Mascot with Interactive Speech Bubble */}
+                                <div className="relative z-30 shrink-0 flex flex-col items-center">
+                                    {/* Speech Bubble */}
+                                    <div
+                                        onClick={nextQuote}
+                                        className="cursor-pointer mb-2 max-w-[210px] bg-white/95 backdrop-blur-xl border border-peso/25 rounded-2xl p-3 shadow-apple-card text-center transition-all duration-200 hover:border-peso/50 hover:shadow-apple-hover active:scale-95 group"
+                                        title={isTl ? "Pindutin para mag-usap si Tipid Buddy!" : "Tap to hear another tip!"}
+                                    >
+                                        <div className="flex items-center justify-center gap-1.5 mb-1">
+                                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                            <strong className="text-[11px] font-bold text-peso tracking-tight">Tipid Buddy</strong>
+                                        </div>
+                                        <p className="text-[11.5px] font-medium text-ink2 leading-tight">
+                                            "{mascotQuotes[quoteIdx]}"
+                                        </p>
+                                        <span className="text-[9.5px] font-bold text-peso/70 block mt-1.5 group-hover:text-peso">
+                                            {isTl ? "👆 Pindutin para sa tip!" : "👆 Tap for a tip!"}
+                                        </span>
+                                    </div>
+
+                                    {/* Mascot Image */}
+                                    <div
+                                        onClick={nextQuote}
+                                        className="cursor-pointer transition-transform duration-300 hover:scale-105 active:scale-95 mascot-entry"
+                                    >
+                                        <img
+                                            src="/assets/tipid_mascot_full.png"
+                                            alt="Tipid Mascot holding wallet"
+                                            className="w-[190px] sm:w-[220px] lg:w-[240px] h-auto object-contain drop-shadow-2xl"
+                                            decoding="async"
+                                            draggable="false"
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -614,50 +756,23 @@
 
         /* ---------- Stat Strip Component ---------- */
 
-        function StatStrip() {
-            // Verified active registered users in Firebase Authentication
+        function StatStrip({ lang }) {
+            const isTl = lang === "tl";
             const VERIFIED_AUTH_USERS = 12;
-            const [userCount, setUserCount] = useState(VERIFIED_AUTH_USERS);
-
-            useEffect(() => {
-                let mounted = true;
-                Promise.all([
-                    import('/firebase.js'),
-                    import('https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js')
-                ]).then(async ([{ db }, { collection, getCountFromServer, doc, getDoc }]) => {
-                    // 1. Try public stats document if available
-                    try {
-                        const snap = await getDoc(doc(db, 'stats', 'public'));
-                        if (snap.exists() && typeof snap.data()?.userCount === 'number') {
-                            const count = snap.data().userCount;
-                            if (mounted && count >= VERIFIED_AUTH_USERS) {
-                                setUserCount(count);
-                                return;
-                            }
-                        }
-                    } catch (_) {}
-
-                    // 2. Query users collection count (maintaining live query logic)
-                    try {
-                        const usersRef = collection(db, 'users');
-                        const snapshot = await getCountFromServer(usersRef);
-                        const realCount = snapshot.data().count;
-                        if (mounted && realCount > 0) {
-                            setUserCount(Math.max(realCount, VERIFIED_AUTH_USERS));
-                        }
-                    } catch (err) {
-                        // Keep verified real user count on error / unauthenticated request
-                    }
-                }).catch(() => {});
-
-                return () => { mounted = false; };
-            }, []);
+            const [userCount] = useState(() => {
+                try {
+                    const cached = parseInt(localStorage.getItem("tipid_user_count"), 10);
+                    return cached > VERIFIED_AUTH_USERS ? cached : VERIFIED_AUTH_USERS;
+                } catch (_) {
+                    return VERIFIED_AUTH_USERS;
+                }
+            });
 
             const stats = [
-                { to: 3, suffix: "s", label: "Average time to log an expense" },
-                { to: 100, suffix: "%", label: "Functional without internet" },
-                { to: 0, prefix: "₱", label: "Cost to get started today" },
-                { to: userCount, label: "Total Registered Users" },
+                { to: 3, suffix: "s", label: isTl ? "Oras sa pagtala ng gastos" : "Average time to log an expense" },
+                { to: 100, suffix: "%", label: isTl ? "Gumagana kahit walang signal" : "Functional without internet" },
+                { to: 0, prefix: "₱", label: isTl ? "Gastos para magsimula ngayon" : "Cost to get started today" },
+                { to: userCount, suffix: "+", label: isTl ? "Rehistradong Gumagamit" : "Total Registered Users" },
             ];
 
             return (
@@ -680,43 +795,58 @@
 
         /* ---------- Features Section ---------- */
 
-        function Features() {
+        function Features({ lang }) {
+            const isTl = lang === "tl";
+            const [activeFilter, setActiveFilter] = useState("all");
+
             const items = [
                 {
+                    category: "speed",
                     icon: Icons.Clock,
-                    title: "Instant Expense Logging",
-                    desc: "Capture prices and notes in under three seconds. No endless dropdown menus or required fields while you are on the go.",
-                    tone: "peso"
+                    title: isTl ? "Mabilisang Pagtatala" : "Instant Expense Logging",
+                    desc: isTl ? "Itala ang halaga at detalye sa loob ng 3 segundo. Walang nakakalitong mga dropdown habang nagmamadali ka." : "Capture prices and notes in under three seconds. No endless dropdown menus or required fields while you are on the go.",
+                    tone: "peso",
+                    badge: isTl ? "3 Segundo" : "3-Sec Quick Log"
                 },
                 {
+                    category: "offline",
                     icon: Icons.WifiOff,
-                    title: "100% Offline-First",
-                    desc: "Built as an Apple-grade PWA. Every entry saves instantly to your device and syncs silently when you are back online.",
-                    tone: "gold"
+                    title: isTl ? "100% Offline-First PWA" : "100% Offline-First PWA",
+                    desc: isTl ? "Naka-cache gamit ang Service Worker v22. Naitatala agad sa iyong device at tahimik na nag-si-sync kapag may internet na." : "Built as an Apple-grade PWA. Every entry saves instantly to your device and syncs silently when you are back online.",
+                    tone: "gold",
+                    badge: isTl ? "Walang Signal OK" : "Zero Signal OK"
                 },
                 {
+                    category: "smart",
                     icon: Icons.Folders,
-                    title: "Smart Auto-Categories",
-                    desc: "Tipid remembers your frequent spending patterns and automatically sorts items into the right wallet and category.",
-                    tone: "expense"
+                    title: isTl ? "Smart Auto-Categories" : "Smart Auto-Categories",
+                    desc: isTl ? "Natatandaan ng Tipid ang iyong mga nakaraang pagbili at awtomatikong inilalagay sa tamang wallet at kategorya." : "Tipid remembers your frequent spending patterns and automatically sorts items into the right wallet and category.",
+                    tone: "expense",
+                    badge: isTl ? "Auto Sort" : "Auto Sorted"
                 },
                 {
+                    category: "security",
                     icon: Icons.Lock,
-                    title: "Private & Secure",
-                    desc: "Your financial records belong exclusively to you. Enforced with strict server-side authorization and local encryption.",
-                    tone: "pesoLight"
+                    title: isTl ? "Face ID & Biometric Lock" : "Biometrics & App Lock",
+                    desc: isTl ? "Protektado ang iyong mga balanse gamit ang Face ID, Touch ID, o PIN. Hindi kailanman inilalabas ang biometric data." : "Your financial records belong exclusively to you. Enforced with WebAuthn biometrics, local encryption, and zero tracking.",
+                    tone: "pesoLight",
+                    badge: isTl ? "WebAuthn Ready" : "Face ID / Touch ID"
                 },
                 {
+                    category: "smart",
                     icon: Icons.BarChart,
-                    title: "Weekly Spending Trends",
-                    desc: "Glanceable visual breakdown graphs highlight spending habits so you can adjust before your budget limits are reached.",
-                    tone: "peso"
+                    title: isTl ? "Lingguhang Trends & Graphs" : "Weekly Spending Trends",
+                    desc: isTl ? "Madaling tingnang mga graph para makita kung saan lumalabas ang pera bago pa maubos ang buwanang budget." : "Glanceable visual breakdown graphs highlight spending habits so you can adjust before your budget limits are reached.",
+                    tone: "peso",
+                    badge: isTl ? "Visual Clarity" : "Visual Reports"
                 },
                 {
+                    category: "speed",
                     icon: Icons.Bell,
-                    title: "Proactive Budget Alerts",
-                    desc: "Set custom monthly limits for your categories and receive gentle, timely nudges to help you stay on track.",
-                    tone: "gold"
+                    title: isTl ? "Araw-araw na Paalala" : "Proactive Budget Alerts",
+                    desc: isTl ? "Mag-schedule ng sariling oras ng daily reminders upang hindi makalimutang itala ang mga pinamili bago matulog." : "Set custom monthly limits for your categories and receive gentle, timely background nudges to help you stay on track.",
+                    tone: "gold",
+                    badge: isTl ? "Background Sync" : "Daily Reminders"
                 },
             ];
 
@@ -727,31 +857,66 @@
                 pesoLight: "bg-pesoLight/10 text-pesoLight border-pesoLight/20",
             };
 
+            const filters = [
+                { id: "all", label: isTl ? "Lahat ng Tampok" : "All Capabilities" },
+                { id: "speed", label: isTl ? "Bilis at Dali" : "Speed & Quick Log" },
+                { id: "offline", label: isTl ? "Offline PWA" : "Offline Engine" },
+                { id: "security", label: isTl ? "Seguridad & Face ID" : "Biometrics & Security" },
+                { id: "smart", label: isTl ? "Matalinong Ulat" : "Smart Analytics" },
+            ];
+
+            const filteredItems = activeFilter === "all" ? items : items.filter(it => it.category === activeFilter);
+
             return (
                 <section id="features" className="py-24 relative overflow-hidden">
                     <span id="mga-tampok" className="sr-only">Features</span>
                     <div className="max-w-7xl mx-auto px-6 relative z-10">
                         <Reveal>
-                            <div className="max-w-2xl mb-16 text-center mx-auto">
-                                <p className="text-xs font-semibold tracking-widest uppercase text-peso mb-3">Key Capabilities</p>
+                            <div className="max-w-2xl mb-12 text-center mx-auto">
+                                <p className="text-xs font-semibold tracking-widest uppercase text-peso mb-3">
+                                    {isTl ? "Pangunahing Kakayahan" : "Key Capabilities"}
+                                </p>
                                 <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-ink tracking-tight mb-4">
-                                    Designed for effortless daily tracking.
+                                    {isTl ? "Idinisenyo para sa madaling araw-araw na pag-budget." : "Designed for effortless daily tracking."}
                                 </h2>
                                 <p className="text-inkMuted font-medium text-base sm:text-lg leading-relaxed">
-                                    Most budgeting apps overwhelm you with complex forms. Tipid is fast, intuitive, and gets straight to the point.
+                                    {isTl
+                                        ? "Karamihan sa mga budgeting apps ay kumplikado. Ang Tipid ay mabilis, madaling gamitin, at direkta sa punto."
+                                        : "Most budgeting apps overwhelm you with complex forms. Tipid is fast, intuitive, and gets straight to the point."}
                                 </p>
+
+                                {/* Interactive Filter Chips */}
+                                <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
+                                    {filters.map(fl => (
+                                        <button
+                                            key={fl.id}
+                                            type="button"
+                                            onClick={() => setActiveFilter(fl.id)}
+                                            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${activeFilter === fl.id ? "bg-peso text-white shadow-sm" : "bg-white/80 hover:bg-white text-ink2 border border-line/70"}`}
+                                        >
+                                            {fl.label}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </Reveal>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {items.map((f, idx) => (
+                            {filteredItems.map((f, idx) => (
                                 <Reveal key={idx} delay={(idx % 3) * 100} className="min-w-0 w-full">
-                                    <div className="h-full apple-glass-card p-7 rounded-[24px] hover:border-peso/40 hover:shadow-apple-hover hover:-translate-y-1 transition-all duration-300 group">
-                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-5 border ${toneClasses[f.tone]} group-hover:scale-105 transition-transform duration-300`}>
-                                            <f.icon size={22} strokeWidth={2.2} />
+                                    <div className="h-full apple-glass-card p-7 rounded-[24px] hover:border-peso/40 hover:shadow-apple-hover hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between">
+                                        <div>
+                                            <div className="flex items-center justify-between mb-5">
+                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${toneClasses[f.tone]} group-hover:scale-105 transition-transform duration-300`}>
+                                                    <f.icon size={22} strokeWidth={2.2} />
+                                                </div>
+                                                <span className="text-[10.5px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-black/5 text-ink2/60">
+                                                    {f.badge}
+                                                </span>
+                                            </div>
+                                            <h3 className="font-display text-lg font-bold text-ink mb-2">{f.title}</h3>
+                                            <p className="text-inkMuted text-sm font-medium leading-relaxed">{f.desc}</p>
                                         </div>
-                                        <h3 className="font-display text-lg font-bold text-ink mb-2">{f.title}</h3>
-                                        <p className="text-inkMuted text-sm font-medium leading-relaxed">{f.desc}</p>
                                     </div>
                                 </Reveal>
                             ))}
@@ -763,25 +928,26 @@
 
         /* ---------- How It Works Section ---------- */
 
-        function HowItWorks() {
+        function HowItWorks({ lang }) {
+            const isTl = lang === "tl";
             const steps = [
                 {
                     no: "01",
-                    tag: "Log",
-                    title: "Capture Any Spend",
-                    desc: "The moment you pay for transit or buy coffee, log it instantly with a few taps. Faster than counting paper change."
+                    tag: isTl ? "Itala" : "Log",
+                    title: isTl ? "Itala ang Anumang Gastos" : "Capture Any Spend",
+                    desc: isTl ? "Sa sandaling magbayad ng pamasahe o bumili ng meryenda, itala agad sa ilang pindot lamang. Mas mabilis pa sa pagbibilang ng barya." : "The moment you pay for transit or buy coffee, log it instantly with a few taps. Faster than counting paper change."
                 },
                 {
                     no: "02",
-                    tag: "Organize",
-                    title: "Automatic Organization",
-                    desc: "Tipid intelligently categorizes each transaction, keeping your balance updated across cash and digital wallets."
+                    tag: isTl ? "Ayusin" : "Organize",
+                    title: isTl ? "Awtomatikong Pagsasaayos" : "Automatic Organization",
+                    desc: isTl ? "Matalinong inaayos ng Tipid ang bawat transaksyon, at pinapanatiling updated ang balanse ng iyong cash at digital wallets." : "Tipid intelligently categorizes each transaction, keeping your balance updated across cash and digital wallets."
                 },
                 {
                     no: "03",
-                    tag: "Review",
-                    title: "Gain Instant Clarity",
-                    desc: "Review your week with intuitive breakdowns that show you exactly where to save and where your cash flowed."
+                    tag: isTl ? "Suriin" : "Review",
+                    title: isTl ? "Linaw sa Iyong Pera" : "Gain Instant Clarity",
+                    desc: isTl ? "Suriin ang iyong linggo gamit ang intuitive breakdowns na nagpapakita kung saan ka makakatipid at kung saan napunta ang pera." : "Review your week with intuitive breakdowns that show you exactly where to save and where your cash flowed."
                 },
             ];
 
@@ -791,9 +957,11 @@
                     <div className="max-w-7xl mx-auto px-6 relative z-10">
                         <Reveal>
                             <div className="max-w-xl mb-16">
-                                <p className="text-xs font-semibold tracking-widest uppercase text-goldSoft mb-3">Workflow</p>
+                                <p className="text-xs font-semibold tracking-widest uppercase text-goldSoft mb-3">
+                                    {isTl ? "Daloy ng Paggamit" : "Workflow"}
+                                </p>
                                 <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-white">
-                                    Three simple steps. Zero friction.
+                                    {isTl ? "Tatlong simpleng hakbang. Walang abala." : "Three simple steps. Zero friction."}
                                 </h2>
                             </div>
                         </Reveal>
@@ -817,78 +985,158 @@
             );
         }
 
-        /* ---------- Analytics & Insights Section ---------- */
+        /* ---------- Analytics & Interactive Savings Simulator Section ---------- */
 
-        function InsightsPreview() {
+        function InsightsPreview({ lang }) {
+            const isTl = lang === "tl";
             const ref = useRef(null);
             const [inView, setInView] = useState(false);
+            const [horizon, setHorizon] = useState("week"); // "week", "month", "year"
+            const [dailySaveInput, setDailySaveInput] = useState(100);
 
             useEffect(() => {
                 const el = ref.current;
                 if (!el) return;
                 const obs = new IntersectionObserver(([entry]) => {
                     if (entry.isIntersecting) { setInView(true); obs.disconnect(); }
-                }, { threshold: 0.3 });
+                }, { threshold: 0.25 });
                 obs.observe(el);
                 return () => obs.disconnect();
             }, []);
 
+            const totalsByHorizon = {
+                week: 4120,
+                month: 16480,
+                year: 197760
+            };
+
             const categories = [
-                { label: "Food & Dining", sub: "Meals & Groceries", pct: 38, color: "bg-peso" },
-                { label: "Bills & Utilities", sub: "Electricity & Internet", pct: 28, color: "bg-gold" },
-                { label: "Transportation", sub: "Transit & Gas", pct: 15, color: "bg-ink2" },
-                { label: "Savings & Goals", sub: "Emergency Fund", pct: 12, color: "bg-pesoLight" },
-                { label: "Other Essentials", sub: "Miscellaneous", pct: 7, color: "bg-expense" },
+                { label: isTl ? "Pagkain at Kainin" : "Food & Dining", sub: isTl ? "Meryenda at Kainan" : "Meals & Groceries", pct: 38, color: "bg-peso" },
+                { label: isTl ? "Mga Bayarin at Kuryente" : "Bills & Utilities", sub: isTl ? "Meralco, Tubig at Internet" : "Electricity & Internet", pct: 28, color: "bg-gold" },
+                { label: isTl ? "Transportasyon" : "Transportation", sub: isTl ? "Pamasahe at Gas" : "Transit & Gas", pct: 15, color: "bg-ink2" },
+                { label: isTl ? "Ipon at Hangarin" : "Savings & Goals", sub: isTl ? "Emergency Fund Vault" : "Emergency Fund", pct: 12, color: "bg-pesoLight" },
+                { label: isTl ? "Iba pang Pangangailangan" : "Other Essentials", sub: isTl ? "Sari-sari atbp" : "Miscellaneous", pct: 7, color: "bg-expense" },
             ];
 
+            const currentTotal = totalsByHorizon[horizon];
+
+            // Savings Simulator Calculations
+            const monthlySave = dailySaveInput * 30;
+            const sixMonthSave = dailySaveInput * 182;
+            const yearlySave = dailySaveInput * 365;
+
             return (
-                <section id="analytics" className="py-28">
+                <section id="analytics" className="py-28 relative">
                     <span id="pagsusuri" className="sr-only">Analytics</span>
                     <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                        <Reveal className="min-w-0 w-full">
-                            <p className="text-xs font-semibold tracking-widest uppercase text-peso mb-3">Financial Clarity</p>
-                            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-ink tracking-tight mb-5">
-                                A clear view of your week, not just raw numbers.
-                            </h2>
-                            <p className="text-inkMuted font-medium text-base sm:text-lg leading-relaxed mb-8">
-                                Tipid translates raw transaction history into beautiful, glanceable insights inspired by Apple Health and Wallet. No accounting degree needed.
-                            </p>
-                            <ul className="space-y-3.5 text-sm font-semibold text-ink2">
-                                <li className="flex items-center gap-3">
-                                    <span className="w-2 h-2 rounded-full bg-peso"></span>
-                                    Compare current week's pace against your monthly budget
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <span className="w-2 h-2 rounded-full bg-peso"></span>
-                                    Spot creeping categories before they exceed limits
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <span className="w-2 h-2 rounded-full bg-peso"></span>
-                                    Set and adapt your targets anytime with zero friction
-                                </li>
-                            </ul>
+                        {/* Left Column: Copy + Interactive Savings Growth Simulator */}
+                        <Reveal className="min-w-0 w-full space-y-6">
+                            <div>
+                                <p className="text-xs font-semibold tracking-widest uppercase text-peso mb-3">
+                                    {isTl ? "Kalinawan sa Pananalapi" : "Financial Clarity"}
+                                </p>
+                                <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-ink tracking-tight mb-5">
+                                    {isTl ? "Malinaw na larawan ng iyong linggo, hindi basta numero." : "A clear view of your week, not just raw numbers."}
+                                </h2>
+                                <p className="text-inkMuted font-medium text-base sm:text-lg leading-relaxed">
+                                    {isTl
+                                        ? "Isinasalin ng Tipid ang bawat transaksyon sa magagandang chart na inspirasyon ng Apple Health at Wallet. Walang kailangang degree sa accounting."
+                                        : "Tipid translates raw transaction history into beautiful, glanceable insights inspired by Apple Health and Wallet. No accounting degree needed."}
+                                </p>
+                            </div>
+
+                            {/* Interactive Savings Simulator Bento Card */}
+                            <div className="apple-glass p-6 rounded-[24px] border border-white shadow-apple-card space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-xl bg-peso/10 text-peso flex items-center justify-center">
+                                            <Icons.TrendingUp size={18} />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-display font-bold text-sm text-ink">{isTl ? "Interactive Savings Simulator" : "Interactive Savings Simulator"}</h4>
+                                            <p className="text-[11px] text-ink2/60">{isTl ? "Magkano ang maitatabi mo araw-araw?" : "How much can you set aside daily?"}</p>
+                                        </div>
+                                    </div>
+                                    <span className="font-mono text-base font-bold text-peso bg-peso/10 px-3 py-1 rounded-full">
+                                        ₱{dailySaveInput}/day
+                                    </span>
+                                </div>
+
+                                <input
+                                    type="range"
+                                    min="20"
+                                    max="500"
+                                    step="10"
+                                    value={dailySaveInput}
+                                    onChange={e => setDailySaveInput(Number(e.target.value))}
+                                    className="w-full h-2 bg-black/10 rounded-lg appearance-none cursor-pointer accent-peso"
+                                />
+
+                                <div className="grid grid-cols-3 gap-2.5 pt-2 border-t border-black/5 text-center">
+                                    <div className="p-2.5 rounded-xl bg-paperDim/50">
+                                        <span className="text-[10px] uppercase font-bold text-ink2/50 block">{isTl ? "1 Buwan" : "1 Month"}</span>
+                                        <p className="font-mono font-bold text-sm sm:text-base text-ink mt-0.5">₱{peso(monthlySave)}</p>
+                                    </div>
+                                    <div className="p-2.5 rounded-xl bg-paperDim/50">
+                                        <span className="text-[10px] uppercase font-bold text-ink2/50 block">{isTl ? "6 Buwan" : "6 Months"}</span>
+                                        <p className="font-mono font-bold text-sm sm:text-base text-ink mt-0.5">₱{peso(sixMonthSave)}</p>
+                                    </div>
+                                    <div className="p-2.5 rounded-xl bg-peso/10 border border-peso/20">
+                                        <span className="text-[10px] uppercase font-bold text-peso block">{isTl ? "1 Taon" : "1 Year"}</span>
+                                        <p className="font-mono font-bold text-sm sm:text-base text-peso mt-0.5">₱{peso(yearlySave)}</p>
+                                    </div>
+                                </div>
+                            </div>
                         </Reveal>
 
+                        {/* Right Column: Interactive Horizon Spending Breakdown */}
                         <Reveal delay={120} className="min-w-0 w-full">
                             <div ref={ref} className="apple-glass rounded-[28px] p-7 sm:p-9 shadow-apple-card border border-white">
-                                <div className="flex justify-between items-baseline mb-7">
+                                <div className="flex flex-col sm:flex-row justify-between sm:items-baseline gap-3 mb-6">
                                     <div>
-                                        <p className="text-xs font-bold text-ink2/60 uppercase tracking-wider">This Week's Breakdown</p>
-                                        <p className="font-display text-2xl font-bold text-ink mt-0.5">Weekly Spending</p>
+                                        <p className="text-xs font-bold text-ink2/60 uppercase tracking-wider">{isTl ? "Live breakdown ng gastos" : "Spending Breakdown"}</p>
+                                        <p className="font-display text-2xl font-bold text-ink mt-0.5">{isTl ? "Pagsusuri sa Paggastos" : "Spending Breakdown"}</p>
                                     </div>
-                                    <p className="font-mono text-sm font-bold text-peso tracking-tight">₱4,120 Total</p>
+
+                                    {/* Horizon Tabs */}
+                                    <div className="inline-flex items-center bg-black/5 p-1 rounded-xl text-xs font-bold self-start sm:self-auto">
+                                        {[
+                                            { id: "week", label: isTl ? "Linggo" : "Week" },
+                                            { id: "month", label: isTl ? "Buwan" : "Month" },
+                                            { id: "year", label: isTl ? "Taon" : "Year" },
+                                        ].map(h => (
+                                            <button
+                                                key={h.id}
+                                                type="button"
+                                                onClick={() => setHorizon(h.id)}
+                                                className={`px-3 py-1 rounded-lg transition-all ${horizon === h.id ? "bg-white text-ink shadow-sm" : "text-ink2/50 hover:text-ink"}`}
+                                            >
+                                                {h.label}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                                <div className="space-y-5">
+
+                                <div className="flex items-baseline justify-between mb-6 pb-4 border-b border-line/60">
+                                    <span className="text-xs font-bold text-ink2/70 uppercase tracking-wider">{isTl ? "Tinatayang Kabuuan:" : "Projected Period Total:"}</span>
+                                    <p className="font-mono text-xl sm:text-2xl font-bold text-peso tracking-tight">₱{peso(currentTotal)}</p>
+                                </div>
+
+                                <div className="space-y-4">
                                     {categories.map((c, i) => (
-                                        <div key={i}>
+                                        <div key={i} className="group cursor-default">
                                             <div className="flex justify-between text-xs mb-1.5">
-                                                <span className="font-bold text-ink">{c.label} <span className="text-ink2/40 font-normal ml-1">· {c.sub}</span></span>
+                                                <span className="font-bold text-ink flex items-center gap-1.5">
+                                                    <span className={`w-2 h-2 rounded-full ${c.color}`}></span>
+                                                    {c.label}
+                                                    <span className="text-ink2/40 font-normal hidden sm:inline">· {c.sub}</span>
+                                                </span>
                                                 <span className="font-mono font-bold text-ink2">{c.pct}%</span>
                                             </div>
                                             <div className="h-2.5 bg-paperDim rounded-full overflow-hidden">
                                                 <div
                                                     className={`bar-fill h-full rounded-full ${c.color}`}
-                                                    style={{ width: inView ? `${c.pct}%` : "0%", transitionDelay: `${i * 100}ms` }}
+                                                    style={{ width: inView ? `${c.pct}%` : "0%", transitionDelay: `${i * 90}ms` }}
                                                 ></div>
                                             </div>
                                         </div>
@@ -903,23 +1151,24 @@
 
         /* ---------- FAQ Section ---------- */
 
-        function FAQ() {
+        function FAQ({ lang }) {
+            const isTl = lang === "tl";
             const faqs = [
                 {
-                    q: "Is my financial data secure and private?",
-                    a: "Yes, completely. Your records are encrypted in transit and at rest. Every read and write operation enforces strict user-level authorization, ensuring only you have access to your finances."
+                    q: isTl ? "Ligtas at pribado ba ang aking financial data?" : "Is my financial data secure and private?",
+                    a: isTl ? "Oo, 100%. Naka-encrypt ang iyong mga talaan. May strict server-side authorization kung saan ikaw lang ang may access sa iyong sariling data, at may opsyon para sa Face ID / Touch ID lock." : "Yes, completely. Your records are encrypted in transit and at rest. Every read and write operation enforces strict user-level authorization, ensuring only you have access to your finances."
                 },
                 {
-                    q: "Does Tipid really work completely offline?",
-                    a: "Yes! Tipid is engineered from the ground up as an offline-first Progressive Web App. You can log expenses anywhere — on flights, in remote areas, or underground — and your entries sync automatically once you are back online."
+                    q: isTl ? "Talaga bang gumagana ang Tipid kahit walang internet?" : "Does Tipid really work completely offline?",
+                    a: isTl ? "Oo! Naka-disenyo ang Tipid bilang offline-first Progressive Web App. Maaari kang magtala kahit saan — sa biyahe, probinsya, o elevator — at awtomatikong mag-si-sync pagbalik ng koneksyon." : "Yes! Tipid is engineered from the ground up as an offline-first Progressive Web App. You can log expenses anywhere — on flights, in remote areas, or underground — and your entries sync automatically once you are back online."
                 },
                 {
-                    q: "Is Tipid completely free to use?",
-                    a: "Yes, 100% free. There are no subscriptions, paywalls, or hidden fees, and you never need to enter a credit card to use all core features."
+                    q: isTl ? "Libre ba talaga ang paggamit sa Tipid?" : "Is Tipid completely free to use?",
+                    a: isTl ? "Oo, 100% libre. Walang mga nakatagong subscription o credit card requirement upang magamit ang lahat ng mga tampok nito." : "Yes, 100% free. There are no subscriptions, paywalls, or hidden fees, and you never need to enter a credit card to use all core features."
                 },
                 {
-                    q: "Can I export or access my full transaction history?",
-                    a: "Absolutely. You have complete access to your entire transaction history, with detailed filtering and export capabilities so your data is never locked in."
+                    q: isTl ? "Maaari ko bang i-export o i-download ang aking records?" : "Can I export or access my full transaction history?",
+                    a: isTl ? "Oo naman. May buong access ka sa iyong buong transaction history, may detalyadong pag-filter, at may one-click backup export upang laging nasa iyo ang iyong data." : "Absolutely. You have complete access to your entire transaction history, with detailed filtering and export capabilities so your data is never locked in."
                 },
             ];
             const [open, setOpen] = useState(0);
@@ -929,9 +1178,11 @@
                     <span id="mga-tanong" className="sr-only">FAQ</span>
                     <div className="max-w-3xl mx-auto px-6">
                         <Reveal>
-                            <p className="text-xs font-semibold tracking-widest uppercase text-peso mb-3 text-center">Frequently Asked Questions</p>
+                            <p className="text-xs font-semibold tracking-widest uppercase text-peso mb-3 text-center">
+                                {isTl ? "Mga Karaniwang Tanong" : "Frequently Asked Questions"}
+                            </p>
                             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-ink tracking-tight mb-12 text-center">
-                                Clear Answers.
+                                {isTl ? "Malinaw na Kasagutan." : "Clear Answers."}
                             </h2>
                         </Reveal>
 
@@ -963,24 +1214,31 @@
 
         /* ---------- Final Call to Action ---------- */
 
-        function FinalCTA() {
+        function FinalCTA({ lang }) {
+            const isTl = lang === "tl";
             return (
                 <section className="py-28 bg-ink text-white text-center relative overflow-hidden">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] sm:w-[580px] sm:h-[580px] lg:w-[760px] lg:h-[760px] bg-peso/15 rounded-full blur-[90px] pointer-events-none"></div>
                     <Reveal>
                         <div className="max-w-2xl mx-auto px-6 relative z-10">
                             <h2 className="font-display text-3xl sm:text-5xl font-bold tracking-tight leading-tight mb-4">
-                                Start mastering your budget <span className="italic text-goldSoft font-serif">today.</span>
+                                {isTl ? (
+                                    <>Simulan ang mas matalinong pag-budget <span className="italic text-goldSoft font-serif">ngayon.</span></>
+                                ) : (
+                                    <>Start mastering your budget <span className="italic text-goldSoft font-serif">today.</span></>
+                                )}
                             </h2>
                             <p className="text-white/80 font-medium text-base sm:text-lg mb-8">
-                                Free forever. Works completely offline. Effortless tracking that respects your time and privacy.
+                                {isTl
+                                    ? "Libre habang buhay. 100% offline. Maaasahang pagsubaybay na rumerespeto sa iyong oras at privacy."
+                                    : "Free forever. Works completely offline. Effortless tracking that respects your time and privacy."}
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3.5 justify-center">
                                 <Button as="a" href="signup.html" variant="paper" icon={Icons.ArrowRight} className="text-base !py-3.5 !px-8">
-                                    Get Started Free
+                                    {isTl ? "Magsimula Nang Libre" : "Get Started Free"}
                                 </Button>
                                 <Button as="a" href="login.html" variant="outlineDark" className="text-base !py-3.5 !px-8">
-                                    Log In to Account
+                                    {isTl ? "Mag-log In sa Account" : "Log In to Account"}
                                 </Button>
                             </div>
                         </div>
@@ -991,7 +1249,8 @@
 
         /* ---------- Footer Component ---------- */
 
-        function Footer() {
+        function Footer({ lang }) {
+            const isTl = lang === "tl";
             return (
                 <footer className="relative bg-ink text-white/60 pt-14 pb-8 border-t border-white/10 overflow-hidden">
                     <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -1002,24 +1261,26 @@
                                     <span className="text-xl font-bold text-white font-display">Tipid</span>
                                 </div>
                                 <p className="text-xs font-medium leading-relaxed text-white/70">
-                                    The smart, offline-first personal expense tracker. Designed with clarity and privacy in mind.
+                                    {isTl
+                                        ? "Ang matalino at offline-first personal expense tracker para sa bawat Pilipino."
+                                        : "The smart, offline-first personal expense tracker. Designed with clarity and privacy in mind."}
                                 </p>
                             </div>
                             <div className="grid grid-cols-2 gap-10 sm:gap-16 text-xs font-medium text-left">
                                 <div>
-                                    <p className="text-white font-bold tracking-wider uppercase mb-3 text-[11px]">Product</p>
+                                    <p className="text-white font-bold tracking-wider uppercase mb-3 text-[11px]">{isTl ? "Produkto" : "Product"}</p>
                                     <ul className="space-y-2.5">
-                                        <li><a href="#features" className="hover:text-goldSoft transition-colors">Features</a></li>
-                                        <li><a href="#how-it-works" className="hover:text-goldSoft transition-colors">How It Works</a></li>
-                                        <li><a href="#analytics" className="hover:text-goldSoft transition-colors">Analytics</a></li>
+                                        <li><a href="#features" className="hover:text-goldSoft transition-colors">{isTl ? "Mga Tampok" : "Features"}</a></li>
+                                        <li><a href="#how-it-works" className="hover:text-goldSoft transition-colors">{isTl ? "Paano Gumagana" : "How It Works"}</a></li>
+                                        <li><a href="#analytics" className="hover:text-goldSoft transition-colors">{isTl ? "Pagsusuri" : "Analytics"}</a></li>
                                     </ul>
                                 </div>
                                 <div>
-                                    <p className="text-white font-bold tracking-wider uppercase mb-3 text-[11px]">Support</p>
+                                    <p className="text-white font-bold tracking-wider uppercase mb-3 text-[11px]">{isTl ? "Suporta" : "Support"}</p>
                                     <ul className="space-y-2.5">
                                         <li><a href="#faq" className="hover:text-goldSoft transition-colors">FAQ</a></li>
-                                        <li><a href="login.html" className="hover:text-goldSoft transition-colors">Log In</a></li>
-                                        <li><a href="signup.html" className="hover:text-goldSoft transition-colors">Create Account</a></li>
+                                        <li><a href="login.html" className="hover:text-goldSoft transition-colors">{isTl ? "Mag-log In" : "Log In"}</a></li>
+                                        <li><a href="signup.html" className="hover:text-goldSoft transition-colors">{isTl ? "Gumawa ng Account" : "Create Account"}</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -1038,20 +1299,28 @@
         /* ---------- Main Application Container ---------- */
 
         function App() {
+            const [lang, setLang] = useState(() => {
+                try {
+                    return localStorage.getItem("tipid_lang") === "tl" ? "tl" : "en";
+                } catch (_) {
+                    return "en";
+                }
+            });
+
             return (
                 <div className="flex flex-col min-h-screen w-full overflow-x-hidden">
                     <div className="grain" style={{ filter: "url(#paper-grain)" }}></div>
-                    <Navbar />
+                    <Navbar lang={lang} setLang={setLang} />
                     <main className="landing-main flex-grow w-full max-w-none overflow-x-hidden">
-                        <Hero />
-                        <StatStrip />
-                        <Features />
-                        <HowItWorks />
-                        <InsightsPreview />
-                        <FAQ />
-                        <FinalCTA />
+                        <Hero lang={lang} />
+                        <StatStrip lang={lang} />
+                        <Features lang={lang} />
+                        <HowItWorks lang={lang} />
+                        <InsightsPreview lang={lang} />
+                        <FAQ lang={lang} />
+                        <FinalCTA lang={lang} />
                     </main>
-                    <Footer />
+                    <Footer lang={lang} />
                 </div>
             );
         }

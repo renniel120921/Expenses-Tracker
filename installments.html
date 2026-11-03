@@ -6,7 +6,7 @@
     <link rel="manifest" href="/manifest.json">
     <script src="/app-utils.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Installments — Tipid</title>
+    <title>Installment & Loan Tracker — Tipid</title>
     <meta name="theme-color" content="#1F6F54">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,8 +15,9 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Global Dark Mode Script Initializer -->
     <script>
         if (localStorage.getItem('tipid_theme') === 'dark' || (!('tipid_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
@@ -25,6 +26,7 @@
         }
     </script>
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -43,42 +45,67 @@
         }
     </script>
 
+    <!-- React & Babel -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- Firebase Scripts -->
     <script type="module" src="./firebase.js"></script>
     <script type="module" src="./firebase-auth.js"></script>
     <script type="module" src="./firebase-data.js"></script>
 
+    <!-- Components -->
     <script type="text/babel" src="./components/navbar.js"></script>
     <script type="text/babel" src="./components/InstallmentTracker.js"></script>
 
     <style>
-        :root { --sat: env(safe-area-inset-top, 0px); --sar: env(safe-area-inset-right, 0px); --sab: env(safe-area-inset-bottom, 0px); --sal: env(safe-area-inset-left, 0px); --ease-ios: cubic-bezier(0.22, 1, 0.36, 1); --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); }
+        :root {
+            --sat: env(safe-area-inset-top, 0px);
+            --sar: env(safe-area-inset-right, 0px);
+            --sab: env(safe-area-inset-bottom, 0px);
+            --sal: env(safe-area-inset-left, 0px);
+            --ease-ios: cubic-bezier(0.22, 1, 0.36, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
         html { background: #F1F4EF; transition: background-color 0.3s var(--ease-ios); }
         html.dark { background: #111A15; color: #F1F4EF; }
         body { font-family: 'Inter', sans-serif; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
-        :focus-visible { outline: 2px solid #1F6F54; outline-offset: 2px; border-radius: 6px; }
-        html.dark :focus-visible { outline-color: #52C8A1; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         .fade-up { animation: fadeIn 0.6s var(--ease-ios) both; }
+
         .spin { animation: spin 0.9s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
         @keyframes haloPulse { 0% { transform: scale(0.9); opacity: 0.35; } 70% { opacity: 0; } 100% { transform: scale(1.6); opacity: 0; } }
         .halo-pulse { animation: haloPulse 1.9s var(--ease-ios) infinite; }
-        @keyframes heroFloat { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -10px); } }
-        .hero-float { animation: heroFloat 6s ease-in-out infinite; }
-        .glass-panel { background: rgba(255,255,255,0.65); backdrop-filter: blur(20px) saturate(160%); border: 1px solid rgba(255,255,255,0.55); }
-        html.dark .glass-panel { background: rgba(24,38,31,0.55); border: 1px solid rgba(255,255,255,0.08); }
+
         .tap-scale { transition: transform 0.15s var(--ease-spring); }
-        .tap-scale:active { transform: scale(0.92); }
+        .tap-scale:active { transform: scale(0.94); }
+
         .tipid-swal { border-radius: 1.5rem !important; font-family: 'Inter', sans-serif !important; }
+
         @keyframes mascotHover { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
         .mascot-img { animation: mascotHover 4s ease-in-out infinite; filter: drop-shadow(0 15px 25px rgba(18,61,46,0.35)); }
-        .speech-bubble { animation: fadeUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both; box-shadow: 0 10px 25px -5px rgba(18, 61, 46, 0.25); }
-        @media (prefers-reduced-motion: reduce) { .fade-up, .spin, .halo-pulse, .hero-float, .tap-scale, .mascot-img, .speech-bubble { animation: none !important; transition: none !important; } }
+
+        .speech-bubble { box-shadow: 0 10px 25px -5px rgba(18, 61, 46, 0.25); }
+        .tip-fade { animation: fadeIn 0.45s var(--ease-ios) both; }
+
+        /* Material grain overlay */
+        .grain-overlay {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            mix-blend-mode: overlay;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .fade-up, .spin, .halo-pulse, .tap-scale, .mascot-img, .tip-fade {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-paper dark:bg-ink text-ink dark:text-paper min-h-screen flex flex-col transition-colors duration-300">
@@ -87,13 +114,19 @@
 
     <script type="text/babel">
         // GLOBAL SETUP
-        window.useState = React.useState; window.useEffect = React.useEffect; window.useMemo = React.useMemo;
+        window.useState = React.useState;
+        window.useEffect = React.useEffect;
+        window.useMemo = React.useMemo;
 
         function Icon({ path, size = 20, className = "", strokeWidth = 2.2 }) {
-            return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>{path}</svg>;
+            return (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
+                    {path}
+                </svg>
+            );
         }
 
-        // Include the FULL list of window.Icons here to avoid crashes
         window.Icons = {
             Sun: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>} />,
             Moon: (p) => <Icon {...p} path={<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>} />,
@@ -106,21 +139,20 @@
             Info: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>} />,
             AlertCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />,
             Shield: (p) => <Icon {...p} path={<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>} />,
+            Sparkle: (p) => <Icon {...p} path={<><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></>} />,
+            ChevronLeft: (p) => <Icon {...p} path={<><polyline points="15 18 9 12 15 6"/></>} />,
+            ChevronRight: (p) => <Icon {...p} path={<><polyline points="9 18 15 12 9 6"/></>} />,
             TrendingDown: (p) => <Icon {...p} path={<><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></>} />
         };
 
-        // Unified with the rest of the app: try the real logo asset first,
-        // fall back to the ₱ glyph only if it fails to load.
         window.Logo = function Logo({ size = 30 }) {
-            const [broken, setBroken] = React.useState(false);
-            if (!broken) {
-                return <img src="/assets/logo.svg" alt="Tipid logo" width={size} height={size}
-                            onError={() => setBroken(true)} style={{ width: size, height: size }} className="rounded-md" />;
-            }
-            return <span style={{ width: size, height: size }} className="rounded-md bg-ink text-paper flex items-center justify-center font-display font-semibold">₱</span>;
-        }
+            return <span style={{ width: size, height: size }} className="rounded-[10px] bg-peso text-paper flex items-center justify-center font-display font-semibold shadow-sm">₱</span>;
+        };
 
-        window.peso = (num) => { if (isNaN(num)) return "0.00"; return Number(num).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+        window.peso = (num) => {
+            if (isNaN(num)) return "0.00";
+            return Number(num).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
 
         window.useAuthReady = function useAuthReady() {
             const [ready, setReady] = React.useState(!!window.TipidAuth);
@@ -131,48 +163,133 @@
                 return () => window.removeEventListener("tipid-auth-ready", h);
             }, []);
             return ready;
-        }
-    </script>
+        };
 
-    <script type="text/babel">
         function AmbientBackground() {
             return (
-                <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div className="absolute -top-24 -right-16 w-[360px] h-[360px] bg-peso/10 dark:bg-pesoLight/10 rounded-full blur-[90px]" />
-                    <div className="absolute bottom-0 -left-24 w-[380px] h-[380px] bg-gold/10 dark:bg-gold/5 rounded-full blur-[100px]" />
+                <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10" aria-hidden="true">
+                    <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-peso/10 dark:bg-pesoLight/[0.08] rounded-full blur-[140px]" />
                 </div>
             );
         }
 
-        /* --- HULUGAN HERO CARD ---
-           No dark mode toggle here — that control lives on profile.html
-           only, and this page just reflects whatever theme is already set. */
-        function InstallmentsHeroCard() {
-            return (
-                <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#247E61] via-[#1A614A] to-[#0F382A] text-paper p-5 sm:p-7 shadow-iosLg ring-1 ring-white/15 min-h-[200px] sm:min-h-[220px] flex flex-col justify-between mb-6 sm:mb-8">
-                    <div className="absolute -top-16 -right-10 w-56 h-56 bg-white/[0.08] rounded-full blur-[50px] hero-float" />
-                    <div className="absolute -bottom-24 -left-10 w-60 h-60 bg-gold/[0.12] rounded-full blur-[60px]" />
+        /* --- HERO HEADER CARD: APPLE HIG FINTECH AESTHETICS --- */
+        function InstallmentsHeroCard({ darkMode, toggleDarkMode, stats = {} }) {
+            const [mascotOk, setMascotOk] = React.useState(true);
+            const totalMonthly = stats.totalMonthly || 0;
+            const totalRemaining = stats.totalRemaining || 0;
+            const activeCount = stats.activeCount || 0;
+            const overdueCount = stats.overdueCount || 0;
+            const freedomProgress = stats.freedomProgress || 0;
 
-                    <div className="absolute right-0 bottom-0 w-[140px] sm:w-[180px] h-full pointer-events-none z-0 overflow-visible hidden sm:block">
-                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-24 h-24 bg-white/15 blur-2xl rounded-full"></div>
-                        <img src="/assets/bills_mascot.png" alt="Tipid Buddy" onError={(e) => { e.target.onerror = null; e.target.src = "/assets/history_mascot.png"; }} className="absolute bottom-[-10px] right-0 w-full object-contain mascot-img" />
-                        <div className="speech-bubble absolute top-[15%] right-[60%] sm:right-[70%] bg-paper text-ink rounded-2xl px-3 py-2 text-[10px] sm:text-xs font-semibold leading-tight w-max max-w-[120px] sm:max-w-[140px] border border-white/50">
-                            Almost there!<br/>Keep going. 💪
-                            <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-paper rotate-45 border-r border-b border-white/50"></div>
+            const mascotMessage = React.useMemo(() => {
+                if (activeCount === 0) {
+                    return "Walang active na hulugan! Malaya ka sa buwanang financing obligations. Keep it up! 🎉";
+                }
+                if (overdueCount > 0) {
+                    return `Pansin: May ${overdueCount} overdue installment ka. Settle agad bago lumaki ang penalty fees! ⚠️`;
+                }
+                return `May ${activeCount} active installment ka (${freedomProgress}% cleared). Konti na lang, debt-free ka na! 💪`;
+            }, [activeCount, overdueCount, freedomProgress]);
+
+            return (
+                <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#124231] via-[#17523E] to-[#0A261C] text-paper shadow-iosLg ring-1 ring-white/10 mb-6 sm:mb-8">
+                    {/* Material grain overlay */}
+                    <div className="absolute inset-0 grain-overlay opacity-[0.06] pointer-events-none" />
+
+                    {/* Ambient light glow */}
+                    <div className="absolute -top-24 -left-24 w-72 h-72 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-pesoLight/15 rounded-full blur-3xl pointer-events-none" />
+
+                    {/* Top Bar with Status Tag & Dark Mode Toggle */}
+                    <div className="relative z-20 flex items-center justify-between px-6 sm:px-8 pt-6 sm:pt-7">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] font-mono tracking-wider uppercase text-white/90">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                            <span>Financing & Debt Freedom Tracker</span>
                         </div>
+
+                        <button
+                            onClick={toggleDarkMode}
+                            aria-label="Toggle dark mode"
+                            className="tap-scale w-10 h-10 rounded-full bg-white/10 hover:bg-white/15 border border-white/15 flex items-center justify-center text-white/90 backdrop-blur-md transition-all outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                        >
+                            {darkMode ? <window.Icons.Sun size={17} /> : <window.Icons.Moon size={17} />}
+                        </button>
                     </div>
 
-                    <div className="relative z-10 flex flex-col h-full gap-5 sm:gap-6 max-w-[70%] sm:max-w-[62%]">
-                        <div className="mt-2 sm:mt-4">
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/15 border border-white/10 text-white mb-3 backdrop-blur-sm">
-                                <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
-                                <span className="text-[10.5px] font-medium text-paper/85">Installment manager</span>
+                    {/* Main Hero Body */}
+                    <div className="relative z-10 px-6 sm:px-8 pt-5 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div className="max-w-xl">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/20 border border-white/10 text-white mb-3 backdrop-blur-sm">
+                                <window.Icons.Wallet size={12} className="text-paper/90" />
+                                <span className="text-[10.5px] font-medium text-paper/85">Installment & BNPL manager</span>
                             </div>
-                            <h1 className="font-display text-[1.6rem] sm:text-[2.25rem] font-bold tracking-tight leading-[1.1] mb-2 sm:mb-3">
+
+                            <h1 className="font-display text-[1.85rem] sm:text-[2.5rem] font-semibold tracking-tight leading-[1.08] mb-2 text-white">
                                 Installment Tracker
                             </h1>
-                            <p className="text-[11px] sm:text-[13px] font-medium text-white/80 leading-relaxed pr-2">
-                                Track your SPayLater, loans, and installment plans to watch your progress toward freedom.
+                            <p className="text-[13px] sm:text-[14px] text-paper/75 leading-relaxed mb-5">
+                                Track SPayLater, Home Credit, credit card installments, and loan payoff timelines toward total debt freedom.
+                            </p>
+
+                            {/* Monthly Obligation Pill Badge */}
+                            <div className="inline-flex items-center gap-3 bg-black/20 backdrop-blur-md border border-white/10 rounded-2xl px-4 py-2.5">
+                                <span className="text-xs font-mono text-emerald-300">Monthly Obligation:</span>
+                                <span className="font-mono text-xl sm:text-2xl font-bold text-white tracking-tight">
+                                    ₱{window.peso(totalMonthly)}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Right Side: Tipid Mascot with Dynamic Speech Bubble */}
+                        {mascotOk && (
+                            <div className="relative shrink-0 flex flex-col items-center sm:items-end self-center md:self-end mt-2 md:mt-0">
+                                <div className="speech-bubble relative bg-white/95 text-ink text-[11.5px] font-medium px-3.5 py-2 rounded-2xl max-w-[210px] text-center mb-2.5 border border-white/40">
+                                    {mascotMessage}
+                                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 md:left-auto md:right-8 w-3 h-3 bg-white/95 rotate-45 border-r border-b border-white/40" />
+                                </div>
+                                <img
+                                    src="/assets/bills_mascot.png"
+                                    alt="Tipid Mascot studying loans"
+                                    onError={(e) => {
+                                        if (!e.target.dataset.fallback) {
+                                            e.target.dataset.fallback = "true";
+                                            e.target.src = "/assets/tipid_mascot.png";
+                                        } else {
+                                            setMascotOk(false);
+                                        }
+                                    }}
+                                    className="mascot-img w-24 h-24 sm:w-28 sm:h-28 object-contain pointer-events-none drop-shadow-md"
+                                    draggable="false"
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Bottom Strip: 4 Metrics Mini-Cards */}
+                    <div className="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-2 px-6 sm:px-8 pb-6 pt-3 border-t border-white/10 text-center">
+                        <div className="bg-white/5 backdrop-blur-md rounded-xl p-2.5 border border-white/5">
+                            <p className="text-[10px] font-mono uppercase text-paper/60">Monthly Due</p>
+                            <p className="font-mono text-xs sm:text-base font-bold text-white mt-0.5">
+                                ₱{window.peso(totalMonthly)}
+                            </p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-md rounded-xl p-2.5 border border-white/5">
+                            <p className="text-[10px] font-mono uppercase text-paper/60">Remaining Balance</p>
+                            <p className="font-mono text-xs sm:text-base font-bold text-rose-300 mt-0.5">
+                                ₱{window.peso(totalRemaining)}
+                            </p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-md rounded-xl p-2.5 border border-white/5">
+                            <p className="text-[10px] font-mono uppercase text-paper/60">Freedom Progress</p>
+                            <p className="font-mono text-xs sm:text-base font-bold text-emerald-300 mt-0.5">
+                                {freedomProgress}% paid
+                            </p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-md rounded-xl p-2.5 border border-white/5">
+                            <p className="text-[10px] font-mono uppercase text-paper/60">Active Plans</p>
+                            <p className="font-mono text-xs sm:text-base font-bold text-amber-300 mt-0.5">
+                                {activeCount} {activeCount === 1 ? "plan" : "plans"}
                             </p>
                         </div>
                     </div>
@@ -180,162 +297,189 @@
             );
         }
 
-        // ---- Page-level "at a glance" summary ------------
-        // Reads the same localStorage key InstallmentTracker writes to and
-        // rolls everything up: total monthly obligation across all active
-        // hulugan, total remaining balance, and the single nearest due
-        // date so the user doesn't have to scan every card to know what's
-        // coming up soonest. Polls once a second so it stays in sync while
-        // the user adds/pays installments below — no changes to
-        // InstallmentTracker.js required.
+        /* --- 4 FINANCIAL VITAL SIGNS BENTO CARDS --- */
+        function InstallmentsVitalSigns({ stats = {} }) {
+            const peso = window.peso;
+            const totalMonthly = stats.totalMonthly || 0;
+            const totalRemaining = stats.totalRemaining || 0;
+            const activeCount = stats.activeCount || 0;
+            const overdueCount = stats.overdueCount || 0;
+            const nearestDue = stats.nearestDue;
+            const latestCompletion = stats.latestCompletion;
 
-        function addMonths(date, months) {
-            return window.TipidCore.addMonthsClamped(date, months);
+            const formatDueDate = (date) => {
+                if (!date) return "None upcoming";
+                return new Date(date).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" });
+            };
+
+            return (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 mb-6 sm:mb-8">
+                    <div className="bg-white/80 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.5rem] p-4 sm:p-5 border border-white/80 dark:border-white/10 shadow-ios">
+                        <p className="text-[10px] font-mono uppercase font-semibold text-emerald-700 dark:text-emerald-400 mb-1">
+                            Monthly Commitment
+                        </p>
+                        <p className="font-mono text-lg sm:text-2xl font-bold text-emerald-800 dark:text-emerald-300 truncate">
+                            ₱{peso(totalMonthly)}
+                        </p>
+                        <p className="text-[10px] text-ink2/50 dark:text-paper/40 mt-1">
+                            {activeCount} active obligations
+                        </p>
+                    </div>
+
+                    <div className="bg-white/80 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.5rem] p-4 sm:p-5 border border-white/80 dark:border-white/10 shadow-ios">
+                        <p className="text-[10px] font-mono uppercase font-semibold text-rose-600 dark:text-rose-400 mb-1">
+                            Total Remaining Debt
+                        </p>
+                        <p className="font-mono text-lg sm:text-2xl font-bold text-rose-700 dark:text-rose-300 truncate">
+                            ₱{peso(totalRemaining)}
+                        </p>
+                        <p className="text-[10px] text-ink2/50 dark:text-paper/40 mt-1">
+                            Principal + interest
+                        </p>
+                    </div>
+
+                    <div className="bg-white/80 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.5rem] p-4 sm:p-5 border border-white/80 dark:border-white/10 shadow-ios">
+                        <p className="text-[10px] font-mono uppercase font-semibold text-amber-600 dark:text-amber-400 mb-1">
+                            {overdueCount > 0 ? "⚠️ Overdue Bills" : "Nearest Due Date"}
+                        </p>
+                        <p className={`font-mono text-base sm:text-xl font-bold truncate ${overdueCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-ink dark:text-paper'}`}>
+                            {overdueCount > 0 ? `${overdueCount} Overdue!` : formatDueDate(nearestDue)}
+                        </p>
+                        <p className="text-[10px] text-ink2/50 dark:text-paper/40 mt-1">
+                            {overdueCount > 0 ? "Settle immediately" : "Next scheduled payment"}
+                        </p>
+                    </div>
+
+                    <div className="bg-white/80 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.5rem] p-4 sm:p-5 border border-white/80 dark:border-white/10 shadow-ios">
+                        <p className="text-[10px] font-mono uppercase font-semibold text-peso dark:text-pesoLight mb-1">
+                            Debt Freedom Target
+                        </p>
+                        <p className="font-display text-base sm:text-xl font-bold text-ink dark:text-paper truncate">
+                            {latestCompletion ? latestCompletion.toLocaleDateString("en-PH", { month: "long", year: "numeric" }) : "All Clear! 🎉"}
+                        </p>
+                        <p className="text-[10px] text-ink2/50 dark:text-paper/40 mt-1">
+                            Final installment payoff
+                        </p>
+                    </div>
+                </div>
+            );
         }
 
-        function formatDatePH(date) {
-            if (!date) return "—";
-            const d = (date instanceof Date) ? date : new Date(date);
-            if (isNaN(d.getTime())) return "—";
-            return d.toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" });
-        }
+        /* --- SMART FINANCING PRINCIPLES CAROUSEL --- */
+        window.INSTALLMENT_TIPS = [
+            {
+                title: "Beware of Hidden Financing Markups",
+                text: "Always check the cash price vs the total financing sum. Some 0% interest promos tack on origination or processing fees that inflate the final cost."
+            },
+            {
+                title: "Limit Active Plans to Maximum Two",
+                text: "Stacking 3 or more BNPLs (SPayLater, Billease, Home Credit) can quickly eat up over 40% of your monthly paycheck without realizing it."
+            },
+            {
+                title: "Allocate 13th Month Pay to Settle Early",
+                text: "Whenever you receive a bonus or windfalls, prioritize paying off smaller installments to immediately eliminate recurring monthly stress."
+            },
+            {
+                title: "Protect Your Credit Bureau Standing",
+                text: "Institutions like Billease and credit card issuers report to the Credit Information Corporation (CIC). Never default to keep your financial score clean."
+            }
+        ];
 
-        function resolveStartDate(item) {
-            if (item.startDate) return new Date(item.startDate);
-            const fromId = Number(item.id);
-            return isNaN(fromId) ? new Date() : new Date(fromId);
-        }
-
-        function computeInstallmentsSummary(uid) {
-            const saved = localStorage.getItem(`tipid_installments_${uid}`);
-            const items = saved ? JSON.parse(saved) : [];
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            let totalMonthly = 0;
-            let totalRemaining = 0;
-            let nearestDue = null;
-            let overdueCount = 0;
-            let activeCount = 0;
-
-            items.forEach(item => {
-                const isDone = item.paidMonths >= item.terms;
-                if (isDone) return;
-
-                activeCount += 1;
-                totalMonthly += item.monthly;
-
-                const downpayment = item.downpayment || 0;
-                const paidSoFar = downpayment + (item.paidMonths * item.monthly);
-                totalRemaining += (item.totalAmount - paidSoFar);
-
-                const startD = resolveStartDate(item);
-                const dueDate = addMonths(startD, item.paidMonths);
-
-                if (dueDate < today) overdueCount += 1;
-                if (!nearestDue || dueDate < nearestDue) nearestDue = dueDate;
-            });
-
-            return { totalMonthly, totalRemaining, nearestDue, overdueCount, activeCount };
-        }
-
-        function InstallmentsSummaryCard({ uid }) {
-            const [summary, setSummary] = React.useState(() => computeInstallmentsSummary(uid));
+        function InstallmentTipsCarousel() {
+            const tips = window.INSTALLMENT_TIPS;
+            const [index, setIndex] = React.useState(0);
+            const [paused, setPaused] = React.useState(false);
 
             React.useEffect(() => {
-                const interval = setInterval(() => {
-                    setSummary(computeInstallmentsSummary(uid));
-                }, 1000);
-                return () => clearInterval(interval);
-            }, [uid]);
+                if (paused) return;
+                const t = setInterval(() => setIndex(i => (i + 1) % tips.length), 6500);
+                return () => clearInterval(t);
+            }, [paused, tips.length]);
 
-            if (summary.activeCount === 0) return null;
+            const tip = tips[index];
+            const goTo = (i) => setIndex(((i % tips.length) + tips.length) % tips.length);
 
             return (
-                <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios p-5 sm:p-7 mb-6 sm:mb-8 fade-up">
-                    <div className="flex items-center gap-3 mb-5">
-                        <span className="w-10 h-10 rounded-[14px] bg-[#E6F3EF] dark:bg-[#1F6F54]/20 text-[#1F6F54] dark:text-[#52C8A1] flex items-center justify-center shrink-0">
-                            <window.Icons.Wallet size={19} strokeWidth={2.3} />
-                        </span>
-                        <div>
-                            <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper leading-tight">Overall Installment Summary</h3>
-                            <span className="text-[11px] text-ink2/50 dark:text-paper/40">{summary.activeCount} active installments</span>
+                <div
+                    className="fade-up bg-white/70 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.75rem] border border-white/80 dark:border-white/10 shadow-ios p-5 sm:p-6 mb-6 sm:mb-8"
+                    onMouseEnter={() => setPaused(true)}
+                    onMouseLeave={() => setPaused(false)}
+                >
+                    <div className="flex items-center justify-between mb-3.5">
+                        <div className="flex items-center gap-2">
+                            <span className="text-peso dark:text-pesoLight">
+                                <window.Icons.Sparkle size={16} />
+                            </span>
+                            <h2 className="font-display text-[1.1rem] font-semibold text-ink dark:text-paper tracking-tight">
+                                Financing & Debt Freedom Principles
+                            </h2>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <button
+                                onClick={() => goTo(index - 1)}
+                                aria-label="Previous tip"
+                                className="tap-scale w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink2 dark:text-paper/70 hover:bg-black/10 dark:hover:bg-white/20 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-peso/40"
+                            >
+                                <window.Icons.ChevronLeft size={14} />
+                            </button>
+                            <button
+                                onClick={() => goTo(index + 1)}
+                                aria-label="Next tip"
+                                className="tap-scale w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink2 dark:text-paper/70 hover:bg-black/10 dark:hover:bg-white/20 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-peso/40"
+                            >
+                                <window.Icons.ChevronRight size={14} />
+                            </button>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="bg-gradient-to-br from-[#E6F3EF] to-[#D5EBE3] dark:from-[#1F6F54]/20 dark:to-[#1F6F54]/10 p-5 rounded-2xl border border-[#1F6F54]/10 dark:border-[#52C8A1]/20">
-                            <p className="text-[11px] font-medium text-[#1F6F54] dark:text-[#52C8A1] mb-1.5">Monthly commitment</p>
-                            <p className="font-mono text-2xl font-bold tracking-tight text-[#1F6F54] dark:text-[#52C8A1]">₱{window.peso(summary.totalMonthly)}</p>
+                    <div key={index} className="tip-fade flex items-start gap-3.5">
+                        <div className="shrink-0 w-9 h-9 rounded-xl bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center border border-peso/20 dark:border-pesoLight/20">
+                            <window.Icons.Shield size={18} />
                         </div>
+                        <div className="min-w-0">
+                            <p className="text-[13.5px] font-semibold text-ink dark:text-paper mb-0.5">{tip.title}</p>
+                            <p className="text-[12px] text-ink2/70 dark:text-paper/60 leading-relaxed">{tip.text}</p>
+                        </div>
+                    </div>
 
-                        <div className="bg-black/[0.03] dark:bg-white/[0.04] p-5 rounded-2xl border border-black/5 dark:border-white/5">
-                            <p className="text-[11px] font-medium text-ink2/60 dark:text-paper/50 mb-1.5">Total remaining balance</p>
-                            <p className="font-mono text-2xl font-bold tracking-tight text-ink dark:text-paper">₱{window.peso(summary.totalRemaining)}</p>
-                        </div>
-
-                        <div className={`p-5 rounded-2xl border ${summary.overdueCount > 0 ? 'bg-[#FAEDE9] dark:bg-[#B5483B]/15 border-[#B5483B]/10 dark:border-[#F38C80]/20' : 'bg-black/[0.03] dark:bg-white/[0.04] border-black/5 dark:border-white/5'}`}>
-                            <p className={`text-[11px] font-medium mb-1.5 ${summary.overdueCount > 0 ? 'text-[#B5483B] dark:text-[#F38C80]' : 'text-ink2/60 dark:text-paper/50'}`}>
-                                {summary.overdueCount > 0 ? `${summary.overdueCount} overdue` : "Next due date"}
-                            </p>
-                            <p className={`font-mono text-lg sm:text-xl font-bold tracking-tight ${summary.overdueCount > 0 ? 'text-[#B5483B] dark:text-[#F38C80]' : 'text-ink dark:text-paper'}`}>
-                                {formatDatePH(summary.nearestDue)}
-                            </p>
-                        </div>
+                    <div className="flex items-center justify-center gap-1.5 mt-4">
+                        {tips.map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => goTo(i)}
+                                aria-label={`Tip ${i + 1}`}
+                                className={`h-1.5 rounded-full transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-peso/40 ${i === index ? "w-6 bg-peso dark:bg-pesoLight" : "w-1.5 bg-black/10 dark:bg-white/15"}`}
+                            />
+                        ))}
                     </div>
                 </div>
             );
         }
 
-        function TipsSection() {
-            return (
-                <div className="mt-8 sm:mt-10 fade-up" style={{ animationDelay: "150ms" }}>
-                    <div className="flex items-center gap-2.5 mb-4 px-1">
-                        <window.Icons.Info size={20} className="text-peso dark:text-pesoLight" />
-                        <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper tracking-tight">Smart tips: installment edition</h3>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-xl p-5 rounded-[1.25rem] border border-white/60 dark:border-white/5 shadow-sm">
-                            <div className="w-10 h-10 rounded-full bg-[#FAEDE9] dark:bg-[#B5483B]/20 text-[#B5483B] dark:text-[#F38C80] flex items-center justify-center mb-3">
-                                <window.Icons.TrendingDown size={18} />
-                            </div>
-                            <h4 className="font-semibold text-[13px] text-ink dark:text-paper mb-1.5">Avoid Late Penalties</h4>
-                            <p className="text-[11.5px] text-ink2/70 dark:text-paper/60 leading-relaxed">Late fees and compounded interest on buy-now-pay-later plans accumulate quickly. Settle ahead of schedule to save money.</p>
-                        </div>
-
-                        <div className="bg-white/60 dark:bg-ink2/30 backdrop-blur-xl p-5 rounded-[1.25rem] border border-white/60 dark:border-white/5 shadow-sm">
-                            <div className="w-10 h-10 rounded-full bg-[#E6F3EF] dark:bg-[#1F6F54]/20 text-[#1F6F54] dark:text-[#52C8A1] flex items-center justify-center mb-3">
-                                <window.Icons.Shield size={18} />
-                            </div>
-                            <h4 className="font-semibold text-[13px] text-ink dark:text-paper mb-1.5">Limit Simultaneous Plans</h4>
-                            <p className="text-[11.5px] text-ink2/70 dark:text-paper/60 leading-relaxed">Limit active installments to one or two items at a time to prevent stretching your monthly cash flow.</p>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
+        /* --- ROOT INSTALLMENTS PAGE --- */
         function InstallmentsPage() {
             const authReady = window.useAuthReady();
             const [user, setUser] = React.useState(null);
             const [authChecking, setAuthChecking] = React.useState(true);
             const [componentsReady, setComponentsReady] = React.useState(false);
+            const [sharedStats, setSharedStats] = React.useState({});
 
-            // Theme is read-only on this page — the toggle lives on
-            // profile.html. We just reflect whatever's saved there, and
-            // pick up live changes if it's flipped on another tab.
+            const [darkMode, setDarkMode] = React.useState(() => {
+                return localStorage.getItem("tipid_theme") === "dark" ||
+                    (!localStorage.getItem("tipid_theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+            });
+
             React.useEffect(() => {
-                const applyTheme = () => {
-                    const isDark = localStorage.getItem("tipid_theme") === "dark" ||
-                        (!localStorage.getItem("tipid_theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
-                    document.documentElement.classList.toggle("dark", isDark);
-                };
-                applyTheme();
-                window.addEventListener("storage", applyTheme);
-                return () => window.removeEventListener("storage", applyTheme);
-            }, []);
+                if (darkMode) {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem("tipid_theme", "dark");
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem("tipid_theme", "light");
+                }
+            }, [darkMode]);
+
+            const toggleDarkMode = () => setDarkMode(!darkMode);
 
             React.useEffect(() => {
                 const interval = setInterval(() => {
@@ -381,12 +525,14 @@
             if (authChecking || !componentsReady) {
                 return (
                     <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
-                        <div className="glass-panel flex flex-col items-center gap-5 rounded-[32px] px-10 py-10 shadow-ios">
-                            <div className="relative flex items-center justify-center">
-                                <span className="absolute inline-flex h-16 w-16 rounded-full bg-peso/25 halo-pulse" />
-                                <window.Logo size={44} />
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="relative flex items-center justify-center w-14 h-14">
+                                <span className="absolute inset-0 rounded-full bg-peso/20 dark:bg-pesoLight/20 halo-pulse" />
+                                <window.Logo size={38} />
                             </div>
-                            <p className="text-[11px] font-mono font-medium tracking-wide text-ink2 dark:text-paper/60 text-center">Loading tracker</p>
+                            <p className="text-[11px] font-mono text-ink2/60 dark:text-paper/50">
+                                Loading installment manager...
+                            </p>
                         </div>
                     </div>
                 );
@@ -400,14 +546,36 @@
                     <AmbientBackground />
                     <AppNavbar user={user} onLogout={handleLogout} activeTab="installments" />
 
-                    <main className="max-w-[700px] mx-auto w-full px-5 sm:px-8 pt-[6.5rem] md:pt-10 pb-36 md:pb-20 flex-1"
-                        style={{ paddingLeft: 'max(1.25rem, calc(var(--sal) + 1.25rem))', paddingRight: 'max(1.25rem, calc(var(--sar) + 1.25rem))', paddingBottom: 'calc(8rem + var(--sab))' }}>
+                    <main
+                        className="max-w-[840px] mx-auto w-full px-5 sm:px-8 pt-[6.5rem] md:pt-10 pb-36 md:pb-24 flex-1 z-10"
+                        style={{
+                            paddingLeft: 'max(1.25rem, calc(var(--sal) + 1.25rem))',
+                            paddingRight: 'max(1.25rem, calc(var(--sar) + 1.25rem))',
+                            paddingBottom: 'calc(8rem + var(--sab))',
+                        }}
+                    >
                         <div className="fade-up">
-                            <InstallmentsHeroCard />
+                            <InstallmentsHeroCard
+                                darkMode={darkMode}
+                                toggleDarkMode={toggleDarkMode}
+                                stats={sharedStats}
+                            />
                         </div>
-                        <InstallmentsSummaryCard uid={user.uid} />
-                        <AppInstallments uid={user.uid} />
-                        <TipsSection />
+
+                        <div className="fade-up" style={{ animationDelay: "40ms" }}>
+                            <InstallmentsVitalSigns stats={sharedStats} />
+                        </div>
+
+                        <div className="fade-up" style={{ animationDelay: "80ms" }}>
+                            <InstallmentTipsCarousel />
+                        </div>
+
+                        <div className="fade-up" style={{ animationDelay: "120ms" }}>
+                            <AppInstallments
+                                uid={user.uid}
+                                onSummaryChange={setSharedStats}
+                            />
+                        </div>
                     </main>
                 </div>
             );

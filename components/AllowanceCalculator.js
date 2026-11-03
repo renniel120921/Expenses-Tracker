@@ -1,22 +1,152 @@
-// Hoisted outside the component: these only depend on props, never on component
-// state. Defining them inside the component body would recreate a new function
-// reference every render, which makes React treat them as a different component
-// type on each keystroke — unmounting and remounting the underlying <input>, so
-// it loses focus after every character. Keeping them here fixes that.
+// components/AllowanceCalculator.js
+
+// --- REAL SVG ICONS SUITE ---
+const ALLOWANCE_ICONS = {
+    Income: ({ size = 20, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <rect x="2" y="6" width="20" height="12" rx="2.5" fill="currentColor" fillOpacity="0.12" />
+            <circle cx="12" cy="12" r="3" />
+            <path d="M6 12h.01M18 12h.01" />
+        </svg>
+    ),
+    Bills: ({ size = 20, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" fill="currentColor" fillOpacity="0.12" />
+            <path d="M14 2v6h6" />
+            <line x1="9" y1="13" x2="15" y2="13" />
+            <line x1="9" y1="17" x2="15" y2="17" />
+        </svg>
+    ),
+    Savings: ({ size = 20, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M19 9V6a2 2 0 0 0-2-2H4a1 1 0 0 0-1 1v3.4a1 1 0 0 0 .6.92l1.9.82" />
+            <path d="M3 9h14a4 4 0 0 1 4 4v2a2 2 0 0 1-2 2h-1" fill="currentColor" fillOpacity="0.12" />
+            <path d="M3 9v10a1 1 0 0 0 1 1h3v-4" />
+            <path d="M13 9v12" />
+            <circle cx="9" cy="14" r="1" fill="currentColor" stroke="none" />
+        </svg>
+    ),
+    Payday: ({ size = 20, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <rect x="3" y="4" width="18" height="18" rx="3" fill="currentColor" fillOpacity="0.12" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+            <polyline points="9 16 11 18 15 14" strokeWidth="2.5" />
+        </svg>
+    ),
+    Calendar: ({ size = 18, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <rect x="3" y="4" width="18" height="18" rx="3" fill="currentColor" fillOpacity="0.12" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+    ),
+    Edit: ({ size = 16, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+            <path d="m15 5 4 4" />
+        </svg>
+    ),
+    Bell: ({ size = 16, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+        </svg>
+    ),
+    BellOff: ({ size = 16, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+            <line x1="2" y1="2" x2="22" y2="22" strokeWidth="2.4" />
+        </svg>
+    ),
+    Check: ({ size = 16, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <polyline points="20 6 9 17 4 12" />
+        </svg>
+    ),
+    Sparkles: ({ size = 18, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z" fill="currentColor" fillOpacity="0.2" />
+        </svg>
+    ),
+    Clock: ({ size = 16, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <circle cx="12" cy="12" r="9" />
+            <polyline points="12 7 12 12 15.5 14" />
+        </svg>
+    ),
+    Trash: ({ size = 15, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+        </svg>
+    ),
+    Close: ({ size = 14, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+    ),
+    Shield: ({ size = 18, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" fillOpacity="0.15" />
+        </svg>
+    ),
+    Plus: ({ size = 16, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+    ),
+    Coins: ({ size = 18, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <circle cx="8" cy="8" r="6" fill="currentColor" fillOpacity="0.15" />
+            <path d="M18.09 10.37A6 6 0 1 1 10.34 18" />
+            <path d="M7 6h1v4" />
+            <path d="M16.7 13.3a4.5 4.5 0 0 0-3-3.3" />
+        </svg>
+    ),
+    Zap: ({ size = 16, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        </svg>
+    )
+};
+
+// Form Field Wrapper
 const FieldWrap = ({ icon, children, className = "" }) => (
-    <div className={`flex items-center gap-3 bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200 ${className}`}>
+    <div className={`flex items-center gap-3 bg-white/80 dark:bg-ink2/30 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-3.5 focus-within:ring-2 focus-within:ring-peso/50 focus-within:bg-white dark:focus-within:bg-ink transition-all duration-200 shadow-xs ${className}`}>
         {icon}
         {children}
     </div>
 );
 
-const StatChip = ({ label, value, accent }) => (
-    <div className="flex-1 min-w-[7.5rem] max-w-full bento-card rounded-2xl p-4 shadow-sm border border-black/5 dark:border-white/5 min-w-0">
-        <p className="text-[9px] font-mono uppercase font-bold tracking-widest text-ink2/50 dark:text-paper/40 mb-1">{label}</p>
-        <p className={`font-mono text-[15px] sm:text-[16px] font-bold tracking-tight truncate ${accent || "text-ink dark:text-paper"}`} title={value}>{value}</p>
+// Stat Squircle Chip
+const StatChip = ({ label, value, sub, icon, accent, badgeColor }) => (
+    <div className="flex-1 min-w-[8.5rem] bg-white/80 dark:bg-ink2/40 backdrop-blur-md rounded-[1.25rem] p-4 border border-black/5 dark:border-white/10 shadow-xs flex items-center gap-3.5 transition-all">
+        <div className={`w-11 h-11 rounded-[14px] border flex items-center justify-center shrink-0 ${badgeColor || 'bg-black/5 text-ink2 border-black/10 dark:bg-white/5 dark:text-paper dark:border-white/10'}`}>
+            {icon}
+        </div>
+        <div className="min-w-0">
+            <p className="text-[10px] font-mono uppercase font-semibold tracking-wider text-ink2/50 dark:text-paper/40 mb-0.5">
+                {label}
+            </p>
+            <p className={`font-mono text-[16px] sm:text-[17px] font-bold tracking-tight truncate ${accent || 'text-ink dark:text-paper'}`}>
+                {value}
+            </p>
+            {sub && (
+                <p className="text-[10px] text-ink2/50 dark:text-paper/40 truncate">
+                    {sub}
+                </p>
+            )}
+        </div>
     </div>
 );
 
+// Receipt Table Row
 const ReceiptRow = ({ label, value, valueClass = "" }) => (
     <div className="flex items-baseline justify-between gap-3 py-2 border-b border-dashed border-ink/15 dark:border-paper/15 last:border-b-0">
         <span className="text-[12px] text-ink2/70 dark:text-paper/60 leading-snug">{label}</span>
@@ -24,45 +154,23 @@ const ReceiptRow = ({ label, value, valueClass = "" }) => (
     </div>
 );
 
-// Same bank/e-wallet catalog used on the dashboard and the Hulugan tracker —
-// duplicated here (rather than assuming window.SUPPORTED_WALLETS already
-// exists) because this page can be opened on its own without dashboard.html
-// ever having loaded its inline script.
+// Supported wallets catalog
 const WALLET_META = window.SUPPORTED_WALLETS || [
     { id: "Cash", name: "Cash", type: "cash", color: "from-[#1F6F54] to-[#123D2E]", text: "CASH", font: "font-display tracking-[0.15em]", textStyle: "text-white" },
     { id: "GCash", name: "GCash", type: "ewallet", color: "from-[#0052FE] to-[#004ADB]", text: "GCash", font: "font-sans italic font-extrabold tracking-tighter", textStyle: "text-white" },
     { id: "Maya", name: "Maya", type: "ewallet", color: "from-[#0A0A0A] via-[#171717] to-[#242424]", text: "maya", font: "font-sans font-black tracking-widest lowercase", textStyle: "text-white" },
     { id: "ShopeePay", name: "ShopeePay", type: "ewallet", color: "from-[#EE4D2D] to-[#D8390F]", text: "ShopeePay", font: "font-sans font-extrabold tracking-tight", textStyle: "text-white" },
     { id: "GrabPay", name: "GrabPay", type: "ewallet", color: "from-[#00B14F] to-[#009344]", text: "GrabPay", font: "font-sans font-extrabold tracking-tight", textStyle: "text-white" },
-    { id: "Atome", name: "Atome Card", type: "credit", color: "from-[#FFDE00] to-[#D4B300]", text: "atome", font: "font-sans font-black lowercase tracking-widest", textStyle: "text-[#111]" },
-    { id: "MariBank", name: "MariBank", type: "digital", color: "from-[#EE4D2D] to-[#D8390F]", text: "MariBank", font: "font-sans font-bold tracking-tight", textStyle: "text-white" },
-    { id: "SeaBank", name: "SeaBank", type: "digital", color: "from-[#FF6E00] to-[#E65A00]", text: "SeaBank", font: "font-sans font-bold", textStyle: "text-white" },
-    { id: "GoTyme", name: "GoTyme Bank", type: "digital", color: "from-[#0052FF] to-[#00238A]", text: "GoTyme", font: "font-sans font-bold tracking-tight", textStyle: "text-white" },
-    { id: "Tonik", name: "Tonik Bank", type: "digital", color: "from-[#FF4D85] to-[#E6004F]", text: "tonik", font: "font-sans font-black lowercase tracking-tight", textStyle: "text-white" },
-    { id: "UNO", name: "UNO Digital Bank", type: "digital", color: "from-[#E63946] to-[#8E0000]", text: "UNO", font: "font-sans font-black tracking-[0.2em] uppercase", textStyle: "text-white" },
-    { id: "UnionDigital", name: "UnionDigital Bank", type: "digital", color: "from-[#FF6B00] to-[#C24700]", text: "UnionDigital", font: "font-sans font-bold tracking-tight", textStyle: "text-white" },
-    { id: "CIMB", name: "CIMB Bank", type: "digital", color: "from-[#E3000F] to-[#8E0000]", text: "CIMB", font: "font-sans font-black tracking-widest", textStyle: "text-white" },
-    { id: "DiskarTech", name: "DiskarTech", type: "ewallet", color: "from-[#00A5E3] to-[#0067C7]", text: "DiskarTech", font: "font-sans font-bold tracking-tight", textStyle: "text-white" },
     { id: "BDO", name: "BDO Unibank", type: "bank", color: "from-[#002A86] to-[#00133D]", text: "BDO", font: "font-sans font-black tracking-[0.15em]", textStyle: "text-white" },
     { id: "BPI", name: "BPI", type: "bank", color: "from-[#B30000] to-[#5C0000]", text: "BPI", font: "font-sans font-black tracking-[0.2em]", textStyle: "text-white" },
-    { id: "Metrobank", name: "Metrobank", type: "bank", color: "from-[#0033A0] to-[#001444]", text: "Metrobank", font: "font-sans font-bold tracking-tight", textStyle: "text-white" },
-    { id: "PNB", name: "PNB", type: "bank", color: "from-[#004A99] to-[#001D44]", text: "PNB", font: "font-sans font-black tracking-[0.2em]", textStyle: "text-white" },
-    { id: "SecurityBank", name: "Security Bank", type: "bank", color: "from-[#005EB8] to-[#002C56]", text: "SecurityBank", font: "font-sans font-bold tracking-tight", textStyle: "text-white" },
-    { id: "UnionBank", name: "UnionBank", type: "bank", color: "from-[#EA5B0C] to-[#8A2E00]", text: "UnionBank", font: "font-sans font-bold tracking-tight", textStyle: "text-white" },
-    { id: "RCBC", name: "RCBC", type: "bank", color: "from-[#003DA5] to-[#001444]", text: "RCBC", font: "font-sans font-black tracking-[0.2em]", textStyle: "text-white" },
-    { id: "ChinaBank", name: "China Bank", type: "bank", color: "from-[#C8102E] to-[#6E0000]", text: "China Bank", font: "font-serif font-bold", textStyle: "text-white" },
-    { id: "EastWest", name: "EastWest Bank", type: "bank", color: "from-[#4B145E] to-[#1F0527]", text: "EastWest", font: "font-sans font-bold tracking-tight", textStyle: "text-white" },
-    { id: "LandBank", name: "Land Bank", type: "bank", color: "from-[#005B33] to-[#00281A]", text: "LANDBANK", font: "font-sans font-black tracking-tight", textStyle: "text-white" },
-    { id: "PayPal", name: "PayPal", type: "ewallet", color: "from-[#003087] to-[#0067B4]", text: "PayPal", font: "font-sans italic font-bold tracking-tight", textStyle: "text-white" },
+    { id: "UnionBank", name: "UnionBank", type: "bank", color: "from-[#EA5B0C] to-[#8A2E00]", text: "UnionBank", font: "font-sans font-bold tracking-tight", textStyle: "text-white" }
 ];
 
 function walletMeta(id) {
     return WALLET_META.find(w => w.id === id) || { id, name: id, type: "bank", text: id, font: "font-sans font-bold tracking-tight", textStyle: "text-white", color: "from-ink2 to-ink" };
 }
 
-// A small, realistic-looking mini "card" for picking which wallet pays for a
-// logged expense — same brand colors/typography as the real card on the
-// dashboard, shrunk down into a tappable chip.
+// Mini Wallet Selector Card
 const MiniWalletChip = ({ id, meta, active, onClick }) => {
     const showChip = meta.type === "bank" || meta.type === "credit";
     return (
@@ -70,8 +178,8 @@ const MiniWalletChip = ({ id, meta, active, onClick }) => {
             type="button"
             onClick={onClick}
             aria-pressed={active}
-            className={`relative shrink-0 w-[6.5rem] h-[3.75rem] rounded-[12px] bg-gradient-to-br ${meta.color} p-2.5 flex flex-col justify-between overflow-hidden text-left transition-all duration-200 ${
-                active ? 'ring-2 ring-peso ring-offset-2 ring-offset-white dark:ring-offset-ink2 shadow-md scale-[1.02]' : 'ring-1 ring-black/5 dark:ring-white/10 opacity-75 hover:opacity-100 shadow-sm'
+            className={`tap-scale relative shrink-0 w-[6.8rem] h-[3.8rem] rounded-[13px] bg-gradient-to-br ${meta.color} p-2.5 flex flex-col justify-between overflow-hidden text-left transition-all duration-200 ${
+                active ? 'ring-2 ring-peso ring-offset-2 ring-offset-white dark:ring-offset-ink shadow-md scale-[1.02]' : 'ring-1 ring-black/5 dark:ring-white/10 opacity-75 hover:opacity-100 shadow-xs'
             }`}
         >
             <span className="absolute -right-4 -top-5 w-14 h-14 bg-white/15 rounded-full blur-md pointer-events-none" />
@@ -92,7 +200,8 @@ const MiniWalletChip = ({ id, meta, active, onClick }) => {
     );
 };
 
-window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entriesProp, loading: entriesLoading }) {
+// --- MAIN ALLOWANCE CALCULATOR COMPONENT ---
+window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entriesProp, loading: entriesLoading, onStatsChange }) {
     const { useState, useEffect, useRef, useMemo } = React;
 
     const uid = user?.uid || window.TipidAuth?.currentUser?.uid || null;
@@ -101,15 +210,16 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
     const CATEGORIES = window.CATEGORIES || ["Pagkain", "Pamasahe", "Bills", "Load", "Ipon", "Project Components", "Iba pa"];
 
     const CATEGORY_META = {
-        "Pagkain": { color: "#D4AF37", bg: "#FDF6E3", dark: "rgba(212,175,55,0.15)", icon: <path d="M7 2v6a2 2 0 0 0 2 2v10M7 2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2m0-8v8m10-8c-2.2 0-4 2.1-4 5.5S14.8 15 17 15v7" /> },
-        "Pamasahe": { color: "#2E7DC9", bg: "#E8F1FB", dark: "rgba(46,125,201,0.15)", icon: <><path d="M4 16V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9" /><path d="M4 16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2" /><circle cx="8" cy="19" r="1.4" /><circle cx="16" cy="19" r="1.4" /></> },
-        "Bills": { color: "#D64045", bg: "#FAEDE9", dark: "rgba(214,64,69,0.15)", icon: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" /><path d="M14 2v6h6" /><path d="M9 13h6" /><path d="M9 17h6" /></> },
-        "Load": { color: "#7C5CBF", bg: "#F1ECFB", dark: "rgba(124,92,191,0.15)", icon: <><rect x="7" y="2" width="10" height="20" rx="2.5" /><path d="M11 18h2" /></> },
-        "Ipon": { color: "#1F6F54", bg: "#E6F3EF", dark: "rgba(31,111,84,0.15)", icon: <><path d="M19 9V6a2 2 0 0 0-2-2H4a1 1 0 0 0-1 1v3.4a1 1 0 0 0 .6.92l1.9.82" /><path d="M3 9h14a4 4 0 0 1 4 4v2a2 2 0 0 1-2 2h-1" /><path d="M3 9v10a1 1 0 0 0 1 1h3v-4" /><path d="M13 9v12" /></> },
-        "Project Components": { color: "#4A5568", bg: "#EEF1F4", dark: "rgba(74,85,104,0.15)", icon: <><path d="m21 16-9 5-9-5V8l9-5 9 5Z" /><path d="M12 21v-8" /><path d="m21 8-9 5-9-5" /></> }
+        "Pagkain": { color: "#1F6F54", bg: "#E6F3EF", icon: <path d="M7 2v6a2 2 0 0 0 2 2v10M7 2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2m0-8v8m10-8c-2.2 0-4 2.1-4 5.5S14.8 15 17 15v7" /> },
+        "Pamasahe": { color: "#0284C7", bg: "#E0F2FE", icon: <><path d="M4 16V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9" /><circle cx="8" cy="19" r="1.5" /><circle cx="16" cy="19" r="1.5" /></> },
+        "Bills": { color: "#E11D48", bg: "#FFE4E6", icon: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" /><path d="M14 2v6h6" /></> },
+        "Load": { color: "#7C3AED", bg: "#EDE9FE", icon: <><rect x="7" y="2" width="10" height="20" rx="2.5" /><path d="M11 18h2" /></> },
+        "Ipon": { color: "#059669", bg: "#D1FAE5", icon: <><path d="M19 9V6a2 2 0 0 0-2-2H4a1 1 0 0 0-1 1v3.4a1 1 0 0 0 .6.92l1.9.82" /><path d="M3 9h14a4 4 0 0 1 4 4v2a2 2 0 0 1-2 2h-1" /></> },
+        "Project Components": { color: "#D97706", bg: "#FEF3C7", icon: <><path d="m21 16-9 5-9-5V8l9-5 9 5Z" /></> }
     };
-    const DEFAULT_META = { color: "#6B7280", bg: "#EEF0F2", dark: "rgba(107,114,128,0.15)", icon: <><circle cx="6" cy="12" r="1.4" /><circle cx="12" cy="12" r="1.4" /><circle cx="18" cy="12" r="1.4" /></> };
+    const DEFAULT_META = { color: "#64748B", bg: "#F1F5F9", icon: <circle cx="12" cy="12" r="6" /> };
     const getCategoryMeta = (cat) => CATEGORY_META[cat] || DEFAULT_META;
+
     const moneyOrZero = (value) => {
         try { return window.TipidCore.money(value || 0, { allowZero: true }); }
         catch (_) { return 0; }
@@ -127,21 +237,15 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
     const [editOpen, setEditOpen] = useState(false);
     const autoOpenedRef = useRef(false);
 
-    const [dataReady, setDataReady] = useState(!!window.TipidData);
     const [expAmount, setExpAmount] = useState("");
     const [expNote, setExpNote] = useState("");
-    const [expCategory, setExpCategory] = useState(CATEGORIES[CATEGORIES.length - 1] || "Iba pa");
+    const [expCategory, setExpCategory] = useState(CATEGORIES[0] || "Pagkain");
     const [loggingExpense, setLoggingExpense] = useState(false);
 
-    // The user's actual configured wallets/cards — same "wallets" map the
-    // dashboard reads from and writes to. Letting the user pick one here
-    // (instead of always logging as "Cash") means the expense entry carries
-    // the real method, so that wallet's balance on the dashboard reflects it
-    // automatically — no separate deduction logic needed, it's the same
-    // entries collection the dashboard already sums up per method.
     const [baseBalances, setBaseBalances] = useState({ Cash: 0 });
     const [expMethod, setExpMethod] = useState("Cash");
 
+    // Fetch user wallets for payment chips
     useEffect(() => {
         let cancelled = false;
         (async () => {
@@ -154,20 +258,12 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                         setBaseBalances(wallets.Cash !== undefined ? wallets : { Cash: 0, ...wallets });
                     }
                 }
-            } catch (err) {
-                // Keep the Cash-only fallback — this field is a convenience,
-                // the rest of the tracker doesn't depend on it.
-            }
+            } catch (err) {}
         })();
         return () => { cancelled = true; };
     }, [uid]);
 
     const walletIds = useMemo(() => Object.keys(baseBalances), [baseBalances]);
-
-    // Running balance per wallet: base balance (set on the dashboard) plus
-    // every income/expense entry tagged with that method, exactly like the
-    // dashboard computes it — so what the user sees here always matches
-    // what they'd see there.
     const walletBalances = useMemo(() => {
         return window.TipidCore.walletBalances(entries, baseBalances);
     }, [entries, baseBalances]);
@@ -184,10 +280,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
     const notifiedFlags = useRef({ danger: false, warning: false, payday: false });
 
     const todayKey = (d = new Date()) => window.TipidCore.manilaDateKey(d);
-
-    const entryToDate = (entry) => {
-        return window.TipidCore.entryDate(entry);
-    };
+    const entryToDate = (entry) => window.TipidCore.entryDate(entry);
 
     const pushToast = (message, tone = "success") => {
         const id = Date.now() + Math.random();
@@ -195,14 +288,9 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
         setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
     };
 
-    const notifyBrowser = (title, body) => {
-        if (!notifEnabled || typeof Notification === "undefined" || Notification.permission !== "granted") return;
-        try { new Notification(title, { body, icon: "/assets/logo.svg" }); } catch (err) { console.error(err); }
-    };
-
     const toggleNotifications = async () => {
         if (typeof Notification === "undefined") {
-            pushToast("Notifications are not supported in your browser.", "warning");
+            pushToast("Notifications not supported in your browser.", "warning");
             return;
         }
         if (notifEnabled) {
@@ -214,9 +302,9 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
         if (permission === "granted") {
             setNotifEnabled(true);
             if (uid) localStorage.setItem(`tipid_notif_${uid}`, "on");
-            pushToast("Browser notifications enabled.", "success");
+            pushToast("Pacing alerts enabled.", "success");
         } else {
-            pushToast("Notifications were blocked in your browser settings.", "warning");
+            pushToast("Notifications were denied in browser permissions.", "warning");
         }
     };
 
@@ -228,13 +316,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
         }
     }, [uid]);
 
-    useEffect(() => {
-        if (window.TipidData) { setDataReady(true); return; }
-        const handler = () => setDataReady(true);
-        window.addEventListener("tipid-data-ready", handler, { once: true });
-        return () => window.removeEventListener("tipid-data-ready", handler);
-    }, []);
-
+    // Load saved settings from Firestore
     useEffect(() => {
         if (!uid || !window.db || !window.FirestoreAPI) return;
         const { doc, getDoc } = window.FirestoreAPI;
@@ -258,6 +340,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
         })();
     }, [uid]);
 
+    // Autosave settings
     useEffect(() => {
         if (!loaded || !uid || !window.db || !window.FirestoreAPI) return;
 
@@ -285,6 +368,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
         return () => clearTimeout(saveTimer.current);
     }, [salary, bills, savings, paydayDate, loaded, uid]);
 
+    // Financial Computations
     const todaysExpenses = useMemo(() => {
         const key = todayKey();
         return entries.filter(e => e.type !== "income" && todayKey(entryToDate(e)) === key);
@@ -317,7 +401,48 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
     const isPaydaySoon = loaded && daysLeft > 0 && daysLeft <= 2;
     const isConfigured = numSalary > 0 && !!paydayDate;
 
-    // ---------- Smart weekly insights ----------
+    // Notify parent page stats
+    useEffect(() => {
+        if (typeof onStatsChange === "function") {
+            onStatsChange({
+                dailySafe,
+                daysLeft,
+                remaining,
+                isOverBudget,
+                isNearLimit,
+                isPaydaySoon
+            });
+        }
+    }, [dailySafe, daysLeft, remaining, isOverBudget, isNearLimit, isPaydaySoon, onStatsChange]);
+
+    // Quick Payday Presets Helper
+    const setPresetPayday = (type) => {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+
+        if (type === "plus15") {
+            d.setDate(d.getDate() + 15);
+        } else if (type === "plus30") {
+            d.setDate(d.getDate() + 30);
+        } else if (type === "next15or30") {
+            const day = d.getDate();
+            if (day < 15) {
+                d.setDate(15);
+            } else {
+                // Last day of month or 30th
+                const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+                d.setDate(Math.min(30, lastDay));
+            }
+        }
+
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        setPaydayDate(`${yyyy}-${mm}-${dd}`);
+        pushToast("Updated next payday target date.", "success");
+    };
+
+    // ---------- Smart Weekly Insights & Resibo ----------
     const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
     const dailyHistory = useMemo(() => {
@@ -338,7 +463,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
     const totalExpenseCount = useMemo(() => entries.filter(e => e.type !== "income").length, [entries]);
     const hasEnoughHistory = totalExpenseCount >= 3;
 
-    const priorDays = dailyHistory.slice(0, -1); // last 6 days, excludes today (today is still in progress)
+    const priorDays = dailyHistory.slice(0, -1);
     const avgDailySpend = priorDays.length > 0
         ? priorDays.reduce((s, d) => s + d.total, 0) / priorDays.length
         : 0;
@@ -377,35 +502,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
     const shortfallDays = willRunOutEarly ? Math.ceil(daysLeft - projectedDaysCovered) : 0;
     const paceVsSafePct = dailySafe > 0 ? Math.round(((avgDailySpend - dailySafe) / dailySafe) * 100) : 0;
 
-    // --------------------------------------------
-
-    useEffect(() => {
-        if (loaded && !isConfigured && !autoOpenedRef.current) {
-            autoOpenedRef.current = true;
-            setEditOpen(true);
-        }
-    }, [loaded, isConfigured]);
-
-    useEffect(() => {
-        if (!loaded) return;
-        const flags = notifiedFlags.current;
-
-        if (isOverBudget && !flags.danger) {
-            flags.danger = true; setDismissedBanner(false);
-            notifyBrowser("Daily budget exceeded!", `You have spent ₱${window.peso(spentToday)} today, exceeding your safe daily limit of ₱${window.peso(dailySafe)}.`);
-        } else if (!isOverBudget) { flags.danger = false; }
-
-        if (isNearLimit && !flags.warning) {
-            flags.warning = true; setDismissedBanner(false);
-            notifyBrowser("Approaching daily limit", `You have spent ₱${window.peso(spentToday)} of your ₱${window.peso(dailySafe)} safe daily limit.`);
-        } else if (!isNearLimit) { flags.warning = false; }
-
-        if (isPaydaySoon && !flags.payday) {
-            flags.payday = true; setDismissedBanner(false);
-            notifyBrowser("Payday approaching", `${daysLeft} ${daysLeft === 1 ? "day" : "days"} remaining until payday.`);
-        } else if (!isPaydaySoon) { flags.payday = false; }
-    }, [isOverBudget, isNearLimit, isPaydaySoon, loaded]);
-
+    // Log new expense
     const handleLogExpense = async (e) => {
         e.preventDefault();
         const amt = parseFloat(expAmount);
@@ -430,8 +527,9 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                 category: expCategory,
                 method: expMethod
             });
-            setExpAmount(""); setExpNote("");
-            pushToast("Expense logged successfully.", "success");
+            setExpAmount("");
+            setExpNote("");
+            pushToast(`Logged ₱${window.peso(amt)} to ${expMethod}.`, "success");
         } catch (err) {
             console.error(err);
             pushToast("Failed to save expense. Please try again.", "warning");
@@ -448,53 +546,323 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
         } catch (err) { console.error(err); }
     };
 
-    let banner = null;
-    if (!dismissedBanner) {
-        if (isOverBudget) {
-            banner = { tone: "danger", title: "Daily limit exceeded", message: `You are ₱${window.peso(Math.abs(remainingToday))} over your safe daily limit today.` };
-        } else if (isNearLimit) {
-            banner = { tone: "warning", title: "Approaching daily limit", message: `You have ₱${window.peso(Math.max(remainingToday, 0))} remaining for today.` };
-        } else if (isPaydaySoon) {
-            banner = { tone: "info", title: "Payday approaching", message: `${daysLeft} ${daysLeft === 1 ? "day" : "days"} remaining until payday.` };
-        }
-    }
-
-    const bannerStyles = {
-        danger: "bg-[#FAEDE9] dark:bg-[#D64045]/20 border-[#D64045]/30 text-[#D64045] dark:text-[#F38C80]",
-        warning: "bg-[#FDF6E3] dark:bg-[#D4AF37]/20 border-[#D4AF37]/30 text-[#D4AF37] dark:text-[#E8C071]",
-        info: "bg-[#E6F3EF] dark:bg-[#1F6F54]/20 border-[#1F6F54]/30 text-[#1F6F54] dark:text-[#52C8A1]"
-    };
-
-    const bannerIcon = {
-        danger: <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 shrink-0" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M12 9v4" /><path d="M12 17h.01" /><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" /></svg>,
-        warning: <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 shrink-0" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 8v4" /><path d="M12 16h.01" /></svg>,
-        info: <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 shrink-0" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="3" /><path d="M3 10h18" /><path d="M8 2v4" /><path d="M16 2v4" /></svg>
-    };
-
+    // Circular Progress Ring Math
     const spendRatio = dailySafe > 0 ? Math.min(spentToday / dailySafe, 1) : 0;
     const spendPct = Math.round(spendRatio * 100);
-    const ringTone = isOverBudget ? "#D64045" : isNearLimit ? "#D4AF37" : "#1F6F54";
-    const RING_R = 54;
+    const ringTone = isOverBudget ? "#E11D48" : isNearLimit ? "#D97706" : "#1F6F54";
+    const RING_R = 52;
     const RING_C = 2 * Math.PI * RING_R;
     const ringOffset = RING_C * (1 - spendRatio);
 
-    const fieldIcon = {
-        salary: <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 shrink-0 text-ink2/40 dark:text-paper/40" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-1" /><path d="M18 12a2 2 0 0 0 0 4h4v-4Z" /></svg>,
-        bills: <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 shrink-0 text-ink2/40 dark:text-paper/40" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" /><path d="M14 2v6h6" /><path d="M9 13h6" /><path d="M9 17h6" /></svg>,
-        savings: <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 shrink-0 text-ink2/40 dark:text-paper/40" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M19 9V6a2 2 0 0 0-2-2H4a1 1 0 0 0-1 1v3.4a1 1 0 0 0 .6.92l1.9.82" /><path d="M3 9h14a4 4 0 0 1 4 4v2a2 2 0 0 1-2 2h-1" /><path d="M3 9v10a1 1 0 0 0 1 1h3v-4" /><path d="M13 9v12" /></svg>,
-        payday: <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 shrink-0 text-ink2/40 dark:text-paper/40" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="3" /><path d="M3 10h18" /><path d="M8 2v4" /><path d="M16 2v4" /></svg>
-    };
+    const QUICK_AMOUNTS = [20, 50, 100, 200, 500];
 
-    const QUICK_AMOUNTS = [20, 50, 100, 200];
+    // Percentage of Income Breakdown
+    const billsPct = numSalary > 0 ? Math.min(Math.round((numBills / numSalary) * 100), 100) : 0;
+    const savingsPct = numSalary > 0 ? Math.min(Math.round((numSavings / numSalary) * 100), 100) : 0;
+    const allowancePct = Math.max(0, 100 - billsPct - savingsPct);
 
-    // ---------- Weekly Resibo (receipt-style insights) ----------
-    const maxBar = Math.max(dailySafe, ...dailyHistory.map(d => d.total), 1);
-
-    const weeklyResiboSection = (!loaded || !isConfigured) ? null : (
-            <section className="fade-up" style={{ animationDelay: "60ms" }} aria-labelledby="resibo-heading">
-                <div className="relative">
+    return (
+        <div className="space-y-6 sm:space-y-8">
+            {/* Top Floating Toast Notification Feed */}
+            <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-[calc(100%-2rem)] max-w-sm pointer-events-none">
+                {toasts.map(t => (
                     <div
-                        className="h-3 -mb-px text-paperDim dark:text-ink"
+                        key={t.id}
+                        className={`fade-up pointer-events-auto rounded-[1.25rem] px-5 py-3.5 text-[13px] font-bold shadow-iosLg border backdrop-blur-2xl flex items-center gap-3 ${
+                            t.tone === "warning"
+                                ? "bg-rose-600/95 text-white border-rose-500/50"
+                                : "bg-ink/95 dark:bg-paper/95 text-paper dark:text-ink border-white/10"
+                        }`}
+                    >
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${t.tone === "warning" ? "bg-white" : "bg-emerald-400"}`} />
+                        {t.message}
+                    </div>
+                ))}
+            </div>
+
+            {/* ============================================================== */}
+            {/* 1. CONFIGURATION & BUDGET ALLOCATION CARD                      */}
+            {/* ============================================================== */}
+            <div className="bg-white/80 dark:bg-ink2/30 backdrop-blur-2xl rounded-[2rem] border border-white/80 dark:border-white/10 shadow-ios p-6 sm:p-8 relative overflow-hidden transition-all duration-300">
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-pesoLight via-emerald-400 to-peso" />
+
+                {/* Top Action Row */}
+                <div className="flex items-center justify-between gap-3 mb-6 pb-4 border-b border-black/5 dark:border-white/10">
+                    <div className="flex items-center gap-3.5">
+                        <span className="w-11 h-11 rounded-2xl bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center shrink-0 border border-peso/20 dark:border-pesoLight/20 shadow-xs">
+                            <ALLOWANCE_ICONS.Shield size={20} />
+                        </span>
+                        <div>
+                            <h3 className="font-display text-[1.18rem] sm:text-[1.25rem] font-bold text-ink dark:text-paper leading-tight">
+                                Budget & Pacing Settings
+                            </h3>
+                            <p className="text-[11.5px] text-ink2/60 dark:text-paper/50 flex items-center gap-1.5 mt-0.5">
+                                {saving && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
+                                <span>{saving ? "Syncing..." : loaded ? "Saved & encrypted on Firebase" : "Loading..."}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            type="button"
+                            onClick={() => setEditOpen(o => !o)}
+                            className="tap-scale px-3.5 py-2 rounded-xl border bg-white dark:bg-ink2/60 border-black/10 dark:border-white/10 text-xs font-bold text-ink dark:text-paper hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex items-center gap-1.5 shadow-xs"
+                        >
+                            <ALLOWANCE_ICONS.Edit size={14} />
+                            <span>{editOpen ? "Done" : "Edit"}</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={toggleNotifications}
+                            aria-label="Toggle notifications"
+                            className={`tap-scale w-9 h-9 rounded-xl border flex items-center justify-center transition-colors shadow-xs ${
+                                notifEnabled
+                                    ? "bg-peso text-white border-peso"
+                                    : "bg-white dark:bg-ink2/60 text-ink2/60 dark:text-paper/60 border-black/10 dark:border-white/10 hover:bg-black/5"
+                            }`}
+                        >
+                            {notifEnabled ? <ALLOWANCE_ICONS.Bell size={16} /> : <ALLOWANCE_ICONS.BellOff size={16} />}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Editable Input Panel or Read-Only Stat Chips */}
+                {editOpen ? (
+                    <div className="space-y-5 mb-8 animate-[fadeIn_0.3s_ease-out]">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Salary Input */}
+                            <div className="space-y-1">
+                                <label className="text-[11px] font-mono font-semibold uppercase tracking-wider text-ink2/60 dark:text-paper/50 pl-1">
+                                    Income / Total Allowance
+                                </label>
+                                <FieldWrap icon={<ALLOWANCE_ICONS.Income size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />}>
+                                    <input
+                                        type="number"
+                                        placeholder="e.g. 15000"
+                                        value={salary}
+                                        onChange={e => setSalary(e.target.value)}
+                                        className="w-full bg-transparent py-3.5 text-base font-mono font-bold text-ink dark:text-paper focus:outline-none"
+                                    />
+                                </FieldWrap>
+                            </div>
+
+                            {/* Bills Input */}
+                            <div className="space-y-1">
+                                <label className="text-[11px] font-mono font-semibold uppercase tracking-wider text-ink2/60 dark:text-paper/50 pl-1">
+                                    Fixed Bills & Obligations
+                                </label>
+                                <FieldWrap icon={<ALLOWANCE_ICONS.Bills size={18} className="text-rose-600 dark:text-rose-400 shrink-0" />}>
+                                    <input
+                                        type="number"
+                                        placeholder="e.g. 5000"
+                                        value={bills}
+                                        onChange={e => setBills(e.target.value)}
+                                        className="w-full bg-transparent py-3.5 text-base font-mono font-bold text-ink dark:text-paper focus:outline-none"
+                                    />
+                                </FieldWrap>
+                            </div>
+
+                            {/* Savings Target */}
+                            <div className="space-y-1">
+                                <label className="text-[11px] font-mono font-semibold uppercase tracking-wider text-ink2/60 dark:text-paper/50 pl-1">
+                                    Target Savings (Set Aside)
+                                </label>
+                                <FieldWrap icon={<ALLOWANCE_ICONS.Savings size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />}>
+                                    <input
+                                        type="number"
+                                        placeholder="e.g. 1000"
+                                        value={savings}
+                                        onChange={e => setSavings(e.target.value)}
+                                        className="w-full bg-transparent py-3.5 text-base font-mono font-bold text-ink dark:text-paper focus:outline-none"
+                                    />
+                                </FieldWrap>
+                            </div>
+
+                            {/* Payday Date */}
+                            <div className="space-y-1">
+                                <label className="text-[11px] font-mono font-semibold uppercase tracking-wider text-ink2/60 dark:text-paper/50 pl-1">
+                                    Next Payday Date
+                                </label>
+                                <FieldWrap icon={<ALLOWANCE_ICONS.Calendar size={18} className="text-sky-600 dark:text-sky-400 shrink-0" />}>
+                                    <input
+                                        type="date"
+                                        value={paydayDate}
+                                        onChange={e => setPaydayDate(e.target.value)}
+                                        className="w-full bg-transparent py-3.5 text-base font-mono font-bold text-ink dark:text-paper focus:outline-none cursor-pointer"
+                                    />
+                                </FieldWrap>
+                            </div>
+                        </div>
+
+                        {/* Quick Payday Presets Bar */}
+                        <div className="flex items-center gap-2 flex-wrap pt-1 pl-1">
+                            <span className="text-[11px] text-ink2/50 dark:text-paper/40 mr-1 font-medium">
+                                Quick Payday Presets:
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => setPresetPayday("next15or30")}
+                                className="tap-scale px-3 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 text-xs font-semibold"
+                            >
+                                Next 15th / 30th
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setPresetPayday("plus15")}
+                                className="tap-scale px-3 py-1 rounded-lg bg-black/5 dark:bg-white/10 hover:bg-black/10 text-ink2 dark:text-paper text-xs font-semibold"
+                            >
+                                +15 Days
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setPresetPayday("plus30")}
+                                className="tap-scale px-3 py-1 rounded-lg bg-black/5 dark:bg-white/10 hover:bg-black/10 text-ink2 dark:text-paper text-xs font-semibold"
+                            >
+                                +30 Days
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="space-y-6 mb-8">
+                        {/* 4 Stat Squircles */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+                            <StatChip
+                                label="Income"
+                                value={`₱${window.peso(numSalary)}`}
+                                sub="Total received"
+                                icon={<ALLOWANCE_ICONS.Income size={20} />}
+                                badgeColor="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
+                            />
+                            <StatChip
+                                label="Fixed Bills"
+                                value={`₱${window.peso(numBills)}`}
+                                sub={`${billsPct}% of income`}
+                                icon={<ALLOWANCE_ICONS.Bills size={20} />}
+                                badgeColor="bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20"
+                            />
+                            <StatChip
+                                label="Savings"
+                                value={`₱${window.peso(numSavings)}`}
+                                sub={`${savingsPct}% of income`}
+                                icon={<ALLOWANCE_ICONS.Savings size={20} />}
+                                badgeColor="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
+                            />
+                            <StatChip
+                                label="Payday"
+                                value={paydayDate ? `${daysLeft} ${daysLeft === 1 ? "day" : "days"}` : "Not set"}
+                                sub={paydayDate || "Tap edit to set"}
+                                icon={<ALLOWANCE_ICONS.Payday size={20} />}
+                                badgeColor="bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
+                            />
+                        </div>
+
+                        {/* Proportional Budget Allocation Segmented Bar */}
+                        {numSalary > 0 && (
+                            <div className="bg-black/[0.02] dark:bg-white/[0.02] p-4 rounded-2xl border border-black/5 dark:border-white/5 space-y-2.5">
+                                <div className="flex items-center justify-between text-xs font-medium text-ink2/70 dark:text-paper/60">
+                                    <span>Income Distribution</span>
+                                    <span className="font-mono text-ink dark:text-paper font-bold">100% Allocated</span>
+                                </div>
+
+                                <div className="h-3 w-full rounded-full overflow-hidden bg-black/10 dark:bg-white/10 flex">
+                                    <div style={{ width: `${billsPct}%` }} className="bg-rose-500 transition-all duration-500" title={`Bills: ${billsPct}%`} />
+                                    <div style={{ width: `${savingsPct}%` }} className="bg-amber-400 transition-all duration-500" title={`Savings: ${savingsPct}%`} />
+                                    <div style={{ width: `${allowancePct}%` }} className="bg-emerald-500 transition-all duration-500" title={`Allowance: ${allowancePct}%`} />
+                                </div>
+
+                                <div className="flex items-center justify-between text-[11px] font-mono text-ink2/60 dark:text-paper/50 flex-wrap gap-2 pt-1">
+                                    <span className="flex items-center gap-1.5">
+                                        <span className="w-2 h-2 rounded-full bg-rose-500" />
+                                        Bills: {billsPct}% (₱{window.peso(numBills)})
+                                    </span>
+                                    <span className="flex items-center gap-1.5">
+                                        <span className="w-2 h-2 rounded-full bg-amber-400" />
+                                        Savings: {savingsPct}% (₱{window.peso(numSavings)})
+                                    </span>
+                                    <span className="flex items-center gap-1.5 font-bold text-emerald-700 dark:text-emerald-400">
+                                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                                        Free Allowance: {allowancePct}% (₱{window.peso(remaining)})
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Bottom Pacing Row: Remaining Budget & Safe Daily Allowance with Circular Gauge */}
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-5 sm:gap-8 items-center pt-6 border-t border-black/5 dark:border-white/10">
+                    <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-4">
+                        {/* Remaining Discretionary Budget */}
+                        <div className="bg-white/60 dark:bg-black/20 p-5 rounded-2xl border border-black/5 dark:border-white/5 shadow-xs">
+                            <p className="text-[11px] font-mono uppercase font-semibold text-ink2/50 dark:text-paper/40 mb-1.5">
+                                Free Discretionary Budget
+                            </p>
+                            <p className={`font-mono text-2xl sm:text-3xl font-bold tracking-tight truncate ${remaining < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-ink dark:text-paper'}`}>
+                                ₱{window.peso(remaining)}
+                            </p>
+                            <p className="text-[11px] text-ink2/50 dark:text-paper/40 mt-1">
+                                Available after bills & savings
+                            </p>
+                        </div>
+
+                        {/* Safe Daily Limit */}
+                        <div className="bg-emerald-500/10 dark:bg-emerald-400/15 p-5 rounded-2xl border border-emerald-500/20 shadow-xs relative overflow-hidden">
+                            <p className="text-[11px] font-mono uppercase font-semibold text-emerald-800 dark:text-emerald-300 mb-1.5">
+                                Safe Daily Limit
+                            </p>
+                            <p className="font-mono text-2xl sm:text-3xl font-bold tracking-tight text-emerald-800 dark:text-emerald-300 truncate">
+                                ₱{window.peso(dailySafe)}
+                            </p>
+                            {daysLeft === 0 ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setPresetPayday("next15or30")}
+                                    className="tap-scale mt-2 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 underline flex items-center gap-1"
+                                >
+                                    <span>Payday is today! Bump to next period →</span>
+                                </button>
+                            ) : (
+                                <p className="text-[11px] text-emerald-800/70 dark:text-emerald-300/70 mt-1">
+                                    Paced across {daysLeft} remaining {daysLeft === 1 ? "day" : "days"}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Circular SVG Gauge for Today's Pacing */}
+                    {dailySafe > 0 && (
+                        <div className="flex items-center justify-center sm:justify-self-end relative">
+                            <div className="relative w-[130px] h-[130px] shrink-0">
+                                <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
+                                    <circle cx="60" cy="60" r={RING_R} fill="none" strokeWidth="9" className="stroke-black/5 dark:stroke-white/10" />
+                                    <circle
+                                        cx="60" cy="60" r={RING_R} fill="none" strokeWidth="9" strokeLinecap="round"
+                                        stroke={ringTone}
+                                        strokeDasharray={RING_C}
+                                        strokeDashoffset={ringOffset}
+                                        className="transition-all duration-700 ease-out"
+                                    />
+                                </svg>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span className="font-mono text-2xl font-bold tracking-tight text-ink dark:text-paper">{spendPct}%</span>
+                                    <span className="text-[10px] font-medium text-ink2/50 dark:text-paper/40">used today</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* ============================================================== */}
+            {/* 2. WEEKLY THERMAL RECEIPT PACING SECTION                       */}
+            {/* ============================================================== */}
+            {loaded && isConfigured && (
+                <div className="fade-up relative" aria-labelledby="resibo-heading">
+                    {/* Top Serrated Edge */}
+                    <div
+                        className="h-3 -mb-px text-paperDim dark:text-ink2/50"
                         style={{
                             backgroundImage: "linear-gradient(135deg, currentColor 25%, transparent 25%), linear-gradient(225deg, currentColor 25%, transparent 25%)",
                             backgroundSize: "14px 14px",
@@ -503,26 +871,32 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                         }}
                         aria-hidden="true"
                     />
-                    <div className="bento-card rounded-none px-6 sm:px-8 py-6 border-x border-black/5 dark:border-white/5">
+
+                    <div className="bg-white/85 dark:bg-ink2/40 backdrop-blur-xl px-6 sm:px-8 py-6 border-x border-black/5 dark:border-white/10">
                         <div className="flex items-center justify-between mb-5">
-                            <h3 id="resibo-heading" className="font-mono text-[13px] font-bold tracking-widest text-ink dark:text-paper">
-                                WEEKLY RECEIPT
+                            <h3 id="resibo-heading" className="font-mono text-[13px] font-bold tracking-widest text-ink dark:text-paper uppercase flex items-center gap-2">
+                                <ALLOWANCE_ICONS.Coins size={16} className="text-peso" />
+                                <span>Weekly Allowance Receipt</span>
                             </h3>
-                            <span className="font-mono text-[10px] text-ink2/50 dark:text-paper/40">{DAY_LABELS[dailyHistory[0]?.dow ?? 0]}–{DAY_LABELS[new Date().getDay()]}</span>
+                            <span className="font-mono text-[11px] text-ink2/50 dark:text-paper/40">
+                                {DAY_LABELS[dailyHistory[0]?.dow ?? 0]}–{DAY_LABELS[new Date().getDay()]}
+                            </span>
                         </div>
 
                         {!hasEnoughHistory ? (
                             <p className="text-[13px] text-ink2/60 dark:text-paper/50 leading-relaxed py-4 text-center">
-                                Log a few more expenses to establish your weekly pattern and receive insights.
+                                Log a few more daily expenses to build your weekly pattern and receive pacing insights.
                             </p>
                         ) : (
                             <>
+                                {/* 7-Day Mini Bar Chart */}
                                 <div className="flex items-end justify-between gap-2 mb-6 px-1">
                                     {dailyHistory.map((d) => {
-                                        const h = Math.max((d.total / maxBar) * 64, d.total > 0 ? 4 : 2);
+                                        const maxBar = Math.max(dailySafe, ...dailyHistory.map(dh => dh.total), 1);
+                                        const h = Math.max((d.total / maxBar) * 64, d.total > 0 ? 5 : 2);
                                         const over = dailySafe > 0 && d.total > dailySafe;
                                         const near = dailySafe > 0 && !over && d.total >= dailySafe * 0.8;
-                                        const barColor = over ? "#D64045" : near ? "#D4AF37" : "#1F6F54";
+                                        const barColor = over ? "#E11D48" : near ? "#D97706" : "#1F6F54";
                                         return (
                                             <div key={d.key} className="flex flex-col items-center gap-2 flex-1">
                                                 <div className="w-full h-16 flex items-end justify-center">
@@ -531,7 +905,7 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                                                         style={{
                                                             height: `${h}px`,
                                                             backgroundColor: barColor,
-                                                            opacity: d.isToday ? 1 : 0.55
+                                                            opacity: d.isToday ? 1 : 0.6
                                                         }}
                                                     />
                                                 </div>
@@ -543,39 +917,45 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                                     })}
                                 </div>
 
-                                <div className="border-t border-dashed border-ink/15 dark:border-paper/15 pt-1">
+                                <div className="border-t border-dashed border-ink/15 dark:border-paper/15 pt-2">
                                     <ReceiptRow label="Average daily spend" value={`₱${window.peso(avgDailySpend)}`} />
                                     {dailySafe > 0 && (
                                         <ReceiptRow
-                                            label="Compared to safe daily limit"
-                                            value={paceVsSafePct <= 0 ? `${Math.abs(paceVsSafePct)}% lower` : `${paceVsSafePct}% higher`}
-                                            valueClass={paceVsSafePct <= 0 ? "text-[#1F6F54] dark:text-[#52C8A1]" : "text-[#D64045] dark:text-[#F38C80]"}
+                                            label="Vs. safe daily limit"
+                                            value={paceVsSafePct <= 0 ? `${Math.abs(paceVsSafePct)}% under limit` : `${paceVsSafePct}% over limit`}
+                                            valueClass={paceVsSafePct <= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}
                                         />
                                     )}
                                     {topCategoryEntry && (
-                                        <ReceiptRow label="Top expense category" value={`${window.CATEGORY_DISPLAY ? (window.CATEGORY_DISPLAY[topCategoryEntry.name] || topCategoryEntry.name) : topCategoryEntry.name} · ₱${window.peso(topCategoryEntry.amount)}`} />
+                                        <ReceiptRow
+                                            label="Top expense category"
+                                            value={`${window.CATEGORY_DISPLAY ? (window.CATEGORY_DISPLAY[topCategoryEntry.name] || topCategoryEntry.name) : topCategoryEntry.name} · ₱${window.peso(topCategoryEntry.amount)}`}
+                                        />
                                     )}
                                     <ReceiptRow
-                                        label="Consecutive days within budget"
+                                        label="Consecutive days on budget"
                                         value={`${budgetStreak} ${budgetStreak === 1 ? "day" : "days"}`}
-                                        valueClass={budgetStreak >= 3 ? "text-[#1F6F54] dark:text-[#52C8A1]" : ""}
+                                        valueClass={budgetStreak >= 3 ? "text-emerald-700 dark:text-emerald-400 font-bold" : ""}
                                     />
                                 </div>
 
+                                {/* Burn Rate Forecasting Callout */}
                                 <div className={`mt-4 rounded-xl px-4 py-3 text-[12.5px] leading-relaxed font-medium ${
                                     willRunOutEarly
-                                        ? "bg-[#FAEDE9] dark:bg-[#D64045]/15 text-[#D64045] dark:text-[#F38C80]"
-                                        : "bg-[#E6F3EF] dark:bg-[#1F6F54]/15 text-[#1F6F54] dark:text-[#52C8A1]"
+                                        ? "bg-rose-500/10 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/20"
+                                        : "bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20"
                                 }`}>
                                     {willRunOutEarly
-                                        ? `At your current burn rate, your budget may run out ${shortfallDays} ${shortfallDays === 1 ? "day" : "days"} before payday.`
-                                        : "At your current burn rate, your budget will safely last until payday. Keep it up!"}
+                                        ? `⚠️ Petsa de Peligro Warning: At your current burn rate, your allowance may run out ${shortfallDays} ${shortfallDays === 1 ? "day" : "days"} before payday. Cut non-urgent spending!`
+                                        : "✓ Safe Burn Rate: Your allowance will safely last until your scheduled payday. Keep it up!"}
                                 </div>
                             </>
                         )}
                     </div>
+
+                    {/* Bottom Serrated Edge */}
                     <div
-                        className="h-3 -mt-px text-paperDim dark:text-ink rotate-180"
+                        className="h-3 -mt-px text-paperDim dark:text-ink2/50 rotate-180"
                         style={{
                             backgroundImage: "linear-gradient(135deg, currentColor 25%, transparent 25%), linear-gradient(225deg, currentColor 25%, transparent 25%)",
                             backgroundSize: "14px 14px",
@@ -585,295 +965,74 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                         aria-hidden="true"
                     />
                 </div>
-            </section>
-    );
-    // --------------------------------------------------------------
-
-    return (
-        <div className="space-y-6 sm:space-y-8 fade-up relative">
-
-            <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-[calc(100%-2rem)] max-w-sm pointer-events-none">
-                {toasts.map(t => (
-                    <div
-                        key={t.id}
-                        className={`fade-up pointer-events-auto rounded-[1.25rem] px-5 py-3.5 text-[13px] font-bold shadow-iosLg border backdrop-blur-2xl flex items-center gap-3 ${
-                            t.tone === "warning"
-                                ? "bg-expense/95 text-white border-expense/50"
-                                : "bg-ink/95 dark:bg-paper/95 text-paper dark:text-ink border-white/10"
-                        }`}
-                    >
-                        <span className={`w-2 h-2 rounded-full shrink-0 ${t.tone === "warning" ? "bg-white" : "bg-peso dark:bg-pesoLight"}`} />
-                        {t.message}
-                    </div>
-                ))}
-            </div>
-
-            {banner && (
-                <div role="alert" aria-live="polite" className={`fade-up flex items-start gap-4 rounded-[1.5rem] border shadow-sm px-5 py-4 ${bannerStyles[banner.tone]}`}>
-                    <div className="mt-0.5">{bannerIcon[banner.tone]}</div>
-                    <div className="flex-1 mt-0.5">
-                        <p className="text-[13px] font-bold leading-none">{banner.title}</p>
-                        <p className="text-[13px] font-medium opacity-90 mt-2 leading-relaxed">{banner.message}</p>
-                    </div>
-                    <button
-                        onClick={() => setDismissedBanner(true)}
-                        className="text-[11px] font-bold opacity-60 hover:opacity-100 transition-opacity duration-150 shrink-0 mt-0.5 bg-black/5 dark:bg-white/10 px-2.5 py-1.5 rounded-md"
-                        aria-label="Dismiss alert"
-                    >
-                        Dismiss
-                    </button>
-                </div>
             )}
 
-            <div className="relative bento-card rounded-[2rem] p-6 sm:p-8 overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-pesoLight to-peso rounded-t-[2rem]" />
-
-                <div className="flex items-start justify-between gap-3 mb-8 mt-1 w-full">
-                    <div className="flex items-center gap-3.5 min-w-0">
-                        <div className="w-12 h-12 rounded-[14px] bg-[#E6F3EF] dark:bg-[#1F6F54]/20 flex items-center justify-center text-[#1F6F54] dark:text-[#52C8A1] shrink-0 border border-[#1F6F54]/10 dark:border-[#52C8A1]/20 shadow-inner">
-                            <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="3" y="6" width="18" height="14" rx="3" /><path d="M3 10h18" /><path d="M7 15h3" />
-                            </svg>
-                        </div>
-                        <div className="min-w-0">
-                            <h3 className="font-display text-[1.15rem] sm:text-[1.25rem] font-bold text-ink dark:text-paper leading-tight tracking-tight truncate">Configuration</h3>
-                            <span className="text-[12px] font-medium text-ink2/60 dark:text-paper/50 flex items-center gap-1.5 mt-1 truncate">
-                                {saving && <span className="w-1.5 h-1.5 rounded-full bg-[#1F6F54] dark:bg-[#52C8A1] animate-pulse shrink-0" />}
-                                <span className="truncate">{saving ? "Syncing..." : loaded ? "Saved & encrypted" : "Loading..."}</span>
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0 pt-0.5">
-                        {loaded && isConfigured && (
-                            <button
-                                onClick={() => setEditOpen(o => !o)}
-                                className="text-[12px] font-bold px-3 sm:px-4 py-2 sm:py-2.5 rounded-full border bg-white/60 dark:bg-ink2/40 border-black/10 dark:border-white/10 text-ink2/70 dark:text-paper/60 hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-200 flex items-center gap-1.5 shadow-sm active:scale-95 focus:outline-none focus:ring-2 focus:ring-peso/50"
-                            >
-                                <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5 hidden sm:block" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                                </svg>
-                                {editOpen ? "Close" : "Edit"}
-                            </button>
-                        )}
-                        <button
-                            onClick={toggleNotifications}
-                            aria-pressed={notifEnabled}
-                            className={`text-[11px] font-bold px-3 sm:px-4 py-2 sm:py-2.5 rounded-full border transition-all duration-200 flex items-center justify-center gap-2 shadow-sm active:scale-95 focus:outline-none focus:ring-2 focus:ring-peso/50 ${
-                                notifEnabled
-                                    ? "bg-gradient-to-r from-pesoLight to-peso border-transparent text-white"
-                                    : "bg-white/60 dark:bg-ink2/40 border-black/10 dark:border-white/10 text-ink2/60 dark:text-paper/50 hover:bg-black/5 dark:hover:bg-white/5"
-                            }`}
-                        >
-                            <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-                                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-                                {!notifEnabled && <path d="M2 2l20 20" />}
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                {!loaded ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 animate-pulse">
-                        {[0, 1, 2, 3].map(i => (
-                            <div key={i} className="h-[56px] rounded-[14px] bg-black/5 dark:bg-white/5" />
-                        ))}
-                    </div>
-                ) : editOpen ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 mb-8 fade-up">
-                        <div>
-                            <label className="block text-[12px] font-semibold text-ink dark:text-paper mb-1 px-1">
-                                Income / Salary
-                            </label>
-                            <p className="text-[11px] text-ink2/55 dark:text-paper/45 mb-2 px-1 leading-snug">Total funds received this period — salary, allowance, or earnings.</p>
-                            <FieldWrap icon={fieldIcon.salary}>
-                                <input
-                                    type="number"
-                                    placeholder="e.g. 15000"
-                                    value={salary}
-                                    onChange={e => setSalary(e.target.value)}
-                                    className="w-full min-w-0 bg-transparent py-3.5 text-[15px] font-mono font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
-                                />
-                            </FieldWrap>
-                        </div>
-                        <div>
-                            <label className="block text-[12px] font-semibold text-ink dark:text-paper mb-1 px-1">
-                                Fixed Bills
-                            </label>
-                            <p className="text-[11px] text-ink2/55 dark:text-paper/45 mb-2 px-1 leading-snug">Obligations due before discretionary spend — rent, utilities, subscriptions, loans.</p>
-                            <FieldWrap icon={fieldIcon.bills}>
-                                <input
-                                    type="number"
-                                    placeholder="e.g. 3000"
-                                    value={bills}
-                                    onChange={e => setBills(e.target.value)}
-                                    className="w-full min-w-0 bg-transparent py-3.5 text-[15px] font-mono font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
-                                />
-                            </FieldWrap>
-                        </div>
-                        <div>
-                            <label className="block text-[12px] font-semibold text-ink dark:text-paper mb-1 px-1">
-                                Savings Target
-                            </label>
-                            <p className="text-[11px] text-ink2/55 dark:text-paper/45 mb-2 px-1 leading-snug">Amount to set aside into savings before calculating your daily allowance. Can be left as 0.</p>
-                            <FieldWrap icon={fieldIcon.savings}>
-                                <input
-                                    type="number"
-                                    placeholder="e.g. 1000 (or 0)"
-                                    value={savings}
-                                    onChange={e => setSavings(e.target.value)}
-                                    className="w-full min-w-0 bg-transparent py-3.5 text-[15px] font-mono font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
-                                />
-                            </FieldWrap>
-                        </div>
-                        <div>
-                            <div className="flex items-center justify-between px-1 mb-1">
-                                <label className="block text-[12px] font-semibold text-ink dark:text-paper">
-                                    Next Payday
-                                </label>
-                                {paydayDate && (
-                                    <span className="text-[11px] font-bold text-[#1F6F54] dark:text-[#52C8A1] bg-[#E6F3EF] dark:bg-[#1F6F54]/20 px-2 py-0.5 rounded-md border border-[#1F6F54]/10 dark:border-[#52C8A1]/20">
-                                        {daysLeft} {daysLeft === 1 ? "day" : "days"} left
-                                    </span>
-                                )}
-                            </div>
-                            <p className="text-[11px] text-ink2/55 dark:text-paper/45 mb-2 px-1 leading-snug">Target date for next payday or funds arrival to pace daily allowance.</p>
-                            <FieldWrap icon={fieldIcon.payday}>
-                                <input
-                                    type="date"
-                                    value={paydayDate}
-                                    onChange={e => setPaydayDate(e.target.value)}
-                                    className="w-full min-w-0 bg-transparent py-3.5 text-[15px] font-mono font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none appearance-none"
-                                />
-                            </FieldWrap>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="flex flex-wrap gap-4 mb-8 fade-up">
-                        <StatChip label="Income" value={`₱${window.peso(numSalary)}`} />
-                        <StatChip label="Bills" value={`₱${window.peso(numBills)}`} />
-                        <StatChip label="Savings" value={`₱${window.peso(numSavings)}`} />
-                        <StatChip
-                            label="Payday"
-                            value={paydayDate ? `${daysLeft} ${daysLeft === 1 ? "day" : "days"} left` : "Not set yet"}
-                            accent={paydayDate ? "text-[#1F6F54] dark:text-[#52C8A1]" : "text-ink2/40 dark:text-paper/40"}
-                        />
-                    </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-5 sm:gap-8 items-center pt-8 border-t border-black/5 dark:border-white/10">
-                    <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-4">
-                        <div className="bg-white/60 dark:bg-black/20 p-5 rounded-[1.25rem] border border-black/5 dark:border-white/5 shadow-sm min-w-0">
-                            <p className="text-[11px] font-semibold text-ink2/50 dark:text-paper/40 mb-2">Remaining budget</p>
-                            <p
-                                className={`font-mono text-2xl sm:text-3xl font-bold tracking-tight truncate ${remaining < 0 ? 'text-[#D64045] dark:text-[#F38C80]' : 'text-ink dark:text-paper'}`}
-                                title={`₱${window.peso(remaining)}`}
-                            >
-                                ₱{window.peso(remaining)}
-                            </p>
-                        </div>
-                        <div className="bg-gradient-to-br from-[#E6F3EF] to-[#D5EBE3] dark:from-[#1F6F54]/20 dark:to-[#1F6F54]/10 p-5 rounded-[1.25rem] border border-[#1F6F54]/10 dark:border-[#52C8A1]/20 shadow-sm relative overflow-hidden min-w-0">
-                            <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-white/30 dark:bg-white/10 rounded-full blur-xl pointer-events-none" />
-                            <p className="text-[11px] font-semibold text-[#1F6F54] dark:text-[#52C8A1] mb-2 relative z-10">Safe daily budget</p>
-                            <p
-                                className="font-mono text-2xl sm:text-3xl font-bold tracking-tight text-[#1F6F54] dark:text-[#52C8A1] relative z-10 truncate"
-                                title={`₱${window.peso(dailySafe)}`}
-                            >
-                                ₱{window.peso(dailySafe)}
-                            </p>
-                            {loaded && isConfigured && daysLeft === 0 && (
-                                <p className="text-[11px] font-medium text-[#1F6F54]/70 dark:text-[#52C8A1]/70 mt-2 relative z-10 leading-snug">
-                                    Today is your scheduled payday — update the target date to calculate your new daily limit.
-                                </p>
-                            )}
-                        </div>
-                    </div>
-
-                    {dailySafe > 0 && (
-                        <div className="flex items-center justify-center sm:justify-self-end relative group">
-                            <div className="absolute inset-0 bg-black/5 dark:bg-white/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                            <div className="relative w-[140px] h-[140px] shrink-0 drop-shadow-sm">
-                                <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
-                                    <circle cx="60" cy="60" r={RING_R} fill="none" strokeWidth="10" className="stroke-black/5 dark:stroke-white/10" />
-                                    <circle
-                                        cx="60" cy="60" r={RING_R} fill="none" strokeWidth="10" strokeLinecap="round"
-                                        stroke={ringTone}
-                                        strokeDasharray={RING_C}
-                                        strokeDashoffset={ringOffset}
-                                        className="transition-[stroke-dashoffset,stroke] duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]"
-                                    />
-                                </svg>
-                                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="font-mono text-3xl font-bold tracking-tighter text-ink dark:text-paper">{spendPct}%</span>
-                                    <span className="text-[11px] font-medium text-ink2/50 dark:text-paper/40 mt-1">used today</span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {weeklyResiboSection}
-
-            {/* Today's real spending */}
-            <div className="bento-card rounded-[2rem] p-6 sm:p-8">
-                <div className="flex items-center gap-4 mb-2">
-                    <div className="w-12 h-12 rounded-[14px] bg-[#FDF6E3] dark:bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] dark:text-[#E8C071] shrink-0 border border-[#D4AF37]/10 dark:border-[#E8C071]/20 shadow-inner">
-                        <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
-                        </svg>
-                    </div>
-                    <h3 className="font-display text-[1.25rem] font-bold text-ink dark:text-paper tracking-tight">Today's Expenses</h3>
-                </div>
-                <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/50 mb-8 pl-[4rem] leading-snug">Log daily expenses to monitor your burn rate against your safe daily limit in real time.</p>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                    <div className="bg-white/50 dark:bg-black/20 p-5 rounded-[1.25rem] border border-black/5 dark:border-white/5 shadow-sm min-w-0">
-                        <p className="text-[11px] font-semibold text-ink2/60 dark:text-paper/50 mb-2">Spent today</p>
-                        <p className="font-mono text-2xl sm:text-3xl font-bold tracking-tight text-ink dark:text-paper truncate" title={`₱${window.peso(spentToday)}`}>₱{window.peso(spentToday)}</p>
-                    </div>
-                    <div className={`p-5 rounded-[1.25rem] border shadow-sm transition-colors duration-300 min-w-0 ${
-                        remainingToday < 0
-                            ? 'bg-[#FAEDE9] dark:bg-[#D64045]/20 border-[#D64045]/10 dark:border-[#F38C80]/20'
-                            : 'bg-white/50 dark:bg-black/20 border-black/5 dark:border-white/5'
-                    }`}>
-                        <p className={`text-[11px] font-semibold mb-2 ${
-                            remainingToday < 0 ? 'text-[#D64045] dark:text-[#F38C80]' : 'text-ink2/60 dark:text-paper/50'
-                        }`}>
-                            {remainingToday < 0 ? 'Over daily limit' : 'Remaining safe spend'}
+            {/* ============================================================== */}
+            {/* 3. TODAY'S EXPENSES QUICK LOGGER & FEED                        */}
+            {/* ============================================================== */}
+            <div className="bg-white/80 dark:bg-ink2/30 backdrop-blur-2xl rounded-[2rem] border border-white/80 dark:border-white/10 shadow-ios p-6 sm:p-8">
+                <div className="flex items-center gap-3.5 mb-2">
+                    <span className="w-11 h-11 rounded-2xl bg-amber-500/10 dark:bg-amber-400/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/20 shadow-xs">
+                        <ALLOWANCE_ICONS.Clock size={20} />
+                    </span>
+                    <div>
+                        <h3 className="font-display text-[1.18rem] sm:text-[1.25rem] font-bold text-ink dark:text-paper leading-tight">
+                            Today's Daily Spend
+                        </h3>
+                        <p className="text-[11.5px] text-ink2/60 dark:text-paper/50">
+                            Log micro-expenses directly against your safe daily limit
                         </p>
-                        <p
-                            className={`font-mono text-2xl sm:text-3xl font-bold tracking-tight truncate ${
-                                remainingToday < 0 ? 'text-[#D64045] dark:text-[#F38C80]' : 'text-[#1F6F54] dark:text-[#52C8A1]'
-                            }`}
-                            title={`₱${window.peso(Math.abs(remainingToday))}`}
-                        >
+                    </div>
+                </div>
+
+                {/* Today's Spend Summary Strip */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
+                    <div className="bg-black/[0.02] dark:bg-white/[0.02] p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                        <p className="text-[11px] font-mono uppercase font-semibold text-ink2/50 dark:text-paper/40 mb-1">
+                            Spent Today
+                        </p>
+                        <p className="font-mono text-2xl font-bold text-ink dark:text-paper">
+                            ₱{window.peso(spentToday)}
+                        </p>
+                    </div>
+
+                    <div className={`p-4 rounded-2xl border transition-colors ${
+                        remainingToday < 0
+                            ? 'bg-rose-500/10 border-rose-500/25 dark:bg-rose-500/15'
+                            : 'bg-black/[0.02] dark:bg-white/[0.02] border-black/5 dark:border-white/5'
+                    }`}>
+                        <p className={`text-[11px] font-mono uppercase font-semibold mb-1 ${remainingToday < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-ink2/50 dark:text-paper/40'}`}>
+                            {remainingToday < 0 ? 'Over Daily Limit' : 'Safe Spend Remaining'}
+                        </p>
+                        <p className={`font-mono text-2xl font-bold ${remainingToday < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
                             ₱{window.peso(Math.abs(remainingToday))}
                         </p>
                     </div>
                 </div>
 
-                <form onSubmit={handleLogExpense} className="flex flex-col gap-4 mb-8">
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="sm:flex-1">
-                            <FieldWrap icon={<span className="text-ink2/40 dark:text-paper/40 font-mono text-[16px] font-bold shrink-0">₱</span>}>
+                {/* Quick Add Expense Form */}
+                <form onSubmit={handleLogExpense} className="space-y-4 mb-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <FieldWrap icon={<span className="text-peso font-mono font-bold text-lg">₱</span>}>
                                 <input
                                     type="number"
                                     step="0.01"
                                     placeholder="Amount"
                                     value={expAmount}
                                     onChange={e => setExpAmount(e.target.value)}
-                                    className="w-full min-w-0 bg-transparent py-4 text-[16px] font-mono font-bold text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
+                                    className="w-full bg-transparent py-3.5 text-lg font-mono font-bold text-ink dark:text-paper focus:outline-none"
                                 />
                             </FieldWrap>
-                            <div className="flex items-center gap-2 mt-3 px-1">
+
+                            {/* Quick Amount Chips */}
+                            <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
                                 {QUICK_AMOUNTS.map(a => (
                                     <button
                                         key={a}
                                         type="button"
                                         onClick={() => setExpAmount(String(window.TipidCore.sumMoney([moneyOrZero(expAmount), a])))}
-                                        className="text-[11px] font-mono font-bold text-ink2/60 dark:text-paper/60 border border-black/5 dark:border-white/10 bg-white dark:bg-black/20 hover:bg-black/5 dark:hover:bg-white/10 active:scale-95 px-3 py-1.5 rounded-lg shadow-sm transition-all duration-150"
+                                        className="tap-scale text-[11px] font-mono font-bold text-ink2/70 dark:text-paper/70 bg-black/5 dark:bg-white/10 hover:bg-black/10 px-2.5 py-1 rounded-lg"
                                     >
                                         +₱{a}
                                     </button>
@@ -882,44 +1041,48 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                                     <button
                                         type="button"
                                         onClick={() => setExpAmount("")}
-                                        className="text-[11px] font-bold text-ink2/40 dark:text-paper/40 hover:text-expense dark:hover:text-[#F38C80] ml-auto transition-colors duration-150 bg-black/5 dark:bg-white/5 px-3 py-1.5 rounded-lg"
+                                        className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 ml-auto px-2 py-1"
                                     >
                                         Clear
                                     </button>
                                 )}
                             </div>
                         </div>
-                        <FieldWrap className="sm:flex-1 self-start" icon={<svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 shrink-0 text-ink2/40 dark:text-paper/40" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>}>
+
+                        <FieldWrap icon={<ALLOWANCE_ICONS.Edit size={16} className="text-ink2/40 dark:text-paper/40" />}>
                             <input
                                 type="text"
-                                placeholder="Note (optional)"
+                                placeholder="Note (e.g. Lunch, Jeep, Coffee)"
                                 value={expNote}
                                 onChange={e => setExpNote(e.target.value)}
-                                className="w-full min-w-0 bg-transparent py-4 text-[15px] font-medium text-ink dark:text-paper placeholder-ink2/30 dark:placeholder-paper/30 focus:outline-none"
+                                className="w-full bg-transparent py-3.5 text-sm font-medium text-ink dark:text-paper focus:outline-none"
                             />
                         </FieldWrap>
                     </div>
 
-                    {/* Bayad Gamit — pick the real wallet/card this expense comes out of.
-                        Logging it with that method means the wallet's balance on the
-                        dashboard is automatically reduced, since it reads from the
-                        same entries collection this write goes into. */}
-                    <div className="flex flex-col gap-2">
-                        <p className="text-[10px] font-mono font-bold text-ink2/45 dark:text-paper/40 uppercase tracking-widest px-1">Payment Method</p>
+                    {/* Payment Wallet Picker */}
+                    <div className="space-y-1.5 pt-1">
+                        <p className="text-[10px] font-mono font-bold text-ink2/50 dark:text-paper/40 uppercase tracking-widest pl-1">
+                            Pay With Wallet
+                        </p>
                         <div className="flex overflow-x-auto gap-2.5 pb-1 -mx-1 px-1" style={{ scrollbarWidth: "none" }}>
                             {walletIds.map(id => {
                                 const meta = walletMeta(id);
                                 return (
-                                    <MiniWalletChip key={id} id={id} meta={meta} active={expMethod === id} onClick={() => setExpMethod(id)} />
+                                    <MiniWalletChip
+                                        key={id}
+                                        id={id}
+                                        meta={meta}
+                                        active={expMethod === id}
+                                        onClick={() => setExpMethod(id)}
+                                    />
                                 );
                             })}
                         </div>
-                        <p className="text-[10.5px] text-ink2/45 dark:text-paper/40 px-1">
-                            {walletMeta(expMethod).name} balance: <span className="font-mono font-semibold text-ink dark:text-paper">₱{window.peso(walletBalances[expMethod] || 0)}</span>
-                        </p>
                     </div>
 
-                    <div className="flex flex-wrap gap-2.5 px-1 mt-1">
+                    {/* Category Badges */}
+                    <div className="flex flex-wrap gap-2 pt-1">
                         {CATEGORIES.filter(c => c !== "Kita").map(c => {
                             const meta = getCategoryMeta(c);
                             const active = expCategory === c;
@@ -929,84 +1092,98 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                                     type="button"
                                     onClick={() => setExpCategory(c)}
                                     style={active ? { backgroundColor: meta.bg, borderColor: `${meta.color}55`, color: meta.color } : undefined}
-                                    className={`flex items-center gap-2 text-[12.5px] font-bold px-4 py-2 rounded-xl border transition-all duration-200 active:scale-95 ${
+                                    className={`tap-scale flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl border transition-all ${
                                         active
-                                            ? "shadow-sm"
-                                            : "bg-white/50 dark:bg-white/[0.04] border-black/5 dark:border-white/5 text-ink2/60 dark:text-paper/50 hover:bg-black/5 dark:hover:bg-white/[0.08]"
+                                            ? "shadow-xs"
+                                            : "bg-black/[0.03] dark:bg-white/[0.04] border-black/5 dark:border-white/5 text-ink2/60 dark:text-paper/50"
                                     }`}
                                 >
-                                    <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 shrink-0" strokeWidth="2.5" stroke={active ? meta.color : "currentColor"} strokeLinecap="round" strokeLinejoin="round">
+                                    <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5 shrink-0" strokeWidth="2.5" stroke={active ? meta.color : "currentColor"} strokeLinecap="round" strokeLinejoin="round">
                                         {meta.icon}
                                     </svg>
-                                    {window.CATEGORY_DISPLAY ? (window.CATEGORY_DISPLAY[c] || c) : c}
+                                    <span>{window.CATEGORY_DISPLAY ? (window.CATEGORY_DISPLAY[c] || c) : c}</span>
                                 </button>
                             );
                         })}
                     </div>
 
+                    {/* Submit Log Expense Button */}
                     <button
                         type="submit"
-                        disabled={loggingExpense || !expAmount}
-                        className="bg-gradient-to-r from-pesoLight to-peso hover:shadow-lg hover:shadow-peso/20 active:scale-[0.98] disabled:opacity-50 disabled:hover:shadow-none text-white text-[15px] font-bold tracking-wide rounded-[1.25rem] px-6 py-4 transition-all duration-200 w-full flex items-center justify-center gap-2.5 mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50"
+                        disabled={loggingExpense || !expAmount || parseFloat(expAmount) <= 0}
+                        className="tap-scale w-full bg-gradient-to-r from-peso to-pesoLight hover:shadow-lg hover:shadow-peso/25 text-white py-3.5 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2 disabled:opacity-60 transition-all border border-white/20 mt-2"
                     >
                         {loggingExpense ? (
-                            <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 animate-spin" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+                            <span>Logging to {expMethod}...</span>
                         ) : (
                             <>
-                                <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" strokeWidth="3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
-                                Log expense
+                                <ALLOWANCE_ICONS.Plus size={16} />
+                                <span>Log ₱{expAmount ? window.peso(expAmount) : "0.00"} to {expMethod}</span>
                             </>
                         )}
                     </button>
                 </form>
 
+                {/* Today's Logged Items List */}
                 {entriesLoading ? (
                     <div className="space-y-3 animate-pulse">
-                        {[0, 1, 2].map(i => <div key={i} className="h-[68px] rounded-[1.25rem] bg-black/5 dark:bg-white/5" />)}
+                        {[0, 1].map(i => <div key={i} className="h-16 rounded-xl bg-black/5 dark:bg-white/5" />)}
                     </div>
                 ) : todaysExpenses.length > 0 ? (
-                    <ul className="space-y-3">
-                        {todaysExpenses.map(exp => {
-                            const meta = getCategoryMeta(exp.category);
-                            const expWallet = walletMeta(exp.method || "Cash");
-                            return (
-                                <li key={exp.id} className="group flex items-center gap-4 bg-white/50 dark:bg-black/20 hover:bg-white/80 dark:hover:bg-black/40 border border-black/5 dark:border-white/5 rounded-[1.25rem] px-5 py-4 transition-all duration-200 shadow-sm">
-                                    <div
-                                        className="w-12 h-12 rounded-[14px] flex items-center justify-center shrink-0 border border-black/5 dark:border-white/5 shadow-inner"
-                                        style={{ backgroundColor: meta.bg, color: meta.color }}
-                                    >
-                                        <svg viewBox="0 0 24 24" fill="none" className="w-[20px] h-[20px]" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                                            {meta.icon}
-                                        </svg>
-                                    </div>
-                                    <span className="flex-1 min-w-0 flex flex-col justify-center">
-                                        <span className="font-mono font-bold text-[16px] text-ink dark:text-paper leading-none">₱{window.peso(exp.amount)}</span>
-                                        <span className="text-[12px] font-medium text-ink2/60 dark:text-paper/50 truncate mt-1.5 flex items-center gap-1.5">
-                                            {exp.desc || exp.category}
-                                            <span className="inline-flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 text-ink2/60 dark:text-paper/50 shrink-0">
-                                                <span className={`w-1.5 h-1.5 rounded-full bg-gradient-to-br ${expWallet.color}`} />
-                                                {expWallet.name}
+                    <div className="space-y-2.5">
+                        <p className="text-[11px] font-mono font-semibold uppercase tracking-wider text-ink2/50 dark:text-paper/40 pl-1">
+                            Logged Today ({todaysExpenses.length})
+                        </p>
+                        <div className="divide-y divide-black/5 dark:divide-white/5">
+                            {todaysExpenses.map(exp => {
+                                const meta = getCategoryMeta(exp.category);
+                                const expWallet = walletMeta(exp.method || "Cash");
+                                return (
+                                    <div key={exp.id} className="py-3 flex items-center justify-between gap-3 first:pt-0 last:pb-0">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div
+                                                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-black/5 dark:border-white/10"
+                                                style={{ backgroundColor: meta.bg, color: meta.color }}
+                                            >
+                                                <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                                                    {meta.icon}
+                                                </svg>
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="font-semibold text-sm text-ink dark:text-paper truncate">
+                                                    {exp.desc || exp.category}
+                                                </p>
+                                                <div className="flex items-center gap-1.5 text-[11px] text-ink2/55 dark:text-paper/50">
+                                                    <span>{exp.category}</span>
+                                                    <span>•</span>
+                                                    <span className="font-mono">{expWallet.name}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-3 shrink-0">
+                                            <span className="font-mono font-bold text-base text-ink dark:text-paper">
+                                                ₱{window.peso(exp.amount)}
                                             </span>
-                                        </span>
-                                    </span>
-                                    <button
-                                        onClick={() => handleDeleteExpense(exp.id)}
-                                        aria-label="Delete expense"
-                                        className="text-ink2/30 hover:text-expense dark:text-paper/30 dark:hover:text-[#F38C80] p-2.5 rounded-xl bg-white dark:bg-black/30 hover:bg-expense/10 dark:hover:bg-[#B5483B]/20 transition-all duration-200 shrink-0 border border-black/5 dark:border-white/5 active:scale-90"
-                                    >
-                                        <svg viewBox="0 0 24 24" fill="none" className="w-[18px] h-[18px]" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                    </button>
-                                </li>
-                            );
-                        })}
-                    </ul>
-                ) : (
-                    <div className="flex flex-col items-center justify-center text-center py-12 px-6 rounded-2xl bg-white/30 dark:bg-black/10 border border-dashed border-black/10 dark:border-white/10">
-                        <div className="w-14 h-14 rounded-2xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-ink2/30 dark:text-paper/20 mb-4 shadow-inner">
-                            <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" strokeWidth="2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" /><path d="M14 2v6h6" /><path d="M9 13h6" /><path d="M9 17h6" /></svg>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDeleteExpense(exp.id)}
+                                                aria-label="Delete expense"
+                                                className="tap-scale p-2 rounded-xl text-ink2/30 hover:text-rose-600 hover:bg-rose-500/10 dark:text-paper/30 dark:hover:text-rose-400 transition-colors"
+                                            >
+                                                <ALLOWANCE_ICONS.Trash size={15} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
-                        <p className="text-[14px] font-bold text-ink2/70 dark:text-paper/60">No expenses logged today</p>
-                        <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/40 mt-2 leading-relaxed">Add an expense above to track your daily progress.</p>
+                    </div>
+                ) : (
+                    <div className="text-center py-8 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-dashed border-black/10 dark:border-white/10">
+                        <ALLOWANCE_ICONS.Clock size={28} className="mx-auto text-ink2/30 dark:text-paper/30 mb-2" />
+                        <p className="text-sm font-semibold text-ink2/70 dark:text-paper/60">No expenses logged yet today</p>
+                        <p className="text-xs text-ink2/50 dark:text-paper/40 mt-0.5">Use the quick form above to log micro-spending.</p>
                     </div>
                 )}
             </div>

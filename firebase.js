@@ -42,7 +42,8 @@ export const app = initializeApp(firebaseConfig);
 // Initialize Firestore with Offline Persistence ENABLED
 // Pinapayagan nito ang app na gumana, mag-save, at mag-load ng data kahit walang internet.
 export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+  experimentalForceLongPolling: true
 });
 
 // ---------------------------------------------------------------------------

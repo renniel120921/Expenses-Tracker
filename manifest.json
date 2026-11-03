@@ -24,5 +24,46 @@
       "type": "image/png",
       "purpose": "any"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Quick Add Expense",
+      "short_name": "Add Expense",
+      "description": "Log an expense or income quickly",
+      "url": "/dashboard.html?action=new_expense",
+      "icons": [
+        {
+          "src": "/assets/favicon-32.png",
+          "sizes": "32x32",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Scan Receipt",
+      "short_name": "Scan Receipt",
+      "description": "Scan and digitize physical receipts",
+      "url": "/scanner.html",
+      "icons": [
+        {
+          "src": "/assets/favicon-32.png",
+          "sizes": "32x32",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Grocery Checklist",
+      "short_name": "Groceries",
+      "description": "Smart Grocery Checklist and budget planner",
+      "url": "/grocery.html",
+      "icons": [
+        {
+          "src": "/assets/favicon-32.png",
+          "sizes": "32x32",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }

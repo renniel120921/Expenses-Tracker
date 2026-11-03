@@ -15,7 +15,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Global Dark Mode Script Initializer -->
     <script>
@@ -93,27 +93,23 @@
         @keyframes haloPulse { 0% { transform: scale(0.9); opacity: 0.35; } 70% { opacity: 0; } 100% { transform: scale(1.6); opacity: 0; } }
         .halo-pulse { animation: haloPulse 1.9s var(--ease-ios) infinite; }
 
-        @keyframes logoBreathe { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }
-
-        @keyframes heroFloat { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -10px); } }
-        .hero-float { animation: heroFloat 6s ease-in-out infinite; }
-
-        .glass-panel { background: rgba(255,255,255,0.65); backdrop-filter: blur(20px) saturate(160%); border: 1px solid rgba(255,255,255,0.55); }
-        html.dark .glass-panel { background: rgba(24,38,31,0.55); border: 1px solid rgba(255,255,255,0.08); }
+        @keyframes heroFloat { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -6px); } }
+        .hero-float { animation: heroFloat 5s ease-in-out infinite; }
 
         .tap-scale { transition: transform 0.15s var(--ease-spring); }
-        .tap-scale:active { transform: scale(0.92); }
+        .tap-scale:active { transform: scale(0.94); }
 
+        /* Custom SweetAlert styling */
         .tipid-swal { border-radius: 1.5rem !important; font-family: 'Inter', sans-serif !important; }
 
         @keyframes mascotHover { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
         .grocery-mascot-img { animation: mascotHover 4s ease-in-out infinite; filter: drop-shadow(0 15px 25px rgba(18,61,46,0.35)); }
 
-        .speech-bubble { animation: fadeUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both; box-shadow: 0 10px 25px -5px rgba(18, 61, 46, 0.25); }
+        .speech-bubble { box-shadow: 0 10px 25px -5px rgba(18, 61, 46, 0.25); }
 
         .tip-fade { animation: fadeIn 0.45s var(--ease-ios) both; }
 
-        /* Hero grain: quiet material texture instead of decorative blur blobs */
+        /* Material grain overlay */
         .grain-overlay {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
             mix-blend-mode: overlay;
@@ -150,11 +146,12 @@
             Check: (p) => <Icon {...p} path={<><polyline points="20 6 9 17 4 12"/></>} strokeWidth={3} />,
             Loader: (p) => <Icon {...p} path={<><path d="M12 2a10 10 0 0 1 10 10"/></>} />,
             Info: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>} />,
-            Sparkle: (p) => <Icon {...p} path={<><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M17.7 6.3l-2.8 2.8M9.1 14.9l-2.8 2.8"/></>} />,
+            Sparkle: (p) => <Icon {...p} path={<><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></>} />,
             Clock: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></>} />,
             Leaf: (p) => <Icon {...p} path={<><path d="M11 20A7 7 0 0 1 4 13a1 1 0 0 1 1-1c4 0 8 2 10 6a1 1 0 0 1-1 1c-1 0-2-.2-3-.6"/><path d="M4 13c0-6 4-10 10-10 1 0 5 0 6 1s1 5 1 6c0 6-4 10-10 10"/></>} />,
             Coins: (p) => <Icon {...p} path={<><circle cx="9" cy="9" r="6"/><path d="M14.5 8.5a6 6 0 1 1 0 9.9"/></>} />,
             Bag: (p) => <Icon {...p} path={<><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></>} />,
+            Cart: (p) => <Icon {...p} path={<><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></>} />,
             ChevronLeft: (p) => <Icon {...p} path={<><polyline points="15 18 9 12 15 6"/></>} />,
             ChevronRight: (p) => <Icon {...p} path={<><polyline points="9 18 15 12 9 6"/></>} />
         };
@@ -178,91 +175,197 @@
             }, []);
             return ready;
         }
-    </script>
 
-    <script type="text/babel">
-        /* Quiet, single point of ambient color — restraint over decoration */
         function AmbientBackground() {
             return (
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[640px] h-[320px] bg-peso/5 dark:bg-pesoLight/[0.06] rounded-full blur-[130px]" />
+                    <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-peso/10 dark:bg-pesoLight/[0.08] rounded-full blur-[140px]" />
                 </div>
             );
         }
 
-        /* --- GROCERY HERO: a quiet statement card, not a decorated banner --- */
-        function GroceryHeroCard({ darkMode, toggleDarkMode }) {
-            return (
-                <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-b from-pesoDeep to-[#0E2A20] text-paper shadow-iosLg ring-1 ring-black/5 dark:ring-white/10 mb-6 sm:mb-8">
-                    {/* subtle material grain — texture instead of glow blobs */}
-                    <div className="absolute inset-0 grain-overlay opacity-[0.05] pointer-events-none" />
+        /* --- GROCERY HERO CARD: APPLE HIG FINTECH AESTHETICS --- */
+        function GroceryHeroCard({ darkMode, toggleDarkMode, stats = {} }) {
+            const [mascotOk, setMascotOk] = React.useState(true);
 
-                    {/* Dark Mode Toggle */}
-                    <div className="absolute top-5 right-5 sm:top-6 sm:right-6 z-30">
+            const runningTotal = stats.runningTotal || 0;
+            const expectedTotal = stats.expectedTotal || 0;
+            const budget = stats.budget || 0;
+            const checkedCount = stats.checkedCount || 0;
+            const totalItems = (stats.items && stats.items.length) || 0;
+            const isOverBudget = budget > 0 && runningTotal > budget;
+
+            const mascotMessage = React.useMemo(() => {
+                if (isOverBudget) {
+                    return `Naku! Lumagpas ka na ng ₱${window.peso(runningTotal - budget)} sa budget. Tingnan kung may pwedeng i-bawas!`;
+                }
+                if (totalItems > 0 && checkedCount === totalItems) {
+                    return "Kumpleto na ang checklist mo sa cart! I-tap ang Log as Expense para ma-record na.";
+                }
+                if (checkedCount > 0) {
+                    return `Nice! May ${checkedCount} items ka na sa cart. Huwag kalimutang i-verify ang timbang at presyo!`;
+                }
+                if (budget > 0) {
+                    return `May budget kang ₱${window.peso(budget)}. Ilista na ang bibilhin para pasok sa cash on hand!`;
+                }
+                return "Maglista muna bago mamalengke o mag-supermarket para iwas impulse buys!";
+            }, [isOverBudget, runningTotal, budget, totalItems, checkedCount]);
+
+            return (
+                <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#124231] via-[#17523E] to-[#0A261C] text-paper shadow-iosLg ring-1 ring-white/10 mb-6 sm:mb-8">
+                    {/* Material grain overlay */}
+                    <div className="absolute inset-0 grain-overlay opacity-[0.06] pointer-events-none" />
+
+                    {/* Ambient light glow */}
+                    <div className="absolute -top-24 -left-24 w-72 h-72 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-pesoLight/15 rounded-full blur-3xl pointer-events-none" />
+
+                    {/* Top Bar with Status Tag & Dark Mode Toggle */}
+                    <div className="relative z-20 flex items-center justify-between px-6 sm:px-8 pt-6 sm:pt-7">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] font-mono tracking-wider uppercase text-white/90">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                            <span>Smart Grocery & Palengke Planner</span>
+                        </div>
+
                         <button
                             onClick={toggleDarkMode}
                             aria-label="Toggle dark mode"
-                            className="tap-scale w-10 h-10 rounded-full bg-white/10 hover:bg-white/15 border border-white/15 flex items-center justify-center text-white/90 backdrop-blur-md transition-colors outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                            className="tap-scale w-10 h-10 rounded-full bg-white/10 hover:bg-white/15 border border-white/15 flex items-center justify-center text-white/90 backdrop-blur-md transition-all outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                         >
                             {darkMode ? <window.Icons.Sun size={17} /> : <window.Icons.Moon size={17} />}
                         </button>
                     </div>
 
-                    {/* Mascot — a quiet corner mark, not an animated centerpiece. Fallback chain preserved as given. */}
-                    <img
-                        src="/assets/allowance_mascot.png"
-                        alt="Tipid Buddy Palengke"
-                        onError={(e) => { e.target.onerror = null; e.target.src = "/assets/tipid_mascot.png"; }}
-                        className="hidden sm:block absolute bottom-0 right-4 w-20 h-20 object-contain object-bottom opacity-90 pointer-events-none"
-                        draggable="false"
-                    />
+                    {/* Main Hero Body */}
+                    <div className="relative z-10 px-6 sm:px-8 pt-5 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div className="max-w-xl">
+                            <h1 className="font-display text-[1.85rem] sm:text-[2.5rem] font-semibold tracking-tight leading-[1.08] mb-2 text-white">
+                                Smart Grocery List
+                            </h1>
+                            <p className="text-[13px] sm:text-[14px] text-paper/75 leading-relaxed mb-5">
+                                Plan shopping items, track running cart totals, and pace spending against your cash on hand.
+                            </p>
 
-                    {/* Main Content */}
-                    <div className="relative z-10 px-6 sm:px-8 pt-7 sm:pt-8 pb-7 sm:pb-8 max-w-[75%] sm:max-w-[65%]">
-                        <h1 className="font-display text-[1.75rem] sm:text-[2.35rem] font-semibold tracking-tight leading-[1.08] mb-2.5">
-                            Smart Grocery List
-                        </h1>
-                        <p className="text-[12.5px] sm:text-[13.5px] text-paper/70 leading-relaxed">
-                            Plan your shopping items and track running totals to stay on budget.
-                        </p>
+                            {/* In Cart Running Pacing Card */}
+                            <div className="bg-black/20 backdrop-blur-md border border-white/10 rounded-2xl p-4 sm:p-5 max-w-md">
+                                <p className="text-[10px] sm:text-[11px] font-mono uppercase font-semibold text-emerald-300 tracking-wider mb-1">
+                                    Current In Cart Cost
+                                </p>
+                                <div className="flex items-baseline gap-2 mb-2">
+                                    <span className={`font-mono text-2xl sm:text-4xl font-bold tracking-tight ${
+                                        isOverBudget ? "text-rose-300" : "text-white"
+                                    }`}>
+                                        ₱{window.peso(runningTotal)}
+                                    </span>
+                                </div>
+
+                                {/* Dynamic status pill */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {isOverBudget ? (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-500/25 border border-rose-400/30 text-rose-200 text-[11px] font-medium">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
+                                            <span>⚠️ Over budget by ₱{window.peso(runningTotal - budget)}!</span>
+                                        </span>
+                                    ) : budget > 0 ? (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-[11px] font-medium">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                            <span>✓ ₱{window.peso(budget - runningTotal)} cash remaining</span>
+                                        </span>
+                                    ) : totalItems > 0 ? (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-[11px] font-medium">
+                                            <span>Est. total for {totalItems} items: ₱{window.peso(expectedTotal)}</span>
+                                        </span>
+                                    ) : (
+                                        <span className="text-[11px] text-paper/60">
+                                            Set cash on hand below to pace your shopping trip
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right Side: Tipid Mascot with Dynamic Speech Bubble */}
+                        {mascotOk && (
+                            <div className="relative shrink-0 flex flex-col items-center sm:items-end self-center md:self-end mt-2 md:mt-0">
+                                <div className="speech-bubble relative bg-white/95 text-ink text-[11.5px] font-medium px-3.5 py-2 rounded-2xl max-w-[210px] text-center mb-2.5 border border-white/40">
+                                    {mascotMessage}
+                                    {/* Tail */}
+                                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 md:left-auto md:right-8 w-3 h-3 bg-white/95 rotate-45 border-r border-b border-white/40" />
+                                </div>
+                                <img
+                                    src="/assets/allowance_mascot.png"
+                                    alt="Tipid Mascot"
+                                    onError={(e) => {
+                                        if (!e.target.dataset.fallback) {
+                                            e.target.dataset.fallback = "true";
+                                            e.target.src = "/assets/tipid_mascot.png";
+                                        } else {
+                                            setMascotOk(false);
+                                        }
+                                    }}
+                                    className="grocery-mascot-img w-20 h-20 sm:w-24 sm:h-24 object-contain mascot-hover pointer-events-none drop-shadow-md"
+                                    draggable="false"
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Bottom Strip: 3 Metrics Mini-Cards */}
+                    <div className="relative z-10 grid grid-cols-3 gap-2 px-6 sm:px-8 pb-6 pt-3 border-t border-white/10 text-center">
+                        <div className="bg-white/5 backdrop-blur-md rounded-xl p-2.5 border border-white/5">
+                            <p className="text-[10px] font-mono uppercase text-paper/60">In Cart</p>
+                            <p className="font-mono text-base sm:text-lg font-bold text-white">
+                                {checkedCount} / {totalItems} <span className="text-[11px] font-body opacity-70">items</span>
+                            </p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-md rounded-xl p-2.5 border border-white/5">
+                            <p className="text-[10px] font-mono uppercase text-paper/60">Est. Total</p>
+                            <p className="font-mono text-base sm:text-lg font-bold text-emerald-300">
+                                ₱{window.peso(expectedTotal)}
+                            </p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-md rounded-xl p-2.5 border border-white/5">
+                            <p className="text-[10px] font-mono uppercase text-paper/60">Budget</p>
+                            <p className="font-mono text-base sm:text-lg font-bold text-amber-300">
+                                ₱{window.peso(budget)}
+                            </p>
+                        </div>
                     </div>
                 </div>
             );
         }
 
-        /* --- PALENGKE TIPS CAROUSEL ---
-           Self-contained, doesn't depend on GroceryList's internal state.
-           Rotation/pause/nav logic unchanged — only the presentation shell was restyled. */
+        /* --- PALENGKE TIPS CAROUSEL: AUTHENTIC SMART SHOPPING WISDOM --- */
         window.PALENGKE_TIPS = [
             {
                 icon: "Clock",
-                title: "Shop early for freshness",
-                text: "Shop early in the morning for the freshest produce and best selections before prime items sell out."
+                title: "Shop early for freshest produce & best cuts",
+                text: "Visit wet markets (palengke) between 6:00 AM – 8:00 AM for newly delivered seafood, crisp vegetables, and tender meat before prime stocks sell out."
             },
             {
                 icon: "Leaf",
-                title: "Inspect produce quality",
-                text: "Check produce for firm texture and vibrant color. Avoid bruised vegetables or items past their peak."
+                title: "Inspect produce weight & freshness",
+                text: "Check leafy greens for vibrant color and firm stems. Don't hesitate to ask vendors to weigh items on calibrated digital scales to ensure fair price."
             },
             {
                 icon: "Coins",
-                title: "Keep small bills handy",
-                text: "Carrying smaller denominations and loose change makes checkout fast and hassle-free."
+                title: "Keep small bills and coins ready",
+                text: "Bring loose ₱20, ₱50, and ₱100 bills plus ₱10 coins. Palengke vendors give faster service and often round down loose change for exact payers."
             },
             {
                 icon: "Bag",
-                title: "Bring reusable tote bags",
-                text: "Eco-friendly tote bags are sturdy, easier to carry, and reduce single-use plastic waste."
+                title: "Bring sturdy reusable tote bags",
+                text: "Heavy canvas bags are easier to carry, keep your groceries organized, and reduce single-use plastic waste while avoiding supermarket plastic surcharges."
             },
             {
                 icon: "Sparkle",
-                title: "Compare before buying",
-                text: "Check prices across 2 or 3 stalls or supermarket aisles before making bulk purchases."
+                title: "Compare supermarket vs palengke prices",
+                text: "Buy fresh meats and produce at the wet market where prices are 20-30% cheaper; buy packaged toiletries and canned goods during supermarket sale bundles."
             },
             {
-                icon: "Info",
-                title: "Stick to your checklist",
-                text: "Check items off as you shop to prevent impulse purchases or buying duplicates."
+                icon: "Check",
+                title: "Stick strictly to your checklist",
+                text: "Checking items off as you place them into your cart eliminates duplicate purchases and curbs high-cost impulse snacks near checkout counters."
             }
         ];
 
@@ -273,7 +376,7 @@
 
             React.useEffect(() => {
                 if (paused) return;
-                const t = setInterval(() => setIndex(i => (i + 1) % tips.length), 6000);
+                const t = setInterval(() => setIndex(i => (i + 1) % tips.length), 6500);
                 return () => clearInterval(t);
             }, [paused, tips.length]);
 
@@ -284,16 +387,21 @@
 
             return (
                 <div
-                    className="fade-up bg-white/60 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.5rem] border border-white/60 dark:border-white/5 shadow-sm p-5 sm:p-6 mb-6 sm:mb-8"
+                    className="fade-up bg-white/70 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.75rem] border border-white/80 dark:border-white/10 shadow-ios p-5 sm:p-6 mb-6 sm:mb-8"
                     style={{ animationDelay: "60ms" }}
                     onMouseEnter={() => setPaused(true)}
                     onMouseLeave={() => setPaused(false)}
                 >
                     <div className="flex items-center justify-between mb-3.5">
-                        <h2 className="font-display text-[1.05rem] font-semibold text-ink dark:text-paper tracking-tight">
-                            Grocery tips
-                        </h2>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-2">
+                            <span className="text-peso dark:text-pesoLight">
+                                <window.Icons.Sparkle size={16} />
+                            </span>
+                            <h2 className="font-display text-[1.1rem] font-semibold text-ink dark:text-paper tracking-tight">
+                                Smart Palengke & Grocery Insights
+                            </h2>
+                        </div>
+                        <div className="flex items-center gap-1.5">
                             <button
                                 onClick={() => goTo(index - 1)}
                                 aria-label="Previous tip"
@@ -311,12 +419,12 @@
                         </div>
                     </div>
 
-                    <div key={index} className="tip-fade flex items-start gap-3">
-                        <div className="shrink-0 w-8 h-8 rounded-full bg-peso/10 dark:bg-pesoLight/10 text-peso dark:text-pesoLight flex items-center justify-center">
-                            <TipIcon size={16} />
+                    <div key={index} className="tip-fade flex items-start gap-3.5">
+                        <div className="shrink-0 w-9 h-9 rounded-xl bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center border border-peso/20 dark:border-pesoLight/20">
+                            <TipIcon size={18} />
                         </div>
                         <div className="min-w-0">
-                            <p className="text-[13px] font-medium text-ink dark:text-paper mb-0.5">{tip.title}</p>
+                            <p className="text-[13.5px] font-semibold text-ink dark:text-paper mb-0.5">{tip.title}</p>
                             <p className="text-[12px] text-ink2/70 dark:text-paper/60 leading-relaxed">{tip.text}</p>
                         </div>
                     </div>
@@ -327,7 +435,7 @@
                                 key={i}
                                 onClick={() => goTo(i)}
                                 aria-label={`Tip ${i + 1}`}
-                                className={`h-1.5 rounded-full transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-peso/40 ${i === index ? "w-5 bg-peso dark:bg-pesoLight" : "w-1.5 bg-black/10 dark:bg-white/15"}`}
+                                className={`h-1.5 rounded-full transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-peso/40 ${i === index ? "w-6 bg-peso dark:bg-pesoLight" : "w-1.5 bg-black/10 dark:bg-white/15"}`}
                             />
                         ))}
                     </div>
@@ -335,11 +443,32 @@
             );
         }
 
+        /* --- ROOT GROCERY PAGE --- */
         function GroceryPage() {
             const authReady = window.useAuthReady();
             const [user, setUser] = React.useState(null);
             const [authChecking, setAuthChecking] = React.useState(true);
             const [componentsReady, setComponentsReady] = React.useState(false);
+
+            // Live grocery stats shared between GroceryList and GroceryHeroCard
+            const [groceryStats, setGroceryStats] = React.useState(() => {
+                try {
+                    const savedItems = JSON.parse(localStorage.getItem(`tipid_grocery_${user?.uid}`) || "[]");
+                    const savedBudget = parseFloat(localStorage.getItem(`tipid_grocery_budget_${user?.uid}`) || "0");
+                    const checkedItems = savedItems.filter(i => i.isChecked);
+                    const runningTotal = checkedItems.reduce((acc, i) => acc + (i.price || 0), 0);
+                    const expectedTotal = savedItems.reduce((acc, i) => acc + (i.price || 0), 0);
+                    return {
+                        items: savedItems,
+                        budget: savedBudget,
+                        runningTotal,
+                        expectedTotal,
+                        checkedCount: checkedItems.length
+                    };
+                } catch (_) {
+                    return { items: [], budget: 0, runningTotal: 0, expectedTotal: 0, checkedCount: 0 };
+                }
+            });
 
             const [darkMode, setDarkMode] = React.useState(() => {
                 return localStorage.getItem("tipid_theme") === "dark" ||
@@ -408,7 +537,7 @@
                                 <window.Logo size={38} />
                             </div>
                             <p className="text-[11px] font-mono text-ink2/60 dark:text-paper/50">
-                                Loading list...
+                                Loading grocery planner...
                             </p>
                         </div>
                     </div>
@@ -424,7 +553,7 @@
                     <AppNavbar user={user} onLogout={handleLogout} activeTab="grocery" />
 
                     <main
-                        className="max-w-[700px] mx-auto w-full px-5 sm:px-8 pt-[6.5rem] md:pt-10 pb-36 md:pb-20 flex-1"
+                        className="max-w-[840px] mx-auto w-full px-5 sm:px-8 pt-[6.5rem] md:pt-10 pb-36 md:pb-20 flex-1"
                         style={{
                             paddingLeft: 'max(1.25rem, calc(var(--sal) + 1.25rem))',
                             paddingRight: 'max(1.25rem, calc(var(--sar) + 1.25rem))',
@@ -432,10 +561,14 @@
                         }}
                     >
                         <div className="fade-up">
-                            <GroceryHeroCard darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+                            <GroceryHeroCard
+                                darkMode={darkMode}
+                                toggleDarkMode={toggleDarkMode}
+                                stats={groceryStats}
+                            />
                         </div>
                         <PalengkeTips />
-                        <AppGroceryList uid={user.uid} />
+                        <AppGroceryList uid={user.uid} onStatsChange={setGroceryStats} />
                     </main>
                 </div>
             );

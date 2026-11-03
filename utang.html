@@ -12,10 +12,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
 
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Global Dark Mode Script Initializer -->
     <script>
         if (localStorage.getItem('tipid_theme') === 'dark' || (!('tipid_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
@@ -24,6 +26,7 @@
         }
     </script>
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -49,16 +52,20 @@
         }
     </script>
 
+    <!-- React & Babel -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- Firebase Scripts -->
     <script type="module" src="./firebase.js"></script>
     <script type="module" src="./firebase-auth.js"></script>
     <script type="module" src="./firebase-data.js"></script>
 
+    <!-- Components -->
     <script type="text/babel" src="./components/navbar.js"></script>
     <script type="text/babel" src="./components/UtangTracker.js"></script>
 
@@ -86,38 +93,36 @@
         @keyframes haloPulse { 0% { transform: scale(0.9); opacity: 0.35; } 70% { opacity: 0; } 100% { transform: scale(1.6); opacity: 0; } }
         .halo-pulse { animation: haloPulse 1.9s var(--ease-ios) infinite; }
 
-        @keyframes heroFloat { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -10px); } }
-        .hero-float { animation: heroFloat 6s ease-in-out infinite; }
-
-        .glass-panel { background: rgba(255,255,255,0.65); backdrop-filter: blur(20px) saturate(160%); border: 1px solid rgba(255,255,255,0.55); }
-        html.dark .glass-panel { background: rgba(24,38,31,0.55); border: 1px solid rgba(255,255,255,0.08); }
+        @keyframes heroFloat { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -6px); } }
+        .hero-float { animation: heroFloat 5s ease-in-out infinite; }
 
         .tap-scale { transition: transform 0.15s var(--ease-spring); }
-        .tap-scale:active { transform: scale(0.92); }
+        .tap-scale:active { transform: scale(0.94); }
 
+        /* Custom SweetAlert styling */
         .tipid-swal { border-radius: 1.5rem !important; font-family: 'Inter', sans-serif !important; }
 
+        /* Mascot Hover Animation */
         @keyframes mascotHover {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-6px); }
         }
-        .utang-mascot-img {
+        .mascot-hover {
             animation: mascotHover 4s ease-in-out infinite;
-            filter: drop-shadow(0 15px 25px rgba(18,61,46,0.35));
         }
+
         .speech-bubble {
-            animation: fadeUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
             box-shadow: 0 10px 25px -5px rgba(18, 61, 46, 0.25);
         }
 
-        /* Hero grain: quiet material texture instead of decorative blur blobs */
+        /* Material grain overlay */
         .grain-overlay {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
             mix-blend-mode: overlay;
         }
 
         @media (prefers-reduced-motion: reduce) {
-            .fade-up, .spin, .halo-pulse, .hero-float, .tap-scale, .utang-mascot-img, .speech-bubble { animation: none !important; transition: none !important; }
+            .fade-up, .spin, .halo-pulse, .hero-float, .tap-scale, .mascot-hover, .speech-bubble { animation: none !important; transition: none !important; }
         }
     </style>
 </head>
@@ -155,7 +160,9 @@
             Info: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>} />,
             Shield: (p) => <Icon {...p} path={<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>} />,
             Users: (p) => <Icon {...p} path={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
-            Clock: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>} />
+            Clock: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>} />,
+            Zap: (p) => <Icon {...p} path={<><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></>} />,
+            Handshake: (p) => <Icon {...p} path={<><path d="m11 17 2 2a1 1 0 0 0 1.4 0l4.3-4.3a1 1 0 0 0 0-1.4l-3-3a1 1 0 0 0-1.4 0l-1.3 1.3"/><path d="m13 7-2-2a1 1 0 0 0-1.4 0L5.3 9.3a1 1 0 0 0 0 1.4l3 3a1 1 0 0 0 1.4 0l1.3-1.3"/><path d="m2 14 6 6"/><path d="m22 10-6-6"/></>} />,
         };
 
         window.Logo = function Logo({ size = 30 }) {
@@ -182,94 +189,234 @@
             }, []);
             return ready;
         }
-    </script>
 
-    <script type="text/babel">
-        /* Quiet, single point of ambient color — restraint over decoration */
         function AmbientBackground() {
             return (
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-                    <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[640px] h-[320px] bg-peso/5 dark:bg-pesoLight/[0.06] rounded-full blur-[130px]" />
+                    <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-peso/10 dark:bg-pesoLight/[0.08] rounded-full blur-[140px]" />
                 </div>
             );
         }
 
-        /* --- UTANG HERO: a quiet statement card, not a decorated banner --- */
-        function UtangHeroCard({ darkMode, toggleDarkMode, utangCount, loading }) {
-            const countLabel = utangCount === 1 ? "record being tracked" : "records being tracked";
+        /* --- UTANG HERO CARD: APPLE HIG FINTECH AESTHETICS --- */
+        function UtangHeroCard({ darkMode, toggleDarkMode, utangList = [], loading }) {
+            const [mascotOk, setMascotOk] = React.useState(true);
+
+            // Calculations
+            const todayStr = window.TipidCore ? window.TipidCore.manilaDateKey() : new Date().toISOString().slice(0, 10);
+            const unpaid = utangList.filter(u => u.status !== "Paid");
+            const owedToMe = window.TipidCore ? window.TipidCore.sumMoney(unpaid.filter(u => u.direction !== "i_owe").map(u => u.amount)) : 0;
+            const iOwe = window.TipidCore ? window.TipidCore.sumMoney(unpaid.filter(u => u.direction === "i_owe").map(u => u.amount)) : 0;
+            const net = owedToMe - iOwe;
+
+            const paidCount = utangList.filter(u => u.status === "Paid").length;
+            const settledPct = utangList.length > 0 ? Math.round((paidCount / utangList.length) * 100) : 0;
+            const overdueCount = unpaid.filter(u => u.dueDate && u.dueDate < todayStr).length;
+
+            const mascotMessage = React.useMemo(() => {
+                if (overdueCount > 0) {
+                    return `Hala! May ${overdueCount} overdue record ka. Mag-follow up o mag-settle na agad!`;
+                }
+                if (owedToMe > 0 && iOwe === 0) {
+                    return `May ₱${window.peso(owedToMe)} kang sisingilin. I-track nang maayos para iwas kalimutan!`;
+                }
+                if (iOwe > 0 && owedToMe === 0) {
+                    return `May ₱${window.peso(iOwe)} kang utang. Bayaran bago ang due date para mapanatili ang tiwala!`;
+                }
+                if (owedToMe > 0 && iOwe > 0) {
+                    return `Net position mo: ${net >= 0 ? '+' : '-'}₱${window.peso(Math.abs(net))}. Planuhin ang cashflow!`;
+                }
+                if (utangList.length > 0 && paidCount === utangList.length) {
+                    return "Galing! All debts & receivables are fully settled. Malinis ang ledger mo!";
+                }
+                return "I-lista rito ang mga pautang o hiniram na pera para malinaw ang bawat transaksyon!";
+            }, [utangList, overdueCount, owedToMe, iOwe, net, paidCount]);
 
             return (
-                <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-b from-pesoDeep to-[#0E2A20] text-paper shadow-iosLg ring-1 ring-black/5 dark:ring-white/10 mb-6 sm:mb-8">
-                    {/* subtle material grain — texture instead of glow blobs */}
-                    <div className="absolute inset-0 grain-overlay opacity-[0.05] pointer-events-none" />
+                <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#124231] via-[#17523E] to-[#0A261C] text-paper shadow-iosLg ring-1 ring-white/10 mb-6 sm:mb-8">
+                    {/* Material grain overlay */}
+                    <div className="absolute inset-0 grain-overlay opacity-[0.06] pointer-events-none" />
 
-                    {/* Dark Mode Toggle */}
-                    <div className="absolute top-5 right-5 sm:top-6 sm:right-6 z-30">
+                    {/* Ambient light glow */}
+                    <div className="absolute -top-24 -left-24 w-72 h-72 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-pesoLight/15 rounded-full blur-3xl pointer-events-none" />
+
+                    {/* Top Bar with Status Tag & Dark Mode Toggle */}
+                    <div className="relative z-20 flex items-center justify-between px-6 sm:px-8 pt-6 sm:pt-7">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] font-mono tracking-wider uppercase text-white/90">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                            <span>Debts & Receivables Tracker</span>
+                        </div>
+
                         <button
                             onClick={toggleDarkMode}
                             aria-label="Toggle dark mode"
-                            className="tap-scale w-10 h-10 rounded-full bg-white/10 hover:bg-white/15 border border-white/15 flex items-center justify-center text-white/90 backdrop-blur-md transition-colors outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                            className="tap-scale w-10 h-10 rounded-full bg-white/10 hover:bg-white/15 border border-white/15 flex items-center justify-center text-white/90 backdrop-blur-md transition-all outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                         >
                             {darkMode ? <window.Icons.Sun size={17} /> : <window.Icons.Moon size={17} />}
                         </button>
                     </div>
 
-                    {/* Main Content */}
-                    <div className="relative z-10 px-6 sm:px-8 pt-7 sm:pt-8 pb-6 sm:pb-7 max-w-[75%] sm:max-w-[65%]">
-                        <h1 className="font-display text-[1.75rem] sm:text-[2.35rem] font-semibold tracking-tight leading-[1.08] mb-2.5">
-                            Debts & Receivables
-                        </h1>
-                        <p className="text-[12.5px] sm:text-[13.5px] text-paper/70 leading-relaxed">
-                            Track money you owe to others and receivables owed to you.
-                        </p>
+                    {/* Main Hero Body */}
+                    <div className="relative z-10 px-6 sm:px-8 pt-5 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div className="max-w-xl">
+                            <h1 className="font-display text-[1.85rem] sm:text-[2.5rem] font-semibold tracking-tight leading-[1.08] mb-2 text-white">
+                                Debts & Receivables
+                            </h1>
+                            <p className="text-[13px] sm:text-[14px] text-paper/75 leading-relaxed mb-5">
+                                Keep financial promises crystal clear, track borrower repayments, and manage personal liabilities.
+                            </p>
+
+                            {/* Prominent Net Position Card */}
+                            <div className="bg-black/20 backdrop-blur-md border border-white/10 rounded-2xl p-4 sm:p-5 max-w-md">
+                                <p className="text-[10px] sm:text-[11px] font-mono uppercase font-semibold text-emerald-300 tracking-wider mb-1">
+                                    Net Liquidity Position
+                                </p>
+                                <div className="flex items-baseline gap-2 mb-2">
+                                    <span className={`font-mono text-2xl sm:text-4xl font-bold tracking-tight ${
+                                        net > 0 ? "text-emerald-300" : net < 0 ? "text-rose-300" : "text-white"
+                                    }`}>
+                                        {loading ? "₱0.00" : `${net < 0 ? "-" : net > 0 ? "+" : ""}₱${window.peso(Math.abs(net))}`}
+                                    </span>
+                                </div>
+
+                                {/* Dynamic status pill */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {overdueCount > 0 ? (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-500/25 border border-rose-400/30 text-rose-200 text-[11px] font-medium">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
+                                            <span>{overdueCount} overdue record{overdueCount > 1 ? 's' : ''} require attention</span>
+                                        </span>
+                                    ) : net > 0 ? (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-[11px] font-medium">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                            <span>Net Positive: +₱{window.peso(net)} to collect from others</span>
+                                        </span>
+                                    ) : net < 0 ? (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-500/20 border border-rose-400/30 text-rose-200 text-[11px] font-medium">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                                            <span>Net Liability: -₱{window.peso(Math.abs(net))} to settle</span>
+                                        </span>
+                                    ) : utangList.length > 0 && paidCount === utangList.length ? (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-[11px] font-medium">
+                                            <span>✓ All records are fully settled!</span>
+                                        </span>
+                                    ) : (
+                                        <span className="text-[11px] text-paper/60">
+                                            Record borrowings or lendings below to begin tracking
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right Side: Tipid Mascot with Dynamic Speech Bubble */}
+                        {mascotOk && (
+                            <div className="relative shrink-0 flex flex-col items-center sm:items-end self-center md:self-end mt-2 md:mt-0">
+                                <div className="speech-bubble relative bg-white/95 text-ink text-[11.5px] font-medium px-3.5 py-2 rounded-2xl max-w-[210px] text-center mb-2.5 border border-white/40">
+                                    {mascotMessage}
+                                    {/* Tail */}
+                                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 md:left-auto md:right-8 w-3 h-3 bg-white/95 rotate-45 border-r border-b border-white/40" />
+                                </div>
+                                <img
+                                    src="/assets/allowance_mascot.png"
+                                    alt="Tipid Mascot"
+                                    onError={() => {
+                                        // Fallback to tipid_mascot if allowance_mascot fails
+                                        const img = document.querySelector(".utang-mascot-img");
+                                        if (img && !img.dataset.fallback) {
+                                            img.dataset.fallback = "true";
+                                            img.src = "/assets/tipid_mascot.png";
+                                        } else {
+                                            setMascotOk(false);
+                                        }
+                                    }}
+                                    className="utang-mascot-img w-20 h-20 sm:w-24 sm:h-24 object-contain mascot-hover pointer-events-none drop-shadow-md"
+                                    draggable="false"
+                                />
+                            </div>
+                        )}
                     </div>
 
-                    {/* Stat row — real data, not decoration */}
-                    <div className="relative z-10 flex items-baseline gap-2 px-6 sm:px-8 pb-6 sm:pb-7 border-t border-white/10 mx-6 sm:mx-8 pt-4">
-                        <span className="font-mono text-xl sm:text-2xl font-semibold tabular-nums">
-                            {loading ? "–" : utangCount}
-                        </span>
-                        <span className="text-[11.5px] text-paper/60">{loading ? "loading..." : countLabel}</span>
+                    {/* Bottom Strip: 3 Metrics Mini-Cards */}
+                    <div className="relative z-10 grid grid-cols-3 gap-2 px-6 sm:px-8 pb-6 pt-3 border-t border-white/10 text-center">
+                        <div className="bg-white/5 backdrop-blur-md rounded-xl p-2.5 border border-white/5">
+                            <p className="text-[10px] font-mono uppercase text-paper/60">Active Debts</p>
+                            <p className="font-mono text-base sm:text-lg font-bold text-white">
+                                {loading ? "–" : unpaid.length} <span className="text-[11px] font-body opacity-70">records</span>
+                            </p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-md rounded-xl p-2.5 border border-white/5">
+                            <p className="text-[10px] font-mono uppercase text-paper/60">Settled</p>
+                            <p className="font-mono text-base sm:text-lg font-bold text-emerald-300">
+                                {loading ? "–" : paidCount} <span className="text-[11px] font-body opacity-70">({settledPct}%)</span>
+                            </p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-md rounded-xl p-2.5 border border-white/5">
+                            <p className="text-[10px] font-mono uppercase text-paper/60">Overdue</p>
+                            <p className="font-mono text-base sm:text-lg font-bold text-rose-300">
+                                {loading ? "–" : overdueCount} <span className="text-[11px] font-body opacity-70">pending</span>
+                            </p>
+                        </div>
                     </div>
                 </div>
             );
         }
 
-        /* --- TIPS: one panel, divided rows — not identical stacked cards --- */
+        /* --- UTANG TIPS SECTION: PRACTICAL DEBT & LENDING WISDOM --- */
         function UtangTipsSection() {
             const tips = [
                 {
-                    icon: <window.Icons.Shield size={16} />,
-                    title: "Set clear boundaries",
-                    body: "It's okay to say no if money is tight — prioritize your personal budget and emergency fund before lending.",
+                    icon: <window.Icons.Shield size={18} />,
+                    iconTone: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
+                    title: "Set Clear Repayment Deadlines",
+                    body: "Agree on a firm due date before money exchanges hands. Ambiguous repayment terms create unnecessary tension between close friends and family.",
                 },
                 {
-                    icon: <window.Icons.Clock size={16} />,
-                    title: "Pay on time",
-                    body: "Settle debts on or before the agreed date — prompt repayment builds financial credibility and trust.",
+                    icon: <window.Icons.Users size={18} />,
+                    iconTone: "text-indigo-500 bg-indigo-500/10 border-indigo-500/20",
+                    title: "Immediate Bill-Splitting",
+                    body: "Log shared restaurant meals, Grab rides, and group groceries immediately so everyone pays their exact share before details fade from memory.",
                 },
                 {
-                    icon: <window.Icons.Users size={16} />,
-                    title: "Track shared split bills",
-                    body: "Log shared group meals and split expenses immediately so everyone's share stays transparent.",
+                    icon: <window.Icons.Zap size={18} />,
+                    iconTone: "text-amber-500 bg-amber-500/10 border-amber-500/20",
+                    title: "Prioritize High-Cost Borrowing",
+                    body: "Always pay off high-interest personal loans and credit advances first before discretionary purchases to stop compounding interest charges.",
+                },
+                {
+                    icon: <window.Icons.Handshake size={18} />,
+                    iconTone: "text-teal-500 bg-teal-500/10 border-teal-500/20",
+                    title: "Dignified & Timely Reminders",
+                    body: "Send polite follow-ups 2–3 days before the target date. Professional courtesy helps borrowers prepare cash without feeling pressured.",
                 },
             ];
 
             return (
                 <div className="mt-8 sm:mt-10 fade-up" style={{ animationDelay: "120ms" }}>
-                    <h3 className="font-display text-[1.05rem] font-semibold text-ink dark:text-paper tracking-tight mb-3 px-1">
-                        Smart debt management tips
-                    </h3>
+                    <div className="flex items-center gap-2 mb-3 px-1">
+                        <window.Icons.Info size={16} className="text-peso dark:text-pesoLight" />
+                        <h3 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper tracking-tight">
+                            Smart Debt & Lending Insights
+                        </h3>
+                    </div>
 
-                    <div className="bg-white/60 dark:bg-ink2/25 backdrop-blur-xl rounded-[1.5rem] border border-white/60 dark:border-white/5 shadow-sm divide-y divide-line/60 dark:divide-white/5 overflow-hidden">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                         {tips.map((tip, i) => (
-                            <div key={i} className="flex items-start gap-3.5 px-5 py-4">
-                                <div className="mt-0.5 shrink-0 w-8 h-8 rounded-full bg-peso/10 dark:bg-pesoLight/10 text-peso dark:text-pesoLight flex items-center justify-center">
+                            <div
+                                key={i}
+                                className="bg-white/70 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.5rem] border border-white/80 dark:border-white/10 shadow-ios p-4 sm:p-5 flex items-start gap-4 transition-all hover:bg-white/90 dark:hover:bg-ink2/50"
+                            >
+                                <div className={`mt-0.5 shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center border shadow-xs ${tip.iconTone}`}>
                                     {tip.icon}
                                 </div>
-                                <div>
-                                    <p className="font-medium text-[13px] text-ink dark:text-paper mb-0.5">{tip.title}</p>
-                                    <p className="text-[12px] text-ink2/70 dark:text-paper/60 leading-relaxed">{tip.body}</p>
+                                <div className="min-w-0">
+                                    <p className="font-semibold text-[13.5px] text-ink dark:text-paper mb-1">
+                                        {tip.title}
+                                    </p>
+                                    <p className="text-[12px] text-ink2/70 dark:text-paper/60 leading-relaxed">
+                                        {tip.body}
+                                    </p>
                                 </div>
                             </div>
                         ))}
@@ -278,6 +425,7 @@
             );
         }
 
+        /* --- ROOT UTANG PAGE --- */
         function UtangPage() {
             const authReady = window.useAuthReady();
             const [user, setUser] = React.useState(null);
@@ -348,10 +496,7 @@
                 }
             };
 
-            // Stabilized Utang Subscription with useRef to prevent re-triggering re-mounts while typing
-            const utangListRef = React.useRef(utangList);
-            utangListRef.current = utangList;
-
+            // Stabilized Utang Subscription
             React.useEffect(() => {
                 if (!user) return;
                 let unsubUtang = null;
@@ -361,7 +506,6 @@
                         unsubUtang = window.TipidData.subscribeUtang(
                             user.uid,
                             (data) => {
-                                // Only update state if data actually changed to prevent input focus resets
                                 setUtangList(data);
                                 setLoading(false);
                             },
@@ -419,7 +563,7 @@
                             <UtangHeroCard
                                 darkMode={darkMode}
                                 toggleDarkMode={toggleDarkMode}
-                                utangCount={utangList.length}
+                                utangList={utangList}
                                 loading={loading}
                             />
                         </div>
@@ -445,7 +589,7 @@
             }
             if (attempt > 100) {
                 document.getElementById("root").innerHTML =
-                    `<div style="min-h-dvh;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:Inter,sans-serif;text-align:center;color:#15231C;">
+                    `<div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:Inter,sans-serif;text-align:center;color:#15231C;">
                         <div>
                             <p style="font-weight:600;margin-bottom:0.5rem;">Failed to load: ${missingNames.join(", ")}</p>
                             <p style="font-size:0.875rem;opacity:0.7;">Check the file path (Network tab) and ensure component exports match.</p>

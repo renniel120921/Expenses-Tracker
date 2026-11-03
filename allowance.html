@@ -6,17 +6,19 @@
     <link rel="manifest" href="/manifest.json">
     <script src="/app-utils.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Allowance Tracker — Tipid</title>
+    <title>Allowance & Daily Pacing — Tipid</title>
     <meta name="theme-color" content="#1F6F54">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="Track your daily allowance and avoid petsa de peligro.">
+    <meta name="description" content="Budget your allowance and pace daily spending until your next payday or funds arrival.">
     <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
 
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Dark Mode Initializer -->
     <script>
         if (localStorage.getItem('tipid_theme') === 'dark' || (!('tipid_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
@@ -25,6 +27,7 @@
         }
     </script>
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -37,31 +40,34 @@
                         gold: '#C9932E', expense: '#B5483B', line: '#D3DAD0',
                     },
                     fontFamily: {
-                        display: ['"Fraunces"', 'serif'],
-                        body: ['"Inter"', 'sans-serif'],
-                        mono: ['"JetBrains Mono"', 'monospace'],
+                        display: ['Fraunces', 'serif'],
+                        body: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
                     },
                     boxShadow: {
                         'ios': '0 2px 10px rgba(18,61,46,0.06), 0 16px 32px -12px rgba(18,61,46,0.15)',
                         'iosLg': '0 24px 48px -12px rgba(18,61,46,0.25)',
-                        'glass': '0 8px 32px 0 rgba(31, 111, 84, 0.1)',
+                        'bento': '0 4px 24px -4px rgba(18, 61, 46, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+                        'bentoDark': '0 8px 32px -8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
                     }
                 }
             }
         }
     </script>
 
+    <!-- React & Babel -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- Firebase Scripts -->
     <script type="module" src="./firebase.js"></script>
     <script type="module" src="./firebase-auth.js"></script>
     <script type="module" src="./firebase-data.js"></script>
 
+    <!-- Components -->
     <script type="text/babel" src="./components/navbar.js"></script>
-    <!-- Ensure AllowanceCalculator.js exists in the components folder -->
     <script type="text/babel" src="./components/AllowanceCalculator.js"></script>
 
     <style>
@@ -74,57 +80,58 @@
             --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        html { background: #F1F4EF; transition: background-color 0.4s var(--ease-ios); }
+        html { background: #F1F4EF; transition: background-color 0.3s var(--ease-ios); }
         html.dark { background: #111A15; color: #F1F4EF; }
-
-        body { font-family: 'Inter', sans-serif; min-height: 100dvh; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-up { animation: fadeIn 0.7s var(--ease-spring) both; }
+        .fade-up { animation: fadeIn 0.6s var(--ease-ios) both; }
 
-        @keyframes haloPulse { 0% { transform: scale(0.85); opacity: 0.4; } 70% { opacity: 0; } 100% { transform: scale(1.8); opacity: 0; } }
-        .halo-pulse { animation: haloPulse 2s var(--ease-ios) infinite; }
+        .spin { animation: spin 0.9s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        @keyframes logoBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+        @keyframes haloPulse { 0% { transform: scale(0.9); opacity: 0.35; } 70% { opacity: 0; } 100% { transform: scale(1.6); opacity: 0; } }
+        .halo-pulse { animation: haloPulse 1.9s var(--ease-ios) infinite; }
 
-        .glass-panel { background: rgba(255,255,255,0.7); backdrop-filter: blur(24px) saturate(180%); border: 1px solid rgba(255,255,255,0.6); }
-        html.dark .glass-panel { background: rgba(24,38,31,0.6); border: 1px solid rgba(255,255,255,0.08); }
+        .tap-scale { transition: transform 0.15s var(--ease-spring); }
+        .tap-scale:active { transform: scale(0.94); }
 
         .tipid-swal { border-radius: 1.5rem !important; font-family: 'Inter', sans-serif !important; }
 
-        .hero-panel { position: relative; isolation: isolate; }
-        .hero-panel::before {
-            content: ''; position: absolute; inset: 0; border-radius: inherit;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 0 0 1px rgba(255,255,255,0.1);
-            pointer-events: none; z-index: 20;
+        @keyframes mascotHover { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+        .allowance-mascot-img { animation: mascotHover 4s ease-in-out infinite; filter: drop-shadow(0 15px 25px rgba(18,61,46,0.35)); }
+
+        .speech-bubble { box-shadow: 0 10px 25px -5px rgba(18, 61, 46, 0.25); }
+        .tip-fade { animation: fadeIn 0.45s var(--ease-ios) both; }
+
+        /* Material grain overlay */
+        .grain-overlay {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            mix-blend-mode: overlay;
         }
 
-        .hero-glow { animation: heroFloat 8s ease-in-out infinite alternate; }
-        @keyframes heroFloat { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(15px, -15px) scale(1.1); } }
-
-        .speech-bubble {
-            animation: fadeIn 0.6s var(--ease-spring) 0.5s both;
-            box-shadow: 0 12px 28px -6px rgba(18, 61, 46, 0.3);
-            position: relative;
+        .bento-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(28px) saturate(190%);
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            box-shadow: var(--tw-shadow-ios);
+            transition: all 0.3s var(--ease-ios);
         }
-
-        .speech-bubble::after {
-            content: ''; position: absolute; bottom: -6px; right: 24px;
-            border-width: 6px 6px 0; border-style: solid; border-color: #F1F4EF transparent transparent transparent;
+        html.dark .bento-card {
+            background: rgba(20, 30, 24, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.5);
         }
-
-        .tip-card { transition: all 0.3s var(--ease-ios); }
-        .tip-card:hover { transform: translateY(-4px); box-shadow: var(--tw-shadow-glass); }
-
-        :focus-visible { outline: 2px solid #1F6F54; outline-offset: 3px; border-radius: 8px; transition: outline-offset 0.2s; }
-        html.dark :focus-visible { outline-color: #52C8A1; }
 
         @media (prefers-reduced-motion: reduce) {
-            .fade-up, .halo-pulse, .hero-glow, .speech-bubble, .tip-card, [style*="logoBreathe"] { animation: none !important; transition: none !important; transform: none !important; }
+            .fade-up, .spin, .halo-pulse, .tap-scale, .allowance-mascot-img, .tip-fade {
+                animation: none !important;
+                transition: none !important;
+            }
         }
     </style>
 </head>
-<body class="bg-paper dark:bg-ink text-ink dark:text-paper min-h-screen flex flex-col transition-colors duration-400">
+<body class="bg-paper dark:bg-ink text-ink dark:text-paper min-h-screen flex flex-col transition-colors duration-300">
 
     <div id="root"></div>
 
@@ -143,21 +150,35 @@
         }
 
         window.Icons = {
+            Sun: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>} />,
+            Moon: (p) => <Icon {...p} path={<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>} />,
             Activity: (p) => <Icon {...p} path={<><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></>} />,
             Pencil: (p) => <Icon {...p} path={<><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></>} />,
             Shield: (p) => <Icon {...p} path={<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>} />,
-            Info: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>} />
+            Info: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>} />,
+            Sparkle: (p) => <Icon {...p} path={<><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></>} />,
+            ChevronLeft: (p) => <Icon {...p} path={<><polyline points="15 18 9 12 15 6"/></>} />,
+            ChevronRight: (p) => <Icon {...p} path={<><polyline points="9 18 15 12 9 6"/></>} />
         };
 
-        window.Logo = function Logo({ size = 30, className = "" }) {
-            const [broken, setBroken] = React.useState(false);
-            if (!broken) return <img src="/assets/logo.svg" alt="Tipid Logo" width={size} height={size} onError={() => setBroken(true)} className={`rounded-lg shadow-sm ${className}`} style={{ width: size, height: size }} />;
-            return <span style={{ width: size, height: size }} className={`rounded-lg bg-peso text-paper flex items-center justify-center font-display font-semibold shadow-sm ${className}`}>₱</span>;
-        }
+        window.Logo = function Logo({ size = 30 }) {
+            return <span style={{ width: size, height: size }} className="rounded-[10px] bg-peso text-paper flex items-center justify-center font-display font-semibold shadow-sm">₱</span>;
+        };
 
         window.peso = (num) => {
             if (isNaN(num)) return "0.00";
             return Number(num).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+
+        window.CATEGORIES = ["Pagkain", "Pamasahe", "Bills", "Load", "Ipon", "Project Components", "Iba pa"];
+        window.CATEGORY_DISPLAY = {
+            Pagkain: "Food & Dining",
+            Pamasahe: "Transportation",
+            Bills: "Utilities & Bills",
+            Load: "Mobile & Data",
+            Ipon: "Savings & Investments",
+            "Project Components": "Project Components",
+            "Iba pa": "Other Expenses"
         };
 
         window.useAuthReady = function useAuthReady() {
@@ -169,101 +190,258 @@
                 return () => window.removeEventListener("tipid-auth-ready", h);
             }, []);
             return ready;
-        }
-    </script>
+        };
 
-    <script type="text/babel">
         function AmbientBackground() {
             return (
                 <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10" aria-hidden="true">
-                    <div className="absolute -top-32 -right-24 w-[450px] h-[450px] bg-peso/15 dark:bg-pesoLight/10 rounded-full blur-[100px] mix-blend-multiply dark:mix-blend-screen opacity-70" />
-                    <div className="absolute bottom-10 -left-32 w-[400px] h-[400px] bg-gold/15 dark:bg-gold/10 rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-screen opacity-60" />
+                    <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-peso/10 dark:bg-pesoLight/[0.08] rounded-full blur-[140px]" />
                 </div>
             );
         }
 
-        function AllowanceHeroCard() {
-            return (
-                <section className="hero-panel relative overflow-hidden rounded-[1.75rem] sm:rounded-[2.25rem] bg-gradient-to-br from-peso via-pesoLight to-pesoDeep text-paper p-6 sm:p-9 shadow-iosLg min-h-[200px] sm:min-h-[240px] flex flex-col justify-center mb-8">
-                    {/* Abstract decorative blobs */}
-                    <div className="hero-glow absolute -top-20 -right-12 w-64 h-64 bg-white/15 rounded-full blur-[60px]" />
-                    <div className="absolute -bottom-24 -left-12 w-72 h-72 bg-[#FFD700]/15 rounded-full blur-[70px]" />
+        /* --- HERO HEADER CARD: APPLE HIG FINTECH AESTHETICS --- */
+        function AllowanceHeroCard({ darkMode, toggleDarkMode, stats = {} }) {
+            const [mascotOk, setMascotOk] = React.useState(true);
 
-                    <div className="relative z-10 flex items-end justify-between gap-4 h-full">
-                        <div className="max-w-[70%] sm:max-w-[65%] flex flex-col justify-center">
-                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/20 border border-white/20 mb-4 backdrop-blur-md w-max shadow-sm">
-                                <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-                                <span className="text-[11px] font-semibold text-white/90 uppercase tracking-widest">Daily Pacing</span>
-                            </div>
-                            <h1 className="font-display text-4xl sm:text-5xl font-bold tracking-tight leading-[1.05] mb-3 drop-shadow-sm">
-                                Allowance
+            const dailySafe = stats.dailySafe || 0;
+            const daysLeft = stats.daysLeft || 0;
+            const remaining = stats.remaining || 0;
+            const isOverBudget = stats.isOverBudget || false;
+            const isNearLimit = stats.isNearLimit || false;
+            const isPaydaySoon = stats.isPaydaySoon || false;
+
+            const mascotMessage = React.useMemo(() => {
+                if (daysLeft === 0 && remaining > 0) {
+                    return "Payday mo na o tapos na ang period! I-set ang susunod na petsa para ma-compute ang bagong daily limit.";
+                }
+                if (isOverBudget) {
+                    return "Naku! Lumagpas ka sa safe daily limit mo ngayong araw. Hinay-hinay muna sa mga hindi urgent na gastos!";
+                }
+                if (isNearLimit) {
+                    return "Malapit na sa daily limit! Bantayan ang mga micro-expenses para manatiling pasok sa budget.";
+                }
+                if (isPaydaySoon) {
+                    return `Kapit lang! ${daysLeft} ${daysLeft === 1 ? 'araw' : 'araw'} na lang bago ang susunod na sahod. Safe ang burn rate mo!`;
+                }
+                if (dailySafe > 0) {
+                    return `Pacing: May ₱${window.peso(dailySafe)} kang safe spend bawat araw para umabot nang walang petsa de peligro!`;
+                }
+                return "Ilista ang sahod, bills, at savings target para kalkulahin ang iyong safe daily allowance!";
+            }, [dailySafe, daysLeft, remaining, isOverBudget, isNearLimit, isPaydaySoon]);
+
+            return (
+                <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#124231] via-[#17523E] to-[#0A261C] text-paper shadow-iosLg ring-1 ring-white/10 mb-6 sm:mb-8">
+                    {/* Material grain overlay */}
+                    <div className="absolute inset-0 grain-overlay opacity-[0.06] pointer-events-none" />
+
+                    {/* Ambient light glow */}
+                    <div className="absolute -top-24 -left-24 w-72 h-72 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-pesoLight/15 rounded-full blur-3xl pointer-events-none" />
+
+                    {/* Top Bar with Status Tag & Dark Mode Toggle */}
+                    <div className="relative z-20 flex items-center justify-between px-6 sm:px-8 pt-6 sm:pt-7">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] font-mono tracking-wider uppercase text-white/90">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                            <span>Daily Pacing & Petsa de Peligro Shield</span>
+                        </div>
+
+                        <button
+                            onClick={toggleDarkMode}
+                            aria-label="Toggle dark mode"
+                            className="tap-scale w-10 h-10 rounded-full bg-white/10 hover:bg-white/15 border border-white/15 flex items-center justify-center text-white/90 backdrop-blur-md transition-all outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                        >
+                            {darkMode ? <window.Icons.Sun size={17} /> : <window.Icons.Moon size={17} />}
+                        </button>
+                    </div>
+
+                    {/* Main Hero Body */}
+                    <div className="relative z-10 px-6 sm:px-8 pt-5 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div className="max-w-xl">
+                            <h1 className="font-display text-[1.85rem] sm:text-[2.5rem] font-semibold tracking-tight leading-[1.08] mb-2 text-white">
+                                Allowance Tracker
                             </h1>
-                            <p className="text-sm sm:text-[15px] font-medium text-white/80 leading-relaxed max-w-sm">
-                                Budget your allowance and pace daily spending until your next payday or funds arrival.
+                            <p className="text-[13px] sm:text-[14px] text-paper/75 leading-relaxed mb-5">
+                                Calculate your safe daily limit, protect your savings target, and avoid petsa de peligro with real-time spending pacing.
+                            </p>
+
+                            {/* Safe Daily Limit Highlight Card */}
+                            <div className="bg-black/20 backdrop-blur-md border border-white/10 rounded-2xl p-4 sm:p-5 max-w-md">
+                                <p className="text-[10px] sm:text-[11px] font-mono uppercase font-semibold text-emerald-300 tracking-wider mb-1">
+                                    Current Safe Daily Limit
+                                </p>
+                                <div className="flex items-baseline gap-2 mb-2">
+                                    <span className="font-mono text-2xl sm:text-4xl font-bold tracking-tight text-white">
+                                        ₱{window.peso(dailySafe)}
+                                    </span>
+                                    <span className="text-xs font-mono text-paper/70">
+                                        / day
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {daysLeft > 0 ? (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-[11px] font-medium">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                            <span>{daysLeft} {daysLeft === 1 ? 'day' : 'days'} remaining until payday</span>
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-400/30 text-amber-200 text-[11px] font-medium">
+                                            <span>Payday scheduled today — update next target</span>
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right Side: Tipid Mascot with Dynamic Speech Bubble */}
+                        {mascotOk && (
+                            <div className="relative shrink-0 flex flex-col items-center sm:items-end self-center md:self-end mt-2 md:mt-0">
+                                <div className="speech-bubble relative bg-white/95 text-ink text-[11.5px] font-medium px-3.5 py-2 rounded-2xl max-w-[210px] text-center mb-2.5 border border-white/40">
+                                    {mascotMessage}
+                                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 md:left-auto md:right-8 w-3 h-3 bg-white/95 rotate-45 border-r border-b border-white/40" />
+                                </div>
+                                <img
+                                    src="/assets/allowance_mascot.png"
+                                    alt="Tipid Mascot"
+                                    onError={(e) => {
+                                        if (!e.target.dataset.fallback) {
+                                            e.target.dataset.fallback = "true";
+                                            e.target.src = "/assets/tipid_mascot.png";
+                                        } else {
+                                            setMascotOk(false);
+                                        }
+                                    }}
+                                    className="allowance-mascot-img w-20 h-20 sm:w-24 sm:h-24 object-contain pointer-events-none drop-shadow-md"
+                                    draggable="false"
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Bottom Strip: 3 Metrics Mini-Cards */}
+                    <div className="relative z-10 grid grid-cols-3 gap-2 px-6 sm:px-8 pb-6 pt-3 border-t border-white/10 text-center">
+                        <div className="bg-white/5 backdrop-blur-md rounded-xl p-2.5 border border-white/5">
+                            <p className="text-[10px] font-mono uppercase text-paper/60">Free Allowance</p>
+                            <p className="font-mono text-xs sm:text-base font-bold text-white mt-0.5">
+                                ₱{window.peso(remaining)}
                             </p>
                         </div>
-
-                        <div className="hidden sm:flex flex-col items-end shrink-0 pb-4">
-                            <div className="speech-bubble bg-paper text-ink rounded-2xl px-4 py-3 text-xs font-bold leading-tight max-w-[160px] text-center border border-white/60">
-                                Pace your budget wisely! 💸
-                            </div>
+                        <div className="bg-white/5 backdrop-blur-md rounded-xl p-2.5 border border-white/5">
+                            <p className="text-[10px] font-mono uppercase text-paper/60">Daily Limit</p>
+                            <p className="font-mono text-xs sm:text-base font-bold text-emerald-300 mt-0.5">
+                                ₱{window.peso(dailySafe)}
+                            </p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-md rounded-xl p-2.5 border border-white/5">
+                            <p className="text-[10px] font-mono uppercase text-paper/60">Days Left</p>
+                            <p className="font-mono text-xs sm:text-base font-bold text-amber-300 mt-0.5">
+                                {daysLeft} {daysLeft === 1 ? 'day' : 'days'}
+                            </p>
                         </div>
                     </div>
-                </section>
+                </div>
             );
         }
 
-        function AllowanceTipsSection() {
-            const tips = [
-                {
-                    icon: "Activity", tone: "expense",
-                    title: "Know your daily limit",
-                    body: "Divide your remaining budget by days left until payday to calculate your safe daily spending allowance."
-                },
-                {
-                    icon: "Pencil", tone: "gold",
-                    title: "Track micro-expenses",
-                    body: "Log everyday micro-purchases and transportation fares. Small unlogged expenses quickly add up over time."
-                },
-                {
-                    icon: "Shield", tone: "peso",
-                    title: "Save Before You Spend",
-                    body: "Set aside your savings target immediately upon receiving your allowance before starting to spend."
-                }
-            ];
+        /* --- SMART ALLOWANCE & PACING TIPS CAROUSEL --- */
+        window.ALLOWANCE_TIPS = [
+            {
+                icon: "Activity",
+                title: "The 50/30/20 Allowance Framework",
+                text: "Allocate 50% for fixed obligations (bills & fare), 30% for flexible needs & food, and 20% directly into untouchable emergency savings on payday."
+            },
+            {
+                icon: "Shield",
+                title: "Pay Yourself First on Day 1",
+                text: "Immediately deposit your savings target into your digital bank before spending any discretionary cash to avoid saving only whatever is left."
+            },
+            {
+                icon: "Pencil",
+                title: "Surviving Petsa de Peligro",
+                text: "When 3 to 5 days remain before payday, meal-prep at home and minimize ride-hailing app bookings to keep your remaining daily allowance intact."
+            },
+            {
+                icon: "Info",
+                title: "Beware of Daily Micro-Expense Leaks",
+                text: "Small unlogged transactions—like ₱150 afternoon milk tea or online shipping fees—drain your monthly discretionary buffer faster than large purchases."
+            }
+        ];
 
-            const toneClasses = {
-                expense: "bg-[#FAEDE9] dark:bg-[#B5483B]/15 text-[#B5483B] dark:text-[#F38C80]",
-                gold: "bg-[#FDF6E3] dark:bg-[#C9932E]/15 text-[#C9932E] dark:text-[#E8C071]",
-                peso: "bg-[#E6F3EF] dark:bg-[#1F6F54]/15 text-[#1F6F54] dark:text-[#52C8A1]",
-            };
+        function AllowanceTipsCarousel() {
+            const tips = window.ALLOWANCE_TIPS;
+            const [index, setIndex] = React.useState(0);
+            const [paused, setPaused] = React.useState(false);
+
+            React.useEffect(() => {
+                if (paused) return;
+                const t = setInterval(() => setIndex(i => (i + 1) % tips.length), 6500);
+                return () => clearInterval(t);
+            }, [paused, tips.length]);
+
+            const tip = tips[index];
+            const TipIcon = window.Icons[tip.icon] || window.Icons.Sparkle;
+            const goTo = (i) => setIndex(((i % tips.length) + tips.length) % tips.length);
 
             return (
-                <section className="mt-10 sm:mt-12 fade-up" style={{ animationDelay: "200ms" }} aria-labelledby="tips-heading">
-                    <div className="flex items-center gap-3 mb-5 px-1">
-                        <window.Icons.Info size={22} className="text-peso dark:text-pesoLight" />
-                        <h2 id="tips-heading" className="font-display text-xl font-bold text-ink dark:text-paper tracking-tight">Smart budget pacing tips</h2>
+                <div
+                    className="fade-up bg-white/70 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.75rem] border border-white/80 dark:border-white/10 shadow-ios p-5 sm:p-6 mb-6 sm:mb-8"
+                    style={{ animationDelay: "60ms" }}
+                    onMouseEnter={() => setPaused(true)}
+                    onMouseLeave={() => setPaused(false)}
+                >
+                    <div className="flex items-center justify-between mb-3.5">
+                        <div className="flex items-center gap-2">
+                            <span className="text-peso dark:text-pesoLight">
+                                <window.Icons.Sparkle size={16} />
+                            </span>
+                            <h2 className="font-display text-[1.1rem] font-semibold text-ink dark:text-paper tracking-tight">
+                                Smart Allowance & Pacing Insights
+                            </h2>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <button
+                                onClick={() => goTo(index - 1)}
+                                aria-label="Previous tip"
+                                className="tap-scale w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink2 dark:text-paper/70 hover:bg-black/10 dark:hover:bg-white/20 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-peso/40"
+                            >
+                                <window.Icons.ChevronLeft size={14} />
+                            </button>
+                            <button
+                                onClick={() => goTo(index + 1)}
+                                aria-label="Next tip"
+                                className="tap-scale w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink2 dark:text-paper/70 hover:bg-black/10 dark:hover:bg-white/20 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-peso/40"
+                            >
+                                <window.Icons.ChevronRight size={14} />
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                        {tips.map((tip) => {
-                            const TipIcon = window.Icons[tip.icon];
-                            return (
-                                <article key={tip.title} className="tip-card group cursor-default glass-panel dark:bg-ink2/30 p-6 rounded-[1.5rem] flex flex-col h-full relative overflow-hidden">
-                                    <div className="absolute -right-4 -top-4 w-20 h-20 opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none rounded-full bg-current" style={{ color: "var(--tw-text-opacity)" }} />
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 shadow-sm ${toneClasses[tip.tone]}`}>
-                                        <TipIcon size={22} strokeWidth={2.5} />
-                                    </div>
-                                    <h3 className="font-bold text-[14px] text-ink dark:text-paper mb-2">{tip.title}</h3>
-                                    <p className="text-[13px] text-ink2/80 dark:text-paper/70 leading-relaxed">{tip.body}</p>
-                                </article>
-                            );
-                        })}
+                    <div key={index} className="tip-fade flex items-start gap-3.5">
+                        <div className="shrink-0 w-9 h-9 rounded-xl bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center border border-peso/20 dark:border-pesoLight/20">
+                            <TipIcon size={18} />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[13.5px] font-semibold text-ink dark:text-paper mb-0.5">{tip.title}</p>
+                            <p className="text-[12px] text-ink2/70 dark:text-paper/60 leading-relaxed">{tip.text}</p>
+                        </div>
                     </div>
-                </section>
+
+                    <div className="flex items-center justify-center gap-1.5 mt-4">
+                        {tips.map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => goTo(i)}
+                                aria-label={`Tip ${i + 1}`}
+                                className={`h-1.5 rounded-full transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-peso/40 ${i === index ? "w-6 bg-peso dark:bg-pesoLight" : "w-1.5 bg-black/10 dark:bg-white/15"}`}
+                            />
+                        ))}
+                    </div>
+                </div>
             );
         }
 
+        /* --- ROOT ALLOWANCE PAGE --- */
         function AllowancePage() {
             const authReady = window.useAuthReady();
             const [user, setUser] = React.useState(null);
@@ -271,6 +449,24 @@
             const [loading, setLoading] = React.useState(true);
             const [authChecking, setAuthChecking] = React.useState(true);
             const [componentsReady, setComponentsReady] = React.useState(false);
+            const [sharedStats, setSharedStats] = React.useState({});
+
+            const [darkMode, setDarkMode] = React.useState(() => {
+                return localStorage.getItem("tipid_theme") === "dark" ||
+                    (!localStorage.getItem("tipid_theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+            });
+
+            React.useEffect(() => {
+                if (darkMode) {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem("tipid_theme", "dark");
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem("tipid_theme", "light");
+                }
+            }, [darkMode]);
+
+            const toggleDarkMode = () => setDarkMode(!darkMode);
 
             React.useEffect(() => {
                 const interval = setInterval(() => {
@@ -345,15 +541,13 @@
             if (authChecking || !componentsReady) {
                 return (
                     <div className="min-h-dvh flex items-center justify-center bg-paper dark:bg-ink px-6">
-                        <div className="glass-panel flex flex-col items-center gap-6 rounded-[2rem] px-12 py-12 shadow-ios transition-all">
-                            <div className="relative flex items-center justify-center">
-                                <span className="absolute inline-flex h-20 w-20 rounded-full bg-peso/20 dark:bg-pesoLight/20 halo-pulse" />
-                                <div className="relative bg-white dark:bg-ink p-3 rounded-2xl shadow-sm" style={{ animation: "logoBreathe 2s ease-in-out infinite" }}>
-                                    <window.Logo size={48} />
-                                </div>
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="relative flex items-center justify-center w-14 h-14">
+                                <span className="absolute inset-0 rounded-full bg-peso/20 dark:bg-pesoLight/20 halo-pulse" />
+                                <window.Logo size={38} />
                             </div>
-                            <p className="text-xs font-mono font-semibold tracking-widest text-ink2/70 dark:text-paper/60 text-center uppercase">
-                                Preparing Workspace
+                            <p className="text-[11px] font-mono text-ink2/60 dark:text-paper/50">
+                                Loading allowance tracker...
                             </p>
                         </div>
                     </div>
@@ -369,7 +563,7 @@
                     <AppNavbar user={user} onLogout={handleLogout} activeTab="allowance" />
 
                     <main
-                        className="max-w-[1024px] mx-auto w-full px-5 sm:px-8 pt-[6.5rem] md:pt-12 pb-36 md:pb-24 flex-1 z-10"
+                        className="max-w-[840px] mx-auto w-full px-5 sm:px-8 pt-[6.5rem] md:pt-10 pb-36 md:pb-24 flex-1 z-10"
                         style={{
                             paddingLeft: 'max(1.25rem, calc(var(--sal) + 1.25rem))',
                             paddingRight: 'max(1.25rem, calc(var(--sar) + 1.25rem))',
@@ -377,40 +571,34 @@
                         }}
                     >
                         <div className="fade-up">
-                            <AllowanceHeroCard />
+                            <AllowanceHeroCard
+                                darkMode={darkMode}
+                                toggleDarkMode={toggleDarkMode}
+                                stats={sharedStats}
+                            />
                         </div>
+
+                        <AllowanceTipsCarousel />
 
                         <div className="fade-up" style={{ animationDelay: "100ms" }}>
-                            <AppAllowanceCalculator user={user} entries={allowanceList} loading={loading} />
+                            <AppAllowanceCalculator
+                                user={user}
+                                entries={allowanceList}
+                                loading={loading}
+                                onStatsChange={setSharedStats}
+                            />
                         </div>
-
-                        <AllowanceTipsSection />
                     </main>
                 </div>
             );
         }
 
         function mountWhenComponentsReady(attempt = 0) {
-            const missingNames = [];
-            if (typeof window.Navbar !== "function") missingNames.push("Navbar");
-            if (typeof window.AllowanceCalculator !== "function") missingNames.push("AllowanceCalculator");
-
-            if (missingNames.length === 0) {
+            if (typeof window.Navbar === "function" && typeof window.AllowanceCalculator === "function") {
                 ReactDOM.createRoot(document.getElementById("root")).render(<AllowancePage />);
                 return;
             }
-
-            if (attempt > 100) {
-                document.getElementById("root").innerHTML =
-                    `<div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:Inter,sans-serif;text-align:center;">
-                        <div style="background:rgba(255,255,255,0.8);backdrop-filter:blur(10px);padding:2rem;border-radius:1rem;border:1px solid rgba(0,0,0,0.1);max-width:400px;box-shadow:0 10px 25px rgba(0,0,0,0.05);">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#B5483B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 1rem;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                            <h2 style="font-weight:600;margin-bottom:0.5rem;color:#15231C;font-size:1.1rem;">Components Missing</h2>
-                            <p style="font-size:0.9rem;color:#33443A;line-height:1.5;">Failed to load: <b>${missingNames.join(", ")}</b>.<br>Please ensure these files exist in your <code>/components/</code> directory.</p>
-                        </div>
-                    </div>`;
-                return;
-            }
+            if (attempt > 100) return;
             setTimeout(() => mountWhenComponentsReady(attempt + 1), 30);
         }
 

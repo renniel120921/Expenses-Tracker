@@ -9,18 +9,33 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
     const userName = user?.displayName ? user.displayName.split(" ")[0] : user?.email?.split("@")[0] || "User";
     const initial = userName.charAt(0).toUpperCase();
 
-    const tabs = [
-        { id: "home", href: "dashboard.html", label: "Home", icon: HomeIcon, group: "main" },
-        { id: "bills", href: "bills.html", label: "Bills", icon: BillsIcon, group: "main" },
-        { id: "utang", href: "utang.html", label: "Debts", icon: UtangIcon, group: "main" },
-        { id: "grocery", href: "grocery.html", label: "Groceries", icon: CartIcon, group: "main" },
-        { id: "scanner", href: "scanner.html", label: "Receipts", icon: ScanIcon, group: "main" },
-        { id: "budget", href: "allowance.html", label: "Budget", icon: BudgetIcon, group: "finance" },
-        { id: "analytics", href: "chart.html", label: "Analytics", icon: AnalyticsIcon, group: "finance" },
-        { id: "history", href: "history.html", label: "History", icon: HistoryIcon, group: "finance" },
-        { id: "installments", href: "installments.html", label: "Installments", icon: InstallmentIcon, group: "finance" },
-        { id: "account", href: "profile.html", label: "Account", icon: AccountIcon, group: "account" },
-    ];
+    const [currentLang, setCurrentLang] = React.useState(() => {
+        return window.TipidI18n ? window.TipidI18n.getLanguage(user?.uid) : "en";
+    });
+
+    React.useEffect(() => {
+        const handler = (e) => {
+            const nextLang = e.detail?.lang || (window.TipidI18n ? window.TipidI18n.getLanguage(user?.uid) : "en");
+            setCurrentLang(nextLang);
+        };
+        window.addEventListener("tipid-language-change", handler);
+        return () => window.removeEventListener("tipid-language-change", handler);
+    }, [user?.uid]);
+
+    const isTl = currentLang === "tl";
+
+    const tabs = React.useMemo(() => [
+        { id: "home", href: "dashboard.html", label: isTl ? "Tahanan" : "Home", icon: HomeIcon, group: "main" },
+        { id: "bills", href: "bills.html", label: isTl ? "Mga Bayarin" : "Bills", icon: BillsIcon, group: "main" },
+        { id: "utang", href: "utang.html", label: isTl ? "Utang" : "Debts", icon: UtangIcon, group: "main" },
+        { id: "grocery", href: "grocery.html", label: isTl ? "Pamilihan" : "Groceries", icon: CartIcon, group: "main" },
+        { id: "scanner", href: "scanner.html", label: isTl ? "Resibo" : "Receipts", icon: ScanIcon, group: "main" },
+        { id: "budget", href: "allowance.html", label: isTl ? "Badyet" : "Budget", icon: BudgetIcon, group: "finance" },
+        { id: "analytics", href: "chart.html", label: isTl ? "Pagsusuri" : "Analytics", icon: AnalyticsIcon, group: "finance" },
+        { id: "history", href: "history.html", label: isTl ? "Kasaysayan" : "History", icon: HistoryIcon, group: "finance" },
+        { id: "installments", href: "installments.html", label: isTl ? "Hulugan" : "Installments", icon: InstallmentIcon, group: "finance" },
+        { id: "account", href: "profile.html", label: isTl ? "Account" : "Account", icon: AccountIcon, group: "account" },
+    ], [isTl]);
 
     // Mobile Partition: 4 main tabs, 6 "more" tabs
     const mainMobileTabs = tabs.slice(0, 4);
@@ -258,7 +273,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
 
                     <div>
                         <div className="text-[10.5px] font-bold uppercase tracking-wider text-ink2/50 dark:text-paper/45 px-3 pb-2">
-                            Planning
+                            {isTl ? "Pagpaplano" : "Planning"}
                         </div>
                         <div className="space-y-1">
                             {financeGroupTabs.map((tab) => (
@@ -276,7 +291,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
 
                     <div>
                         <div className="text-[10.5px] font-bold uppercase tracking-wider text-ink2/50 dark:text-paper/45 px-3 pb-2">
-                            Settings
+                            {isTl ? "Mga Setting" : "Settings"}
                         </div>
                         <div className="space-y-1">
                             {accountGroupTabs.map((tab) => (
@@ -304,10 +319,10 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                     >
                         <span className="flex items-center gap-2.5">
                             {isDark ? <SunIcon size={16} /> : <MoonIcon size={16} />}
-                            <span>{isDark ? "Light Mode" : "Dark Mode"}</span>
+                            <span>{isDark ? (isTl ? "Maliwanag na Mode" : "Light Mode") : (isTl ? "Madilim na Mode" : "Dark Mode")}</span>
                         </span>
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 uppercase tracking-wider font-bold text-ink2/60 dark:text-paper/60">
-                            {isDark ? "Dark" : "Light"}
+                            {isDark ? (isTl ? "Madilim" : "Dark") : (isTl ? "Maliwanag" : "Light")}
                         </span>
                     </button>
 
@@ -320,13 +335,23 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                             title="View Profile"
                         >
                             <div className="w-8 h-8 rounded-full p-[1.5px] bg-gradient-to-br from-peso/50 via-peso/15 to-transparent dark:from-pesoLight/40 dark:via-white/10 shrink-0">
-                                <div className="w-full h-full rounded-full bg-gradient-to-br from-peso/15 to-pesoLight/5 dark:from-white/15 dark:to-white/5 flex items-center justify-center text-peso dark:text-paper font-bold text-xs shadow-inner overflow-hidden">
-                                    {user && user.photoURL ? <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" /> : initial}
+                                <div className="w-full h-full rounded-full bg-gradient-to-br from-peso/20 to-pesoLight/10 dark:from-white/15 dark:to-white/5 flex items-center justify-center text-peso dark:text-paper font-bold text-xs shadow-inner overflow-hidden relative select-none">
+                                    <span>{initial}</span>
+                                    {user && user.photoURL && (
+                                        <img
+                                            src={user.photoURL}
+                                            alt=""
+                                            referrerPolicy="no-referrer"
+                                            crossOrigin="anonymous"
+                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                            className="absolute inset-0 w-full h-full object-cover"
+                                        />
+                                    )}
                                 </div>
                             </div>
                             <div className="flex flex-col min-w-0">
                                 <span className="text-xs font-bold text-ink dark:text-paper truncate group-hover:text-peso dark:group-hover:text-pesoLight transition-colors">{userName}</span>
-                                <span className="text-[10px] text-ink2/50 dark:text-paper/50 truncate">Account</span>
+                                <span className="text-[10px] text-ink2/50 dark:text-paper/50 truncate">{isTl ? "Profile at Setting" : "Account"}</span>
                             </div>
                         </a>
 
@@ -349,13 +374,23 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
             >
                 <a href="profile.html" onClick={(e) => handleNavigate(e, "profile.html")} className="flex items-center gap-3.5 min-w-0 active:scale-95 transition-transform rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40">
                     <div className="w-10 h-10 rounded-full p-[1.5px] bg-gradient-to-br from-peso/50 via-peso/15 to-transparent dark:from-pesoLight/40 dark:via-white/10 shrink-0">
-                        <div className="w-full h-full rounded-full bg-gradient-to-br from-peso/20 to-pesoLight/5 dark:from-white/15 dark:to-white/5 flex items-center justify-center text-peso dark:text-paper font-bold text-base shadow-inner overflow-hidden">
-                            {user && user.photoURL ? <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" /> : initial}
+                        <div className="w-full h-full rounded-full bg-gradient-to-br from-peso/20 to-pesoLight/10 dark:from-white/15 dark:to-white/5 flex items-center justify-center text-peso dark:text-paper font-bold text-base shadow-inner overflow-hidden relative select-none">
+                            <span>{initial}</span>
+                            {user && user.photoURL && (
+                                <img
+                                    src={user.photoURL}
+                                    alt=""
+                                    referrerPolicy="no-referrer"
+                                    crossOrigin="anonymous"
+                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                    className="absolute inset-0 w-full h-full object-cover"
+                                />
+                            )}
                         </div>
                     </div>
                     <div className="flex flex-col min-w-0">
-                        <span className="font-bold text-ink dark:text-paper text-[15px] truncate tracking-tight">Hello, {userName}!</span>
-                        <span className="text-[10px] font-medium text-peso dark:text-pesoLight uppercase tracking-wider">View Profile</span>
+                        <span className="font-bold text-ink dark:text-paper text-[15px] truncate tracking-tight">{isTl ? `Kumusta, ${userName}!` : `Hello, ${userName}!`}</span>
+                        <span className="text-[10px] font-medium text-peso dark:text-pesoLight uppercase tracking-wider">{isTl ? "Tingnan ang Profile" : "View Profile"}</span>
                     </div>
                 </a>
                 <button onClick={onLogout} aria-label="Log out" className="text-ink2/40 dark:text-paper/40 hover:text-expense hover:bg-expense/10 rounded-full p-2 active:scale-90 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-expense/40 shrink-0">
@@ -382,7 +417,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                     <BottomNavBtn
                         as="button"
                         onClick={() => setIsMobileMenuOpen(true)}
-                        label="More"
+                        label={isTl ? "Iba pa" : "More"}
                         active={isMoreActive}
                         icon={<MenuIcon active={isMoreActive} size={22} />}
                     />
@@ -400,7 +435,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                     style={{ paddingBottom: 'max(2rem, calc(env(safe-area-inset-bottom) + 2rem))' }}
                 >
                     <div className="w-12 h-1.5 bg-line dark:bg-white/20 rounded-full mx-auto mb-6" />
-                    <h3 className="font-display text-[1.35rem] font-semibold mb-5 text-ink dark:text-paper px-1 tracking-tight">More Features</h3>
+                    <h3 className="font-display text-[1.35rem] font-semibold mb-5 text-ink dark:text-paper px-1 tracking-tight">{isTl ? "Iba pang Pahina" : "More Features"}</h3>
                     <div className="grid grid-cols-3 gap-3 sm:gap-4">
                         {moreMobileTabs.map((tab, i) => (
                             <a

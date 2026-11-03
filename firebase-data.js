@@ -153,6 +153,44 @@ window.TipidData = {
     );
   },
 
+  async saveFinancialGoals(uid, goals = {}) {
+    try {
+      const payload = {
+        updatedAt: serverTimestamp()
+      };
+      if (typeof goals.name === 'string') payload.name = optionalText(goals.name, 100);
+      if (goals.targetAmount !== undefined && goals.targetAmount !== null && !isNaN(Number(goals.targetAmount))) {
+        payload.targetAmount = normalizedAmount(goals.targetAmount);
+      }
+      if (typeof goals.wallet === 'string') payload.wallet = optionalText(goals.wallet, 50);
+      if (goals.contribution !== undefined && goals.contribution !== null && !isNaN(Number(goals.contribution))) {
+        payload.contribution = normalizedAmount(goals.contribution);
+      }
+      if (typeof goals.frequency === 'string') payload.frequency = optionalText(goals.frequency, 30);
+      if (goals.startDate !== undefined) payload.startDate = validDate(goals.startDate, false);
+
+      return await setDoc(userDocRef(uid), { financialGoals: payload }, { merge: true });
+    } catch (error) {
+      console.error("Error saving financial goals:", error);
+      throw error;
+    }
+  },
+
+  subscribeFinancialGoals(uid, cb, onError) {
+    return onSnapshot(
+      userDocRef(uid),
+      { includeMetadataChanges: true },
+      (snap) => {
+        const goals = snap.exists() ? (snap.data().financialGoals || {}) : {};
+        cb(goals);
+      },
+      (error) => {
+        console.error("Error subscribing to financial goals:", error);
+        if (onError) onError(error);
+      }
+    );
+  },
+
   // --- bills center --------------------------------------------------------
 
   async addBill(uid, { title, amount, dueDate, category, notes }) {
@@ -291,6 +329,83 @@ window.TipidData = {
       },
       (error) => {
         console.error("Error subscribing to utang:", error);
+        if (onError) onError(error);
+      }
+    );
+  },
+
+  // --- notifications & reminders settings ----------------------------------
+  async saveNotificationSettings(uid, settings = {}) {
+    try {
+      const payload = {
+        updatedAt: serverTimestamp()
+      };
+      if (typeof settings.dailyReminders === 'boolean') payload.dailyReminders = settings.dailyReminders;
+      if (typeof settings.reminderTime === 'string') payload.reminderTime = settings.reminderTime;
+      if (typeof settings.overbudgetAlerts === 'boolean') payload.overbudgetAlerts = settings.overbudgetAlerts;
+      if (typeof settings.budgetThreshold === 'number') payload.budgetThreshold = settings.budgetThreshold;
+      if (typeof settings.lastReminderDate === 'string') payload.lastReminderDate = settings.lastReminderDate;
+
+      return await setDoc(userDocRef(uid), { notificationSettings: payload }, { merge: true });
+    } catch (error) {
+      console.error("Error saving notification settings:", error);
+      throw error;
+    }
+  },
+
+  subscribeNotificationSettings(uid, cb, onError) {
+    return onSnapshot(
+      userDocRef(uid),
+      { includeMetadataChanges: true },
+      (snap) => {
+        const notif = snap.exists() ? (snap.data().notificationSettings || {}) : {};
+        cb(notif);
+      },
+      (error) => {
+        console.error("Error subscribing to notification settings:", error);
+        if (onError) onError(error);
+      }
+    );
+  },
+
+  async recordReminderTriggered(uid, dateKey = core.manilaDateKey()) {
+    try {
+      return await setDoc(userDocRef(uid), {
+        notificationSettings: { lastReminderDate: dateKey }
+      }, { merge: true });
+    } catch (error) {
+      console.warn("Could not record reminder timestamp to cloud:", error);
+    }
+  },
+
+  // --- preferences (language, etc.) --------------------------------------
+  async saveLanguagePreference(uid, lang) {
+    try {
+      const safeLang = (lang === "tl" || lang === "fil") ? "tl" : "en";
+      return await setDoc(userDocRef(uid), {
+        preferences: {
+          lang: safeLang,
+          updatedAt: serverTimestamp()
+        },
+        lang: safeLang
+      }, { merge: true });
+    } catch (error) {
+      console.error("Error saving language preference:", error);
+      throw error;
+    }
+  },
+
+  subscribePreferences(uid, cb, onError) {
+    return onSnapshot(
+      userDocRef(uid),
+      { includeMetadataChanges: true },
+      (snap) => {
+        const data = snap.exists() ? snap.data() : {};
+        const lang = data.preferences?.lang || data.lang || "en";
+        cb({ ...(data.preferences || {}), lang });
+      },
+      (error) => {
+        console.error("Error subscribing to preferences:", error);
         if (onError) onError(error);
       }
     );

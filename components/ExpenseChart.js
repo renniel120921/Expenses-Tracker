@@ -1,189 +1,337 @@
 // components/ExpenseChart.js
-//
-// ASSUMPTIONS:
-//   - window.useState/useMemo/useEffect/useRef, window.Chart, window.CATEGORY_COLOR,
-//     and a bare global `peso()` formatter are all set up elsewhere before this loads
-//   - Icons.{Chart, Category, AlertCircle, Inbox} exist on a global Icons object
-//   - `ExpenseChart` is referenced by its exact global name elsewhere
-//   - `expense` and `gold` are real Tailwind color tokens in this project.
 
-function ExpenseChartStyles() {
-    return (
-        <style>{`
-            @keyframes legendRowIn {
-                from { opacity: 0; transform: translateX(-8px); }
-                to   { opacity: 1; transform: translateX(0); }
-            }
-            .legend-row { animation: legendRowIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
-
-            /* Modernized ruler/axis tick pattern for the top edge */
-            .tick-edge {
-                -webkit-mask-image: repeating-linear-gradient(90deg, black 0 4px, transparent 4px 10px);
-                mask-image: repeating-linear-gradient(90deg, black 0 4px, transparent 4px 10px);
-            }
-
-            /* Quiet "just recalculated" pulse for totals when the filter/view changes */
-            @keyframes statPop {
-                from { opacity: 0; transform: scale(0.97) translateY(2px); }
-                to   { opacity: 1; transform: scale(1) translateY(0); }
-            }
-            .stat-pop { animation: statPop 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
-
-            @media (prefers-reduced-motion: reduce) {
-                .legend-row, .stat-pop { animation: none !important; }
-            }
-        `}</style>
-    );
-}
-
-function TrendGlyph({ up, size = 12 }) {
-    return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            {up ? <path d="M6 18L18 6M18 6H9M18 6v9" /> : <path d="M6 6l12 12M18 18H9M18 18V9" />}
+// --- REAL SVG ICONS SUITE ---
+const CHART_ICONS = {
+    Doughnut: ({ size = 18, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="12" r="4" fill="currentColor" fillOpacity="0.15" />
+            <path d="M12 2v6" />
         </svg>
-    );
-}
+    ),
+    LineTrend: ({ size = 18, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+        </svg>
+    ),
+    BarFlow: ({ size = 18, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <rect x="3" y="13" width="4" height="8" rx="1" fill="currentColor" fillOpacity="0.15" />
+            <rect x="10" y="8" width="4" height="13" rx="1" fill="currentColor" fillOpacity="0.25" />
+            <rect x="17" y="3" width="4" height="18" rx="1" fill="currentColor" fillOpacity="0.15" />
+        </svg>
+    ),
+    Wallet: ({ size = 18, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+            <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" fill="currentColor" fillOpacity="0.15" />
+            <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+            <circle cx="18" cy="14" r="0.75" fill="currentColor" stroke="none" />
+        </svg>
+    ),
+    NeedWant: ({ size = 18, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M12 2v20" />
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </svg>
+    ),
+    Sparkles: ({ size = 18, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z" fill="currentColor" fillOpacity="0.2" />
+        </svg>
+    ),
+    ArrowUp: ({ size = 14, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+            <polyline points="17 6 23 6 23 12" />
+        </svg>
+    ),
+    ArrowDown: ({ size = 14, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
+            <polyline points="17 18 23 18 23 12" />
+        </svg>
+    ),
+    Check: ({ size = 16, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <polyline points="20 6 9 17 4 12" />
+        </svg>
+    ),
+    Clock: ({ size = 16, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <circle cx="12" cy="12" r="9" />
+            <polyline points="12 7 12 12 15.5 14" />
+        </svg>
+    ),
+    Inbox: ({ size = 24, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M22 12h-6l-2 3h-4l-2-3H2" />
+            <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z" />
+        </svg>
+    ),
+    Zap: ({ size = 16, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        </svg>
+    ),
+    Eye: ({ size = 15, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+            <circle cx="12" cy="12" r="3" />
+        </svg>
+    )
+};
 
-window.ExpenseChart = function ExpenseChart({ entries }) {
-    const { useState, useMemo, useEffect, useRef } = window;
-    const peso = window.peso; // Ensure we grab the global formatter
+// Realistic Philippine Demonstration Sample Data
+const SAMPLE_DEMO_ENTRIES = [
+    { id: "demo-1", desc: "Jollibee Mega Meal", amount: 249.00, type: "expense", category: "Pagkain", method: "GCash", spendType: "need", date: new Date(Date.now() - 86400000 * 1).toISOString() },
+    { id: "demo-2", desc: "Meralco Electricity Bill", amount: 2850.00, type: "expense", category: "Bills", method: "Maya", spendType: "need", date: new Date(Date.now() - 86400000 * 2).toISOString() },
+    { id: "demo-3", desc: "Puregold Weekly Grocery", amount: 1680.50, type: "expense", category: "Pagkain", method: "Cash", spendType: "need", date: new Date(Date.now() - 86400000 * 3).toISOString() },
+    { id: "demo-4", desc: "Petron Fuel Refill", amount: 750.00, type: "expense", category: "Pamasahe", method: "GCash", spendType: "need", date: new Date(Date.now() - 86400000 * 4).toISOString() },
+    { id: "demo-5", desc: "Starbucks Iced Caramel", amount: 215.00, type: "expense", category: "Pagkain", method: "Maya", spendType: "luho", date: new Date(Date.now() - 86400000 * 5).toISOString() },
+    { id: "demo-6", desc: "Smart Regular Load 500", amount: 500.00, type: "expense", category: "Load", method: "GCash", spendType: "need", date: new Date(Date.now() - 86400000 * 6).toISOString() },
+    { id: "demo-7", desc: "Shopee Tech Accessory", amount: 480.00, type: "expense", category: "Project Components", method: "ShopeePay", spendType: "luho", date: new Date(Date.now() - 86400000 * 6).toISOString() },
+    { id: "demo-8", desc: "Bi-monthly Salary", amount: 18500.00, type: "income", category: "Kita", method: "BDO", date: new Date(Date.now() - 86400000 * 7).toISOString() },
+    { id: "demo-9", desc: "Freelance Project Pay", amount: 6200.00, type: "income", category: "Kita", method: "GCash", date: new Date(Date.now() - 86400000 * 3).toISOString() },
+];
 
-    const [view, setView] = useState("category"); // 'category', 'flow'
-    const [dateFilter, setDateFilter] = useState("thisMonth"); // 'all', 'thisMonth', 'lastMonth'
+window.ExpenseChart = function ExpenseChart({ entries = [], onStatsChange }) {
+    const { useState, useMemo, useEffect, useRef } = React;
+    const peso = window.peso || ((n) => Number(n || 0).toLocaleString("en-PH", { minimumFractionDigits: 2 }));
+
+    // View Options: 'category', 'trend', 'flow', 'wallet', 'needwant'
+    const [view, setView] = useState("category");
+    const [dateFilter, setDateFilter] = useState("thisMonth"); // 'thisWeek', 'thisMonth', 'thisYear', 'all'
+    const [useDemoMode, setUseDemoMode] = useState(false);
 
     const chartRef = useRef(null);
     const chartInstance = useRef(null);
-    const [chartLoaded, setChartLoaded] = useState(true);
 
-    // 1. Improved Filter supporting both numeric timestamps and date strings
+    // Active dataset: uses live Firebase entries or toggled demo data
+    const activeEntries = useMemo(() => {
+        if (useDemoMode || entries.length === 0) {
+            return useDemoMode ? SAMPLE_DEMO_ENTRIES : entries;
+        }
+        return entries;
+    }, [entries, useDemoMode]);
+
+    // 1. Date Range Filtering
     const filteredEntries = useMemo(() => {
         const now = new Date();
         const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
-        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999).getTime();
         const dayOfWeek = (now.getDay() + 6) % 7;
         const startOfThisWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek).getTime();
         const startOfThisYear = new Date(now.getFullYear(), 0, 1).getTime();
 
-        return entries.filter(e => {
+        return activeEntries.filter(e => {
             if (dateFilter === "all") return true;
-
-            // Safe date parsing (handles numbers, strings, or Firestore timestamps)
-            const parsedDate = window.TipidCore.entryDate(e);
+            const parsedDate = window.TipidCore ? window.TipidCore.entryDate(e) : new Date(e.date || e.createdAt);
             const entryTime = parsedDate ? parsedDate.getTime() : null;
-
-            if (!entryTime || isNaN(entryTime)) return true; // fallback kung walang date
+            if (!entryTime || isNaN(entryTime)) return true;
 
             if (dateFilter === "thisWeek") return entryTime >= startOfThisWeek;
             if (dateFilter === "thisMonth") return entryTime >= startOfThisMonth;
             if (dateFilter === "thisYear") return entryTime >= startOfThisYear;
-            if (dateFilter === "lastMonth") return entryTime >= startOfLastMonth && entryTime <= endOfLastMonth;
-
             return true;
         });
-    }, [entries, dateFilter]);
+    }, [activeEntries, dateFilter]);
 
-    // 2. Compute analytics based on FILTERED entries (Added Guilt Tracker Logic)
+    // 2. Comprehensive Financial Analytics Engine
     const analytics = useMemo(() => {
         const expenses = filteredEntries.filter(e => e.type === "expense");
         const incomes = filteredEntries.filter(e => e.type === "income");
 
-        const totalExpense = window.TipidCore.sumMoney(expenses.map(e => e.amount));
-        const totalIncome = window.TipidCore.sumMoney(incomes.map(e => e.amount));
+        const totalExpense = window.TipidCore ? window.TipidCore.sumMoney(expenses.map(e => e.amount)) : expenses.reduce((s, e) => s + (e.amount || 0), 0);
+        const totalIncome = window.TipidCore ? window.TipidCore.sumMoney(incomes.map(e => e.amount)) : incomes.reduce((s, e) => s + (e.amount || 0), 0);
+        const net = totalIncome - totalExpense;
+        const savingsRate = totalIncome > 0 ? Math.max(0, Math.round((net / totalIncome) * 100)) : 0;
 
-        // Guilt Tracker Computation
-        // Kung lumang data na walang spendType, ituturing itong "need" para hindi masira ang chart
-        const needsTotal = window.TipidCore.sumMoney(expenses.filter(e => e.spendType === "need" || !e.spendType).map(e => e.amount));
-        const luhoTotal = window.TipidCore.sumMoney(expenses.filter(e => e.spendType === "luho").map(e => e.amount));
+        // Needs vs Wants (Guilt Tracker)
+        const needsTotal = expenses.filter(e => e.spendType === "need" || !e.spendType).reduce((s, e) => s + (e.amount || 0), 0);
+        const luhoTotal = expenses.filter(e => e.spendType === "luho").reduce((s, e) => s + (e.amount || 0), 0);
+        const needsPct = totalExpense > 0 ? Math.round((needsTotal / totalExpense) * 100) : 0;
         const luhoPct = totalExpense > 0 ? Math.round((luhoTotal / totalExpense) * 100) : 0;
 
+        // Category Grouping
         const catGroup = expenses.reduce((acc, e) => {
-            acc[e.category] = window.TipidCore.sumMoney([acc[e.category] || 0, e.amount]);
+            const cat = e.category || "Iba pa";
+            acc[cat] = (acc[cat] || 0) + (e.amount || 0);
             return acc;
         }, {});
 
         const catLabels = Object.keys(catGroup);
-        const categories = catLabels.map(k => catGroup[k]);
-        const catColors = catLabels.map(cat => window.CATEGORY_COLOR[cat] || "#D3DAD0");
+        const catAmounts = catLabels.map(k => catGroup[k]);
+        const catColors = catLabels.map(cat => (window.CATEGORY_COLOR && window.CATEGORY_COLOR[cat]) || "#1F6F54");
 
-        const net = totalIncome - totalExpense;
+        // Wallet Grouping
+        const walletGroup = expenses.reduce((acc, e) => {
+            const method = e.method || "Cash";
+            acc[method] = (acc[method] || 0) + (e.amount || 0);
+            return acc;
+        }, {});
+        const walletLabels = Object.keys(walletGroup);
+        const walletAmounts = walletLabels.map(k => walletGroup[k]);
 
-        return { totalExpense, totalIncome, categories, catLabels, catColors, net, needsTotal, luhoTotal, luhoPct };
+        // Daily Spend Trajectory (Timeline Curve)
+        const dayMap = {};
+        expenses.forEach(e => {
+            const d = window.TipidCore ? window.TipidCore.entryDate(e) : new Date(e.date || e.createdAt);
+            if (!d) return;
+            const key = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+            dayMap[key] = (dayMap[key] || 0) + (e.amount || 0);
+        });
+        const timelineLabels = Object.keys(dayMap);
+        const timelineAmounts = timelineLabels.map(k => dayMap[k]);
+
+        // Daily average burn
+        const divisor = Math.max(timelineLabels.length, 1);
+        const avgDaily = totalExpense > 0 ? (totalExpense / divisor) : 0;
+
+        // Top category name
+        let topCategory = "None";
+        let maxCatAmount = 0;
+        Object.entries(catGroup).forEach(([cat, amt]) => {
+            if (amt > maxCatAmount) {
+                maxCatAmount = amt;
+                topCategory = window.CATEGORY_DISPLAY ? (window.CATEGORY_DISPLAY[cat] || cat) : cat;
+            }
+        });
+
+        // Top 5 largest transactions
+        const topTransactions = [...expenses].sort((a, b) => (b.amount || 0) - (a.amount || 0)).slice(0, 5);
+
+        return {
+            totalExpense,
+            totalIncome,
+            net,
+            savingsRate,
+            needsTotal,
+            luhoTotal,
+            needsPct,
+            luhoPct,
+            catLabels,
+            catAmounts,
+            catColors,
+            walletLabels,
+            walletAmounts,
+            timelineLabels,
+            timelineAmounts,
+            avgDaily,
+            topCategory,
+            topTransactions
+        };
     }, [filteredEntries]);
 
-    // Category breakdown re-shaped for the custom legend
+    // Send high-level stats to parent hero banner
+    useEffect(() => {
+        if (typeof onStatsChange === "function") {
+            onStatsChange({
+                totalExpense: analytics.totalExpense,
+                totalIncome: analytics.totalIncome,
+                net: analytics.net,
+                topCategory: analytics.topCategory,
+                savingsRate: analytics.savingsRate
+            });
+        }
+    }, [analytics, onStatsChange]);
+
+    // Sorted categories for modern custom legend
     const sortedCategories = useMemo(() => {
         const total = analytics.totalExpense || 0;
         return analytics.catLabels
             .map((label, i) => ({
                 label,
                 displayLabel: window.CATEGORY_DISPLAY ? (window.CATEGORY_DISPLAY[label] || label) : label,
-                amount: analytics.categories[i],
+                amount: analytics.catAmounts[i],
                 color: analytics.catColors[i],
-                pct: total > 0 ? (analytics.categories[i] / total) * 100 : 0,
+                pct: total > 0 ? (analytics.catAmounts[i] / total) * 100 : 0
             }))
             .sort((a, b) => b.amount - a.amount);
     }, [analytics]);
 
-    const hasCategoryData = analytics.catLabels.length > 0;
-
-    // Plain-language chart description for screen readers
-    const chartSummary = useMemo(() => {
-        if (view === "category") {
-            if (!hasCategoryData) return "No expenses recorded in the selected period.";
-            const top = sortedCategories.slice(0, 3)
-                .map(c => `${c.displayLabel || c.label} ₱${peso(c.amount)}, ${c.pct.toFixed(0)} percent`)
-                .join("; ");
-            return `Doughnut chart of expenses by category. Total expenses: ₱${peso(analytics.totalExpense)}. Top categories: ${top}.`;
-        }
-        return `Cash flow bar chart. Income: ₱${peso(analytics.totalIncome)}. Expenses: ₱${peso(analytics.totalExpense)}. ${analytics.net >= 0 ? "Surplus" : "Deficit"}: ₱${peso(Math.abs(analytics.net))}.`;
-    }, [view, hasCategoryData, sortedCategories, analytics, peso]);
-
-    // 3. Render Chart
+    // 3. Render Chart.js
     useEffect(() => {
-        if (!chartRef.current || filteredEntries.length === 0) return;
+        if (!chartRef.current || typeof window.Chart !== 'function') return;
 
-        if (typeof window.Chart !== 'function') {
-            console.error("Chart.js library is not loaded yet.");
-            setChartLoaded(false);
-            return;
+        if (chartInstance.current) {
+            chartInstance.current.destroy();
         }
-        setChartLoaded(true);
-
-        if (chartInstance.current) chartInstance.current.destroy();
 
         const ctx = chartRef.current.getContext('2d');
         let config = {};
 
+        // VIEW 1: DOUGHNUT CATEGORY DISTRIBUTION
         if (view === "category") {
             config = {
                 type: 'doughnut',
                 data: {
-                    labels: analytics.catLabels.map(l => window.CATEGORY_DISPLAY ? (window.CATEGORY_DISPLAY[l] || l) : l),
+                    labels: analytics.catLabels.map(l => (window.CATEGORY_DISPLAY && window.CATEGORY_DISPLAY[l]) || l),
                     datasets: [{
-                        data: analytics.categories,
+                        data: analytics.catAmounts,
                         backgroundColor: analytics.catColors,
                         borderWidth: 0,
-                        hoverOffset: 8,
-                        borderRadius: 5
+                        hoverOffset: 6,
+                        borderRadius: 4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false }, tooltip: { padding: 12, cornerRadius: 8 } },
-                    cutout: '76%'
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { padding: 12, cornerRadius: 10 }
+                    },
+                    cutout: '74%'
                 }
             };
-        } else {
+        }
+        // VIEW 2: TIMELINE SPENDING VELOCITY (AREA CURVE)
+        else if (view === "trend") {
+            config = {
+                type: 'line',
+                data: {
+                    labels: analytics.timelineLabels.length > 0 ? analytics.timelineLabels : ["No logs"],
+                    datasets: [{
+                        label: 'Daily Outflow',
+                        data: analytics.timelineAmounts.length > 0 ? analytics.timelineAmounts : [0],
+                        borderColor: '#1F6F54',
+                        backgroundColor: 'rgba(31, 111, 84, 0.15)',
+                        fill: true,
+                        tension: 0.38,
+                        pointBackgroundColor: '#1F6F54',
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        borderWidth: 2.5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(128,128,128,0.1)' },
+                            border: { display: false }
+                        },
+                        x: {
+                            grid: { display: false },
+                            border: { display: false }
+                        }
+                    }
+                }
+            };
+        }
+        // VIEW 3: INFLOW VS OUTFLOW (DUAL BAR CASH FLOW)
+        else if (view === "flow") {
             config = {
                 type: 'bar',
                 data: {
-                    labels: ['Income', 'Expenses'],
+                    labels: ['Total Inflow (Income)', 'Total Outflow (Expenses)', 'Net Surplus'],
                     datasets: [{
                         label: 'Amount',
-                        data: [analytics.totalIncome, analytics.totalExpense],
-                        backgroundColor: ['#2F8E6C', '#B5483B'],
+                        data: [analytics.totalIncome, analytics.totalExpense, Math.max(0, analytics.net)],
+                        backgroundColor: ['#059669', '#E11D48', '#1F6F54'],
                         borderRadius: 8,
                         barPercentage: 0.55
                     }]
@@ -193,207 +341,396 @@ window.ExpenseChart = function ExpenseChart({ entries }) {
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { beginAtZero: true, border: { display: false }, grid: { color: 'rgba(150,150,150,0.1)' } },
-                        x: { border: { display: false }, grid: { display: false } }
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(128,128,128,0.1)' },
+                            border: { display: false }
+                        },
+                        x: {
+                            grid: { display: false },
+                            border: { display: false }
+                        }
+                    }
+                }
+            };
+        }
+        // VIEW 4: PAYMENT WALLET CHANNELS (HORIZONTAL BAR)
+        else if (view === "wallet") {
+            config = {
+                type: 'bar',
+                data: {
+                    labels: analytics.walletLabels,
+                    datasets: [{
+                        label: 'Spent via Wallet',
+                        data: analytics.walletAmounts,
+                        backgroundColor: '#0284C7',
+                        borderRadius: 6,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(128,128,128,0.1)' },
+                            border: { display: false }
+                        },
+                        y: {
+                            grid: { display: false },
+                            border: { display: false }
+                        }
                     }
                 }
             };
         }
 
-        chartInstance.current = new window.Chart(ctx, config);
+        if (view !== "needwant") {
+            chartInstance.current = new window.Chart(ctx, config);
+        }
 
-        return () => { if (chartInstance.current) chartInstance.current.destroy(); };
-    }, [view, analytics, filteredEntries]);
+        return () => {
+            if (chartInstance.current) chartInstance.current.destroy();
+        };
+    }, [view, analytics]);
 
-    const filterLabel = { thisWeek: "this week", thisMonth: "this month", thisYear: "this year", lastMonth: "last month", all: "all time" }[dateFilter] || "this period";
+    const filterNameMap = {
+        thisWeek: "this week",
+        thisMonth: "this month",
+        thisYear: "this year",
+        all: "all time"
+    };
 
     return (
-        <div className="relative overflow-hidden bg-white/60 dark:bg-ink2/30 backdrop-blur-2xl rounded-[1.75rem] border border-white/60 dark:border-white/10 shadow-ios p-5 sm:p-7 mb-6 fade-up">
-            <ExpenseChartStyles />
-            <div className="tick-edge absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-gold/80 via-[#F3A536]/80 to-peso/80" />
+        <div className="space-y-6 sm:space-y-8">
+            {/* --- MAIN CHART CONTROLS BENTO CARD --- */}
+            <div className="bg-white/80 dark:bg-ink2/30 backdrop-blur-2xl rounded-[2rem] border border-white/80 dark:border-white/10 shadow-ios p-6 sm:p-8 relative overflow-hidden transition-all duration-300">
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-400 via-peso to-gold" />
 
-            {/* Header & Main Date Filters */}
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
-                <div className="flex items-center gap-3">
-                    <span className="w-10 h-10 rounded-[14px] bg-gold/10 dark:bg-gold/15 text-gold dark:text-[#F3A536] flex items-center justify-center shrink-0">
-                        <window.Icons.Chart size={18} />
-                    </span>
-                    <div>
-                        <h2 className="font-display text-[1.15rem] font-semibold text-ink dark:text-paper tracking-tight leading-tight">Analytics</h2>
-                        <p className="text-[11px] text-ink2/50 dark:text-paper/50">Based on {filterLabel}</p>
+                {/* Top Action Row: Title, Date Pills & Demo Mode Toggle */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-black/5 dark:border-white/10">
+                    <div className="flex items-center gap-3">
+                        <span className="w-11 h-11 rounded-2xl bg-gold/10 dark:bg-gold/15 text-gold dark:text-[#E8C071] flex items-center justify-center shrink-0 border border-gold/20 shadow-xs">
+                            <CHART_ICONS.BarFlow size={20} />
+                        </span>
+                        <div>
+                            <h3 className="font-display text-[1.18rem] sm:text-[1.25rem] font-bold text-ink dark:text-paper leading-tight">
+                                Cash Flow Analytics
+                            </h3>
+                            <p className="text-[11.5px] text-ink2/60 dark:text-paper/50">
+                                Filtered by {filterNameMap[dateFilter] || "selected period"}
+                                {useDemoMode && <span className="ml-1.5 text-emerald-600 dark:text-emerald-400 font-bold font-mono">(Sample Demo Data)</span>}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-wrap">
+                        {/* Timeframe Segmented Control */}
+                        <div role="group" aria-label="Timeframe" className="inline-flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-xl text-xs font-semibold">
+                            {[
+                                { key: "thisWeek", label: "Week" },
+                                { key: "thisMonth", label: "Month" },
+                                { key: "thisYear", label: "Year" },
+                                { key: "all", label: "All" }
+                            ].map(opt => (
+                                <button
+                                    key={opt.key}
+                                    type="button"
+                                    onClick={() => setDateFilter(opt.key)}
+                                    className={`tap-scale px-3 py-1.5 rounded-lg transition-all ${
+                                        dateFilter === opt.key
+                                            ? "bg-white dark:bg-ink text-ink dark:text-paper shadow-xs font-bold"
+                                            : "text-ink2/60 dark:text-paper/60 hover:text-ink"
+                                    }`}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Demo Mode Toggle Button */}
+                        <button
+                            type="button"
+                            onClick={() => setUseDemoMode(v => !v)}
+                            className={`tap-scale px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs ${
+                                useDemoMode
+                                    ? "bg-emerald-500 text-white border-emerald-400 shadow-sm"
+                                    : "bg-white dark:bg-ink2/60 text-ink2/70 dark:text-paper/70 border-black/10 dark:border-white/10 hover:bg-black/5"
+                            }`}
+                        >
+                            <CHART_ICONS.Eye size={13} />
+                            <span>{useDemoMode ? "Live Data" : "Preview Demo"}</span>
+                        </button>
                     </div>
                 </div>
 
-                {/* iOS-Style Segmented Date Control */}
-                <div role="group" aria-label="Date range" className="flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-full text-[12px] font-medium w-full sm:w-auto">
-                    {[
-                        { key: "thisWeek", label: "Week" },
-                        { key: "thisMonth", label: "Month" },
-                        { key: "thisYear", label: "Year" },
+                {/* 4 Financial Health Vital Signs Bento Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 mb-7">
+                    <div className="bg-black/[0.02] dark:bg-white/[0.02] p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                        <p className="text-[10px] font-mono uppercase font-semibold text-ink2/50 dark:text-paper/40 mb-1">
+                            Savings Margin
+                        </p>
+                        <p className={`font-mono text-xl sm:text-2xl font-bold truncate ${analytics.net >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                            {analytics.net >= 0 ? `+${analytics.savingsRate}%` : 'Deficit'}
+                        </p>
+                        <p className="text-[10px] text-ink2/50 dark:text-paper/40 mt-0.5">
+                            Retained margin
+                        </p>
+                    </div>
 
-                        { key: "all", label: "All" }
-                    ].map(opt => (
-                        <button
-                            key={opt.key}
-                            type="button"
-                            aria-pressed={dateFilter === opt.key}
-                            onClick={() => setDateFilter(opt.key)}
-                            className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 ${
-                                dateFilter === opt.key
-                                    ? 'bg-white dark:bg-ink2 text-ink dark:text-paper shadow-sm font-semibold'
-                                    : 'text-ink2/60 dark:text-paper/60 hover:text-ink dark:hover:text-paper'
-                            }`}
-                        >
-                            {opt.label}
-                        </button>
-                    ))}
+                    <div className="bg-black/[0.02] dark:bg-white/[0.02] p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                        <p className="text-[10px] font-mono uppercase font-semibold text-ink2/50 dark:text-paper/40 mb-1">
+                            Daily Velocity
+                        </p>
+                        <p className="font-mono text-xl sm:text-2xl font-bold text-ink dark:text-paper truncate">
+                            ₱{peso(analytics.avgDaily)}
+                        </p>
+                        <p className="text-[10px] text-ink2/50 dark:text-paper/40 mt-0.5">
+                            Average spend/day
+                        </p>
+                    </div>
+
+                    <div className="bg-black/[0.02] dark:bg-white/[0.02] p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                        <p className="text-[10px] font-mono uppercase font-semibold text-ink2/50 dark:text-paper/40 mb-1">
+                            Top Outflow
+                        </p>
+                        <p className="font-mono text-base sm:text-lg font-bold text-amber-600 dark:text-amber-400 truncate">
+                            {analytics.topCategory}
+                        </p>
+                        <p className="text-[10px] text-ink2/50 dark:text-paper/40 mt-0.5">
+                            Highest category
+                        </p>
+                    </div>
+
+                    <div className="bg-black/[0.02] dark:bg-white/[0.02] p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                        <p className="text-[10px] font-mono uppercase font-semibold text-ink2/50 dark:text-paper/40 mb-1">
+                            Essentials Ratio
+                        </p>
+                        <p className="font-mono text-xl sm:text-2xl font-bold text-emerald-700 dark:text-emerald-400 truncate">
+                            {analytics.needsPct}%
+                        </p>
+                        <p className="text-[10px] text-ink2/50 dark:text-paper/40 mt-0.5">
+                            Needs vs wants
+                        </p>
+                    </div>
+                </div>
+
+                {/* 5 Distinct Interactive Chart View Switcher Pills */}
+                <div role="group" aria-label="Chart mode" className="flex items-center gap-1.5 p-1 rounded-2xl bg-black/5 dark:bg-white/5 mb-6 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+                    <button
+                        type="button"
+                        onClick={() => setView("category")}
+                        className={`tap-scale flex-1 min-w-[7.5rem] py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                            view === "category" ? "bg-white dark:bg-ink text-ink dark:text-paper shadow-xs" : "text-ink2/60 dark:text-paper/50 hover:text-ink"
+                        }`}
+                    >
+                        <CHART_ICONS.Doughnut size={14} />
+                        <span>Categories</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => setView("trend")}
+                        className={`tap-scale flex-1 min-w-[7.5rem] py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                            view === "trend" ? "bg-white dark:bg-ink text-ink dark:text-paper shadow-xs" : "text-ink2/60 dark:text-paper/50 hover:text-ink"
+                        }`}
+                    >
+                        <CHART_ICONS.LineTrend size={14} />
+                        <span>Timeline Curve</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => setView("flow")}
+                        className={`tap-scale flex-1 min-w-[7.5rem] py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                            view === "flow" ? "bg-white dark:bg-ink text-ink dark:text-paper shadow-xs" : "text-ink2/60 dark:text-paper/50 hover:text-ink"
+                        }`}
+                    >
+                        <CHART_ICONS.BarFlow size={14} />
+                        <span>Cash Flow Bars</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => setView("wallet")}
+                        className={`tap-scale flex-1 min-w-[7.5rem] py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                            view === "wallet" ? "bg-white dark:bg-ink text-ink dark:text-paper shadow-xs" : "text-ink2/60 dark:text-paper/50 hover:text-ink"
+                        }`}
+                    >
+                        <CHART_ICONS.Wallet size={14} />
+                        <span>Wallets</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => setView("needwant")}
+                        className={`tap-scale flex-1 min-w-[7.5rem] py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                            view === "needwant" ? "bg-white dark:bg-ink text-ink dark:text-paper shadow-xs" : "text-ink2/60 dark:text-paper/50 hover:text-ink"
+                        }`}
+                    >
+                        <CHART_ICONS.NeedWant size={14} />
+                        <span>50/30/20 Rule</span>
+                    </button>
+                </div>
+
+                {/* --- CHART DISPLAY CANVAS AREA --- */}
+                <div className="relative w-full min-h-[260px] flex items-center justify-center">
+                    {/* Empty State */}
+                    {filteredEntries.length === 0 ? (
+                        <div className="py-12 flex flex-col items-center justify-center text-center">
+                            <CHART_ICONS.Inbox size={36} className="text-ink2/30 dark:text-paper/30 mb-3" />
+                            <p className="text-sm font-semibold text-ink dark:text-paper">No data recorded for {filterNameMap[dateFilter]}</p>
+                            <p className="text-xs text-ink2/50 dark:text-paper/40 mt-1 mb-4">Log transactions on Dashboard or preview sample graphs.</p>
+                            <button
+                                type="button"
+                                onClick={() => setUseDemoMode(true)}
+                                className="tap-scale px-4 py-2 rounded-xl bg-peso text-white text-xs font-bold shadow-xs hover:shadow-md"
+                            >
+                                Show Sample Demo Graphs
+                            </button>
+                        </div>
+                    ) : (
+                        <>
+                            {/* VIEW 1: DOUGHNUT + CUSTOM LEGEND */}
+                            {view === "category" && (
+                                <div className="w-full flex flex-col md:flex-row items-center gap-6 sm:gap-10">
+                                    <div className="relative w-52 h-52 sm:w-60 sm:h-60 shrink-0">
+                                        <canvas ref={chartRef} />
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                                            <span className="text-[9px] font-mono uppercase font-bold text-ink2/50 dark:text-paper/40">Total Outflow</span>
+                                            <span className="font-mono text-lg sm:text-xl font-bold text-ink dark:text-paper">₱{peso(analytics.totalExpense)}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Custom Apple-Style Progress Legend */}
+                                    <div className="w-full flex flex-col gap-2.5 min-w-0">
+                                        {sortedCategories.map(c => (
+                                            <div key={c.label} className="flex items-center gap-3 bg-black/[0.02] dark:bg-white/[0.02] p-2.5 rounded-xl border border-black/5 dark:border-white/5">
+                                                <div className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs" style={{ backgroundColor: c.color }} />
+                                                <span className="text-xs font-semibold text-ink dark:text-paper flex-1 truncate">{c.displayLabel || c.label}</span>
+                                                <span className="text-[11px] font-mono text-ink2/50 dark:text-paper/40 w-8 text-right">{c.pct.toFixed(0)}%</span>
+                                                <div className="w-16 sm:w-24 h-1.5 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden shrink-0">
+                                                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${c.pct}%`, backgroundColor: c.color }} />
+                                                </div>
+                                                <span className="font-mono text-xs font-bold text-ink dark:text-paper w-20 text-right truncate">₱{peso(c.amount)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* VIEW 2: TIMELINE SPENDING VELOCITY */}
+                            {view === "trend" && (
+                                <div className="w-full h-64 sm:h-72">
+                                    <canvas ref={chartRef} />
+                                </div>
+                            )}
+
+                            {/* VIEW 3: INFLOW VS OUTFLOW (DUAL BARS) */}
+                            {view === "flow" && (
+                                <div className="w-full h-64 sm:h-72">
+                                    <canvas ref={chartRef} />
+                                </div>
+                            )}
+
+                            {/* VIEW 4: WALLET DISTRIBUTION */}
+                            {view === "wallet" && (
+                                <div className="w-full h-64 sm:h-72">
+                                    <canvas ref={chartRef} />
+                                </div>
+                            )}
+
+                            {/* VIEW 5: GUILT TRACKER & 50/30/20 BENCHMARK */}
+                            {view === "needwant" && (
+                                <div className="w-full space-y-6">
+                                    <div className="p-5 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 space-y-3">
+                                        <div className="flex items-center justify-between text-xs font-semibold">
+                                            <span>Essential Needs vs Discretionary Wants</span>
+                                            <span className="font-mono text-rose-600 dark:text-rose-400 font-bold">{analytics.luhoPct}% Luho</span>
+                                        </div>
+
+                                        <div className="h-3 w-full rounded-full bg-black/10 dark:bg-white/10 overflow-hidden flex">
+                                            <div style={{ width: `${analytics.needsPct}%` }} className="bg-emerald-600 transition-all duration-700" />
+                                            <div style={{ width: `${analytics.luhoPct}%` }} className="bg-rose-500 transition-all duration-700" />
+                                        </div>
+
+                                        <div className="flex items-center justify-between text-xs font-mono">
+                                            <span className="text-emerald-700 dark:text-emerald-400 font-bold">Needs: ₱{peso(analytics.needsTotal)} ({analytics.needsPct}%)</span>
+                                            <span className="text-rose-600 dark:text-rose-400 font-bold">Wants: ₱{peso(analytics.luhoTotal)} ({analytics.luhoPct}%)</span>
+                                        </div>
+                                    </div>
+
+                                    {/* 50/30/20 Ideal Guidance Card */}
+                                    <div className="grid grid-cols-3 gap-3 text-center text-xs">
+                                        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                                            <p className="font-bold text-emerald-800 dark:text-emerald-300">50% Needs</p>
+                                            <p className="text-[11px] text-ink2/60 dark:text-paper/50 mt-0.5">Bills, groceries & transit</p>
+                                        </div>
+                                        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                                            <p className="font-bold text-amber-800 dark:text-amber-300">30% Wants</p>
+                                            <p className="text-[11px] text-ink2/60 dark:text-paper/50 mt-0.5">Dining out & leisure</p>
+                                        </div>
+                                        <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/20">
+                                            <p className="font-bold text-sky-800 dark:text-sky-300">20% Savings</p>
+                                            <p className="text-[11px] text-ink2/60 dark:text-paper/50 mt-0.5">Emergency cushion</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
                 </div>
             </div>
 
-            {/* NEW: GUILT TRACKER BAR */}
-            {chartLoaded && filteredEntries.length > 0 && analytics.totalExpense > 0 && (
-                <div key={`guilt-${dateFilter}`} className="stat-pop mb-6 bg-white/40 dark:bg-black/10 rounded-[1.25rem] p-4 sm:p-5 border border-black/5 dark:border-white/5 shadow-sm">
-                    <div className="flex justify-between items-end mb-3">
-                        <div>
-                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-black/5 dark:bg-white/10 mb-2">
-                                <span className="text-[9px] font-bold uppercase tracking-widest text-ink/70 dark:text-paper/70">Guilt Tracker</span>
+            {/* ============================================================== */}
+            {/* 6. TOP 5 LARGEST TRANSACTIONS IN PERIOD                        */}
+            {/* ============================================================== */}
+            {analytics.topTransactions.length > 0 && (
+                <div className="fade-up bg-white/70 dark:bg-ink2/30 backdrop-blur-xl rounded-[1.75rem] border border-white/80 dark:border-white/10 shadow-ios p-5 sm:p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <span className="text-peso dark:text-pesoLight">
+                                <CHART_ICONS.Zap size={16} />
+                            </span>
+                            <h3 className="font-display text-[1.1rem] font-semibold text-ink dark:text-paper tracking-tight">
+                                Top Expenses This Period
+                            </h3>
+                        </div>
+                        <span className="text-[11px] font-mono text-ink2/50 dark:text-paper/40">
+                            Ranked by ticket size
+                        </span>
+                    </div>
+
+                    <div className="divide-y divide-black/5 dark:divide-white/5">
+                        {analytics.topTransactions.map((tx, idx) => (
+                            <div key={tx.id || idx} className="py-3 flex items-center justify-between gap-3 first:pt-0 last:pb-0">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className="w-8 h-8 rounded-xl bg-black/5 dark:bg-white/10 flex items-center justify-center font-mono font-bold text-xs text-ink2/70 dark:text-paper/70 shrink-0">
+                                        #{idx + 1}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="font-semibold text-sm text-ink dark:text-paper truncate">
+                                            {tx.desc || tx.category}
+                                        </p>
+                                        <div className="flex items-center gap-2 mt-0.5 text-[11px] text-ink2/60 dark:text-paper/50">
+                                            <span>{window.CATEGORY_DISPLAY ? (window.CATEGORY_DISPLAY[tx.category] || tx.category) : tx.category}</span>
+                                            <span>•</span>
+                                            <span className="font-mono">{tx.method || "Cash"}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <span className="font-mono text-base font-bold text-rose-600 dark:text-rose-400 shrink-0">
+                                    ₱{peso(tx.amount)}
+                                </span>
                             </div>
-                            <h3 className="font-display text-[1.1rem] font-semibold text-ink dark:text-paper leading-none">Need vs Want</h3>
-                        </div>
-                        <div className="text-right">
-                            <span className="font-mono text-2xl font-bold text-[#B5483B] dark:text-[#F38C80] leading-none block mb-0.5">{analytics.luhoPct}%</span>
-                            <p className="text-[10px] font-medium text-ink2/60 dark:text-paper/50">allocated to Wants</p>
-                        </div>
-                    </div>
-
-                    <div className="h-2 w-full rounded-full bg-[#1F6F54] dark:bg-[#52C8A1] overflow-hidden flex">
-                        <div className="h-full bg-[#B5483B] dark:bg-[#F38C80] transition-all duration-1000 ease-out" style={{ width: `${analytics.luhoPct}%` }}></div>
-                    </div>
-
-                    <div className="flex justify-between mt-2.5 text-[11px] font-mono font-medium">
-                        <span className="text-[#B5483B] dark:text-[#F38C80]">Wants: ₱{peso(analytics.luhoTotal)}</span>
-                        <span className="text-[#1F6F54] dark:text-[#52C8A1]">Needs: ₱{peso(analytics.needsTotal)}</span>
+                        ))}
                     </div>
                 </div>
             )}
-
-            {/* Quick Stat Chips — pop softly whenever the date filter changes */}
-            <div key={`stats-${dateFilter}`} className="stat-pop flex items-center gap-2.5 sm:gap-4 mb-6 flex-wrap">
-                <div className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#E6F3EF] dark:bg-[#1F6F54]/15">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#2F8E6C]"></span>
-                    <span className="text-[11px] font-medium text-[#1F6F54] dark:text-[#52C8A1]">Income:</span>
-                    <span className="font-mono text-xs font-bold text-[#1F6F54] dark:text-[#52C8A1]">₱{peso(analytics.totalIncome)}</span>
-                </div>
-
-                <div className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#FAEDE9] dark:bg-[#B5483B]/15">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#B5483B]"></span>
-                    <span className="text-[11px] font-medium text-[#B5483B] dark:text-[#F38C80]">Expenses:</span>
-                    <span className="font-mono text-xs font-bold text-[#B5483B] dark:text-[#F38C80]">₱{peso(analytics.totalExpense)}</span>
-                </div>
-
-                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg ${
-                    analytics.net >= 0
-                        ? "bg-black/5 dark:bg-white/10 text-ink dark:text-paper"
-                        : "bg-expense/10 dark:bg-expense/20 text-expense dark:text-[#F38C80]"
-                }`}>
-                    <TrendGlyph up={analytics.net >= 0} />
-                    <span className="font-mono text-xs font-bold">₱{peso(Math.abs(analytics.net))}</span>
-                    <span className="text-[10px] font-medium opacity-70">{analytics.net >= 0 ? "surplus" : "deficit"}</span>
-                </div>
-            </div>
-
-            {/* View Toggles (Category vs Cash Flow) */}
-            <div role="group" aria-label="Chart view" className="flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-[14px] mb-6">
-                <button
-                    onClick={() => setView("category")}
-                    aria-pressed={view === "category"}
-                    className={`flex-1 inline-flex items-center justify-center gap-2 text-[12px] font-semibold py-2.5 rounded-xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 ${
-                        view === "category" ? 'bg-white dark:bg-ink2 text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink dark:hover:text-paper'
-                    }`}
-                >
-                    <window.Icons.Category size={14} /> Category
-                </button>
-                <button
-                    onClick={() => setView("flow")}
-                    aria-pressed={view === "flow"}
-                    className={`flex-1 inline-flex items-center justify-center gap-2 text-[12px] font-semibold py-2.5 rounded-xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peso/50 ${
-                        view === "flow" ? 'bg-white dark:bg-ink2 text-ink dark:text-paper shadow-sm' : 'text-ink2/50 dark:text-paper/50 hover:text-ink dark:hover:text-paper'
-                    }`}
-                >
-                    <window.Icons.Chart size={14} /> Cash Flow
-                </button>
-            </div>
-
-            {/* Chart Area */}
-            <div className="relative w-full">
-                {/* Screen-reader-only data summary */}
-                <p className="sr-only" aria-live="polite">{chartSummary}</p>
-
-                {!chartLoaded && (
-                    <div className="h-56 flex flex-col items-center justify-center gap-3 text-center bg-white/40 dark:bg-black/10 rounded-2xl">
-                        <window.Icons.AlertCircle size={22} className="text-expense" />
-                        <p className="text-[13px] text-expense font-medium">Failed to load chart library.<br/>Please refresh the page.</p>
-                    </div>
-                )}
-
-                {chartLoaded && filteredEntries.length === 0 && (
-                    <div className="h-56 flex flex-col items-center justify-center gap-4 text-center bg-white/40 dark:bg-black/10 rounded-2xl">
-                        <div className="relative flex items-center justify-center w-14 h-14">
-                            <div className="absolute inset-0 bg-peso/10 dark:bg-pesoLight/10 rounded-full animate-ping opacity-75" style={{ animationDuration: '3s' }} />
-                            <span className="relative z-10 w-14 h-14 rounded-2xl bg-gradient-to-br from-paperDim to-paperDim/50 dark:from-ink2/60 dark:to-ink2/20 border border-dashed border-line dark:border-white/15 flex items-center justify-center">
-                                <window.Icons.Inbox size={24} className="text-peso/60 dark:text-pesoLight/60" />
-                            </span>
-                        </div>
-                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/50">No data recorded for this period.</p>
-                    </div>
-                )}
-
-                {chartLoaded && filteredEntries.length > 0 && view === "category" && !hasCategoryData && (
-                    <div className="h-56 flex flex-col items-center justify-center gap-4 text-center bg-white/40 dark:bg-black/10 rounded-2xl">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-paperDim to-paperDim/50 dark:from-ink2/60 dark:to-ink2/20 border border-dashed border-line dark:border-white/15 flex items-center justify-center">
-                            <window.Icons.Inbox size={24} className="text-ink2/40 dark:text-paper/30" />
-                        </div>
-                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/50">No expenses recorded for this period.</p>
-                    </div>
-                )}
-
-                {chartLoaded && filteredEntries.length > 0 && view === "category" && hasCategoryData && (
-                    <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
-                        {/* Doughnut Chart */}
-                        <div className="relative h-48 w-48 sm:h-52 sm:w-52 shrink-0 drop-shadow-md">
-                            <canvas ref={chartRef} role="img" aria-label={chartSummary}></canvas>
-                            <div key={`center-${dateFilter}-${analytics.totalExpense}`} aria-hidden="true" className="stat-pop absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-1">
-                                <span className="text-[9px] font-mono font-semibold uppercase tracking-[0.1em] text-ink2/50 dark:text-paper/50 mb-0.5">Total Expenses</span>
-                                <span className="font-mono text-lg font-bold text-ink dark:text-paper">₱{peso(analytics.totalExpense)}</span>
-                            </div>
-                        </div>
-
-                        {/* Modernized Custom Legend */}
-                        <div className="w-full flex flex-col gap-3 min-w-0">
-                            {sortedCategories.map((c, i) => (
-                                <div key={c.label} className="legend-row flex items-center gap-3 bg-white/40 dark:bg-white/[0.03] p-2 rounded-xl transition-colors hover:bg-white/60 dark:hover:bg-white/10" style={{ animationDelay: `${i * 50}ms` }}>
-                                    <div className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: c.color }}></div>
-                                    <span className="text-[13px] font-medium text-ink2/80 dark:text-paper/80 flex-1 min-w-0 truncate">{c.displayLabel || c.label}</span>
-
-                                    <span className="text-[10px] font-mono text-ink2/40 dark:text-paper/40 w-7 text-right shrink-0">{c.pct.toFixed(0)}%</span>
-
-                                    <div className="w-12 sm:w-20 h-1.5 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden shrink-0">
-                                        <div className="h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${c.pct}%`, backgroundColor: c.color }}></div>
-                                    </div>
-
-                                    <span className="text-[13px] font-mono font-bold text-ink dark:text-paper w-16 sm:w-20 text-right shrink-0 truncate">₱{peso(c.amount)}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {chartLoaded && filteredEntries.length > 0 && view === "flow" && (
-                    <div className="h-60 w-full pt-2">
-                        <canvas ref={chartRef} role="img" aria-label={chartSummary}></canvas>
-                    </div>
-                )}
-            </div>
         </div>
     );
-}
+};

@@ -255,3 +255,21 @@ async function staleWhileRevalidate(request) {
     headers: { 'Content-Type': 'text/plain; charset=utf-8' }
   });
 }
+
+
+// --- notifications -----------------------------------------------------------
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
+      for (const client of windowClients) {
+        if (client.url && client.url.includes('/dashboard.html') && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow('/dashboard.html');
+      }
+    })
+  );
+});

@@ -1,6 +1,6 @@
 // components/ExpenseItem.js
 
-window.ExpenseItem = function ExpenseItem({ item, entry, uid }) {
+window.ExpenseItem = function ExpenseItem({ item, entry, uid, onViewReceipt }) {
     // Babasahin niya ang data kung 'item' man o 'entry' ang ginamit ng parent component
     const data = item || entry;
 
@@ -15,11 +15,11 @@ window.ExpenseItem = function ExpenseItem({ item, entry, uid }) {
         ? { fg: "text-[#1F6F54] dark:text-[#52C8A1]", bg: "bg-[#1F6F54] dark:bg-[#52C8A1]", tint: "from-[#EAF6F1] to-[#DCEFE7] dark:from-[#1F6F54]/25 dark:to-[#1F6F54]/10" }
         : { fg: "text-[#B5483B] dark:text-[#F38C80]", bg: "bg-[#B5483B] dark:bg-[#F38C80]", tint: "from-[#FCEFEB] to-[#F7DFD8] dark:from-[#B5483B]/25 dark:to-[#B5483B]/10" };
 
-    // Relative date label (Ngayon / Kahapon / short date) instead of laging buong petsa —
-    // mas madaling ma-scan sa isang tingin, katulad ng modern banking apps.
+    // Relative date label (Ngayon / Kahapon / short date)
     const getDateLabel = (createdAt) => {
-        if (!createdAt || !createdAt.toDate) return "Recent";
-        const date = createdAt.toDate();
+        if (!createdAt) return "Recent";
+        const date = typeof createdAt.toDate === "function" ? createdAt.toDate() : new Date(createdAt);
+        if (isNaN(date.getTime())) return "Recent";
         const now = new Date();
         const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
         const diffDays = Math.round((startOfDay(now) - startOfDay(date)) / 86400000);
@@ -35,9 +35,11 @@ window.ExpenseItem = function ExpenseItem({ item, entry, uid }) {
         });
     };
 
-    const dateStr = getDateLabel(data.createdAt);
+    const dateStr = getDateLabel(data.createdAt || data.date);
 
-    const handleDelete = () => {
+    const handleDelete = (e) => {
+        if (e && e.stopPropagation) e.stopPropagation();
+
         // Safety Guard: Pigilan ang error bago pa tumawag sa Firebase
         if (!uid || !data.id) {
             console.error("Missing Data:", { uid, entryId: data?.id });
@@ -46,6 +48,17 @@ window.ExpenseItem = function ExpenseItem({ item, entry, uid }) {
                 title: 'System Error',
                 text: 'User ID not found. Please refresh the page.',
                 confirmButtonColor: '#B5483B',
+                customClass: { popup: 'tipid-swal' }
+            });
+        }
+
+        // Demo transactions handling
+        if (String(data.id).startsWith("demo-")) {
+            return Swal.fire({
+                icon: 'info',
+                title: 'Sample Demo Record',
+                text: 'This is a sample demonstration transaction for preview purposes only.',
+                confirmButtonColor: '#1F6F54',
                 customClass: { popup: 'tipid-swal' }
             });
         }
@@ -89,21 +102,41 @@ window.ExpenseItem = function ExpenseItem({ item, entry, uid }) {
         });
     };
 
-    return (
-        <li className="relative list-none group flex items-center justify-between gap-3 pl-5 pr-3.5 py-3.5 sm:pl-6 sm:pr-4 sm:py-4 bg-transparent hover:bg-white/60 dark:hover:bg-white/[0.04] rounded-[1.25rem] transition-all duration-300 ease-out hover:shadow-[0_8px_24px_-12px_rgba(20,20,20,0.18)] hover:-translate-y-0.5 active:scale-[0.995] row-in overflow-hidden">
+    const handleRowClick = () => {
+        if (typeof onViewReceipt === "function") {
+            onViewReceipt(data);
+        }
+    };
 
+    return (
+        <li
+            onClick={handleRowClick}
+            className={`relative list-none group flex items-center justify-between gap-3 pl-5 pr-3.5 py-3.5 sm:pl-6 sm:pr-4 sm:py-4 bg-transparent hover:bg-white/70 dark:hover:bg-white/[0.04] rounded-[1.25rem] transition-all duration-300 ease-out hover:shadow-[0_8px_24px_-12px_rgba(20,20,20,0.18)] hover:-translate-y-0.5 active:scale-[0.995] row-in overflow-hidden ${
+                typeof onViewReceipt === "function" ? "cursor-pointer" : ""
+            }`}
+        >
             {/* Scan-bar: colored edge so income/expense is readable at a glance down the list */}
             <div
                 className={`absolute left-1.5 top-1/2 -translate-y-1/2 h-[55%] w-[3px] rounded-full transition-opacity duration-300 ${accent.bg} opacity-30 group-hover:opacity-100`}
                 aria-hidden="true"
-            ></div>
+            />
 
             {/* Left Side: Icon & Details */}
             <div className="flex items-center gap-3.5 min-w-0 flex-1">
                 <div
                     className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center shrink-0 bg-gradient-to-br ${accent.tint} ${accent.fg} ring-1 ring-inset ring-black/[0.03] dark:ring-white/10 transition-transform duration-300 ease-out group-hover:scale-105`}
                 >
-                    {isIncome ? <window.Icons.TrendUp size={20} /> : <window.Icons.TrendDown size={20} />}
+                    {isIncome ? (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                            <polyline points="17 6 23 6 23 12" />
+                        </svg>
+                    ) : (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
+                            <polyline points="17 18 23 18 23 12" />
+                        </svg>
+                    )}
                 </div>
 
                 <div className="min-w-0 flex-1 pr-2">
@@ -111,8 +144,7 @@ window.ExpenseItem = function ExpenseItem({ item, entry, uid }) {
                         {data.desc}
                     </p>
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-
-                        {/* NEW: Guilt Tracker Tag (Need vs Luho) */}
+                        {/* Guilt Tracker Tag (Need vs Luho) */}
                         {data.spendType && !isIncome && (
                             <span className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold tracking-widest px-2 py-0.5 rounded uppercase ${
                                 data.spendType === 'luho'
@@ -124,18 +156,24 @@ window.ExpenseItem = function ExpenseItem({ item, entry, uid }) {
                         )}
 
                         <span className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-mono font-semibold tracking-wide px-2.5 py-1 rounded-full bg-ink/[0.04] dark:bg-white/10 text-ink2/70 dark:text-paper/70 uppercase">
-                            <span className={`w-1.5 h-1.5 rounded-full ${accent.bg}`} aria-hidden="true"></span>
+                            <span className={`w-1.5 h-1.5 rounded-full ${accent.bg}`} aria-hidden="true" />
                             {window.CATEGORY_DISPLAY ? (window.CATEGORY_DISPLAY[data.category] || data.category) : data.category}
                         </span>
 
+                        {data.method && (
+                            <span className="text-[10px] sm:text-[11px] font-mono text-ink2/50 dark:text-paper/50">
+                                {data.method}
+                            </span>
+                        )}
+
                         <span className="text-[10px] sm:text-[11px] font-medium text-ink2/40 dark:text-paper/40">
-                            {dateStr}
+                            • {dateStr}
                         </span>
                     </div>
                 </div>
             </div>
 
-            {/* Right Side: Amount & Delete Button */}
+            {/* Right Side: Amount & Actions */}
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                 <div className="text-right flex flex-col items-end justify-center">
                     <span className={`font-mono font-bold tabular-nums text-base sm:text-lg tracking-tight leading-none ${
@@ -145,15 +183,38 @@ window.ExpenseItem = function ExpenseItem({ item, entry, uid }) {
                     </span>
                 </div>
 
+                {/* Receipt Quick View Action */}
+                {typeof onViewReceipt === "function" && (
+                    <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onViewReceipt(data); }}
+                        aria-label="View receipt details"
+                        title="View digital receipt"
+                        className="opacity-80 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 p-2 sm:p-2.5 rounded-full text-ink2/40 hover:text-peso hover:bg-peso/10 dark:text-paper/40 dark:hover:text-pesoLight dark:hover:bg-pesoLight/10 active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 shrink-0"
+                    >
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M4 2h16v20l-3-2-2 2-2-2-2 2-2-2-2 2-3-2V2z" />
+                            <line x1="8" y1="7" x2="16" y2="7" />
+                            <line x1="8" y1="11" x2="16" y2="11" />
+                            <line x1="8" y1="15" x2="12" y2="15" />
+                        </svg>
+                    </button>
+                )}
+
+                {/* Delete Button */}
                 <button
+                    type="button"
                     onClick={handleDelete}
                     aria-label="Delete entry"
-                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 p-2 sm:p-2.5 rounded-full text-ink2/30 hover:text-expense hover:bg-expense/10 hover:scale-105 dark:text-paper/30 dark:hover:text-[#F38C80] dark:hover:bg-[#B5483B]/20 active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-expense/40 shrink-0"
+                    title="Delete transaction"
+                    className="opacity-80 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 p-2 sm:p-2.5 rounded-full text-ink2/30 hover:text-expense hover:bg-expense/10 hover:scale-105 dark:text-paper/30 dark:hover:text-[#F38C80] dark:hover:bg-[#B5483B]/20 active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-expense/40 shrink-0"
                 >
-                    <window.Icons.Trash size={18} strokeWidth={2.2} />
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
                 </button>
             </div>
-
         </li>
     );
-}
+};

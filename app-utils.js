@@ -205,11 +205,659 @@
     }
   }
 
+  const TipidReminders = {
+    isSupported() {
+      return typeof window !== "undefined" && "Notification" in window;
+    },
+    getPermission() {
+      if (!this.isSupported()) return "unsupported";
+      return Notification.permission;
+    },
+    async requestPermission() {
+      if (!this.isSupported()) return "unsupported";
+      try {
+        return await Notification.requestPermission();
+      } catch (err) {
+        console.warn("[TipidReminders] Notification permission request error:", err);
+        return Notification.permission;
+      }
+    },
+    async sendNotification(title, options = {}) {
+      const opts = {
+        icon: "/assets/logo-512.png",
+        badge: "/assets/favicon-32.png",
+        tag: options.tag || "tipid-reminder",
+        renotify: true,
+        body: options.body || "Mag-log ng iyong mga nagastos at kita ngayon sa Tipid!",
+        ...options,
+      };
+
+      if (this.isSupported() && Notification.permission === "granted") {
+        try {
+          if ("serviceWorker" in navigator) {
+            const reg = await navigator.serviceWorker.ready;
+            if (reg && typeof reg.showNotification === "function") {
+              await reg.showNotification(title, opts);
+              return true;
+            }
+          }
+          new Notification(title, opts);
+          return true;
+        } catch (e) {
+          console.warn("[TipidReminders] Native notification failed, falling back to in-app alert:", e);
+        }
+      }
+
+      announce(`${title}: ${opts.body}`);
+      if (window.Swal) {
+        window.Swal.fire({
+          title,
+          text: opts.body,
+          icon: "info",
+          confirmButtonColor: "#1F6F54",
+          customClass: { popup: "tipid-swal" },
+        });
+      }
+      return false;
+    },
+    async checkAndTriggerDaily(uid, settings = {}) {
+      if (!uid || settings.dailyReminders === false) return false;
+      const today = manilaDateKey();
+      if (!today) return false;
+
+      let localLast = null;
+      try {
+        localLast = localStorage.getItem(storageKey(uid, "last_daily_reminder"));
+      } catch (_) {}
+
+      if (localLast === today || settings.lastReminderDate === today) {
+        return false;
+      }
+
+      const timeStr = settings.reminderTime || "20:00";
+      const parts = timeStr.split(":").map(Number);
+      const schedHours = Number.isFinite(parts[0]) ? parts[0] : 20;
+      const schedMins = Number.isFinite(parts[1]) ? parts[1] : 0;
+
+      const now = new Date();
+      const currentHours = now.getHours();
+      const currentMins = now.getMinutes();
+
+      if (currentHours > schedHours || (currentHours === schedHours && currentMins >= schedMins)) {
+        await this.sendNotification("Tipid Daily Reminder 💡", {
+          body: "Kumusta ang araw mo? Huwag kalimutang i-record ang iyong mga nagastos at kita ngayon!",
+          tag: "tipid-daily-reminder",
+        });
+
+        try {
+          localStorage.setItem(storageKey(uid, "last_daily_reminder"), today);
+        } catch (_) {}
+
+        if (window.TipidData && typeof window.TipidData.recordReminderTriggered === "function") {
+          window.TipidData.recordReminderTriggered(uid, today).catch(() => {});
+        }
+        return true;
+      }
+      return false;
+    },
+  };
+
+  const TRANSLATIONS = {
+    en: {
+      nav_home: "Home",
+      nav_bills: "Bills",
+      nav_debts: "Debts",
+      nav_groceries: "Groceries",
+      nav_receipts: "Receipts",
+      nav_budget: "Budget",
+      nav_analytics: "Analytics",
+      nav_history: "History",
+      nav_installments: "Installments",
+      nav_account: "Account",
+      nav_menu: "Menu",
+      nav_planning: "Planning",
+      nav_settings: "Settings",
+      nav_more: "More",
+      nav_close: "Close",
+      nav_tools: "Tools",
+      nav_quick_tools: "Quick Tools",
+      nav_dark_mode: "Dark Mode",
+      nav_light_mode: "Light Mode",
+      nav_dark: "Dark",
+      nav_light: "Light",
+      nav_logout: "Log out",
+
+      dash_cockpit: "Expenses Tracker Cockpit",
+      dash_greeting: "Good day",
+      dash_this_month: "This Month",
+      dash_this_week: "This Week",
+      dash_30_days: "30 Days",
+      dash_all_time: "All Time",
+      dash_upcoming_bills: "Upcoming Bills",
+      dash_debts_utang: "Debts & Utang",
+      dash_wallets: "Accounts & Wallets",
+      dash_recent_trans: "Recent Transactions",
+      dash_new_trans: "New Transaction",
+      dash_view_all: "View All",
+      dash_add_new: "+ Add",
+
+      common_back: "Back",
+      common_save: "Save",
+      common_saving: "Saving...",
+      common_saved: "Saved!",
+      common_cancel: "Cancel",
+      common_delete: "Delete",
+      common_edit: "Edit",
+      common_add: "Add",
+      common_confirm: "Confirm",
+      common_loading: "Loading...",
+      common_all: "All",
+      common_success: "Success",
+      common_error: "Error",
+
+      lang_name: "English",
+      lang_updated_title: "Language Updated",
+      lang_updated_desc: "System language successfully updated to English."
+    },
+    tl: {
+      nav_home: "Tahanan",
+      nav_bills: "Mga Bayarin",
+      nav_debts: "Utang",
+      nav_groceries: "Pamilihan",
+      nav_receipts: "Resibo",
+      nav_budget: "Badyet",
+      nav_analytics: "Pagsusuri",
+      nav_history: "Kasaysayan",
+      nav_installments: "Hulugan",
+      nav_account: "Account",
+      nav_menu: "Menu",
+      nav_planning: "Pagpaplano",
+      nav_settings: "Mga Setting",
+      nav_more: "Iba Pa",
+      nav_close: "Isara",
+      nav_tools: "Mga Tool",
+      nav_quick_tools: "Mabilisang Aksyon",
+      nav_dark_mode: "Madilim na Mode",
+      nav_light_mode: "Maliwanag na Mode",
+      nav_dark: "Madilim",
+      nav_light: "Maliwanag",
+      nav_logout: "Mag-log out",
+
+      dash_cockpit: "Sentro ng Pagsubaybay sa Gastos",
+      dash_greeting: "Magandang araw",
+      dash_this_month: "Ngayong Buwan",
+      dash_this_week: "Ngayong Linggo",
+      dash_30_days: "30 Araw",
+      dash_all_time: "Kabuuan",
+      dash_upcoming_bills: "Paparating na Bayarin",
+      dash_debts_utang: "Utang at Pautang",
+      dash_wallets: "Mga Account at Wallet",
+      dash_recent_trans: "Kamakailang Transaksyon",
+      dash_new_trans: "Bagong Transaksyon",
+      dash_view_all: "Tingnan Lahat",
+      dash_add_new: "+ Magdagdag",
+
+      common_back: "Bumalik",
+      common_save: "I-save",
+      common_saving: "Inise-save...",
+      common_saved: "Nai-save na!",
+      common_cancel: "Kanselahin",
+      common_delete: "Burahin",
+      common_edit: "I-edit",
+      common_add: "Magdagdag",
+      common_confirm: "Kumpirmahin",
+      common_loading: "Naglo-load...",
+      common_all: "Lahat",
+      common_success: "Tagumpay",
+      common_error: "May Error",
+
+      lang_name: "Tagalog",
+      lang_updated_title: "Wika ay Pinalitan",
+      lang_updated_desc: "Matagumpay na pinalitan ang wika sa buong system bilang Tagalog."
+    }
+  };
+
+  const TipidI18n = {
+    getLanguage(uid) {
+      try {
+        if (uid && typeof localStorage !== "undefined") {
+          const userVal = localStorage.getItem(storageKey(uid, "lang"));
+          if (userVal === "tl" || userVal === "en") return userVal;
+        }
+        if (typeof localStorage !== "undefined") {
+          const globalVal = localStorage.getItem("tipid_lang");
+          if (globalVal === "tl" || globalVal === "en") return globalVal;
+        }
+      } catch (_) {}
+      return "en";
+    },
+
+    setLanguage(lang, uid) {
+      const safeLang = (lang === "tl" || lang === "fil") ? "tl" : "en";
+      try {
+        if (typeof localStorage !== "undefined") {
+          localStorage.setItem("tipid_lang", safeLang);
+          if (uid) {
+            localStorage.setItem(storageKey(uid, "lang"), safeLang);
+          }
+        }
+        if (typeof document !== "undefined" && document.documentElement) {
+          document.documentElement.lang = safeLang === "tl" ? "fil" : "en";
+        }
+      } catch (_) {}
+
+      if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
+        try {
+          window.dispatchEvent(new CustomEvent("tipid-language-change", { detail: { lang: safeLang } }));
+        } catch (_) {}
+      }
+      return safeLang;
+    },
+
+    t(key, fallback = "") {
+      const current = this.getLanguage(typeof window !== "undefined" ? window.TIPID_CURRENT_UID : null);
+      const dict = TRANSLATIONS[current] || TRANSLATIONS.en;
+      if (dict && key in dict) return dict[key];
+      if (TRANSLATIONS.en && key in TRANSLATIONS.en) return TRANSLATIONS.en[key];
+      return fallback || key;
+    },
+
+    getTranslations(lang) {
+      const active = lang || this.getLanguage(typeof window !== "undefined" ? window.TIPID_CURRENT_UID : null);
+      return TRANSLATIONS[active] || TRANSLATIONS.en;
+    }
+  };
+
+  const TipidCelebration = {
+    playChime() {
+      if (typeof window === "undefined") return;
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        if (ctx.state === "suspended") {
+          ctx.resume().catch(() => {});
+        }
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        const now = ctx.currentTime;
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+
+          gain.gain.setValueAtTime(0.0001, now + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.18, now + idx * 0.08 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.55);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(now + idx * 0.08);
+          osc.stop(now + idx * 0.08 + 0.6);
+        });
+      } catch (_) {}
+    },
+
+    triggerHaptics() {
+      if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+        try {
+          navigator.vibrate([30, 40, 50, 40]);
+        } catch (_) {}
+      }
+    },
+
+    triggerConfetti(options = {}) {
+      if (typeof document === "undefined" || !document.createElement || !document.body) return;
+      try {
+        const existing = document.getElementById("tipid-confetti-canvas");
+        if (existing) existing.remove();
+
+        const canvas = document.createElement("canvas");
+        canvas.id = "tipid-confetti-canvas";
+        canvas.style.position = "fixed";
+        canvas.style.inset = "0";
+        canvas.style.width = "100%";
+        canvas.style.height = "100%";
+        canvas.style.pointerEvents = "none";
+        canvas.style.zIndex = "999999";
+        document.body.appendChild(canvas);
+
+        const ctx = canvas.getContext ? canvas.getContext("2d") : null;
+        if (!ctx) {
+          canvas.remove();
+          return;
+        }
+
+        const width = (canvas.width = window.innerWidth || 800);
+        const height = (canvas.height = window.innerHeight || 600);
+
+        const colors = ["#1F6F54", "#52B788", "#F5A623", "#2D6A4F", "#D8F3DC", "#FFD166", "#06D6A0", "#118AB2", "#EF476F"];
+        const count = options.count || 80;
+        const particles = [];
+
+        for (let i = 0; i < count; i++) {
+          particles.push({
+            x: width * (0.2 + Math.random() * 0.6),
+            y: height * 0.35 + (Math.random() - 0.5) * 60,
+            vx: (Math.random() - 0.5) * 16,
+            vy: -Math.random() * 12 - 4,
+            size: Math.random() * 8 + 6,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rotation: Math.random() * 360,
+            rotationSpeed: (Math.random() - 0.5) * 12,
+            wobble: Math.random() * 10,
+            wobbleSpeed: Math.random() * 0.1 + 0.05,
+            opacity: 1,
+            shape: Math.random() > 0.4 ? "rect" : "circle"
+          });
+        }
+
+        let animId = null;
+        const startTime = Date.now();
+        const duration = options.duration || 3500;
+
+        const render = () => {
+          const elapsed = Date.now() - startTime;
+          if (elapsed > duration) {
+            cancelAnimationFrame(animId);
+            canvas.remove();
+            return;
+          }
+
+          ctx.clearRect(0, 0, width, height);
+
+          for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.38;
+            p.vx *= 0.98;
+            p.rotation += p.rotationSpeed;
+            p.wobble += p.wobbleSpeed;
+
+            if (elapsed > duration - 800) {
+              p.opacity = Math.max(0, (duration - elapsed) / 800);
+            }
+
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rotation * Math.PI) / 180);
+            ctx.globalAlpha = p.opacity;
+            ctx.fillStyle = p.color;
+
+            if (p.shape === "circle") {
+              ctx.beginPath();
+              ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+              ctx.fill();
+            } else {
+              ctx.fillRect(-p.size / 2, -p.size / 3, p.size, p.size * 0.7);
+            }
+
+            ctx.restore();
+          }
+
+          animId = requestAnimationFrame(render);
+        };
+
+        animId = requestAnimationFrame(render);
+      } catch (_) {}
+    },
+
+    cheer(options = {}) {
+      return this.celebrate(options);
+    },
+
+    celebrate(options = {}) {
+      const title = typeof options === "string" ? options : (options.title || "Hooray! 🎉");
+      const message = typeof options === "object" ? (options.message || "") : "";
+      
+      this.playChime();
+      this.triggerHaptics();
+      this.triggerConfetti(typeof options === "object" ? options : {});
+
+      if (typeof window !== "undefined" && window.Swal && (title || message)) {
+        window.Swal.fire({
+          icon: "success",
+          title: TipidCore.safeDialogText(title),
+          text: message ? TipidCore.safeDialogText(message) : undefined,
+          confirmButtonText: "Sige! / Great!",
+          confirmButtonColor: "#1F6F54",
+          customClass: { popup: "tipid-swal" },
+          timer: 4500,
+          timerProgressBar: true
+        });
+      }
+    }
+  };
+
+  const TipidBiometrics = {
+    isSupported() {
+      return (
+        typeof window !== "undefined" &&
+        window.isSecureContext &&
+        typeof window.PublicKeyCredential !== "undefined" &&
+        typeof window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === "function"
+      );
+    },
+
+    async isAvailable() {
+      try {
+        if (!this.isSupported()) return false;
+        return await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+      } catch (_) {
+        return false;
+      }
+    },
+
+    isEnabled(uid) {
+      if (!uid || typeof localStorage === "undefined") return false;
+      try {
+        return localStorage.getItem(`tipid_biometrics_enabled_${uid}`) === "true";
+      } catch (_) {
+        return false;
+      }
+    },
+
+    setEnabled(uid, enabled) {
+      if (!uid || typeof localStorage === "undefined") return;
+      try {
+        if (enabled) {
+          localStorage.setItem(`tipid_biometrics_enabled_${uid}`, "true");
+        } else {
+          localStorage.removeItem(`tipid_biometrics_enabled_${uid}`);
+          if (typeof sessionStorage !== "undefined") {
+            sessionStorage.removeItem(`tipid_biometrics_unlocked_${uid}`);
+          }
+        }
+      } catch (_) {}
+    },
+
+    isSessionUnlocked(uid) {
+      if (!uid || typeof sessionStorage === "undefined") return true;
+      if (!this.isEnabled(uid)) return true;
+      try {
+        return sessionStorage.getItem(`tipid_biometrics_unlocked_${uid}`) === "true";
+      } catch (_) {
+        return false;
+      }
+    },
+
+    setSessionUnlocked(uid, unlocked) {
+      if (!uid || typeof sessionStorage === "undefined") return;
+      try {
+        if (unlocked) {
+          sessionStorage.setItem(`tipid_biometrics_unlocked_${uid}`, "true");
+        } else {
+          sessionStorage.removeItem(`tipid_biometrics_unlocked_${uid}`);
+        }
+      } catch (_) {}
+    },
+
+    hasPasscode(uid) {
+      if (!uid || typeof localStorage === "undefined") return false;
+      try {
+        return !!localStorage.getItem(`tipid_biometrics_pin_${uid}`);
+      } catch (_) {
+        return false;
+      }
+    },
+
+    async hashPin(uid, pin) {
+      if (typeof window !== "undefined" && window.crypto && window.crypto.subtle) {
+        const enc = new TextEncoder();
+        const buf = await window.crypto.subtle.digest("SHA-256", enc.encode(`${pin}__tipid__${uid}`));
+        const arr = Array.from(new Uint8Array(buf));
+        return arr.map(b => b.toString(16).padStart(2, "0")).join("");
+      }
+      return `${uid}_${pin}_fallback`;
+    },
+
+    async setPasscode(uid, pin) {
+      if (!uid || !pin || typeof localStorage === "undefined") return false;
+      try {
+        const hash = await this.hashPin(uid, pin);
+        localStorage.setItem(`tipid_biometrics_pin_${uid}`, hash);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    },
+
+    async verifyPasscode(uid, pin) {
+      if (!uid || !pin || typeof localStorage === "undefined") return false;
+      try {
+        const stored = localStorage.getItem(`tipid_biometrics_pin_${uid}`);
+        if (!stored) return false;
+        const currentHash = await this.hashPin(uid, pin);
+        if (stored === currentHash) {
+          this.setSessionUnlocked(uid, true);
+          return true;
+        }
+        return false;
+      } catch (_) {
+        return false;
+      }
+    },
+
+    async register(uid, email = "user@tipid.app") {
+      if (!this.isSupported()) {
+        throw new Error("Biometric authentication is not supported in this browser/connection (requires HTTPS or localhost).");
+      }
+      const available = await this.isAvailable();
+      if (!available) {
+        throw new Error("No platform authenticator (Face ID / Touch ID / Fingerprint) was detected on this device.");
+      }
+
+      const challenge = new Uint8Array(32);
+      if (window.crypto && window.crypto.getRandomValues) {
+        window.crypto.getRandomValues(challenge);
+      }
+
+      const userId = new TextEncoder().encode(uid || "tipid_user");
+      const credential = await navigator.credentials.create({
+        publicKey: {
+          challenge,
+          rp: { name: "Tipid Expense Tracker", id: window.location.hostname },
+          user: {
+            id: userId,
+            name: email,
+            displayName: email.split("@")[0] || "Tipid User"
+          },
+          pubKeyCredParams: [
+            { type: "public-key", alg: -7 },
+            { type: "public-key", alg: -257 }
+          ],
+          authenticatorSelection: {
+            authenticatorAttachment: "platform",
+            userVerification: "required"
+          },
+          timeout: 60000
+        }
+      });
+
+      if (credential && credential.id) {
+        localStorage.setItem(`tipid_biometrics_cred_id_${uid}`, credential.id);
+        this.setEnabled(uid, true);
+        this.setSessionUnlocked(uid, true);
+        return true;
+      }
+      return false;
+    },
+
+    async verify(uid) {
+      if (!uid) return true;
+      if (!this.isEnabled(uid)) return true;
+      if (!this.isSupported()) return false;
+
+      const challenge = new Uint8Array(32);
+      if (window.crypto && window.crypto.getRandomValues) {
+        window.crypto.getRandomValues(challenge);
+      }
+
+      const credId = localStorage.getItem(`tipid_biometrics_cred_id_${uid}`);
+      const options = {
+        publicKey: {
+          challenge,
+          rpId: window.location.hostname,
+          userVerification: "required",
+          timeout: 60000
+        }
+      };
+
+      if (credId) {
+        try {
+          const binaryStr = atob(credId.replace(/-/g, "+").replace(/_/g, "/"));
+          const bytes = new Uint8Array(binaryStr.length);
+          for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+          options.publicKey.allowCredentials = [{
+            type: "public-key",
+            id: bytes,
+            transports: ["internal"]
+          }];
+        } catch (_) {}
+      }
+
+      const assertion = await navigator.credentials.get(options);
+      if (assertion) {
+        this.setSessionUnlocked(uid, true);
+        return true;
+      }
+      return false;
+    },
+
+    disable(uid) {
+      if (!uid) return;
+      this.setEnabled(uid, false);
+      try {
+        localStorage.removeItem(`tipid_biometrics_cred_id_${uid}`);
+        localStorage.removeItem(`tipid_biometrics_pin_${uid}`);
+        if (typeof sessionStorage !== "undefined") {
+          sessionStorage.removeItem(`tipid_biometrics_unlocked_${uid}`);
+        }
+      } catch (_) {}
+    }
+  };
+
+  try {
+    const initLang = TipidI18n.getLanguage();
+    if (typeof document !== "undefined" && document.documentElement) {
+      document.documentElement.lang = initLang === "tl" ? "fil" : "en";
+    }
+  } catch (_) {}
+
   window.TipidCore = Object.freeze({
     toCentavos, fromCentavos, money, sumMoney, walletBalances, cleanText, optionalText,
     assertChoice, isDateKey, manilaDateKey, entryDate, addMonthsClamped,
-    storageKey, formatPeso, safeDialogText, announce
+    storageKey, formatPeso, safeDialogText, announce, i18n: TipidI18n,
+    celebration: TipidCelebration, biometrics: TipidBiometrics
   });
+
+  window.TipidI18n = TipidI18n;
+
+  window.TipidReminders = TipidReminders;
+  window.TipidCelebration = TipidCelebration;
+  window.TipidBiometrics = TipidBiometrics;
 
   window.addEventListener("online", updateNetworkStatus);
   window.addEventListener("offline", updateNetworkStatus);

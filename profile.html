@@ -170,7 +170,11 @@
             MessageSquare: (p) => <Icon {...p} path={<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>} />,
             FileText: (p) => <Icon {...p} path={<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></>} />,
             ShieldAlert: (p) => <Icon {...p} path={<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />,
-            Coins: (p) => <Icon {...p} path={<><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></>} />
+            Coins: (p) => <Icon {...p} path={<><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></>} />,
+            Clock: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>} />,
+            CloudCheck: (p) => <Icon {...p} path={<><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/><polyline points="9 15 12 18 16 13"/></>} />,
+            TrendingUp: (p) => <Icon {...p} path={<><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>} />,
+            Trophy: (p) => <Icon {...p} path={<><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7v2h10v-2h-2c-.55 0-1-.45-1-1v-2.34c3.48-.63 6-3.66 6-7.32V4H4v5.34c0 3.66 2.52 6.69 6 7.32z"/></>} />
         };
 
         window.Logo = function Logo({ size = 30, className = "" }) {
@@ -220,24 +224,28 @@
 
         window.TIPID_TRANSLATIONS = {
             tl: {
-                back: "Bumalik", sectionAccount: "Account", sectionPreferences: "Preferences", sectionData: "Data & Backup",
-                sectionSupport: "Support", sectionDanger: "Danger Zone", menuManageProfile: "Manage Profile",
-                menuPasswordSecurity: "Password & Security", menuNotifications: "Notifications", menuLanguage: "Language",
-                menuAboutUs: "About Us", menuTheme: "Theme", menuFinancialGoals: "Financial Goals", menuDefaultWallet: "Default Wallet",
-                menuPesoDisplay: "Peso Display", menuExportData: "Export My Data", menuClearPrefs: "Clear Local Preferences",
-                menuHelpCenter: "Help Center", menuSendFeedback: "Send Feedback", menuRateTipid: "Rate Tipid",
-                menuTermsPrivacy: "Terms & Privacy", menuLogOut: "Log Out", menuDeleteAccount: "Delete Account",
-                themeDark: "Dark", themeLight: "Light", pesoHidden: "Walang Sentimo", pesoShown: "May Sentimo", memberSince: "Miyembro simula",
+                back: "Bumalik", sectionAccount: "Account", sectionPreferences: "Mga Kagustuhan", sectionData: "Datos at Backup",
+                sectionSupport: "Tulong at Suporta", sectionDanger: "Danger Zone", menuManageProfile: "Pamahalaan ang Profile",
+                menuPasswordSecurity: "Password at Seguridad", menuNotifications: "Mga Abiso at Paalala", menuBiometrics: "Biometric App Lock", menuLanguage: "Wika (Language)",
+                menuAboutUs: "Tungkol sa Tipid", menuTheme: "Tema ng Kulay", menuFinancialGoals: "Mga Hangaring Pinansyal", menuDefaultWallet: "Pangunahing Wallet",
+                menuPesoDisplay: "Pagpapakita ng Sentimo", menuExportData: "I-export ang Aking Datos", menuClearPrefs: "I-reset ang Local Preferences",
+                menuHelpCenter: "Sentro ng Tulong", menuSendFeedback: "Magpadala ng Puna", menuRateTipid: "I-rate ang Tipid",
+                menuTermsPrivacy: "Mga Tuntunin at Privacy", menuLogOut: "Mag-log Out", menuDeleteAccount: "Burahin ang Account",
+                themeDark: "Madilim", themeLight: "Maliwanag", pesoHidden: "Walang Sentimo", pesoShown: "May Sentimo", memberSince: "Miyembro simula",
+                langPrefDescription: "Piliin ang nais mong wika para sa buong sistema ng Tipid tracker.",
+                langSavedToast: "Matagumpay na pinalitan ang wika ng buong system sa Tagalog.",
             },
             en: {
                 back: "Back", sectionAccount: "Account", sectionPreferences: "Preferences", sectionData: "Data & Backup",
                 sectionSupport: "Support", sectionDanger: "Danger Zone", menuManageProfile: "Manage Profile",
-                menuPasswordSecurity: "Password & Security", menuNotifications: "Notifications", menuLanguage: "Language",
+                menuPasswordSecurity: "Password & Security", menuNotifications: "Notifications", menuBiometrics: "Biometric App Lock", menuLanguage: "Language",
                 menuAboutUs: "About Us", menuTheme: "Theme", menuFinancialGoals: "Financial Goals", menuDefaultWallet: "Default Wallet",
                 menuPesoDisplay: "Peso Display", menuExportData: "Export My Data", menuClearPrefs: "Clear Local Preferences",
                 menuHelpCenter: "Help Center", menuSendFeedback: "Send Feedback", menuRateTipid: "Rate Tipid",
                 menuTermsPrivacy: "Terms & Privacy", menuLogOut: "Log Out", menuDeleteAccount: "Delete Account",
                 themeDark: "Dark", themeLight: "Light", pesoHidden: "No Centavos", pesoShown: "With Centavos", memberSince: "Member since",
+                langPrefDescription: "Select your interface language preference across the entire Tipid tracker.",
+                langSavedToast: "System language successfully updated and saved as English.",
             },
         };
     </script>
@@ -358,6 +366,7 @@
             const dataReady = window.useDataReady();
 
             const [user, setUser] = React.useState(undefined);
+            const [avatarPreview, setAvatarPreview] = React.useState(null);
             const [activeMenu, setActiveMenu] = React.useState(null);
             const [isDark, setIsDark] = React.useState(() => document.documentElement.classList.contains('dark'));
 
@@ -379,13 +388,30 @@
             const [hideCentavos, setHideCentavos] = React.useState(false);
 
             const [notifDaily, setNotifDaily] = React.useState(true);
+            const [reminderTime, setReminderTime] = React.useState("20:00");
             const [notifOverbudget, setNotifOverbudget] = React.useState(true);
+            const [budgetThreshold, setBudgetThreshold] = React.useState(90);
+            const [lastReminderDate, setLastReminderDate] = React.useState(null);
+            const [permissionStatus, setPermissionStatus] = React.useState(() => {
+                return window.TipidReminders ? window.TipidReminders.getPermission() : "default";
+            });
+            const [savingNotif, setSavingNotif] = React.useState(false);
+            const [sendingTestNotif, setSendingTestNotif] = React.useState(false);
 
             const [exporting, setExporting] = React.useState(false);
             const [feedbackText, setFeedbackText] = React.useState("");
             const [sendingFeedback, setSendingFeedback] = React.useState(false);
             const [deleteConfirmText, setDeleteConfirmText] = React.useState("");
             const [deletingAccount, setDeletingAccount] = React.useState(false);
+
+            // Biometrics & Passcode States
+            const [bioEnabled, setBioEnabled] = React.useState(false);
+            const [bioAvailable, setBioAvailable] = React.useState(false);
+            const [bioSupported, setBioSupported] = React.useState(false);
+            const [bioTesting, setBioTesting] = React.useState(false);
+            const [hasPasscode, setHasPasscode] = React.useState(false);
+            const [passcodeInput, setPasscodeInput] = React.useState("");
+            const [showPasscodeForm, setShowPasscodeForm] = React.useState(false);
 
             const t = window.TIPID_TRANSLATIONS[lang] || window.TIPID_TRANSLATIONS.en;
 
@@ -400,6 +426,18 @@
             React.useEffect(() => {
                 if (user === null) window.location.href = "login.html";
             }, [user]);
+            React.useEffect(() => {
+                if (!user?.uid) return;
+                if (window.TipidBiometrics) {
+                    const enabled = window.TipidBiometrics.isEnabled(user.uid);
+                    const supported = window.TipidBiometrics.isSupported();
+                    const hasPin = window.TipidBiometrics.hasPasscode(user.uid);
+                    setBioEnabled(enabled);
+                    setBioSupported(supported);
+                    setHasPasscode(hasPin);
+                    window.TipidBiometrics.isAvailable().then(avail => setBioAvailable(avail));
+                }
+            }, [user?.uid]);
 
             React.useEffect(() => {
                 if (!dataReady || !user) return;
@@ -409,6 +447,80 @@
                     (err) => console.error(err)
                 );
             }, [dataReady, user]);
+
+            React.useEffect(() => {
+                if (!dataReady || !user?.uid) return;
+                if (!window.TipidData?.subscribePreferences) return;
+
+                return window.TipidData.subscribePreferences(user.uid, (prefs) => {
+                    if (prefs && (prefs.lang === 'tl' || prefs.lang === 'en')) {
+                        setLang(prefs.lang);
+                        if (window.TipidI18n) {
+                            window.TipidI18n.setLanguage(prefs.lang, user.uid);
+                        }
+                    }
+                });
+            }, [dataReady, user?.uid]);
+
+            React.useEffect(() => {
+                const handler = (e) => {
+                    if (e.detail?.lang) setLang(e.detail.lang);
+                };
+                window.addEventListener("tipid-language-change", handler);
+                return () => window.removeEventListener("tipid-language-change", handler);
+            }, []);
+
+            React.useEffect(() => {
+                if (!dataReady || !user?.uid) return;
+                if (!window.TipidData?.subscribeFinancialGoals) return;
+
+                return window.TipidData.subscribeFinancialGoals(user.uid, (g) => {
+                    if (!g) return;
+                    const scoped = (name) => localStorage.getItem(window.TipidCore.storageKey(user.uid, name));
+                    if (g.name && !scoped('goal_name')) setGoalName(g.name);
+                    if (g.targetAmount && !scoped('goal_amount')) setGoalAmount(String(g.targetAmount));
+                    if (g.wallet && !scoped('goal_wallet')) setGoalWallet(g.wallet);
+                    if (g.contribution && !scoped('goal_contrib')) setGoalContrib(String(g.contribution));
+                    if (g.frequency && !scoped('goal_freq')) setGoalFreq(g.frequency);
+                    if (g.startDate && !scoped('goal_start')) setGoalStart(g.startDate);
+                });
+            }, [dataReady, user?.uid]);
+
+            React.useEffect(() => {
+                if (!dataReady || !user?.uid) return;
+                if (!window.TipidData || !window.TipidData.subscribeNotificationSettings) return;
+
+                return window.TipidData.subscribeNotificationSettings(
+                    user.uid,
+                    (settings) => {
+                        if (!settings) return;
+                        if (typeof settings.dailyReminders === 'boolean') {
+                            setNotifDaily(settings.dailyReminders);
+                            localStorage.setItem(prefKey('notif_daily'), settings.dailyReminders ? '1' : '0');
+                        }
+                        if (typeof settings.reminderTime === 'string') {
+                            setReminderTime(settings.reminderTime);
+                            localStorage.setItem(prefKey('notif_reminder_time'), settings.reminderTime);
+                        }
+                        if (typeof settings.overbudgetAlerts === 'boolean') {
+                            setNotifOverbudget(settings.overbudgetAlerts);
+                            localStorage.setItem(prefKey('notif_overbudget'), settings.overbudgetAlerts ? '1' : '0');
+                        }
+                        if (typeof settings.budgetThreshold === 'number') {
+                            setBudgetThreshold(settings.budgetThreshold);
+                            localStorage.setItem(prefKey('notif_threshold'), String(settings.budgetThreshold));
+                        }
+                        if (settings.lastReminderDate) {
+                            setLastReminderDate(settings.lastReminderDate);
+                            localStorage.setItem(prefKey('last_daily_reminder'), settings.lastReminderDate);
+                        }
+                        if (window.TipidReminders && typeof window.TipidReminders.checkAndTriggerDaily === 'function') {
+                            window.TipidReminders.checkAndTriggerDaily(user.uid, settings);
+                        }
+                    },
+                    (err) => console.error("Notification settings sync error:", err)
+                );
+            }, [dataReady, user?.uid]);
 
             React.useEffect(() => {
                 if (!user?.uid) return;
@@ -422,7 +534,13 @@
                 setDefaultWallet(scoped('default_wallet') || 'Cash');
                 setHideCentavos(scoped('hide_centavos') === '1');
                 setNotifDaily(scoped('notif_daily') !== '0');
+                const savedReminderTime = scoped('notif_reminder_time');
+                if (savedReminderTime) setReminderTime(savedReminderTime);
                 setNotifOverbudget(scoped('notif_overbudget') !== '0');
+                const savedThreshold = scoped('notif_threshold');
+                if (savedThreshold) setBudgetThreshold(parseInt(savedThreshold, 10) || 90);
+                const savedLastDate = scoped('last_daily_reminder');
+                if (savedLastDate) setLastReminderDate(savedLastDate);
 
                 const savedStart = scoped('goal_start');
                 if (savedStart) {
@@ -480,6 +598,143 @@
                 });
             };
 
+            const handleAvatarFile = (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                if (file.size > 5 * 1024 * 1024) {
+                    swalError(lang === "tl" ? "Pumili ng imahe na mas maliit sa 5MB." : "Please choose an image smaller than 5MB.");
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (loadEvent) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement("canvas");
+                        const size = 256;
+                        canvas.width = size;
+                        canvas.height = size;
+                        const ctx = canvas.getContext("2d");
+                        const minDim = Math.min(img.width, img.height);
+                        const sx = (img.width - minDim) / 2;
+                        const sy = (img.height - minDim) / 2;
+                        ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+                        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+                        setAvatarPreview(dataUrl);
+                    };
+                    img.src = loadEvent.target.result;
+                };
+                reader.readAsDataURL(file);
+            };
+
+            const handleToggleBiometrics = async () => {
+                if (!user?.uid || !window.TipidBiometrics) return;
+                if (bioEnabled) {
+                    const result = await Swal.fire({
+                        title: lang === "tl" ? "I-off ang Biometrics?" : "Disable Biometric App Lock?",
+                        text: lang === "tl" ? "Hindi na hihingin ang Face ID / Fingerprint sa pagbubukas ng iyong balanse." : "You will no longer be prompted for Face ID / Fingerprint when viewing balances.",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#C84B31",
+                        cancelButtonColor: "#33443A",
+                        confirmButtonText: lang === "tl" ? "Oo, I-off" : "Yes, Disable",
+                        cancelButtonText: lang === "tl" ? "Kanselahin" : "Cancel",
+                        customClass: { popup: "tipid-swal" }
+                    });
+                    if (result.isConfirmed) {
+                        window.TipidBiometrics.disable(user.uid);
+                        setBioEnabled(false);
+                        setHasPasscode(false);
+                        swalSuccess(lang === "tl" ? "Naka-off na" : "Disabled", lang === "tl" ? "Na-off na ang biometric lock." : "Biometric lock has been disabled.");
+                    }
+                    return;
+                }
+                try {
+                    const supported = window.TipidBiometrics.isSupported();
+                    const available = await window.TipidBiometrics.isAvailable();
+                    if (supported && available) {
+                        setBioTesting(true);
+                        const success = await window.TipidBiometrics.register(user.uid, user.email);
+                        if (success) {
+                            setBioEnabled(true);
+                            if (window.TipidCelebration) {
+                                (window.TipidCelebration.celebrate || window.TipidCelebration.cheer).call(window.TipidCelebration, lang === "tl" ? "Aktibo na ang Face ID / Touch ID! 🎉" : "Biometric Lock Active! 🎉");
+                            }
+                            swalSuccess(
+                                lang === "tl" ? "Aktibo na ang Biometrics!" : "Biometrics Activated!",
+                                lang === "tl" ? "Naka-shield na ang iyong balanse gamit ang Face ID / Touch ID." : "Your balances are now securely shielded with your biometric sensor."
+                            );
+                        }
+                    } else {
+                        setShowPasscodeForm(true);
+                        Swal.fire({
+                            title: lang === "tl" ? "PIN Passcode Setup" : "PIN Passcode Setup",
+                            text: lang === "tl" ? "Walang biometric scanner sa browser na ito. Maglagay ng 4 hanggang 8 digit PIN Passcode bilang proteksyon." : "No biometric sensor detected on this device. You can set a 4 to 8 digit PIN Passcode instead.",
+                            icon: "info",
+                            confirmButtonColor: "#1F6F54",
+                            confirmButtonText: "OK",
+                            customClass: { popup: "tipid-swal" }
+                        });
+                    }
+                } catch (err) {
+                    console.warn("Biometrics registration error:", err);
+                    if (err.name === "NotAllowedError") {
+                        swalError(lang === "tl" ? "Kinansela ang biometric setup." : "Biometric setup was cancelled.");
+                    } else {
+                        setShowPasscodeForm(true);
+                        Swal.fire({
+                            title: "PIN Passcode Setup",
+                            text: err.message || (lang === "tl" ? "Hindi nakumpleto ang WebAuthn. Maaari kang magtakda ng PIN Passcode." : "Biometric authentication could not be completed. You can set a PIN Passcode instead."),
+                            icon: "info",
+                            confirmButtonColor: "#1F6F54",
+                            customClass: { popup: "tipid-swal" }
+                        });
+                    }
+                } finally {
+                    setBioTesting(false);
+                }
+            };
+
+            const handleTestBiometrics = async () => {
+                if (!user?.uid || !window.TipidBiometrics) return;
+                setBioTesting(true);
+                try {
+                    const verified = await window.TipidBiometrics.verify(user.uid);
+                    if (verified) {
+                        if (window.TipidCelebration) {
+                            (window.TipidCelebration.celebrate || window.TipidCelebration.cheer).call(window.TipidCelebration, lang === "tl" ? "Tagumpay ang Biometric Unlock! ✨" : "Biometric Unlock Verified! ✨");
+                        } else {
+                            swalSuccess(lang === "tl" ? "Tagumpay!" : "Verified!", lang === "tl" ? "Kinilala ang iyong Face ID / Fingerprint." : "Your biometric identity was confirmed.");
+                        }
+                    } else {
+                        swalError(lang === "tl" ? "Hindi kinilala ang biometrics." : "Biometric verification failed. Please try again.");
+                    }
+                } catch (err) {
+                    swalError(err.message || (lang === "tl" ? "May error sa pag-verify." : "Verification error."));
+                } finally {
+                    setBioTesting(false);
+                }
+            };
+
+            const handleSavePin = async (e) => {
+                e?.preventDefault();
+                if (!passcodeInput || passcodeInput.length < 4 || passcodeInput.length > 8) {
+                    swalError(lang === "tl" ? "Maglagay ng 4 hanggang 8 digit PIN." : "Please enter a 4 to 8 digit PIN.");
+                    return;
+                }
+                const success = await window.TipidBiometrics.setPasscode(user.uid, passcodeInput);
+                if (success) {
+                    window.TipidBiometrics.setEnabled(user.uid, true);
+                    setBioEnabled(true);
+                    setHasPasscode(true);
+                    setShowPasscodeForm(false);
+                    setPasscodeInput("");
+                    if (window.TipidCelebration) {
+                        (window.TipidCelebration.celebrate || window.TipidCelebration.cheer).call(window.TipidCelebration, lang === "tl" ? "Naitakda na ang iyong PIN Passcode! 🔒" : "PIN Passcode Configured! 🔒");
+                    }
+                    swalSuccess(lang === "tl" ? "Nai-save ang PIN!" : "PIN Saved!", lang === "tl" ? "Naka-lock na ang iyong mga balanse gamit ang iyong PIN." : "Your balances are now secured with your PIN passcode.");
+                }
+            };
+
             const handleUpdateProfile = async (e) => {
                 e.preventDefault();
                 if (!displayName.trim()) return swalError("Please enter your display name.");
@@ -487,8 +742,10 @@
                 try {
                     const { auth, authMod } = await getFirebaseHandles();
                     const liveUser = auth.currentUser || user;
-                    await authMod.updateProfile(liveUser, { displayName: displayName.trim() });
-                    setUser({ ...user, displayName: displayName.trim() });
+                    const profileUpdates = { displayName: displayName.trim() };
+                    if (avatarPreview) profileUpdates.photoURL = avatarPreview;
+                    await authMod.updateProfile(liveUser, profileUpdates);
+                    setUser({ ...user, displayName: displayName.trim(), photoURL: avatarPreview || user.photoURL });
                     swalSuccess("Success", "Your profile name has been updated.");
                 } catch (err) {
                     swalError("Failed to update profile. Please try again.");
@@ -526,7 +783,28 @@
                     if (goalFreq) localStorage.setItem(key('goal_freq'), goalFreq);
                     if (goalStart && window.TipidCore.isDateKey(goalStart)) localStorage.setItem(key('goal_start'), goalStart);
 
-                    swalSuccess("Success", "Your Financial Goals have been updated.");
+                    if (window.TipidData?.saveFinancialGoals) {
+                        await window.TipidData.saveFinancialGoals(user.uid, {
+                            name: goalName.trim(),
+                            targetAmount: !isNaN(targetAmt) && targetAmt > 0 ? targetAmt : null,
+                            wallet: goalWallet,
+                            contribution: !isNaN(contribAmt) && contribAmt > 0 ? contribAmt : null,
+                            frequency: goalFreq,
+                            startDate: goalStart
+                        });
+                    }
+
+                    if (window.TipidCelebration) {
+                        const isGoalTl = lang === "tl";
+                        window.TipidCelebration.celebrate({
+                            title: isGoalTl ? "Hangaring Pinansyal Naitala! 🎯" : "Financial Goal Set! 🎯",
+                            message: isGoalTl
+                                ? `Nai-sync sa cloud ang iyong hangarin na "${goalName.trim() || 'Savings'}"!`
+                                : `Your goal "${goalName.trim() || 'Savings'}" is now actively synced to the cloud!`
+                        });
+                    } else {
+                        swalSuccess(lang === "tl" ? "Tagumpay" : "Success", lang === "tl" ? "Nai-save ang iyong mga Hangaring Pinansyal sa cloud." : "Your Financial Goals have been updated and synced to the cloud.");
+                    }
                 } catch (err) {
                     swalError("Failed to save goals. Please try again.");
                 } finally {
@@ -535,11 +813,102 @@
             };
 
             const prefKey = (name) => window.TipidCore.storageKey(user.uid, name);
-            const handleSelectLang = (val) => { setLang(val); localStorage.setItem(prefKey('lang'), val); };
+            const handleSelectLang = async (val) => {
+                setLang(val);
+                if (window.TipidI18n) {
+                    window.TipidI18n.setLanguage(val, user?.uid);
+                } else {
+                    localStorage.setItem(prefKey('lang'), val);
+                    localStorage.setItem('tipid_lang', val);
+                }
+                if (user?.uid && window.TipidData?.saveLanguagePreference) {
+                    try {
+                        await window.TipidData.saveLanguagePreference(user.uid, val);
+                    } catch (e) {
+                        console.error("Failed to sync language to cloud:", e);
+                    }
+                }
+                const dict = (window.TIPID_TRANSLATIONS && window.TIPID_TRANSLATIONS[val]) || window.TIPID_TRANSLATIONS.en;
+                swalSuccess(val === "tl" ? "Wika ay Pinalitan" : "Language Updated", dict.langSavedToast || "Language updated successfully.");
+            };
             const handleSelectDefaultWallet = (val) => { setDefaultWallet(val); localStorage.setItem(prefKey('default_wallet'), val); setActiveMenu(null); };
             const toggleHideCentavos = () => { const next = !hideCentavos; setHideCentavos(next); localStorage.setItem(prefKey('hide_centavos'), next ? '1' : '0'); };
-            const toggleNotifDaily = () => { const next = !notifDaily; setNotifDaily(next); localStorage.setItem(prefKey('notif_daily'), next ? '1' : '0'); };
-            const toggleNotifOverbudget = () => { const next = !notifOverbudget; setNotifOverbudget(next); localStorage.setItem(prefKey('notif_overbudget'), next ? '1' : '0'); };
+            const saveCloudNotificationSettings = async (updates) => {
+                if (!user?.uid || !window.TipidData?.saveNotificationSettings) return;
+                setSavingNotif(true);
+                try {
+                    await window.TipidData.saveNotificationSettings(user.uid, updates);
+                } catch (e) {
+                    console.error("Failed to sync notifications to cloud:", e);
+                } finally {
+                    setSavingNotif(false);
+                }
+            };
+
+            const toggleNotifDaily = async () => {
+                const next = !notifDaily;
+                setNotifDaily(next);
+                localStorage.setItem(prefKey('notif_daily'), next ? '1' : '0');
+                if (next && window.TipidReminders && window.TipidReminders.getPermission() === 'default') {
+                    const perm = await window.TipidReminders.requestPermission();
+                    setPermissionStatus(perm);
+                }
+                await saveCloudNotificationSettings({ dailyReminders: next });
+            };
+
+            const handleReminderTimeChange = async (newTime) => {
+                setReminderTime(newTime);
+                localStorage.setItem(prefKey('notif_reminder_time'), newTime);
+                await saveCloudNotificationSettings({ reminderTime: newTime });
+            };
+
+            const toggleNotifOverbudget = async () => {
+                const next = !notifOverbudget;
+                setNotifOverbudget(next);
+                localStorage.setItem(prefKey('notif_overbudget'), next ? '1' : '0');
+                await saveCloudNotificationSettings({ overbudgetAlerts: next });
+            };
+
+            const handleThresholdChange = async (pct) => {
+                setBudgetThreshold(pct);
+                localStorage.setItem(prefKey('notif_threshold'), String(pct));
+                await saveCloudNotificationSettings({ budgetThreshold: pct });
+            };
+
+            const handleRequestPermission = async () => {
+                if (!window.TipidReminders) return;
+                const perm = await window.TipidReminders.requestPermission();
+                setPermissionStatus(perm);
+                if (perm === 'granted') {
+                    swalSuccess("Notifications Allowed!", "Makatatanggap ka na ngayon ng mga paalala at alerts mula sa Tipid.");
+                } else if (perm === 'denied') {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Notifications Blocked",
+                        text: "Naka-block ang notifications sa settings ng iyong browser. Paki-pindot ang padlock (site settings) icon sa address bar upang i-allow ang notifications.",
+                        confirmButtonColor: "#1F6F54",
+                        customClass: { popup: "tipid-swal" }
+                    });
+                }
+            };
+
+            const handleSendTestNotification = async () => {
+                if (!window.TipidReminders) return;
+                setSendingTestNotif(true);
+                try {
+                    const success = await window.TipidReminders.sendNotification("Tipid Test Reminder 🔔", {
+                        body: "Gumagana ang iyong daily reminders! I-log ang iyong gastusin ngayon para manatiling on track sa iyong budget.",
+                        tag: "tipid-test"
+                    });
+                    if (success) {
+                        swalSuccess("Notification Sent!", "Nagpadala ng test notification sa iyong device.");
+                    }
+                } catch (e) {
+                    swalError("Hindi maipadala ang notification. Pakisuri ang browser permission.");
+                } finally {
+                    setSendingTestNotif(false);
+                }
+            };
 
             const handleExportData = () => {
                 if (!window.TipidData || !window.TipidData.subscribeEntries) return swalError("Data export is currently unavailable.");
@@ -585,7 +954,7 @@
                     customClass: { popup: "tipid-swal" }
                 }).then((result) => {
                     if (!result.isConfirmed) return;
-                    ["goal_name", "goal_amount", "goal_wallet", "goal_contrib", "goal_freq", "goal_start", "default_wallet", "hide_centavos", "lang", "notif_daily", "notif_overbudget"].forEach(name => localStorage.removeItem(prefKey(name)));
+                    ["goal_name", "goal_amount", "goal_wallet", "goal_contrib", "goal_freq", "goal_start", "default_wallet", "hide_centavos", "lang", "notif_daily", "notif_overbudget", "notif_reminder_time", "notif_threshold", "last_daily_reminder"].forEach(name => localStorage.removeItem(prefKey(name)));
                     setGoalName(""); setGoalAmount(""); setGoalContrib(""); setGoalWallet("GCash"); setDefaultWallet("Cash"); setHideCentavos(false); setLang("en");
                     setNotifDaily(true); setNotifOverbudget(true);
                     swalSuccess("Cleared", "Local preferences have been reset.");
@@ -634,11 +1003,40 @@
             if (activeMenu === 'profile') {
                 return (
                     <SubPage title={t.menuManageProfile} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <form onSubmit={handleUpdateProfile} className="bento-card p-6 rounded-2xl">
+                        <form onSubmit={handleUpdateProfile} className="bento-card p-6 sm:p-8 rounded-2xl">
+                            {/* Avatar Picker */}
+                            <div className="flex flex-col items-center mb-6">
+                                <div className="relative group">
+                                    <div className="w-24 h-24 rounded-full border-4 border-peso/20 dark:border-white/20 overflow-hidden bg-black/5 dark:bg-white/10 flex items-center justify-center shadow-md relative">
+                                        <span className="text-3xl font-display font-bold text-peso dark:text-paper select-none">{initial}</span>
+                                        {(avatarPreview || user.photoURL) && (
+                                            <img
+                                                src={avatarPreview || user.photoURL}
+                                                alt=""
+                                                referrerPolicy="no-referrer"
+                                                crossOrigin="anonymous"
+                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                className="absolute inset-0 w-full h-full object-cover"
+                                            />
+                                        )}
+                                    </div>
+                                    <label className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-peso hover:bg-pesoLight text-white flex items-center justify-center cursor-pointer shadow-lg hover:scale-110 active:scale-95 transition-transform" title="Upload Photo">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                                            <circle cx="12" cy="13" r="3"/>
+                                        </svg>
+                                        <input type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />
+                                    </label>
+                                </div>
+                                <span className="text-xs text-ink2/60 dark:text-paper/60 mt-2.5 font-medium">
+                                    {lang === "tl" ? "Pindutin ang camera icon para mag-palit ng litrato" : "Tap camera icon to change avatar"}
+                                </span>
+                            </div>
+
                             <InputField label="Display Name" icon={<window.Icons.User size={18} />} value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Your name" />
                             <InputField label="Email Address" icon={<window.Icons.Globe size={18} />} value={user.email} disabled={true} />
                             <button type="submit" disabled={savingProfile} className="w-full mt-4 bg-gradient-to-r from-pesoLight to-peso text-white font-bold py-4 rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50">
-                                {savingProfile ? "Saving..." : "Save Profile"}
+                                {savingProfile ? (lang === "tl" ? "Ipinapasok..." : "Saving...") : (lang === "tl" ? "I-save ang Profile" : "Save Profile")}
                             </button>
                         </form>
                     </SubPage>
@@ -646,71 +1044,557 @@
             }
 
             if (activeMenu === 'goals') {
+                const parsedBudget = parseFloat(budgetInput) || 0;
+                const parsedTarget = parseFloat(goalAmount) || 0;
+                const parsedContrib = parseFloat(goalContrib) || 0;
+                const isTl = lang === "tl";
+
+                // Daily spending allowance estimate
+                const dailyLimitEstimate = parsedBudget > 0 ? (parsedBudget / 30) : 0;
+
+                // Live savings projection calculation
+                let monthlyContrib = parsedContrib;
+                let paydaysTotal = 0;
+                if (goalFreq === 'sahod') {
+                    monthlyContrib = parsedContrib * 2;
+                    paydaysTotal = parsedContrib > 0 ? Math.ceil(parsedTarget / parsedContrib) : 0;
+                } else if (goalFreq === 'weekly') {
+                    monthlyContrib = parsedContrib * 4.33;
+                    paydaysTotal = parsedContrib > 0 ? Math.ceil(parsedTarget / parsedContrib) : 0;
+                } else {
+                    paydaysTotal = parsedContrib > 0 ? Math.ceil(parsedTarget / parsedContrib) : 0;
+                }
+
+                const monthsNeeded = (parsedTarget > 0 && monthlyContrib > 0) ? Math.ceil(parsedTarget / monthlyContrib) : 0;
+                let formattedTargetDate = null;
+                if (monthsNeeded > 0) {
+                    const startObj = goalStart ? new Date(goalStart) : new Date();
+                    const targetObj = new Date(startObj);
+                    targetObj.setMonth(targetObj.getMonth() + monthsNeeded);
+                    formattedTargetDate = targetObj.toLocaleDateString(isTl ? "fil-PH" : "en-US", { month: "long", year: "numeric" });
+                }
+
+                const handleSelectIdea = (name, suggestedAmt) => {
+                    setGoalName(name);
+                    if (!goalAmount || parseFloat(goalAmount) <= 0) {
+                        setGoalAmount(String(suggestedAmt));
+                    }
+                };
+
                 return (
                     <SubPage title={t.menuFinancialGoals} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <form onSubmit={handleUpdatePreferences} className="bento-card p-5 sm:p-7 rounded-[1.5rem]">
+                        {/* Modern Hero Command Card */}
+                        <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#123D2E] via-[#1A543F] to-[#123D2E] text-white p-6 sm:p-7 shadow-xl mb-6">
+                            <div className="absolute top-0 right-0 -mr-10 -mt-10 w-44 h-44 rounded-full bg-pesoLight/20 blur-3xl pointer-events-none" />
+                            <div className="flex items-center justify-between gap-4 relative z-10">
+                                <div className="space-y-1.5 max-w-[340px]">
+                                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 backdrop-blur-md text-[11px] font-mono uppercase tracking-wider text-pesoLight">
+                                        <window.Icons.Trophy size={13} />
+                                        <span>{isTl ? "Plano sa Pera" : "Wealth Milestones"}</span>
+                                    </div>
+                                    <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-paper">
+                                        {isTl ? "Mga Hangaring Pinansyal" : "Financial Goals"}
+                                    </h2>
+                                    <p className="text-[12.5px] font-medium text-paper/70 leading-relaxed">
+                                        {isTl
+                                            ? "Itakda ang iyong buwanang badyet at simulan ang pag-abot sa iyong savings targets."
+                                            : "Establish your monthly spending ceiling and simulate your path to savings targets."}
+                                    </p>
+                                </div>
+                                <div className="hidden sm:block shrink-0 -mb-2">
+                                    <img src="/assets/allowance_mascot.png" alt="Tipid Goals Mascot" className="w-24 h-24 object-contain drop-shadow-md mascot-hover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                </div>
+                            </div>
+                        </div>
 
-                            <div className="mb-8">
-                                <h3 className="font-display text-[18px] font-bold text-ink dark:text-paper mb-1">Monthly Budget</h3>
-                                <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mb-5">Set your monthly spending ceiling.</p>
-                                <InputField label="Budget Limit (₱)" icon={<window.Icons.Wallet size={18} />} type="number" step="0.01" value={budgetInput} onChange={e => setBudgetInput(e.target.value)} placeholder="e.g. 15000" />
+                        {/* Interactive Projection Card */}
+                        <div className="bento-card p-5 sm:p-6 rounded-[1.75rem] mb-6 border border-line/60 dark:border-white/10 shadow-sm relative overflow-hidden">
+                            <div className="flex items-center justify-between gap-3 mb-3">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-xl bg-gold/15 text-gold flex items-center justify-center shrink-0">
+                                        <window.Icons.TrendingUp size={18} />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-display font-bold text-[15px] text-ink dark:text-paper">
+                                            {isTl ? "Live Projection & Estimator" : "Live Projection & Estimator"}
+                                        </h4>
+                                        <p className="text-[11px] font-medium text-ink2/50 dark:text-paper/40">
+                                            {isTl ? "Awtomatikong kalkulasyon batay sa iyong kontribusyon" : "Real-time forecast based on your target and frequency"}
+                                        </p>
+                                    </div>
+                                </div>
+                                <span className="font-mono text-[10px] font-bold uppercase tracking-wider bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight px-2.5 py-1 rounded-full">
+                                    {isTl ? "Simulator" : "Active Forecast"}
+                                </span>
                             </div>
 
-                            <hr className="border-line/60 dark:border-white/10 mb-8" />
+                            {parsedTarget > 0 && parsedContrib > 0 && formattedTargetDate ? (
+                                <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/5 space-y-3.5">
+                                    <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                                        <div>
+                                            <span className="text-[11px] font-bold uppercase tracking-widest text-ink2/40 dark:text-paper/40">
+                                                {isTl ? "Tinatayang Petsa ng Tagumpay" : "Estimated Completion Date"}
+                                            </span>
+                                            <p className="font-display font-bold text-2xl sm:text-3xl text-peso dark:text-pesoLight mt-0.5">
+                                                {formattedTargetDate}
+                                            </p>
+                                        </div>
+                                        <div className="sm:text-right">
+                                            <span className="inline-block px-3 py-1 rounded-full text-[12px] font-mono font-bold bg-gold/15 text-gold dark:bg-gold/20">
+                                                ~{monthsNeeded} {isTl ? "buwan" : "months"} ({paydaysTotal} {isTl ? "paydays" : "paydays"})
+                                            </span>
+                                        </div>
+                                    </div>
 
-                            <div className="mb-6">
-                                <h3 className="font-display text-[18px] font-bold text-ink dark:text-paper mb-1">Savings Goal (Estimator)</h3>
-                                <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mb-6 leading-relaxed">The dashboard automatically projects when you will reach this goal based on your contributions.</p>
+                                    {/* Progress Pace Bar */}
+                                    <div className="space-y-1.5">
+                                        <div className="flex justify-between text-[11px] font-medium text-ink2/60 dark:text-paper/60">
+                                            <span>{isTl ? "Bilis ng Ipon" : "Savings Velocity"}: ₱{window.TipidCore.formatPeso(monthlyContrib)} / {isTl ? "buwan" : "mo"}</span>
+                                            <span className="font-mono font-bold text-ink dark:text-paper">₱{window.TipidCore.formatPeso(parsedTarget)} {isTl ? "Target" : "Goal"}</span>
+                                        </div>
+                                        <div className="w-full h-2.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden p-0.5">
+                                            <div className="h-full bg-gradient-to-r from-pesoLight to-gold rounded-full transition-all duration-500 w-3/4 animate-pulse" />
+                                        </div>
+                                    </div>
 
-                                <InputField label="Savings Goal Name" icon={<window.Icons.Target size={18} />} value={goalName} onChange={e => setGoalName(e.target.value)} placeholder="e.g. Emergency Fund, Travel" />
-                                <InputField label="Target Amount (₱)" icon={<span className="font-mono text-[16px] font-bold">₱</span>} type="number" step="0.01" value={goalAmount} onChange={e => setGoalAmount(e.target.value)} placeholder="e.g. 50000" />
+                                    <div className="p-3 rounded-xl bg-peso/5 dark:bg-pesoLight/5 border border-peso/15 text-[11.5px] font-medium text-ink2/70 dark:text-paper/70 flex items-start gap-2">
+                                        <span className="shrink-0 text-peso dark:text-pesoLight">💡</span>
+                                        <span>
+                                            {isTl
+                                                ? `Tipid Insight: Sa halagang ₱${window.TipidCore.formatPeso(parsedContrib)} bawat ${goalFreq === 'sahod' ? 'sahod' : 'buwan'}, maaabot mo ang iyong layunin bago matapos ang ${formattedTargetDate}.`
+                                                : `Tipid Insight: Contributing ₱${window.TipidCore.formatPeso(parsedContrib)} per ${goalFreq === 'sahod' ? 'payday' : 'month'} puts you steadily on track to achieve your goal by ${formattedTargetDate}.`}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between pt-1">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (window.TipidCelebration) {
+                                                    window.TipidCelebration.celebrate({
+                                                        title: isTl ? "🎉 Target Naabot!" : "🎉 Milestone Achieved!",
+                                                        message: isTl
+                                                            ? ("Hooray! Papunta ka na sa iyong ₱" + window.TipidCore.formatPeso(parsedTarget) + " na hangarin para sa " + (goalName.trim() || "Savings") + "!")
+                                                            : ("Hooray! You are pacing towards your ₱" + window.TipidCore.formatPeso(parsedTarget) + " milestone for " + (goalName.trim() || "Savings") + "!")
+                                                    });
+                                                }
+                                            }}
+                                            className="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-peso dark:text-pesoLight hover:underline active:scale-95 transition-all"
+                                        >
+                                            <span>🎉</span>
+                                            <span>{isTl ? "I-preview ang Milestone Fanfare" : "Preview Milestone Fanfare"}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="mt-4 p-4 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-dashed border-black/10 dark:border-white/10 text-center">
+                                    <p className="text-[12.5px] font-medium text-ink2/60 dark:text-paper/60">
+                                        {isTl
+                                            ? "Ilagay ang Target Amount at Contribution sa ibaba upang makita ang tinatayang petsa ng iyong layunin!"
+                                            : "Enter your Goal Target and Contribution amount below to see your personalized milestone timeline!"}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
 
-                                <div className="mb-5">
-                                    <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Target Savings Wallet</label>
-                                    <div className="flex items-center gap-3 bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 transition-all relative">
+                        {/* FORM CONTAINER */}
+                        <form onSubmit={handleUpdatePreferences} className="space-y-6">
+
+                            {/* Section 1: Monthly Budget */}
+                            <div className="bento-card p-5 sm:p-7 rounded-[1.75rem] border border-line/60 dark:border-white/10 shadow-sm space-y-4">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-xl bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center shrink-0">
+                                        <window.Icons.Wallet size={18} />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-display text-[17px] font-bold text-ink dark:text-paper">
+                                            {isTl ? "Buwanang Badyet" : "Monthly Budget"}
+                                        </h3>
+                                        <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60">
+                                            {isTl ? "Itakda ang pinakamataas na halaga na nais mong gastusin sa isang buwan." : "Set your overall spending ceiling to pace your expenses."}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[11px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">
+                                        {isTl ? "Limitasyon sa Badyet (₱)" : "Budget Limit (₱)"}
+                                    </label>
+                                    <div className="flex items-center gap-3 bg-white/60 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-2xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 focus-within:bg-white dark:focus-within:bg-ink transition-all">
+                                        <span className="font-mono text-[18px] font-bold text-peso dark:text-pesoLight">₱</span>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={budgetInput}
+                                            onChange={e => setBudgetInput(e.target.value)}
+                                            placeholder="e.g. 15000"
+                                            className="w-full bg-transparent py-4 text-[16px] font-mono font-bold text-ink dark:text-paper focus:outline-none placeholder-ink2/30"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Budget Presets */}
+                                <div>
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-ink2/40 dark:text-paper/40 mb-2 block pl-1">
+                                        {isTl ? "Mabilisang Pagpili" : "Quick Presets"}
+                                    </span>
+                                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                                        {["5000", "10000", "15000", "20000", "30000", "50000"].map((presetAmt) => (
+                                            <button
+                                                key={presetAmt}
+                                                type="button"
+                                                onClick={() => setBudgetInput(presetAmt)}
+                                                className={`py-2 rounded-xl text-center border font-mono text-[12px] font-bold transition-all active:scale-95 ${
+                                                    budgetInput === presetAmt
+                                                        ? "bg-peso text-white border-peso shadow-sm"
+                                                        : "bg-white/60 dark:bg-black/20 border-black/5 dark:border-white/5 text-ink dark:text-paper hover:bg-black/5 dark:hover:bg-white/5"
+                                                }`}
+                                            >
+                                                ₱{parseInt(presetAmt).toLocaleString()}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {dailyLimitEstimate > 0 && (
+                                    <div className="p-3 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center justify-between text-[12px]">
+                                        <span className="font-medium text-ink2/60 dark:text-paper/60">
+                                            {isTl ? "Ligtas na gastusin bawat araw" : "Safe daily spending allowance"}:
+                                        </span>
+                                        <span className="font-mono font-bold text-peso dark:text-pesoLight">
+                                            ~₱{dailyLimitEstimate.toFixed(2)} / {isTl ? "araw" : "day"}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Section 2: Savings Goal Details */}
+                            <div className="bento-card p-5 sm:p-7 rounded-[1.75rem] border border-line/60 dark:border-white/10 shadow-sm space-y-4">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-xl bg-gold/15 text-gold flex items-center justify-center shrink-0">
+                                        <window.Icons.Target size={18} />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-display text-[17px] font-bold text-ink dark:text-paper">
+                                            {isTl ? "Savings Goal & Estimator" : "Savings Goal & Estimator"}
+                                        </h3>
+                                        <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60">
+                                            {isTl ? "Magplano para sa emergency fund, bakasyon, gadget, o ipon." : "Plan for an emergency fund, gadget, vacation, or downpayment."}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Goal Suggestions Chips */}
+                                <div>
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-ink2/40 dark:text-paper/40 mb-2 block pl-1">
+                                        {isTl ? "Mga Mungkahing Layunin" : "Popular Goal Ideas"}
+                                    </span>
+                                    <div className="flex flex-wrap gap-2">
+                                        {[
+                                            { name: "Emergency Fund 🛡️", amt: 50000 },
+                                            { name: "Travel & Vacation ✈️", amt: 35000 },
+                                            { name: "Laptop / Tech 💻", amt: 45000 },
+                                            { name: "Home & Rent 🏠", amt: 100000 },
+                                            { name: "Vehicle Downpayment 🚗", amt: 60000 }
+                                        ].map((chip) => (
+                                            <button
+                                                key={chip.name}
+                                                type="button"
+                                                onClick={() => handleSelectIdea(chip.name, chip.amt)}
+                                                className={`px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all active:scale-95 ${
+                                                    goalName === chip.name
+                                                        ? "bg-gold text-[#111] font-bold border-gold shadow-sm"
+                                                        : "bg-white/60 dark:bg-black/20 border-black/5 dark:border-white/5 text-ink dark:text-paper hover:bg-black/5 dark:hover:bg-white/5"
+                                                }`}
+                                            >
+                                                {chip.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <InputField
+                                    label={isTl ? "Pangalan ng Layunin" : "Savings Goal Name"}
+                                    icon={<window.Icons.Target size={18} />}
+                                    value={goalName}
+                                    onChange={e => setGoalName(e.target.value)}
+                                    placeholder={isTl ? "hal. Emergency Fund, Travel" : "e.g. Emergency Fund, Travel"}
+                                />
+
+                                <div>
+                                    <label className="block text-[11px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">
+                                        {isTl ? "Target na Halaga (₱)" : "Target Amount (₱)"}
+                                    </label>
+                                    <div className="flex items-center gap-3 bg-white/60 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-2xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 focus-within:bg-white dark:focus-within:bg-ink transition-all">
+                                        <span className="font-mono text-[16px] font-bold text-peso dark:text-pesoLight">₱</span>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={goalAmount}
+                                            onChange={e => setGoalAmount(e.target.value)}
+                                            placeholder="e.g. 50000"
+                                            className="w-full bg-transparent py-3.5 text-[15px] font-mono font-bold text-ink dark:text-paper focus:outline-none placeholder-ink2/30"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[11px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">
+                                        {isTl ? "Pangunahing Savings Wallet" : "Target Savings Wallet"}
+                                    </label>
+                                    <div className="flex items-center gap-3 bg-white/60 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-2xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 transition-all relative">
                                         <window.Icons.Wallet size={18} className="text-ink2/40 dark:text-paper/40" />
-                                        <select value={goalWallet} onChange={e => setGoalWallet(e.target.value)} className="w-full bg-transparent py-3.5 text-[15px] font-semibold text-ink dark:text-paper focus:outline-none appearance-none cursor-pointer">
+                                        <select
+                                            value={goalWallet}
+                                            onChange={e => setGoalWallet(e.target.value)}
+                                            className="w-full bg-transparent py-3.5 text-[15px] font-semibold text-ink dark:text-paper focus:outline-none appearance-none cursor-pointer pr-10"
+                                        >
                                             {window.SUPPORTED_WALLETS.map(w => <option key={w.id} value={w.id} className="bg-paper dark:bg-ink">{w.name}</option>)}
                                         </select>
                                         <window.Icons.ChevronRight size={16} className="absolute right-4 text-ink2/30 rotate-90 pointer-events-none" />
                                     </div>
-                                    <p className="text-[11px] font-medium mt-2 ml-1 text-ink2/50 dark:text-paper/40">The dashboard tracks this wallet's balance toward your goal.</p>
+                                    <p className="text-[11px] font-medium mt-1.5 ml-1 text-ink2/50 dark:text-paper/40">
+                                        {isTl ? "Susubaybayan sa Dashboard ang balance ng wallet na ito patungo sa iyong layunin." : "The dashboard tracks this wallet's balance toward your goal."}
+                                    </p>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4 mb-5">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Contribution (₱)</label>
-                                        <div className="flex items-center gap-2 bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 transition-all">
+                                        <label className="block text-[11px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">
+                                            {isTl ? "Ihuhulog / Kontribusyon (₱)" : "Contribution (₱)"}
+                                        </label>
+                                        <div className="flex items-center gap-2 bg-white/60 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-2xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 transition-all">
                                             <span className="font-mono font-bold text-[15px] text-ink2/40 dark:text-paper/40">₱</span>
-                                            <input type="number" step="0.01" value={goalContrib} onChange={e => setGoalContrib(e.target.value)} placeholder="e.g. 1000" className="w-full bg-transparent py-3.5 text-[15px] font-semibold text-ink dark:text-paper focus:outline-none" />
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                value={goalContrib}
+                                                onChange={e => setGoalContrib(e.target.value)}
+                                                placeholder="e.g. 2000"
+                                                className="w-full bg-transparent py-3.5 text-[15px] font-mono font-semibold text-ink dark:text-paper focus:outline-none"
+                                            />
                                         </div>
                                     </div>
-                                    <div className="relative">
-                                        <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Frequency</label>
-                                        <div className="flex items-center bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 transition-all">
-                                            <select value={goalFreq} onChange={e => setGoalFreq(e.target.value)} className="w-full bg-transparent py-3.5 text-[14px] font-semibold text-ink dark:text-paper focus:outline-none appearance-none cursor-pointer">
-                                                <option value="sahod" className="bg-paper dark:bg-ink">Per Payday (2x/mo)</option>
-                                                <option value="monthly" className="bg-paper dark:bg-ink">Monthly</option>
+
+                                    <div>
+                                        <label className="block text-[11px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">
+                                            {isTl ? "Kadalasan (Frequency)" : "Frequency"}
+                                        </label>
+                                        <div className="flex items-center bg-white/60 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-2xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 transition-all relative">
+                                            <select
+                                                value={goalFreq}
+                                                onChange={e => setGoalFreq(e.target.value)}
+                                                className="w-full bg-transparent py-3.5 text-[14px] font-semibold text-ink dark:text-paper focus:outline-none appearance-none cursor-pointer pr-10"
+                                            >
+                                                <option value="sahod" className="bg-paper dark:bg-ink">{isTl ? "Tuwing Sahod (2x kada buwan)" : "Per Payday (2x/mo)"}</option>
+                                                <option value="monthly" className="bg-paper dark:bg-ink">{isTl ? "Buwanan (1x kada buwan)" : "Monthly (1x/mo)"}</option>
+                                                <option value="weekly" className="bg-paper dark:bg-ink">{isTl ? "Lingguhan (Weekly)" : "Weekly"}</option>
                                             </select>
                                             <window.Icons.ChevronRight size={16} className="absolute right-4 text-ink2/30 rotate-90 pointer-events-none" />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="mb-2">
-                                    <label className="block text-[12px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">Start Date</label>
-                                    <div className="flex items-center gap-3 bg-white/50 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 transition-all">
+                                <div>
+                                    <label className="block text-[11px] font-bold text-ink2/60 dark:text-paper/60 mb-2 pl-1 uppercase tracking-widest">
+                                        {isTl ? "Petsa ng Pagsisimula" : "Start Date"}
+                                    </label>
+                                    <div className="flex items-center gap-3 bg-white/60 dark:bg-black/20 ring-1 ring-black/10 dark:ring-white/10 rounded-2xl px-4 shadow-sm focus-within:ring-2 focus-within:ring-peso/50 transition-all">
                                         <window.Icons.Calendar size={18} className="text-ink2/40 dark:text-paper/40" />
-                                        <input type="date" value={goalStart} onChange={e => setGoalStart(e.target.value)} className="w-full bg-transparent py-3.5 text-[15px] font-mono font-semibold text-ink dark:text-paper focus:outline-none" />
+                                        <input
+                                            type="date"
+                                            value={goalStart}
+                                            onChange={e => setGoalStart(e.target.value)}
+                                            className="w-full bg-transparent py-3.5 text-[15px] font-mono font-semibold text-ink dark:text-paper focus:outline-none"
+                                        />
                                     </div>
                                 </div>
-
                             </div>
 
-                            <button type="submit" disabled={savingGoals} className="w-full mt-4 bg-gradient-to-r from-goldLight to-gold hover:shadow-lg hover:shadow-gold/20 text-[#111] font-bold py-4 rounded-xl transition-all disabled:opacity-50 text-[15px] shadow-sm active:scale-95">
-                                {savingGoals ? "Saving..." : "Save Goals"}
+                            {/* Cloud Sync & Action Buttons */}
+                            <div className="p-4 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center justify-between text-[12px] text-ink2/60 dark:text-paper/60">
+                                <span className="flex items-center gap-2 font-medium">
+                                    <window.Icons.CloudCheck size={16} className="text-peso dark:text-pesoLight" />
+                                    {isTl ? "Naka-sync sa Firebase Database" : "Synchronized with Firebase cloud"}
+                                </span>
+                                <span className="font-mono text-[10px] uppercase font-bold text-peso dark:text-pesoLight bg-peso/10 dark:bg-pesoLight/10 px-2 py-0.5 rounded-full">
+                                    Cloud Active
+                                </span>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={savingGoals}
+                                className="w-full bg-gradient-to-r from-pesoLight via-peso to-pesoDeep hover:shadow-xl hover:shadow-peso/20 text-white font-bold py-4 rounded-2xl transition-all disabled:opacity-50 text-[15px] shadow-md active:scale-[0.98] flex items-center justify-center gap-2"
+                            >
+                                {savingGoals ? (
+                                    <><window.Icons.Loader size={18} className="spin" /> {isTl ? "Inise-save..." : "Saving..."}</>
+                                ) : (
+                                    <><window.Icons.Check size={18} /> {isTl ? "I-save ang mga Hangaring Pinansyal" : "Save Financial Goals"}</>
+                                )}
                             </button>
                         </form>
+                    </SubPage>
+                );
+            }
+
+            if (activeMenu === 'biometrics') {
+                return (
+                    <SubPage title={lang === "tl" ? "Biometric App Lock" : "Biometric App Lock"} backLabel={t.back} onBack={() => setActiveMenu(null)}>
+                        {/* Status Hero Bento */}
+                        <div className="bento-card p-6 sm:p-8 rounded-[2rem] text-center mb-6 relative overflow-hidden border border-peso/20 bg-gradient-to-br from-paper to-paperDim dark:from-white/[0.04] dark:to-white/[0.01]">
+                            <div className="relative w-24 h-24 mx-auto mb-5 rounded-3xl bg-peso/10 dark:bg-pesoLight/15 flex items-center justify-center text-peso dark:text-pesoLight ring-8 ring-peso/5 dark:ring-pesoLight/5 shadow-inner">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M4 8V6a2 2 0 0 1 2-2h2" />
+                                    <path d="M4 16v2a2 2 0 0 0 2 2h2" />
+                                    <path d="M16 4h2a2 2 0 0 1 2 2v2" />
+                                    <path d="M16 20h2a2 2 0 0 0 2-2v-2" />
+                                    <circle cx="9" cy="10" r="1.2" fill="currentColor" />
+                                    <circle cx="15" cy="10" r="1.2" fill="currentColor" />
+                                    <path d="M9.5 15a3.5 3.5 0 0 0 5 0" />
+                                    <path d="M12 11v2" />
+                                </svg>
+                            </div>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider mb-2.5 shadow-sm border border-line dark:border-white/10 bg-white/60 dark:bg-black/40">
+                                <span className={`w-2 h-2 rounded-full ${bioEnabled ? "bg-peso animate-pulse" : "bg-black/30 dark:bg-white/30"}`} />
+                                <span className={bioEnabled ? "text-peso dark:text-pesoLight" : "text-ink2/60 dark:text-paper/60"}>
+                                    {bioEnabled ? (lang === "tl" ? "AKTIBO ANG SHIELD" : "SHIELD ACTIVE") : (lang === "tl" ? "HINDI AKTIBO" : "INACTIVE")}
+                                </span>
+                            </div>
+                            <h2 className="font-display font-bold text-2xl text-ink dark:text-paper mb-2">
+                                {lang === "tl" ? "Biometric & Passcode Lock" : "Biometric & Passcode Lock"}
+                            </h2>
+                            <p className="text-[13px] font-medium text-ink2/70 dark:text-paper/70 leading-relaxed max-w-md mx-auto">
+                                {lang === "tl"
+                                    ? "Protektahan ang iyong mga balanse at talaan ng pera gamit ang Face ID, Touch ID, o PIN bago mabuksan ng iba."
+                                    : "Shield your sensitive balances and financial figures behind Face ID, Touch ID, or a secure PIN passcode."}
+                            </p>
+                        </div>
+
+                        {/* Main Toggle Card */}
+                        <div className="bento-card p-5 sm:p-6 rounded-2xl mb-5 flex items-center justify-between border border-line/80 dark:border-white/10">
+                            <div className="pr-4">
+                                <p className="font-bold text-[15px] text-ink dark:text-paper">
+                                    {lang === "tl" ? "I-on ang Biometric Lock" : "Require Biometrics / PIN"}
+                                </p>
+                                <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mt-0.5">
+                                    {bioEnabled
+                                        ? (lang === "tl" ? "Naka-on. Hihingin ang biometrics bago makita ang balanse." : "Enabled. Verification is required to reveal balances.")
+                                        : (lang === "tl" ? "I-on para protektahan ang dashboard sa mga sumisilip." : "Turn on to shield your financial data from prying eyes.")}
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleToggleBiometrics}
+                                disabled={bioTesting}
+                                className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${bioEnabled ? "bg-peso" : "bg-black/20 dark:bg-white/20"}`}
+                            >
+                                <span
+                                    className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${bioEnabled ? "translate-x-5" : "translate-x-0"}`}
+                                />
+                            </button>
+                        </div>
+
+                        {/* Test Authentication Button */}
+                        {bioEnabled && (
+                            <div className="bento-card p-5 sm:p-6 rounded-2xl mb-5 border border-line/80 dark:border-white/10">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                        <p className="font-bold text-[14px] text-ink dark:text-paper">
+                                            {lang === "tl" ? "Subukan ang Pag-unlock" : "Test Biometric Unlock"}
+                                        </p>
+                                        <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mt-0.5">
+                                            {lang === "tl" ? "I-verify kung gumagana nang maayos ang iyong Face ID / Fingerprint." : "Verify that your Face ID, Touch ID, or PIN triggers properly."}
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={handleTestBiometrics}
+                                    disabled={bioTesting}
+                                    className="w-full py-3.5 px-4 rounded-xl font-bold text-sm bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight hover:bg-peso/20 dark:hover:bg-pesoLight/25 transition-all flex items-center justify-center gap-2 active:scale-98"
+                                >
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M4 8V6a2 2 0 0 1 2-2h2" />
+                                        <path d="M4 16v2a2 2 0 0 0 2 2h2" />
+                                        <path d="M16 4h2a2 2 0 0 1 2 2v2" />
+                                        <path d="M16 20h2a2 2 0 0 0 2-2v-2" />
+                                        <circle cx="9" cy="10" r="1.2" fill="currentColor" />
+                                        <circle cx="15" cy="10" r="1.2" fill="currentColor" />
+                                        <path d="M9.5 15a3.5 3.5 0 0 0 5 0" />
+                                        <path d="M12 11v2" />
+                                    </svg>
+                                    <span>{bioTesting ? (lang === "tl" ? "Sinusuri..." : "Verifying...") : (lang === "tl" ? "Subukan ang Face ID / Touch ID" : "Test Face ID / Touch ID")}</span>
+                                </button>
+                            </div>
+                        )}
+
+                        {/* PIN Passcode Fallback Section */}
+                        <div className="bento-card p-5 sm:p-6 rounded-2xl mb-5 border border-line/80 dark:border-white/10">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-bold text-[14px] text-ink dark:text-paper">
+                                            {lang === "tl" ? "Backup PIN Passcode" : "Backup PIN Passcode"}
+                                        </p>
+                                        <span className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full ${hasPasscode ? "bg-peso/15 text-peso dark:text-pesoLight" : "bg-black/5 dark:bg-white/10 text-ink2/50 dark:text-paper/40"}`}>
+                                            {hasPasscode ? (lang === "tl" ? "Naka-set" : "Configured") : (lang === "tl" ? "Wala pa" : "Not Set")}
+                                        </span>
+                                    </div>
+                                    <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mt-0.5">
+                                        {lang === "tl"
+                                            ? "Maaaring gamitin kung sakaling hindi available ang Face ID sa kasalukuyang browser."
+                                            : "Used as an alternative unlock when biometric sensors are unavailable."}
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPasscodeForm(!showPasscodeForm)}
+                                    className="text-xs font-bold text-peso dark:text-pesoLight hover:underline shrink-0 ml-2"
+                                >
+                                    {showPasscodeForm ? (lang === "tl" ? "Itago" : "Hide") : (hasPasscode ? (lang === "tl" ? "Palitan" : "Change") : (lang === "tl" ? "I-set up" : "Set PIN"))}
+                                </button>
+                            </div>
+
+                            {showPasscodeForm && (
+                                <form onSubmit={handleSavePin} className="mt-4 pt-4 border-t border-line/60 dark:border-white/10 flex flex-col gap-3">
+                                    <label className="text-xs font-semibold text-ink2 dark:text-paper/80">
+                                        {lang === "tl" ? "Ilagay ang 4 hanggang 8 digit PIN:" : "Enter 4 to 8 digit PIN:"}
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="password"
+                                            inputMode="numeric"
+                                            maxLength={8}
+                                            placeholder="••••"
+                                            value={passcodeInput}
+                                            onChange={(e) => setPasscodeInput(e.target.value.replace(/\D/g, ""))}
+                                            className="flex-1 px-4 py-2.5 rounded-xl border border-line dark:border-white/15 bg-white dark:bg-black/30 text-ink dark:text-paper font-mono tracking-widest text-center text-lg focus:outline-none focus:ring-2 focus:ring-peso/40"
+                                        />
+                                        <button
+                                            type="submit"
+                                            className="px-5 py-2.5 rounded-xl font-bold text-sm bg-peso text-white hover:bg-pesoLight transition-all active:scale-95 shadow-sm"
+                                        >
+                                            {lang === "tl" ? "I-save" : "Save"}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+                        </div>
+
+                        {/* Apple HIG Privacy Note */}
+                        <div className="p-4 rounded-xl bg-peso/5 dark:bg-pesoLight/5 border border-peso/15 flex items-start gap-3">
+                            <div className="w-5 h-5 text-peso dark:text-pesoLight shrink-0 mt-0.5">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                </svg>
+                            </div>
+                            <p className="text-[12px] font-medium text-ink2/70 dark:text-paper/70 leading-relaxed">
+                                {lang === "tl"
+                                    ? "Privacy Guarantee: Ang iyong biometric data (fingerprint o face) ay hindi kailanman lumalabas sa iyong device at hindi itinatago sa anumang server. WebAuthn platform encryption ang ginagamit."
+                                    : "Privacy Guarantee: Your biometric data (fingerprint or face) never leaves your local device's Secure Enclave and is never sent to Tipid servers. Backed by the W3C WebAuthn standard."}
+                            </p>
+                        </div>
                     </SubPage>
                 );
             }
@@ -718,13 +1602,59 @@
             if (activeMenu === 'security') {
                 return (
                     <SubPage title={t.menuPasswordSecurity} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <div className="bento-card p-8 rounded-2xl text-center">
-                            <div className="w-20 h-20 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center mx-auto mb-5 text-ink2/40 dark:text-paper/40 ring-1 ring-black/5 dark:ring-white/10 shadow-inner">
-                                <window.Icons.Lock size={32} />
+                        {/* Quick Biometrics Gateway Card */}
+                        <div
+                            onClick={() => setActiveMenu('biometrics')}
+                            className="bento-card p-5 rounded-2xl mb-5 cursor-pointer hover:border-peso/40 transition-all shadow-sm active:scale-[0.99] flex items-center justify-between border border-line/70 dark:border-white/10 group select-none"
+                        >
+                            <div className="flex items-center gap-3.5">
+                                <div className="w-12 h-12 rounded-xl bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M4 8V6a2 2 0 0 1 2-2h2" />
+                                        <path d="M4 16v2a2 2 0 0 0 2 2h2" />
+                                        <path d="M16 4h2a2 2 0 0 1 2 2v2" />
+                                        <path d="M16 20h2a2 2 0 0 0 2-2v-2" />
+                                        <circle cx="9" cy="10" r="1.2" fill="currentColor" />
+                                        <circle cx="15" cy="10" r="1.2" fill="currentColor" />
+                                        <path d="M9.5 15a3.5 3.5 0 0 0 5 0" />
+                                        <path d="M12 11v2" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="font-display font-bold text-[15px] text-ink dark:text-paper">
+                                            {lang === "tl" ? "Biometric App Lock" : "Biometric App Lock"}
+                                        </h3>
+                                        <span className={`text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full ${bioEnabled ? "bg-peso/15 text-peso dark:text-pesoLight" : "bg-black/5 dark:bg-white/10 text-ink2/50 dark:text-paper/40"}`}>
+                                            {bioEnabled ? (lang === "tl" ? "Naka-on" : "Active") : (lang === "tl" ? "Naka-off" : "Off")}
+                                        </span>
+                                    </div>
+                                    <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mt-0.5">
+                                        {lang === "tl" ? "Face ID, Touch ID at PIN passcode settings" : "Configure Face ID, Touch ID, and PIN passcode"}
+                                    </p>
+                                </div>
                             </div>
-                            <h3 className="font-display font-bold text-xl text-ink dark:text-paper mb-2">Secure Your Account</h3>
-                            <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-8 leading-relaxed px-2">If you signed in with Google, authentication is handled securely by your identity provider. If using email and password, you can request a password reset link.</p>
-                             <button onClick={handlePasswordReset} className="w-full bg-black/5 dark:bg-white/10 text-ink dark:text-paper font-bold py-4 rounded-xl hover:bg-black/10 dark:hover:bg-white/20 transition-all shadow-sm active:scale-95">
+                            <div className="shrink-0 flex items-center gap-1.5 text-xs font-bold text-peso dark:text-pesoLight group-hover:translate-x-0.5 transition-transform">
+                                <span>{lang === "tl" ? "Buksan" : "Open"}</span>
+                                <window.Icons.ChevronRight size={16} />
+                            </div>
+                        </div>
+
+                        {/* Password Management Card */}
+                        <div className="bento-card p-6 sm:p-8 rounded-2xl text-center">
+                            <div className="w-16 h-16 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 text-ink2/40 dark:text-paper/40 ring-1 ring-black/5 dark:ring-white/10 shadow-inner">
+                                <window.Icons.Lock size={28} />
+                            </div>
+                            <h3 className="font-display font-bold text-lg text-ink dark:text-paper mb-2">Password Management</h3>
+                            <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-6 leading-relaxed px-2">
+                                {user.providerData?.[0]?.providerId?.includes("google")
+                                    ? "You are signed in with Google. Password security is managed directly by Google."
+                                    : "If you signed in with email and password, you can request a password reset link below."}
+                            </p>
+                            <button
+                                onClick={handlePasswordReset}
+                                className="w-full bg-black/5 dark:bg-white/10 text-ink dark:text-paper font-bold py-3.5 rounded-xl hover:bg-black/10 dark:hover:bg-white/20 transition-all shadow-sm active:scale-95"
+                            >
                                 Send Password Reset Link
                             </button>
                         </div>
@@ -733,23 +1663,186 @@
             }
 
             if (activeMenu === 'notifications') {
+                const isPermGranted = permissionStatus === 'granted';
+                const isPermDenied = permissionStatus === 'denied';
+
                 return (
                     <SubPage title={t.menuNotifications} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <div className="bento-card p-2 rounded-2xl divide-y divide-black/5 dark:divide-white/5">
-                            <div className="flex items-center justify-between p-5 rounded-t-xl">
-                                <div>
-                                    <p className="font-bold text-[15px] text-ink dark:text-paper">Daily Reminders</p>
-                                    <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/50 mt-1">Scheduled background reminders are coming soon.</p>
+                        {/* Status & Sync Banner */}
+                        <div className="bento-card p-5 rounded-2xl mb-5 flex items-center justify-between border-l-4 border-l-peso dark:border-l-pesoLight">
+                            <div className="flex items-center gap-3.5">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isPermGranted ? 'bg-peso/10 text-peso dark:bg-pesoLight/15 dark:text-pesoLight' : isPermDenied ? 'bg-expense/10 text-expense' : 'bg-gold/15 text-gold'}`}>
+                                    <window.Icons.Bell size={20} />
                                 </div>
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-ink2/50 dark:text-paper/50">Coming soon</span>
-                            </div>
-                            <div className="flex items-center justify-between p-5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors rounded-b-xl">
                                 <div>
-                                    <p className="font-bold text-[15px] text-ink dark:text-paper">Overbudget Alerts</p>
-                                    <p className="text-[12px] font-medium text-ink2/50 dark:text-paper/50 mt-1">Notify when approaching or exceeding monthly spending limits</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-bold text-[14px] text-ink dark:text-paper">
+                                            {isPermGranted ? "Notifications Active" : isPermDenied ? "Notifications Blocked" : "Notifications Disabled"}
+                                        </p>
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase ${isPermGranted ? 'bg-peso/10 text-peso dark:bg-pesoLight/20 dark:text-pesoLight' : isPermDenied ? 'bg-expense/10 text-expense' : 'bg-black/5 dark:bg-white/10 text-ink2/60 dark:text-paper/60'}`}>
+                                            {isPermGranted ? "Allowed" : isPermDenied ? "Blocked" : "Default"}
+                                        </span>
+                                    </div>
+                                    <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mt-0.5">
+                                        {isPermGranted
+                                            ? "System alerts and web push reminders are enabled."
+                                            : isPermDenied
+                                            ? "Blocked in browser permissions. In-app popups are used as fallback."
+                                            : "Grant browser permission to receive background daily reminders."}
+                                    </p>
+                                </div>
+                            </div>
+                            {!isPermGranted && !isPermDenied && (
+                                <button
+                                    onClick={handleRequestPermission}
+                                    className="px-3.5 py-2 bg-peso hover:bg-pesoLight text-white rounded-xl text-[12px] font-bold shadow-sm active:scale-95 transition-all shrink-0 ml-3"
+                                >
+                                    Enable
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Daily Reminders Card */}
+                        <div className="bento-card p-5 rounded-2xl mb-5 space-y-4">
+                            <div className="flex items-start justify-between">
+                                <div className="pr-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-7 h-7 rounded-lg bg-peso/10 dark:bg-pesoLight/15 flex items-center justify-center text-peso dark:text-pesoLight">
+                                            <window.Icons.Clock size={16} />
+                                        </div>
+                                        <h3 className="font-bold text-[16px] text-ink dark:text-paper">Daily Reminders</h3>
+                                    </div>
+                                    <p className="text-[12.5px] font-medium text-ink2/60 dark:text-paper/60 mt-1 leading-relaxed">
+                                        Receive a daily prompt so you never forget to log your daily expenses, grocery receipts, and cash flow.
+                                    </p>
+                                </div>
+                                <Switch checked={notifDaily} onChange={toggleNotifDaily} label="Daily Reminders" />
+                            </div>
+
+                            {notifDaily && (
+                                <div className="pt-3 border-t border-black/5 dark:border-white/5 space-y-3">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-black/[0.02] dark:bg-white/[0.02] p-3.5 rounded-xl border border-black/5 dark:border-white/5">
+                                        <label className="text-[13px] font-semibold text-ink dark:text-paper flex items-center gap-2">
+                                            <span>Reminder Time</span>
+                                        </label>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="time"
+                                                value={reminderTime}
+                                                onChange={(e) => handleReminderTimeChange(e.target.value)}
+                                                className="bg-white dark:bg-[#121A16] ring-1 ring-black/10 dark:ring-white/10 rounded-lg px-3 py-1.5 text-[14px] font-mono font-bold text-ink dark:text-paper shadow-sm focus:outline-none focus:ring-2 focus:ring-peso"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Time Presets */}
+                                    <div>
+                                        <p className="text-[11px] font-bold uppercase tracking-wider text-ink2/40 dark:text-paper/40 mb-2 pl-0.5">Quick Presets</p>
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                            {[
+                                                { time: "12:00", label: "12:00 PM", desc: "Lunch" },
+                                                { time: "18:00", label: "06:00 PM", desc: "After Work" },
+                                                { time: "20:00", label: "08:00 PM", desc: "Evening" },
+                                                { time: "22:00", label: "10:00 PM", desc: "Bedtime" }
+                                            ].map((preset) => (
+                                                <button
+                                                    key={preset.time}
+                                                    type="button"
+                                                    onClick={() => handleReminderTimeChange(preset.time)}
+                                                    className={`p-2 rounded-xl text-center border transition-all active:scale-95 ${
+                                                        reminderTime === preset.time
+                                                            ? "bg-peso text-white border-peso shadow-sm"
+                                                            : "bg-white/60 dark:bg-black/20 border-black/5 dark:border-white/5 text-ink dark:text-paper hover:bg-black/5 dark:hover:bg-white/5"
+                                                    }`}
+                                                >
+                                                    <p className="text-[12px] font-bold font-mono">{preset.label}</p>
+                                                    <p className={`text-[10px] font-medium ${reminderTime === preset.time ? "text-white/80" : "text-ink2/50 dark:text-paper/50"}`}>{preset.desc}</p>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Test Notification and Last Sent Status */}
+                                    <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        <div className="text-[11.5px] font-medium text-ink2/50 dark:text-paper/50 flex items-center gap-1.5">
+                                            <window.Icons.Calendar size={13} />
+                                            <span>
+                                                {lastReminderDate
+                                                    ? `Last triggered: ${lastReminderDate}`
+                                                    : "Last triggered: None yet today"}
+                                            </span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={handleSendTestNotification}
+                                            disabled={sendingTestNotif}
+                                            className="px-4 py-2 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-ink dark:text-paper rounded-xl text-[12px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
+                                        >
+                                            {sendingTestNotif ? (
+                                                <><window.Icons.Loader size={14} className="spin" /> Sending...</>
+                                            ) : (
+                                                <><window.Icons.Bell size={14} /> Send Test Reminder</>
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Overbudget Alerts Card */}
+                        <div className="bento-card p-5 rounded-2xl mb-5 space-y-4">
+                            <div className="flex items-start justify-between">
+                                <div className="pr-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-7 h-7 rounded-lg bg-expense/10 dark:bg-expense/20 flex items-center justify-center text-expense">
+                                            <window.Icons.ShieldAlert size={16} />
+                                        </div>
+                                        <h3 className="font-bold text-[16px] text-ink dark:text-paper">Overbudget Alerts</h3>
+                                    </div>
+                                    <p className="text-[12.5px] font-medium text-ink2/60 dark:text-paper/60 mt-1 leading-relaxed">
+                                        Get warned when approaching or exceeding your monthly budget limit so you don't run short before payday.
+                                    </p>
                                 </div>
                                 <Switch checked={notifOverbudget} onChange={toggleNotifOverbudget} label="Overbudget Alerts" />
                             </div>
+
+                            {notifOverbudget && (
+                                <div className="pt-3 border-t border-black/5 dark:border-white/5 space-y-2">
+                                    <p className="text-[11px] font-bold uppercase tracking-wider text-ink2/40 dark:text-paper/40 pl-0.5">Alert Threshold</p>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {[
+                                            { pct: 80, label: "80%", desc: "Early warning" },
+                                            { pct: 90, label: "90%", desc: "Recommended" },
+                                            { pct: 100, label: "100%", desc: "Budget reached" },
+                                        ].map((tItem) => (
+                                            <button
+                                                key={tItem.pct}
+                                                type="button"
+                                                onClick={() => handleThresholdChange(tItem.pct)}
+                                                className={`p-2.5 rounded-xl text-center border transition-all active:scale-95 ${
+                                                    budgetThreshold === tItem.pct
+                                                        ? "bg-gradient-to-r from-pesoLight to-peso text-white border-peso shadow-sm"
+                                                        : "bg-white/60 dark:bg-black/20 border-black/5 dark:border-white/5 text-ink dark:text-paper hover:bg-black/5 dark:hover:bg-white/5"
+                                                }`}
+                                            >
+                                                <p className="text-[13px] font-bold font-mono">{tItem.label}</p>
+                                                <p className={`text-[10px] font-medium ${budgetThreshold === tItem.pct ? "text-white/80" : "text-ink2/50 dark:text-paper/50"}`}>{tItem.desc}</p>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Cloud Sync info */}
+                        <div className="p-4 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center justify-between text-[12px] text-ink2/60 dark:text-paper/60">
+                            <span className="flex items-center gap-2 font-medium">
+                                <window.Icons.CloudCheck size={16} className="text-peso dark:text-pesoLight" />
+                                {savingNotif ? "Saving to cloud..." : "Cloud database synchronized"}
+                            </span>
+                            <span className="font-mono text-[10px] uppercase font-bold text-peso dark:text-pesoLight bg-peso/10 dark:bg-pesoLight/10 px-2 py-0.5 rounded-full">
+                                Firebase
+                            </span>
                         </div>
                     </SubPage>
                 );
@@ -797,8 +1890,48 @@
             if (activeMenu === 'language') {
                 return (
                     <SubPage title={t.menuLanguage} backLabel={t.back} onBack={() => setActiveMenu(null)}>
-                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-4 px-1 mt-2">Select your interface language preference.</p>
-                        <OptionList value={lang} onSelect={handleSelectLang} options={[{ value: "tl", label: "Tagalog" }, { value: "en", label: "English" }]} />
+                        {/* Status & Sync Card */}
+                        <div className="bento-card p-4 rounded-2xl mb-5 border-l-4 border-l-peso dark:border-l-pesoLight flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-peso/10 dark:bg-pesoLight/15 flex items-center justify-center text-peso dark:text-pesoLight shrink-0">
+                                    <window.Icons.Globe size={20} />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-[14px] text-ink dark:text-paper">{lang === 'tl' ? 'Pangkalahatang Wika' : 'System-wide Language'}</h4>
+                                    <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mt-0.5">
+                                        {lang === 'tl'
+                                            ? 'Naka-sync sa cloud account. Naaapektuhan nito ang buong sistema.'
+                                            : 'Synced to your cloud account. Changes apply across the entire app.'}
+                                    </p>
+                                </div>
+                            </div>
+                            <span className="font-mono text-[10px] font-bold uppercase tracking-wider bg-peso/10 dark:bg-pesoLight/10 text-peso dark:text-pesoLight px-2.5 py-1 rounded-full shrink-0">
+                                {lang === 'tl' ? 'Tagalog' : 'English'}
+                            </span>
+                        </div>
+
+                        <p className="text-[13px] font-medium text-ink2/60 dark:text-paper/60 mb-3 px-1">
+                            {t.langPrefDescription || "Select your interface language preference."}
+                        </p>
+                        <OptionList
+                            value={lang}
+                            onSelect={handleSelectLang}
+                            options={[
+                                { value: "tl", label: "Tagalog (Filipino)" },
+                                { value: "en", label: "English (US)" }
+                            ]}
+                        />
+
+                        {/* Cloud status footer */}
+                        <div className="mt-5 p-4 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center justify-between text-[12px] text-ink2/60 dark:text-paper/60">
+                            <span className="flex items-center gap-2 font-medium">
+                                <window.Icons.CloudCheck size={16} className="text-peso dark:text-pesoLight" />
+                                {lang === 'tl' ? "Naka-sync sa Firebase backend" : "Cloud database synchronized"}
+                            </span>
+                            <span className="font-mono text-[10px] uppercase font-bold text-peso dark:text-pesoLight bg-peso/10 dark:bg-pesoLight/10 px-2 py-0.5 rounded-full">
+                                Firebase
+                            </span>
+                        </div>
                     </SubPage>
                 );
             }
@@ -927,7 +2060,17 @@
                             <div className="relative shrink-0 z-10">
                                 <span className="absolute inset-0 rounded-full bg-white/20 blur-md scale-110 pointer-events-none breathe-glow" />
                                 <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full border-[3px] border-white/30 shadow-lg overflow-hidden bg-white/10 flex items-center justify-center backdrop-blur-md">
-                                    {user.photoURL ? <img src={user.photoURL} className="w-full h-full object-cover"/> : <span className="text-3xl font-display font-bold text-white">{initial}</span>}
+                                    <span className="text-3xl font-display font-bold text-white select-none">{initial}</span>
+                                    {user.photoURL && (
+                                        <img
+                                            src={user.photoURL}
+                                            alt=""
+                                            referrerPolicy="no-referrer"
+                                            crossOrigin="anonymous"
+                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                            className="absolute inset-0 w-full h-full object-cover"
+                                        />
+                                    )}
                                 </div>
                             </div>
                             <div className="min-w-0 z-10">
@@ -947,10 +2090,73 @@
                             </div>
                         </div>
 
+{/* Biometric App Lock Quick Card */}
+                        <div
+                            onClick={() => setActiveMenu('biometrics')}
+                            className="bento-card p-4 sm:p-5 rounded-2xl mb-6 cursor-pointer hover:border-peso/40 transition-all shadow-sm active:scale-[0.99] flex items-center justify-between border border-line/70 dark:border-white/10 group select-none"
+                        >
+                            <div className="flex items-center gap-3.5">
+                                <div className="w-11 h-11 rounded-xl bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M4 8V6a2 2 0 0 1 2-2h2" />
+                                        <path d="M4 16v2a2 2 0 0 0 2 2h2" />
+                                        <path d="M16 4h2a2 2 0 0 1 2 2v2" />
+                                        <path d="M16 20h2a2 2 0 0 0 2-2v-2" />
+                                        <circle cx="9" cy="10" r="1.2" fill="currentColor" />
+                                        <circle cx="15" cy="10" r="1.2" fill="currentColor" />
+                                        <path d="M9.5 15a3.5 3.5 0 0 0 5 0" />
+                                        <path d="M12 11v2" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="font-display font-bold text-[15px] text-ink dark:text-paper">
+                                            {lang === "tl" ? "Biometric App Lock" : "Biometric App Lock"}
+                                        </h3>
+                                        <span className={`text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full ${bioEnabled ? "bg-peso/15 text-peso dark:text-pesoLight" : "bg-black/5 dark:bg-white/10 text-ink2/50 dark:text-paper/40"}`}>
+                                            {bioEnabled ? (lang === "tl" ? "Naka-on" : "Active") : (lang === "tl" ? "Naka-off" : "Off")}
+                                        </span>
+                                    </div>
+                                    <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mt-0.5">
+                                        {bioEnabled
+                                            ? (lang === "tl" ? "Naka-lock ang mga balanse gamit ang Face ID / Touch ID" : "Balances and expenses shielded with Face ID / Touch ID")
+                                            : (lang === "tl" ? "I-on para protektahan ang iyong mga balanse sa iba" : "Require Face ID or Touch ID to view your balances")}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="shrink-0 flex items-center gap-1.5 text-xs font-bold text-peso dark:text-pesoLight group-hover:translate-x-0.5 transition-transform">
+                                <span>{lang === "tl" ? "I-set up" : "Configure"}</span>
+                                <window.Icons.ChevronRight size={16} />
+                            </div>
+                        </div>
+
                         {/* Settings Lists */}
                         <div className="fade-up" style={{animationDelay: "60ms"}}>
                             <MenuSection title={t.sectionAccount}>
                                 <MenuItem icon={<window.Icons.User size={18} />} label={t.menuManageProfile} onClick={() => setActiveMenu('profile')} />
+                                <MenuItem
+                                    icon={
+                                        <div className="w-5 h-5 flex items-center justify-center text-peso dark:text-pesoLight">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M4 8V6a2 2 0 0 1 2-2h2" />
+                                                <path d="M4 16v2a2 2 0 0 0 2 2h2" />
+                                                <path d="M16 4h2a2 2 0 0 1 2 2v2" />
+                                                <path d="M16 20h2a2 2 0 0 0 2-2v-2" />
+                                                <circle cx="9" cy="10" r="1.2" fill="currentColor" />
+                                                <circle cx="15" cy="10" r="1.2" fill="currentColor" />
+                                                <path d="M9.5 15a3.5 3.5 0 0 0 5 0" />
+                                                <path d="M12 11v2" />
+                                            </svg>
+                                        </div>
+                                    }
+                                    label={lang === "tl" ? "Biometric App Lock" : "Biometric App Lock"}
+                                    trailing={
+                                        <span className={`text-[10.5px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full ${bioEnabled ? "bg-peso/15 text-peso dark:text-pesoLight" : "bg-black/5 dark:bg-white/10 text-ink2/50 dark:text-paper/40"}`}>
+                                            {bioEnabled ? (lang === "tl" ? "Naka-on" : "Active") : (lang === "tl" ? "Naka-off" : "Off")}
+                                        </span>
+                                    }
+                                    onClick={() => setActiveMenu('biometrics')}
+                                />
                                 <MenuItem icon={<window.Icons.Lock size={18} />} label={t.menuPasswordSecurity} onClick={() => setActiveMenu('security')} />
                                 <MenuItem icon={<window.Icons.Bell size={18} />} label={t.menuNotifications} onClick={() => setActiveMenu('notifications')} />
                                 <MenuItem icon={<window.Icons.Globe size={18} />} label={t.menuLanguage} trailing={lang === 'en' ? 'English' : 'Tagalog'} onClick={() => setActiveMenu('language')} isLast={true} />
