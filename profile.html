@@ -302,20 +302,20 @@
 
         function SubPage({ title, onBack, children, backLabel = "Back" }) {
             return (
-                <div className="fixed inset-0 z-50 bg-paper dark:bg-ink flex flex-col slide-in">
-                    <div className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+16px)] pb-4 border-b border-line/60 dark:border-white/10 bg-white/80 dark:bg-[#1A2620]/80 backdrop-blur-xl sticky top-0 z-20">
-                        <button onClick={onBack} className="p-2 -ml-2 text-peso dark:text-pesoLight flex items-center gap-1 active:opacity-50 transition-opacity">
+                <div className="fixed inset-0 z-50 bg-paper dark:bg-ink flex flex-col slide-in overflow-hidden">
+                    <header className="flex items-center justify-between px-3.5 sm:px-4 pt-[max(0.75rem,calc(env(safe-area-inset-top)+0.5rem))] pb-3.5 border-b border-line/60 dark:border-white/10 bg-white/90 dark:bg-[#1A2620]/90 backdrop-blur-xl shrink-0 z-20">
+                        <button onClick={onBack} className="p-1.5 -ml-1 text-peso dark:text-pesoLight flex items-center gap-1 active:opacity-50 transition-opacity focus:outline-none">
                             <window.Icons.ChevronLeft size={22} />
-                            <span className="text-[15px] font-bold">{backLabel}</span>
+                            <span className="text-[14px] sm:text-[15px] font-bold">{backLabel}</span>
                         </button>
-                        <h2 className="font-display font-bold text-[17px] text-ink dark:text-paper absolute left-1/2 -translate-x-1/2 tracking-tight">{title}</h2>
-                        <div className="w-16"></div>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-5">
-                        <div className="max-w-[600px] mx-auto w-full pb-10">
+                        <h2 className="font-display font-bold text-[15px] sm:text-[17px] text-ink dark:text-paper absolute left-1/2 -translate-x-1/2 tracking-tight text-center max-w-[55%] truncate">{title}</h2>
+                        <div className="w-12 sm:w-16 shrink-0"></div>
+                    </header>
+                    <main className="flex-1 overflow-y-auto overscroll-contain px-3.5 sm:px-5 py-4 sm:py-5" style={{ paddingBottom: "max(2.5rem, calc(env(safe-area-inset-bottom) + 1.5rem))" }}>
+                        <div className="max-w-[600px] mx-auto w-full space-y-4">
                             {children}
                         </div>
-                    </div>
+                    </main>
                 </div>
             );
         }
@@ -412,6 +412,7 @@
             const [hasPasscode, setHasPasscode] = React.useState(false);
             const [passcodeInput, setPasscodeInput] = React.useState("");
             const [showPasscodeForm, setShowPasscodeForm] = React.useState(false);
+            const isLocalIp = typeof window !== "undefined" && /^(\d{1,3}\.){3}\d{1,3}$/.test(window.location.hostname || "");
 
             const t = window.TIPID_TRANSLATIONS[lang] || window.TIPID_TRANSLATIONS.en;
 
@@ -626,12 +627,47 @@
                 reader.readAsDataURL(file);
             };
 
+            const promptTestPin = async () => {
+                const { value: enteredPin } = await Swal.fire({
+                    title: lang === "tl" ? "Ipasok ang PIN Passcode" : "Enter PIN Passcode",
+                    input: "password",
+                    inputAttributes: {
+                        inputmode: "numeric",
+                        maxlength: 8,
+                        autocomplete: "off",
+                        style: "text-align: center; letter-spacing: 0.3em; font-family: monospace; font-size: 1.5rem;"
+                    },
+                    inputPlaceholder: "••••",
+                    showCancelButton: true,
+                    confirmButtonColor: "#1F6F54",
+                    confirmButtonText: lang === "tl" ? "I-verify" : "Verify",
+                    cancelButtonText: lang === "tl" ? "Kanselahin" : "Cancel",
+                    customClass: { popup: "tipid-swal" }
+                });
+
+                if (enteredPin) {
+                    const ok = await window.TipidBiometrics.verifyPasscode(user.uid, enteredPin);
+                    if (ok) {
+                        if (window.TipidCelebration) {
+                            (window.TipidCelebration.celebrate || window.TipidCelebration.cheer).call(
+                                window.TipidCelebration,
+                                lang === "tl" ? "Tamang PIN! Unlocked na! ✨" : "Correct PIN! App Unlocked! ✨"
+                            );
+                        } else {
+                            swalSuccess(lang === "tl" ? "Tagumpay!" : "Success!", lang === "tl" ? "Na-verify ang iyong PIN." : "Your PIN has been verified.");
+                        }
+                    } else {
+                        swalError(lang === "tl" ? "Maling PIN Passcode." : "Incorrect PIN Passcode. Please try again.");
+                    }
+                }
+            };
+
             const handleToggleBiometrics = async () => {
                 if (!user?.uid || !window.TipidBiometrics) return;
                 if (bioEnabled) {
                     const result = await Swal.fire({
                         title: lang === "tl" ? "I-off ang Biometrics?" : "Disable Biometric App Lock?",
-                        text: lang === "tl" ? "Hindi na hihingin ang Face ID / Fingerprint sa pagbubukas ng iyong balanse." : "You will no longer be prompted for Face ID / Fingerprint when viewing balances.",
+                        text: lang === "tl" ? "Hindi na hihingin ang Face ID, Touch ID, o PIN sa pagbubukas ng iyong balanse." : "You will no longer be prompted for Face ID, Touch ID, or PIN when viewing balances.",
                         icon: "warning",
                         showCancelButton: true,
                         confirmButtonColor: "#C84B31",
@@ -650,25 +686,32 @@
                 }
                 try {
                     const supported = window.TipidBiometrics.isSupported();
-                    const available = await window.TipidBiometrics.isAvailable();
+                    const available = supported ? await window.TipidBiometrics.isAvailable() : false;
                     if (supported && available) {
                         setBioTesting(true);
                         const success = await window.TipidBiometrics.register(user.uid, user.email);
                         if (success) {
                             setBioEnabled(true);
                             if (window.TipidCelebration) {
-                                (window.TipidCelebration.celebrate || window.TipidCelebration.cheer).call(window.TipidCelebration, lang === "tl" ? "Aktibo na ang Face ID / Touch ID! 🎉" : "Biometric Lock Active! 🎉");
+                                (window.TipidCelebration.celebrate || window.TipidCelebration.cheer).call(
+                                    window.TipidCelebration,
+                                    lang === "tl" ? "Aktibo na ang Face ID / Touch ID! 🎉" : "Biometric Lock Active! 🎉"
+                                );
                             }
                             swalSuccess(
                                 lang === "tl" ? "Aktibo na ang Biometrics!" : "Biometrics Activated!",
-                                lang === "tl" ? "Naka-shield na ang iyong balanse gamit ang Face ID / Touch ID." : "Your balances are now securely shielded with your biometric sensor."
+                                lang === "tl" ? "Naka-shield na ang iyong balanse gamit ang biometric sensor ng iyong phone." : "Your balances are now securely shielded with your phone biometric sensor."
                             );
                         }
                     } else {
                         setShowPasscodeForm(true);
+                        const hostname = (typeof window !== "undefined" && window.location.hostname) || "";
+                        const isIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(hostname);
                         Swal.fire({
                             title: lang === "tl" ? "PIN Passcode Setup" : "PIN Passcode Setup",
-                            text: lang === "tl" ? "Walang biometric scanner sa browser na ito. Maglagay ng 4 hanggang 8 digit PIN Passcode bilang proteksyon." : "No biometric sensor detected on this device. You can set a 4 to 8 digit PIN Passcode instead.",
+                            text: isIp
+                                ? (lang === "tl" ? "Dahil nakakonekta via IP address, gamitin ang PIN Passcode bilang proteksyon." : "Because you are connected via an IP address, please set a 4 to 8 digit PIN Passcode for app lock.")
+                                : (lang === "tl" ? "Walang biometric scanner sa browser na ito. Maglagay ng 4 hanggang 8 digit PIN Passcode bilang proteksyon." : "No biometric sensor detected on this device. You can set a 4 to 8 digit PIN Passcode instead."),
                             icon: "info",
                             confirmButtonColor: "#1F6F54",
                             confirmButtonText: "OK",
@@ -677,18 +720,21 @@
                     }
                 } catch (err) {
                     console.warn("Biometrics registration error:", err);
-                    if (err.name === "NotAllowedError") {
-                        swalError(lang === "tl" ? "Kinansela ang biometric setup." : "Biometric setup was cancelled.");
-                    } else {
-                        setShowPasscodeForm(true);
-                        Swal.fire({
-                            title: "PIN Passcode Setup",
-                            text: err.message || (lang === "tl" ? "Hindi nakumpleto ang WebAuthn. Maaari kang magtakda ng PIN Passcode." : "Biometric authentication could not be completed. You can set a PIN Passcode instead."),
-                            icon: "info",
-                            confirmButtonColor: "#1F6F54",
-                            customClass: { popup: "tipid-swal" }
-                        });
-                    }
+                    setShowPasscodeForm(true);
+                    const isNotAllowed = err.name === "NotAllowedError" || (err.message && err.message.includes("not allowed"));
+                    const isInvalidDomain = err.name === "SecurityError" || (err.message && err.message.includes("invalid domain"));
+                    Swal.fire({
+                        title: lang === "tl" ? "PIN Passcode Setup" : "PIN Passcode Setup",
+                        text: isInvalidDomain
+                            ? (lang === "tl" ? "Hindi pinapayagan ng WebAuthn ang IP address. Maglagay ng 4 hanggang 8 digit PIN Passcode." : "WebAuthn requires HTTPS or domain name. Please set a 4 to 8 digit PIN Passcode below.")
+                            : isNotAllowed
+                            ? (lang === "tl" ? "Kinansela o nag-time out ang biometric setup. Maaari kang magtakda ng PIN Passcode sa ibaba." : "Biometric setup was cancelled or timed out. You can set a PIN Passcode below.")
+                            : (err.message || (lang === "tl" ? "Hindi nakumpleto ang WebAuthn. Magtakda ng PIN Passcode sa ibaba." : "Biometric authentication could not be completed. Set a PIN Passcode below.")),
+                        icon: "info",
+                        confirmButtonColor: "#1F6F54",
+                        confirmButtonText: "OK",
+                        customClass: { popup: "tipid-swal" }
+                    });
                 } finally {
                     setBioTesting(false);
                 }
@@ -699,17 +745,56 @@
                 setBioTesting(true);
                 try {
                     const verified = await window.TipidBiometrics.verify(user.uid);
-                    if (verified) {
+                    if (verified === true) {
                         if (window.TipidCelebration) {
-                            (window.TipidCelebration.celebrate || window.TipidCelebration.cheer).call(window.TipidCelebration, lang === "tl" ? "Tagumpay ang Biometric Unlock! ✨" : "Biometric Unlock Verified! ✨");
+                            (window.TipidCelebration.celebrate || window.TipidCelebration.cheer).call(
+                                window.TipidCelebration,
+                                lang === "tl" ? "Tagumpay ang Biometric Unlock! ✨" : "Biometric Unlock Verified! ✨"
+                            );
                         } else {
                             swalSuccess(lang === "tl" ? "Tagumpay!" : "Verified!", lang === "tl" ? "Kinilala ang iyong Face ID / Fingerprint." : "Your biometric identity was confirmed.");
                         }
+                    } else if (verified === "prompt_pin") {
+                        promptTestPin();
                     } else {
                         swalError(lang === "tl" ? "Hindi kinilala ang biometrics." : "Biometric verification failed. Please try again.");
                     }
                 } catch (err) {
-                    swalError(err.message || (lang === "tl" ? "May error sa pag-verify." : "Verification error."));
+                    console.warn("Biometric test error:", err);
+                    const isNotAllowed = err.name === "NotAllowedError" || (err.message && err.message.includes("not allowed"));
+                    const isInvalidDomain = err.name === "SecurityError" || (err.message && err.message.includes("invalid domain"));
+
+                    if (hasPasscode) {
+                        const res = await Swal.fire({
+                            title: lang === "tl" ? "Biometrics Di-Nakumpleto" : "Biometrics Incomplete",
+                            text: isInvalidDomain
+                                ? (lang === "tl" ? "Hindi pinapayagan ng WebAuthn ang IP address. Nais mo bang subukan ang iyong PIN Passcode?" : "WebAuthn prohibits IP addresses. Would you like to test your Backup PIN instead?")
+                                : (lang === "tl" ? "Kinansela o nag-time out ang biometric scanner. Nais mo bang subukan ang iyong PIN Passcode?" : "Biometric prompt was cancelled or timed out. Would you like to test your Backup PIN instead?"),
+                            icon: "info",
+                            showCancelButton: true,
+                            confirmButtonColor: "#1F6F54",
+                            cancelButtonColor: "#33443A",
+                            confirmButtonText: lang === "tl" ? "Subukan ang PIN" : "Test PIN Passcode",
+                            cancelButtonText: lang === "tl" ? "Isara" : "Close",
+                            customClass: { popup: "tipid-swal" }
+                        });
+                        if (res.isConfirmed) {
+                            promptTestPin();
+                        }
+                    } else {
+                        Swal.fire({
+                            title: lang === "tl" ? "Paalala sa Biometrics" : "Biometric Notice",
+                            text: isInvalidDomain
+                                ? (lang === "tl" ? "Bawal ang IP address sa WebAuthn standard. Magtakda ng Backup PIN Passcode sa ibaba para ma-lock ang iyong mga balanse." : "WebAuthn requires HTTPS or a domain name. Please configure a Backup PIN Passcode below to secure your app.")
+                                : isNotAllowed
+                                ? (lang === "tl" ? "Kinansela o nag-time out ang biometric prompt. Maaari kang mag-set ng Backup PIN Passcode sa ibaba." : "Biometric authentication timed out or was cancelled. You can configure a Backup PIN Passcode below.")
+                                : (err.message || (lang === "tl" ? "May error sa pag-verify." : "Verification error.")),
+                            icon: "warning",
+                            confirmButtonColor: "#1F6F54",
+                            confirmButtonText: "OK",
+                            customClass: { popup: "tipid-swal" }
+                        });
+                    }
                 } finally {
                     setBioTesting(false);
                 }
@@ -729,7 +814,10 @@
                     setShowPasscodeForm(false);
                     setPasscodeInput("");
                     if (window.TipidCelebration) {
-                        (window.TipidCelebration.celebrate || window.TipidCelebration.cheer).call(window.TipidCelebration, lang === "tl" ? "Naitakda na ang iyong PIN Passcode! 🔒" : "PIN Passcode Configured! 🔒");
+                        (window.TipidCelebration.celebrate || window.TipidCelebration.cheer).call(
+                            window.TipidCelebration,
+                            lang === "tl" ? "Naitakda na ang iyong PIN Passcode! 🔒" : "PIN Passcode Configured! 🔒"
+                        );
                     }
                     swalSuccess(lang === "tl" ? "Nai-save ang PIN!" : "PIN Saved!", lang === "tl" ? "Naka-lock na ang iyong mga balanse gamit ang iyong PIN." : "Your balances are now secured with your PIN passcode.");
                 }
@@ -1441,9 +1529,9 @@
                 return (
                     <SubPage title={lang === "tl" ? "Biometric App Lock" : "Biometric App Lock"} backLabel={t.back} onBack={() => setActiveMenu(null)}>
                         {/* Status Hero Bento */}
-                        <div className="bento-card p-6 sm:p-8 rounded-[2rem] text-center mb-6 relative overflow-hidden border border-peso/20 bg-gradient-to-br from-paper to-paperDim dark:from-white/[0.04] dark:to-white/[0.01]">
-                            <div className="relative w-24 h-24 mx-auto mb-5 rounded-3xl bg-peso/10 dark:bg-pesoLight/15 flex items-center justify-center text-peso dark:text-pesoLight ring-8 ring-peso/5 dark:ring-pesoLight/5 shadow-inner">
-                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <div className="bento-card p-5 sm:p-7 rounded-[1.75rem] sm:rounded-[2rem] text-center relative overflow-hidden border border-peso/20 bg-gradient-to-br from-paper to-paperDim dark:from-white/[0.04] dark:to-white/[0.01]">
+                            <div className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 rounded-2xl sm:rounded-3xl bg-peso/10 dark:bg-pesoLight/15 flex items-center justify-center text-peso dark:text-pesoLight ring-6 sm:ring-8 ring-peso/5 dark:ring-pesoLight/5 shadow-inner">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="sm:w-12 sm:h-12">
                                     <path d="M4 8V6a2 2 0 0 1 2-2h2" />
                                     <path d="M4 16v2a2 2 0 0 0 2 2h2" />
                                     <path d="M16 4h2a2 2 0 0 1 2 2v2" />
@@ -1460,23 +1548,58 @@
                                     {bioEnabled ? (lang === "tl" ? "AKTIBO ANG SHIELD" : "SHIELD ACTIVE") : (lang === "tl" ? "HINDI AKTIBO" : "INACTIVE")}
                                 </span>
                             </div>
-                            <h2 className="font-display font-bold text-2xl text-ink dark:text-paper mb-2">
+                            <h2 className="font-display font-bold text-xl sm:text-2xl text-ink dark:text-paper mb-2">
                                 {lang === "tl" ? "Biometric & Passcode Lock" : "Biometric & Passcode Lock"}
                             </h2>
-                            <p className="text-[13px] font-medium text-ink2/70 dark:text-paper/70 leading-relaxed max-w-md mx-auto">
+                            <p className="text-[12.5px] sm:text-[13px] font-medium text-ink2/70 dark:text-paper/70 leading-relaxed max-w-md mx-auto px-1">
                                 {lang === "tl"
                                     ? "Protektahan ang iyong mga balanse at talaan ng pera gamit ang Face ID, Touch ID, o PIN bago mabuksan ng iba."
                                     : "Shield your sensitive balances and financial figures behind Face ID, Touch ID, or a secure PIN passcode."}
                             </p>
                         </div>
 
+                        {/* Device Biometrics Explainer Banner */}
+                        <div className="p-3.5 sm:p-4 rounded-2xl bg-paperDim/80 dark:bg-white/[0.04] border border-line/70 dark:border-white/10 flex items-start gap-3">
+                            <div className="w-8 h-8 rounded-xl bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center shrink-0">
+                                <window.Icons.Info size={16} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="font-bold text-[12.5px] sm:text-[13px] text-ink dark:text-paper">
+                                    {lang === "tl" ? "Paano gumagana ang Fingerprint dito?" : "How Device Biometrics Work"}
+                                </p>
+                                <p className="text-[11.5px] sm:text-[12px] text-ink2/70 dark:text-paper/70 mt-0.5 leading-relaxed">
+                                    {lang === "tl"
+                                        ? "Hindi kailangang mag-enroll ng panibagong fingerprint. Awtomatiko nitong ginagamit ang Fingerprint na naka-set up na sa Settings ng iyong telepono. Kapag naka-HTTPS, lalabas ang opisyal na prompt ng Android."
+                                        : "No need to register new fingerprints. It uses the Fingerprint already configured in your phone Settings. On HTTPS, Android will show its native unlock prompt."}
+                                </p>
+                            </div>
+                        </div>
+
+                        {isLocalIp && (
+                            <div className="p-3.5 sm:p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-3">
+                                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
+                                    <window.Icons.ShieldAlert size={16} />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="font-bold text-[12.5px] sm:text-[13px] text-amber-800 dark:text-amber-300">
+                                        {lang === "tl" ? "Nasa Local IP Connection ka" : "Local IP Connection Active"}
+                                    </p>
+                                    <p className="text-[11.5px] sm:text-[12px] text-amber-900/80 dark:text-amber-200/80 mt-0.5 leading-relaxed">
+                                        {lang === "tl"
+                                            ? "Dahil nakakonekta via IP address (e.g. 127.0.0.1 o 192.168.x.x), pinipigilan ng Android browser ang fingerprint scanner para sa proteksyon. Gamitin ang Backup PIN Passcode sa ibaba habang nasa local testing."
+                                            : "Browsers prohibit biometric scanners on raw IP addresses for security. Please configure a Backup PIN Passcode below while testing locally."}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Main Toggle Card */}
-                        <div className="bento-card p-5 sm:p-6 rounded-2xl mb-5 flex items-center justify-between border border-line/80 dark:border-white/10">
-                            <div className="pr-4">
-                                <p className="font-bold text-[15px] text-ink dark:text-paper">
+                        <div className="bento-card p-4 sm:p-5 rounded-2xl flex items-center justify-between border border-line/80 dark:border-white/10 gap-3">
+                            <div className="min-w-0 pr-1">
+                                <p className="font-bold text-[14px] sm:text-[15px] text-ink dark:text-paper leading-snug">
                                     {lang === "tl" ? "I-on ang Biometric Lock" : "Require Biometrics / PIN"}
                                 </p>
-                                <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mt-0.5">
+                                <p className="text-[11.5px] sm:text-[12px] font-medium text-ink2/60 dark:text-paper/60 mt-0.5 leading-snug">
                                     {bioEnabled
                                         ? (lang === "tl" ? "Naka-on. Hihingin ang biometrics bago makita ang balanse." : "Enabled. Verification is required to reveal balances.")
                                         : (lang === "tl" ? "I-on para protektahan ang dashboard sa mga sumisilip." : "Turn on to shield your financial data from prying eyes.")}
@@ -1496,24 +1619,22 @@
 
                         {/* Test Authentication Button */}
                         {bioEnabled && (
-                            <div className="bento-card p-5 sm:p-6 rounded-2xl mb-5 border border-line/80 dark:border-white/10">
-                                <div className="flex items-center justify-between mb-3">
-                                    <div>
-                                        <p className="font-bold text-[14px] text-ink dark:text-paper">
-                                            {lang === "tl" ? "Subukan ang Pag-unlock" : "Test Biometric Unlock"}
-                                        </p>
-                                        <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mt-0.5">
-                                            {lang === "tl" ? "I-verify kung gumagana nang maayos ang iyong Face ID / Fingerprint." : "Verify that your Face ID, Touch ID, or PIN triggers properly."}
-                                        </p>
-                                    </div>
+                            <div className="bento-card p-4 sm:p-5 rounded-2xl border border-line/80 dark:border-white/10">
+                                <div className="mb-3">
+                                    <p className="font-bold text-[13.5px] sm:text-[14px] text-ink dark:text-paper">
+                                        {lang === "tl" ? "Subukan ang Pag-unlock" : "Test Biometric Unlock"}
+                                    </p>
+                                    <p className="text-[11.5px] sm:text-[12px] font-medium text-ink2/60 dark:text-paper/60 mt-0.5 leading-snug">
+                                        {lang === "tl" ? "I-verify kung gumagana nang maayos ang iyong Face ID, Fingerprint, o PIN." : "Verify that your Face ID, Touch ID, or PIN triggers properly."}
+                                    </p>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={handleTestBiometrics}
                                     disabled={bioTesting}
-                                    className="w-full py-3.5 px-4 rounded-xl font-bold text-sm bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight hover:bg-peso/20 dark:hover:bg-pesoLight/25 transition-all flex items-center justify-center gap-2 active:scale-98"
+                                    className="w-full py-3 px-4 rounded-xl font-bold text-sm bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight hover:bg-peso/20 dark:hover:bg-pesoLight/25 transition-all flex items-center justify-center gap-2 active:scale-98 shadow-sm"
                                 >
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                                         <path d="M4 8V6a2 2 0 0 1 2-2h2" />
                                         <path d="M4 16v2a2 2 0 0 0 2 2h2" />
                                         <path d="M16 4h2a2 2 0 0 1 2 2v2" />
@@ -1523,24 +1644,24 @@
                                         <path d="M9.5 15a3.5 3.5 0 0 0 5 0" />
                                         <path d="M12 11v2" />
                                     </svg>
-                                    <span>{bioTesting ? (lang === "tl" ? "Sinusuri..." : "Verifying...") : (lang === "tl" ? "Subukan ang Face ID / Touch ID" : "Test Face ID / Touch ID")}</span>
+                                    <span className="truncate">{bioTesting ? (lang === "tl" ? "Sinusuri..." : "Verifying...") : (lang === "tl" ? "Subukan ang Pag-unlock" : "Test Biometric Unlock")}</span>
                                 </button>
                             </div>
                         )}
 
                         {/* PIN Passcode Fallback Section */}
-                        <div className="bento-card p-5 sm:p-6 rounded-2xl mb-5 border border-line/80 dark:border-white/10">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <p className="font-bold text-[14px] text-ink dark:text-paper">
+                        <div className="bento-card p-4 sm:p-5 rounded-2xl border border-line/80 dark:border-white/10">
+                            <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0 pr-1">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <p className="font-bold text-[13.5px] sm:text-[14px] text-ink dark:text-paper">
                                             {lang === "tl" ? "Backup PIN Passcode" : "Backup PIN Passcode"}
                                         </p>
-                                        <span className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full ${hasPasscode ? "bg-peso/15 text-peso dark:text-pesoLight" : "bg-black/5 dark:bg-white/10 text-ink2/50 dark:text-paper/40"}`}>
+                                        <span className={`text-[9.5px] font-mono font-bold uppercase px-2 py-0.5 rounded-full ${hasPasscode ? "bg-peso/15 text-peso dark:text-pesoLight" : "bg-black/5 dark:bg-white/10 text-ink2/50 dark:text-paper/40"}`}>
                                             {hasPasscode ? (lang === "tl" ? "Naka-set" : "Configured") : (lang === "tl" ? "Wala pa" : "Not Set")}
                                         </span>
                                     </div>
-                                    <p className="text-[12px] font-medium text-ink2/60 dark:text-paper/60 mt-0.5">
+                                    <p className="text-[11.5px] sm:text-[12px] font-medium text-ink2/60 dark:text-paper/60 mt-0.5 leading-snug">
                                         {lang === "tl"
                                             ? "Maaaring gamitin kung sakaling hindi available ang Face ID sa kasalukuyang browser."
                                             : "Used as an alternative unlock when biometric sensors are unavailable."}
@@ -1549,18 +1670,18 @@
                                 <button
                                     type="button"
                                     onClick={() => setShowPasscodeForm(!showPasscodeForm)}
-                                    className="text-xs font-bold text-peso dark:text-pesoLight hover:underline shrink-0 ml-2"
+                                    className="text-xs font-bold text-peso dark:text-pesoLight hover:underline shrink-0 pt-0.5"
                                 >
                                     {showPasscodeForm ? (lang === "tl" ? "Itago" : "Hide") : (hasPasscode ? (lang === "tl" ? "Palitan" : "Change") : (lang === "tl" ? "I-set up" : "Set PIN"))}
                                 </button>
                             </div>
 
                             {showPasscodeForm && (
-                                <form onSubmit={handleSavePin} className="mt-4 pt-4 border-t border-line/60 dark:border-white/10 flex flex-col gap-3">
+                                <form onSubmit={handleSavePin} className="mt-4 pt-3.5 border-t border-line/60 dark:border-white/10 flex flex-col gap-3">
                                     <label className="text-xs font-semibold text-ink2 dark:text-paper/80">
                                         {lang === "tl" ? "Ilagay ang 4 hanggang 8 digit PIN:" : "Enter 4 to 8 digit PIN:"}
                                     </label>
-                                    <div className="flex gap-2">
+                                    <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-2 w-full">
                                         <input
                                             type="password"
                                             inputMode="numeric"
@@ -1568,13 +1689,13 @@
                                             placeholder="••••"
                                             value={passcodeInput}
                                             onChange={(e) => setPasscodeInput(e.target.value.replace(/\D/g, ""))}
-                                            className="flex-1 px-4 py-2.5 rounded-xl border border-line dark:border-white/15 bg-white dark:bg-black/30 text-ink dark:text-paper font-mono tracking-widest text-center text-lg focus:outline-none focus:ring-2 focus:ring-peso/40"
+                                            className="w-full sm:flex-1 min-w-0 px-4 py-2.5 rounded-xl border border-line dark:border-white/15 bg-white dark:bg-black/30 text-ink dark:text-paper font-mono tracking-widest text-center text-lg focus:outline-none focus:ring-2 focus:ring-peso/40"
                                         />
                                         <button
                                             type="submit"
-                                            className="px-5 py-2.5 rounded-xl font-bold text-sm bg-peso text-white hover:bg-pesoLight transition-all active:scale-95 shadow-sm"
+                                            className="w-full sm:w-auto shrink-0 px-6 py-2.5 rounded-xl font-bold text-sm bg-peso text-white hover:bg-pesoLight transition-all active:scale-95 shadow-sm text-center"
                                         >
-                                            {lang === "tl" ? "I-save" : "Save"}
+                                            {lang === "tl" ? "I-save ang PIN" : "Save PIN"}
                                         </button>
                                     </div>
                                 </form>
@@ -1582,14 +1703,14 @@
                         </div>
 
                         {/* Apple HIG Privacy Note */}
-                        <div className="p-4 rounded-xl bg-peso/5 dark:bg-pesoLight/5 border border-peso/15 flex items-start gap-3">
+                        <div className="p-3.5 sm:p-4 rounded-xl bg-peso/5 dark:bg-pesoLight/5 border border-peso/15 flex items-start gap-3">
                             <div className="w-5 h-5 text-peso dark:text-pesoLight shrink-0 mt-0.5">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
                                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                                 </svg>
                             </div>
-                            <p className="text-[12px] font-medium text-ink2/70 dark:text-paper/70 leading-relaxed">
+                            <p className="text-[11.5px] sm:text-[12px] font-medium text-ink2/70 dark:text-paper/70 leading-relaxed min-w-0">
                                 {lang === "tl"
                                     ? "Privacy Guarantee: Ang iyong biometric data (fingerprint o face) ay hindi kailanman lumalabas sa iyong device at hindi itinatago sa anumang server. WebAuthn platform encryption ang ginagamit."
                                     : "Privacy Guarantee: Your biometric data (fingerprint or face) never leaves your local device's Secure Enclave and is never sent to Tipid servers. Backed by the W3C WebAuthn standard."}

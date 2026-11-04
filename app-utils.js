@@ -631,14 +631,39 @@
     }
   };
 
+  function bufferToBase64Url(buffer) {
+    if (!buffer) return "";
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+
+  function base64UrlToBuffer(base64url) {
+    if (!base64url) return new Uint8Array(0);
+    let base64 = String(base64url).replace(/-/g, "+").replace(/_/g, "/");
+    while (base64.length % 4) {
+      base64 += "=";
+    }
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
+  }
+
   const TipidBiometrics = {
     isSupported() {
-      return (
-        typeof window !== "undefined" &&
-        window.isSecureContext &&
-        typeof window.PublicKeyCredential !== "undefined" &&
-        typeof window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === "function"
-      );
+      if (typeof window === "undefined" || !window.isSecureContext) return false;
+      if (typeof window.PublicKeyCredential === "undefined") return false;
+      if (typeof window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !== "function") return false;
+      // W3C WebAuthn strictly prohibits raw IP addresses (e.g. 127.0.0.1 or 192.168.x.x)
+      const hostname = window.location.hostname || "";
+      if (/^(\d{1,3}\.){3}\d{1,3}$/.test(hostname)) return false;
+      return true;
     },
 
     async isAvailable() {
@@ -741,12 +766,16 @@
     },
 
     async register(uid, email = "user@tipid.app") {
+      const hostname = (typeof window !== "undefined" && window.location.hostname) || "";
+      if (/^(\d{1,3}\.){3}\d{1,3}$/.test(hostname)) {
+        throw new Error("WebAuthn does not allow raw IP addresses (" + hostname + "). Please use 'localhost' or your domain, or use the Backup PIN Passcode.");
+      }
       if (!this.isSupported()) {
-        throw new Error("Biometric authentication is not supported in this browser/connection (requires HTTPS or localhost).");
+        throw new Error("Biometric authentication is not supported on this connection (requires HTTPS or localhost). Please use Backup PIN Passcode.");
       }
       const available = await this.isAvailable();
       if (!available) {
-        throw new Error("No platform authenticator (Face ID / Touch ID / Fingerprint) was detected on this device.");
+        throw new Error("No platform authenticator (Face ID / Touch ID / Fingerprint) was detected on this device. Please use Backup PIN Passcode.");
       }
 
       const challenge = new Uint8Array(32);
@@ -765,19 +794,23 @@
             displayName: email.split("@")[0] || "Tipid User"
           },
           pubKeyCredParams: [
-            { type: "public-key", alg: -7 },
-            { type: "public-key", alg: -257 }
+            { type: "public-key", alg: -7 },  // ES256
+            { type: "public-key", alg: -257 } // RS256
           ],
           authenticatorSelection: {
             authenticatorAttachment: "platform",
-            userVerification: "required"
+            userVerification: "preferred",
+            residentKey: "preferred"
           },
           timeout: 60000
         }
       });
 
-      if (credential && credential.id) {
-        localStorage.setItem(`tipid_biometrics_cred_id_${uid}`, credential.id);
+      if (credential) {
+        const credId = credential.rawId ? bufferToBase64Url(credential.rawId) : credential.id;
+        if (credId) {
+          localStorage.setItem(`tipid_biometrics_cred_id_${uid}`, credId);
+        }
         this.setEnabled(uid, true);
         this.setSessionUnlocked(uid, true);
         return true;
@@ -788,7 +821,10 @@
     async verify(uid) {
       if (!uid) return true;
       if (!this.isEnabled(uid)) return true;
-      if (!this.isSupported()) return false;
+      if (!this.isSupported()) {
+        if (this.hasPasscode(uid)) return "prompt_pin";
+        return false;
+      }
 
       const challenge = new Uint8Array(32);
       if (window.crypto && window.crypto.getRandomValues) {
@@ -800,28 +836,32 @@
         publicKey: {
           challenge,
           rpId: window.location.hostname,
-          userVerification: "required",
+          userVerification: "preferred",
           timeout: 60000
         }
       };
 
       if (credId) {
         try {
-          const binaryStr = atob(credId.replace(/-/g, "+").replace(/_/g, "/"));
-          const bytes = new Uint8Array(binaryStr.length);
-          for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
-          options.publicKey.allowCredentials = [{
-            type: "public-key",
-            id: bytes,
-            transports: ["internal"]
-          }];
+          const bytes = base64UrlToBuffer(credId);
+          if (bytes && bytes.length > 0) {
+            options.publicKey.allowCredentials = [{
+              type: "public-key",
+              id: bytes
+            }];
+          }
         } catch (_) {}
       }
 
-      const assertion = await navigator.credentials.get(options);
-      if (assertion) {
-        this.setSessionUnlocked(uid, true);
-        return true;
+      try {
+        const assertion = await navigator.credentials.get(options);
+        if (assertion) {
+          this.setSessionUnlocked(uid, true);
+          return true;
+        }
+      } catch (err) {
+        console.warn("[TipidBiometrics] Verification exception:", err);
+        throw err;
       }
       return false;
     },
@@ -838,13 +878,6 @@
       } catch (_) {}
     }
   };
-
-  try {
-    const initLang = TipidI18n.getLanguage();
-    if (typeof document !== "undefined" && document.documentElement) {
-      document.documentElement.lang = initLang === "tl" ? "fil" : "en";
-    }
-  } catch (_) {}
 
   window.TipidCore = Object.freeze({
     toCentavos, fromCentavos, money, sumMoney, walletBalances, cleanText, optionalText,
