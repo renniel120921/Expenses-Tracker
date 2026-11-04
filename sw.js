@@ -10,7 +10,7 @@
 //
 // Bump BOTH version numbers below whenever you change the file list or want
 // old clients to drop their cached copies.
-const CACHE_VERSION = 'v23';
+const CACHE_VERSION = 'v24';
 const CACHE_NAME = `tipid-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `tipid-runtime-${CACHE_VERSION}`;
 
@@ -51,6 +51,8 @@ const CORE_SHELL = [
   '/manifest.json',
   '/assets/logo.svg',
   '/assets/logo-512.png',
+  '/assets/logo-192.png',
+  '/assets/apple-touch-icon.png',
   '/assets/favicon-32.png',
 ];
 
