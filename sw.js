@@ -10,7 +10,7 @@
 //
 // Bump BOTH version numbers below whenever you change the file list or want
 // old clients to drop their cached copies.
-const CACHE_VERSION = 'v22';
+const CACHE_VERSION = 'v23';
 const CACHE_NAME = `tipid-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `tipid-runtime-${CACHE_VERSION}`;
 
