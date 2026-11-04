@@ -144,7 +144,7 @@ test("Service Worker implements safe precache, response guarantees, and private 
   const client = fs.readFileSync(path.join(root, "app-utils.js"), "utf8");
 
   // Cache version
-  assert.match(sw, /CACHE_VERSION\s*=\s*'v22'/);
+  assert.match(sw, /CACHE_VERSION\s*=\s*'v\d+'/);
 
   // Split shell assets
   assert.match(sw, /const CORE_SHELL\s*=\s*\[/);

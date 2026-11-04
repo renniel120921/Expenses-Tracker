@@ -446,9 +446,17 @@
         /* --- ROOT GROCERY PAGE --- */
         function GroceryPage() {
             const authReady = window.useAuthReady();
-            const [user, setUser] = React.useState(null);
-            const [authChecking, setAuthChecking] = React.useState(true);
-            const [componentsReady, setComponentsReady] = React.useState(false);
+            const [user, setUser] = React.useState(() => {
+                try {
+                    return window.TipidAuth?.getCachedUser ? window.TipidAuth.getCachedUser() : JSON.parse(localStorage.getItem("tipid_auth_cached_user") || "null");
+                } catch (_) { return null; }
+            });
+            const [componentsReady, setComponentsReady] = React.useState(() => {
+                return typeof window.Navbar !== "undefined" && typeof window.GroceryList !== "undefined";
+            });
+            const [authChecking, setAuthChecking] = React.useState(() => {
+                try { return !localStorage.getItem("tipid_auth_cached_user"); } catch (_) { return true; }
+            });
 
             // Live grocery stats shared between GroceryList and GroceryHeroCard
             const [groceryStats, setGroceryStats] = React.useState(() => {
@@ -488,6 +496,7 @@
             const toggleDarkMode = () => setDarkMode(!darkMode);
 
             React.useEffect(() => {
+                if (componentsReady) return;
                 const interval = setInterval(() => {
                     if (window.GroceryList && window.Navbar) {
                         setComponentsReady(true);

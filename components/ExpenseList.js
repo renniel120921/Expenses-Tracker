@@ -41,12 +41,6 @@ const LIST_ICONS = {
             <line x1="8" y1="15" x2="12" y2="15" />
         </svg>
     ),
-    Eye: ({ size = 15, className = "" }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-            <circle cx="12" cy="12" r="3" />
-        </svg>
-    ),
     Inbox: ({ size = 26, className = "" }) => (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
             <path d="M22 12h-6l-2 3h-4l-2-3H2" />
@@ -79,21 +73,6 @@ const LIST_ICONS = {
     )
 };
 
-// Realistic Philippine Demonstration Sample Dataset
-const SAMPLE_DEMO_ENTRIES = [
-    { id: "demo-1", desc: "Jollibee Mega Meal with Sundae", amount: 249.00, type: "expense", category: "Pagkain", method: "GCash", spendType: "need", date: new Date(Date.now() - 86400000 * 0).toISOString(), createdAt: { toDate: () => new Date(Date.now() - 86400000 * 0) } },
-    { id: "demo-2", desc: "Meralco Electricity Bill", amount: 2850.00, type: "expense", category: "Bills", method: "Maya", spendType: "need", date: new Date(Date.now() - 86400000 * 1).toISOString(), createdAt: { toDate: () => new Date(Date.now() - 86400000 * 1) } },
-    { id: "demo-3", desc: "Puregold Weekly Grocery", amount: 1680.50, type: "expense", category: "Pagkain", method: "Cash", spendType: "need", date: new Date(Date.now() - 86400000 * 2).toISOString(), createdAt: { toDate: () => new Date(Date.now() - 86400000 * 2) } },
-    { id: "demo-4", desc: "Petron Fuel Refill", amount: 750.00, type: "expense", category: "Pamasahe", method: "GCash", spendType: "need", date: new Date(Date.now() - 86400000 * 2).toISOString(), createdAt: { toDate: () => new Date(Date.now() - 86400000 * 2) } },
-    { id: "demo-5", desc: "Starbucks Iced Caramel Macchiato", amount: 215.00, type: "expense", category: "Pagkain", method: "Maya", spendType: "luho", date: new Date(Date.now() - 86400000 * 3).toISOString(), createdAt: { toDate: () => new Date(Date.now() - 86400000 * 3) } },
-    { id: "demo-6", desc: "Smart Giga Load Promo", amount: 500.00, type: "expense", category: "Load", method: "GCash", spendType: "need", date: new Date(Date.now() - 86400000 * 4).toISOString(), createdAt: { toDate: () => new Date(Date.now() - 86400000 * 4) } },
-    { id: "demo-7", desc: "Shopee Tech Accessory Desk Mat", amount: 480.00, type: "expense", category: "Project Components", method: "ShopeePay", spendType: "luho", date: new Date(Date.now() - 86400000 * 5).toISOString(), createdAt: { toDate: () => new Date(Date.now() - 86400000 * 5) } },
-    { id: "demo-8", desc: "Bi-monthly Salary Payroll", amount: 18500.00, type: "income", category: "Kita", method: "BDO", date: new Date(Date.now() - 86400000 * 6).toISOString(), createdAt: { toDate: () => new Date(Date.now() - 86400000 * 6) } },
-    { id: "demo-9", desc: "Freelance Web Project Milestone", amount: 6200.00, type: "income", category: "Kita", method: "GCash", date: new Date(Date.now() - 86400000 * 7).toISOString(), createdAt: { toDate: () => new Date(Date.now() - 86400000 * 7) } },
-    { id: "demo-10", desc: "GrabCar Ride to Office HQ", amount: 320.00, type: "expense", category: "Pamasahe", method: "GCash", spendType: "need", date: new Date(Date.now() - 86400000 * 8).toISOString(), createdAt: { toDate: () => new Date(Date.now() - 86400000 * 8) } },
-    { id: "demo-11", desc: "7-Eleven Coffee & Sausage Roll", amount: 110.00, type: "expense", category: "Pagkain", method: "Cash", spendType: "luho", date: new Date(Date.now() - 86400000 * 9).toISOString(), createdAt: { toDate: () => new Date(Date.now() - 86400000 * 9) } },
-    { id: "demo-12", desc: "Maynilad Water Utility Bill", amount: 460.00, type: "expense", category: "Bills", method: "Maya", spendType: "need", date: new Date(Date.now() - 86400000 * 10).toISOString(), createdAt: { toDate: () => new Date(Date.now() - 86400000 * 10) } },
-];
 
 function SkeletonRow({ delay = 0 }) {
     const shimmerStyle = { animationDelay: `${delay}ms` };
@@ -207,7 +186,17 @@ function DigitalReceiptModal({ entry, onClose, onDelete }) {
                                         ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400'
                                         : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
                                 }`}>
-                                    {entry.spendType === 'luho' ? '🛍️ Discretionary (Luho)' : '✅ Essential Need'}
+                                    {entry.spendType === 'luho' ? (
+                                        <>
+                                            <LIST_ICONS.Sparkles size={10} />
+                                            <span>Discretionary (Luho)</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <LIST_ICONS.Check size={10} />
+                                            <span>Essential Need</span>
+                                        </>
+                                    )}
                                 </span>
                             </div>
                         )}
@@ -258,16 +247,12 @@ function EntryList({ uid, entries = [], loading = false }) {
     const [spendTypeFilter, setSpendTypeFilter] = useState("all"); // 'all', 'need', 'luho'
     const [dateRangeFilter, setDateRangeFilter] = useState("all"); // 'all', 'thisMonth', 'lastMonth', 'thisYear'
     const [sortBy, setSortBy] = useState("newest"); // 'newest', 'oldest', 'amountHigh', 'amountLow'
-    const [useDemoMode, setUseDemoMode] = useState(false);
     const [activeReceipt, setActiveReceipt] = useState(null);
 
-    // Active dataset: live Firebase entries or toggled Philippine sample data
+    // Active dataset: live Firebase entries
     const activeEntries = useMemo(() => {
-        if (useDemoMode || entries.length === 0) {
-            return useDemoMode ? SAMPLE_DEMO_ENTRIES : entries;
-        }
-        return entries;
-    }, [entries, useDemoMode]);
+        return entries || [];
+    }, [entries]);
 
     // Unique Categories & Wallets present in active dataset
     const availableCategories = useMemo(() => {
@@ -485,26 +470,11 @@ function EntryList({ uid, entries = [], loading = false }) {
                                 </h3>
                                 <p className="text-[11.5px] text-ink2/60 dark:text-paper/50">
                                     Audited records & transaction history
-                                    {useDemoMode && <span className="ml-1.5 text-emerald-600 dark:text-emerald-400 font-bold font-mono">(Sample Demo Data)</span>}
                                 </p>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-2 flex-wrap self-end sm:self-auto">
-                            {/* Preview Demo Button */}
-                            <button
-                                type="button"
-                                onClick={() => setUseDemoMode(v => !v)}
-                                className={`tap-scale px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs ${
-                                    useDemoMode
-                                        ? "bg-emerald-500 text-white border-emerald-400 shadow-sm"
-                                        : "bg-white dark:bg-ink2/60 text-ink2/70 dark:text-paper/70 border-black/10 dark:border-white/10 hover:bg-black/5"
-                                }`}
-                            >
-                                <LIST_ICONS.Eye size={13} />
-                                <span>{useDemoMode ? "Live Data" : "Preview Demo"}</span>
-                            </button>
-
                             {/* Export CSV Button */}
                             <button
                                 type="button"
@@ -557,8 +527,8 @@ function EntryList({ uid, entries = [], loading = false }) {
                         <div className="md:col-span-6 flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-xl text-xs font-semibold">
                             {[
                                 { key: "all", label: "All Records" },
-                                { key: "expense", label: "💸 Expenses" },
-                                { key: "income", label: "💰 Income" }
+                                { key: "expense", label: "Expenses" },
+                                { key: "income", label: "Income" }
                             ].map(tab => (
                                 <button
                                     key={tab.key}
@@ -622,8 +592,8 @@ function EntryList({ uid, entries = [], loading = false }) {
                                 className="appearance-none pl-3 pr-7 py-1.5 rounded-lg bg-black/[0.03] dark:bg-white/[0.05] border border-black/10 dark:border-white/10 font-medium text-ink dark:text-paper focus:outline-none focus:ring-1 focus:ring-peso/40 cursor-pointer text-xs"
                             >
                                 <option value="all">All Spend Types</option>
-                                <option value="need">✅ Needs Only</option>
-                                <option value="luho">🛍️ Luho / Wants Only</option>
+                                <option value="need">Needs (Essential)</option>
+                                <option value="luho">Luho (Discretionary)</option>
                             </select>
                             <span className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-ink2/40 dark:text-paper/40">
                                 <LIST_ICONS.ArrowUpDown size={11} />
@@ -699,26 +669,16 @@ function EntryList({ uid, entries = [], loading = false }) {
                         <SkeletonRow delay={270} />
                     </div>
                 ) : activeEntries.length === 0 ? (
-                    <div className="empty-bounce py-16 sm:py-20 flex flex-col items-center justify-center gap-4 text-center px-4">
-                        <div className="relative flex items-center justify-center w-16 h-16 mb-2">
-                            <div className="absolute inset-0 bg-peso/10 dark:bg-pesoLight/10 rounded-full animate-ping opacity-75" style={{ animationDuration: '3s' }} />
-                            <span className="relative z-10 w-16 h-16 rounded-[1.25rem] bg-gradient-to-br from-paperDim to-paperDim/50 dark:from-ink2/60 dark:to-ink2/20 border border-dashed border-line dark:border-white/15 flex items-center justify-center shadow-sm text-peso">
-                                <LIST_ICONS.Inbox size={26} />
-                            </span>
-                        </div>
+                    <div className="empty-bounce py-16 sm:py-20 flex flex-col items-center justify-center gap-3 text-center px-4">
+                        <span className="w-16 h-16 rounded-[1.25rem] bg-gradient-to-br from-paperDim to-paperDim/50 dark:from-ink2/60 dark:to-ink2/20 border border-dashed border-line dark:border-white/15 flex items-center justify-center shadow-sm text-peso">
+                            <LIST_ICONS.Inbox size={26} />
+                        </span>
                         <p className="text-[14px] font-semibold text-ink dark:text-paper">
                             No transactions recorded yet
                         </p>
                         <p className="text-[12px] text-ink2/60 dark:text-paper/50 max-w-[260px] leading-relaxed">
-                            Log income or expenses from your Dashboard, or preview sample records now.
+                            Log income or expenses from your Dashboard to start tracking your finances.
                         </p>
-                        <button
-                            type="button"
-                            onClick={() => setUseDemoMode(true)}
-                            className="tap-scale mt-2 px-4 py-2 rounded-xl bg-peso text-white text-xs font-bold shadow-xs hover:bg-pesoLight transition-colors"
-                        >
-                            Preview Sample Demo Ledger
-                        </button>
                     </div>
                 ) : filteredEntries.length === 0 ? (
                     <div className="py-16 flex flex-col items-center justify-center text-center px-4">

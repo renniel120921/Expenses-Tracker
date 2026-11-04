@@ -39,10 +39,11 @@ const TRACKER_ICONS = {
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
         </svg>
     ),
-    Eye: ({ size = 15, className = "" }) => (
+    AlertTriangle: ({ size = 14, className = "" }) => (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-            <circle cx="12" cy="12" r="3" />
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" strokeWidth="2.5" />
         </svg>
     ),
     Sparkles: ({ size = 16, className = "" }) => (
@@ -156,57 +157,6 @@ function MiniWalletChip({ id, meta, active, onClick }) {
     );
 }
 
-// Realistic Philippine Demonstration Sample Dataset
-const SAMPLE_DEMO_INSTALLMENTS = [
-    {
-        id: "demo-inst-1",
-        name: "iPhone 15 Pro (256GB)",
-        platform: "SPayLater",
-        paymentMethod: "GCash",
-        srp: 70990,
-        totalAmount: 76500,
-        terms: 12,
-        paidMonths: 5,
-        monthly: 6375,
-        startDate: new Date(Date.now() - 86400000 * 30 * 5).toISOString().split("T")[0]
-    },
-    {
-        id: "demo-inst-2",
-        name: "Yamaha Aerox Scooter",
-        platform: "Home Credit",
-        paymentMethod: "BDO",
-        srp: 124000,
-        totalAmount: 144000,
-        terms: 24,
-        paidMonths: 14,
-        monthly: 6000,
-        startDate: new Date(Date.now() - 86400000 * 30 * 14).toISOString().split("T")[0]
-    },
-    {
-        id: "demo-inst-3",
-        name: "MacBook Air M2 Work Setup",
-        platform: "Billease",
-        paymentMethod: "Maya",
-        srp: 59990,
-        totalAmount: 64500,
-        terms: 6,
-        paidMonths: 4,
-        monthly: 10750,
-        startDate: new Date(Date.now() - 86400000 * 30 * 4).toISOString().split("T")[0]
-    },
-    {
-        id: "demo-inst-4",
-        name: "Panasonic Inverter Refrigerator",
-        platform: "Credit Card",
-        paymentMethod: "BPI",
-        srp: 24990,
-        totalAmount: 24990,
-        terms: 12,
-        paidMonths: 12,
-        monthly: 2082.50,
-        startDate: new Date(Date.now() - 86400000 * 30 * 13).toISOString().split("T")[0]
-    }
-];
 
 window.InstallmentTracker = function InstallmentTracker({ uid, onSummaryChange }) {
     const { useState, useEffect, useMemo } = React;
@@ -217,7 +167,6 @@ window.InstallmentTracker = function InstallmentTracker({ uid, onSummaryChange }
         return saved ? JSON.parse(saved) : [];
     });
 
-    const [useDemoMode, setUseDemoMode] = useState(false);
     const [filterTab, setFilterTab] = useState("active"); // 'all', 'active', 'completed'
     const [providerFilter, setProviderFilter] = useState("all");
     const [sortBy, setSortBy] = useState("dueSoonest");
@@ -257,11 +206,8 @@ window.InstallmentTracker = function InstallmentTracker({ uid, onSummaryChange }
 
     // Active dataset
     const activeItems = useMemo(() => {
-        if (useDemoMode || items.length === 0) {
-            return useDemoMode ? SAMPLE_DEMO_INSTALLMENTS : items;
-        }
-        return items;
-    }, [items, useDemoMode]);
+        return items || [];
+    }, [items]);
 
     // Available providers
     const platforms = ["SPayLater", "LazPayLater", "Home Credit", "Billease", "Maya EasyCredit", "GGives", "Motorcycle Loan", "Credit Card", "Other"];
@@ -429,10 +375,6 @@ window.InstallmentTracker = function InstallmentTracker({ uid, onSummaryChange }
     };
 
     const handlePay = (id) => {
-        if (String(id).startsWith("demo-")) {
-            return Swal.fire({ icon: 'info', title: 'Sample Demo Plan', text: 'This is a sample demonstration record for preview.', confirmButtonColor: '#1F6F54', customClass: { popup: 'tipid-swal' } });
-        }
-
         setItems(items.map(item => {
             if (item.id === id && item.paidMonths < item.terms) {
                 return { ...item, paidMonths: item.paidMonths + 1 };
@@ -443,7 +385,7 @@ window.InstallmentTracker = function InstallmentTracker({ uid, onSummaryChange }
         Swal.fire({
             icon: 'success',
             title: 'Payment Recorded!',
-            text: 'You are one month closer to total debt freedom! 🎉',
+            text: 'You are one month closer to total debt freedom!',
             confirmButtonColor: '#1F6F54',
             timer: 1800,
             showConfirmButton: false,
@@ -452,10 +394,6 @@ window.InstallmentTracker = function InstallmentTracker({ uid, onSummaryChange }
     };
 
     const handleDelete = (id) => {
-        if (String(id).startsWith("demo-")) {
-            return Swal.fire({ icon: 'info', title: 'Sample Demo Plan', text: 'Sample records cannot be permanently deleted.', confirmButtonColor: '#1F6F54', customClass: { popup: 'tipid-swal' } });
-        }
-
         Swal.fire({
             title: 'Delete this plan?',
             text: 'This installment plan will be permanently removed.',
@@ -491,25 +429,11 @@ window.InstallmentTracker = function InstallmentTracker({ uid, onSummaryChange }
                             </h3>
                             <p className="text-[11.5px] text-ink2/60 dark:text-paper/50">
                                 Total installment principal cleared across all plans
-                                {useDemoMode && <span className="ml-1.5 text-emerald-600 dark:text-emerald-400 font-bold font-mono">(Sample Demo Data)</span>}
                             </p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2 self-end sm:self-auto">
-                        <button
-                            type="button"
-                            onClick={() => setUseDemoMode(v => !v)}
-                            className={`tap-scale px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs ${
-                                useDemoMode
-                                    ? "bg-emerald-500 text-white border-emerald-400 shadow-sm"
-                                    : "bg-white dark:bg-ink2/60 text-ink2/70 dark:text-paper/70 border-black/10 dark:border-white/10 hover:bg-black/5"
-                            }`}
-                        >
-                            <TRACKER_ICONS.Eye size={13} />
-                            <span>{useDemoMode ? "Live Data" : "Preview Demo"}</span>
-                        </button>
-
                         <button
                             type="button"
                             onClick={() => setIsFormOpen(v => !v)}
@@ -554,7 +478,7 @@ window.InstallmentTracker = function InstallmentTracker({ uid, onSummaryChange }
                     <div className="bg-black/[0.02] dark:bg-white/[0.02] p-3.5 rounded-xl border border-black/5 dark:border-white/5">
                         <p className="text-[10px] font-mono uppercase text-ink2/50 dark:text-paper/40">Debt-Free Target</p>
                         <p className="font-display text-sm sm:text-base font-bold text-amber-600 dark:text-amber-400 mt-0.5 truncate">
-                            {stats.latestCompletion ? stats.latestCompletion.toLocaleDateString("en-PH", { month: "short", year: "numeric" }) : "All Clear! 🎉"}
+                            {stats.latestCompletion ? stats.latestCompletion.toLocaleDateString("en-PH", { month: "short", year: "numeric" }) : "All Clear"}
                         </p>
                     </div>
                 </div>
@@ -579,9 +503,13 @@ window.InstallmentTracker = function InstallmentTracker({ uid, onSummaryChange }
                         <button
                             type="button"
                             onClick={() => setIsFormOpen(false)}
+                            aria-label="Close Form"
                             className="w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-ink2/60 dark:text-paper/60 hover:bg-black/10"
                         >
-                            ✕
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
                         </button>
                     </div>
 
@@ -772,16 +700,9 @@ window.InstallmentTracker = function InstallmentTracker({ uid, onSummaryChange }
                         <p className="text-sm font-semibold text-ink dark:text-paper">
                             {filterTab === "completed" ? "No completed installment plans yet." : "No active installment plans. All clear!"}
                         </p>
-                        <p className="text-xs text-ink2/50 dark:text-paper/40 mt-1 mb-4">
+                        <p className="text-xs text-ink2/50 dark:text-paper/40 mt-1 max-w-[280px] leading-relaxed">
                             Log your SPayLater, Home Credit, or loans to track payoff timelines.
                         </p>
-                        <button
-                            type="button"
-                            onClick={() => setUseDemoMode(true)}
-                            className="tap-scale px-4 py-2 rounded-xl bg-peso text-white text-xs font-bold shadow-xs hover:bg-pesoLight"
-                        >
-                            Preview Sample Demo Plans
-                        </button>
                     </div>
                 ) : (
                     filteredList.map(item => {
@@ -824,14 +745,16 @@ window.InstallmentTracker = function InstallmentTracker({ uid, onSummaryChange }
                                             </span>
 
                                             {isDone && (
-                                                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-600 text-white shadow-xs">
-                                                    🎉 100% Paid Off!
+                                                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-600 text-white shadow-xs">
+                                                    <TRACKER_ICONS.Check size={11} strokeWidth={2.8} />
+                                                    <span>100% Paid Off</span>
                                                 </span>
                                             )}
 
                                             {isOverdue && (
-                                                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-600 text-white animate-pulse">
-                                                    ⚠️ Overdue
+                                                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-600 text-white animate-pulse">
+                                                    <TRACKER_ICONS.AlertTriangle size={11} />
+                                                    <span>Overdue</span>
                                                 </span>
                                             )}
                                         </div>

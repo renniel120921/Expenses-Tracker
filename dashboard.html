@@ -1963,7 +1963,11 @@
         function Dashboard() {
             const authReady = window.useAuthReady();
             const dataReady = window.useDataReady();
-            const [user, setUser] = React.useState(undefined);
+            const [user, setUser] = React.useState(() => {
+                try {
+                    return window.TipidAuth?.getCachedUser ? window.TipidAuth.getCachedUser() : JSON.parse(localStorage.getItem("tipid_auth_cached_user") || "null");
+                } catch (_) { return undefined; }
+            });
             const [entries, setEntries] = React.useState([]);
             const [bills, setBills] = React.useState([]);
             const [utangList, setUtangList] = React.useState([]);

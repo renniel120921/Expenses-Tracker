@@ -365,7 +365,11 @@
             const authReady = window.useAuthReady();
             const dataReady = window.useDataReady();
 
-            const [user, setUser] = React.useState(undefined);
+            const [user, setUser] = React.useState(() => {
+                try {
+                    return window.TipidAuth?.getCachedUser ? window.TipidAuth.getCachedUser() : JSON.parse(localStorage.getItem("tipid_auth_cached_user") || "null");
+                } catch (_) { return undefined; }
+            });
             const [avatarPreview, setAvatarPreview] = React.useState(null);
             const [activeMenu, setActiveMenu] = React.useState(null);
             const [isDark, setIsDark] = React.useState(() => document.documentElement.classList.contains('dark'));
@@ -412,7 +416,6 @@
             const [hasPasscode, setHasPasscode] = React.useState(false);
             const [passcodeInput, setPasscodeInput] = React.useState("");
             const [showPasscodeForm, setShowPasscodeForm] = React.useState(false);
-            const isLocalIp = typeof window !== "undefined" && /^(\d{1,3}\.){3}\d{1,3}$/.test(window.location.hostname || "");
 
             const t = window.TIPID_TRANSLATIONS[lang] || window.TIPID_TRANSLATIONS.en;
 
@@ -1557,41 +1560,6 @@
                                     : "Shield your sensitive balances and financial figures behind Face ID, Touch ID, or a secure PIN passcode."}
                             </p>
                         </div>
-
-                        {/* Device Biometrics Explainer Banner */}
-                        <div className="p-3.5 sm:p-4 rounded-2xl bg-paperDim/80 dark:bg-white/[0.04] border border-line/70 dark:border-white/10 flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-xl bg-peso/10 dark:bg-pesoLight/15 text-peso dark:text-pesoLight flex items-center justify-center shrink-0">
-                                <window.Icons.Info size={16} />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <p className="font-bold text-[12.5px] sm:text-[13px] text-ink dark:text-paper">
-                                    {lang === "tl" ? "Paano gumagana ang Fingerprint dito?" : "How Device Biometrics Work"}
-                                </p>
-                                <p className="text-[11.5px] sm:text-[12px] text-ink2/70 dark:text-paper/70 mt-0.5 leading-relaxed">
-                                    {lang === "tl"
-                                        ? "Hindi kailangang mag-enroll ng panibagong fingerprint. Awtomatiko nitong ginagamit ang Fingerprint na naka-set up na sa Settings ng iyong telepono. Kapag naka-HTTPS, lalabas ang opisyal na prompt ng Android."
-                                        : "No need to register new fingerprints. It uses the Fingerprint already configured in your phone Settings. On HTTPS, Android will show its native unlock prompt."}
-                                </p>
-                            </div>
-                        </div>
-
-                        {isLocalIp && (
-                            <div className="p-3.5 sm:p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-3">
-                                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
-                                    <window.Icons.ShieldAlert size={16} />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="font-bold text-[12.5px] sm:text-[13px] text-amber-800 dark:text-amber-300">
-                                        {lang === "tl" ? "Nasa Local IP Connection ka" : "Local IP Connection Active"}
-                                    </p>
-                                    <p className="text-[11.5px] sm:text-[12px] text-amber-900/80 dark:text-amber-200/80 mt-0.5 leading-relaxed">
-                                        {lang === "tl"
-                                            ? "Dahil nakakonekta via IP address (e.g. 127.0.0.1 o 192.168.x.x), pinipigilan ng Android browser ang fingerprint scanner para sa proteksyon. Gamitin ang Backup PIN Passcode sa ibaba habang nasa local testing."
-                                            : "Browsers prohibit biometric scanners on raw IP addresses for security. Please configure a Backup PIN Passcode below while testing locally."}
-                                    </p>
-                                </div>
-                            </div>
-                        )}
 
                         {/* Main Toggle Card */}
                         <div className="bento-card p-4 sm:p-5 rounded-2xl flex items-center justify-between border border-line/80 dark:border-white/10 gap-3">

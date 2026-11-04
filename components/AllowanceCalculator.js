@@ -226,6 +226,22 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
     };
 
     const [salary, setSalary] = useState("");
+    // Listen for Net Pay Estimator apply events
+    useEffect(() => {
+        const handleApplyNetPay = (e) => {
+            if (e.detail?.amount != null) {
+                setSalary(String(e.detail.amount));
+                setEditOpen(false);
+                pushToast(`Naitakda ang ₱${window.peso(e.detail.amount)} (${e.detail.mode === "semi" ? "Bawat Sahod" : "Buwanan"}) sa Badyet!`);
+                if (window.TipidCelebration) {
+                    window.TipidCelebration.playChime();
+                }
+            }
+        };
+        window.addEventListener("tipid-apply-netpay", handleApplyNetPay);
+        return () => window.removeEventListener("tipid-apply-netpay", handleApplyNetPay);
+    }, []);
+
     const [bills, setBills] = useState("");
     const [savings, setSavings] = useState("");
     const [paydayDate, setPaydayDate] = useState("");
@@ -634,9 +650,21 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {/* Salary Input */}
                             <div className="space-y-1">
-                                <label className="text-[11px] font-mono font-semibold uppercase tracking-wider text-ink2/60 dark:text-paper/50 pl-1">
-                                    Income / Total Allowance
-                                </label>
+                                <div className="flex items-center justify-between">
+                                    <label className="text-[11px] font-mono font-semibold uppercase tracking-wider text-ink2/60 dark:text-paper/50 pl-1">
+                                        Income / Total Allowance
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const el = document.getElementById("netpay-estimator-section");
+                                            if (el) el.scrollIntoView({ behavior: "smooth" });
+                                        }}
+                                        className="text-[11px] font-bold text-peso dark:text-pesoLight hover:underline flex items-center gap-1 active:scale-95 transition-transform focus:outline-none"
+                                    >
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"/></svg><span>Kaltas-Sahod Estimator</span>
+                                    </button>
+                                </div>
                                 <FieldWrap icon={<ALLOWANCE_ICONS.Income size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />}>
                                     <input
                                         type="number"
@@ -946,8 +974,8 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                                         : "bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20"
                                 }`}>
                                     {willRunOutEarly
-                                        ? `⚠️ Petsa de Peligro Warning: At your current burn rate, your allowance may run out ${shortfallDays} ${shortfallDays === 1 ? "day" : "days"} before payday. Cut non-urgent spending!`
-                                        : "✓ Safe Burn Rate: Your allowance will safely last until your scheduled payday. Keep it up!"}
+                                        ? `Petsa de Peligro Alert: At your current burn rate, your allowance may run out ${shortfallDays} ${shortfallDays === 1 ? "day" : "days"} before payday. Cut non-urgent spending!`
+                                        : "Safe Burn Rate: Your allowance will safely last until your scheduled payday. Keep it up!"}
                                 </div>
                             </>
                         )}
@@ -1187,6 +1215,974 @@ window.AllowanceCalculator = function AllowanceCalculator({ user, entries: entri
                     </div>
                 )}
             </div>
+        </div>
+    );
+};
+
+// =========================================================================
+// TIPID KALTAS-SAHOD & NET PAY ESTIMATOR (2024-2026 TRAIN LAW & STATUTORY)
+// Includes Support for Regular Employees and Government Job Order (JO) / COS
+// =========================================================================
+window.TipidNetPay = {
+    calculate(grossSalary, nonTaxableAllowance = 0, options = {}) {
+        if (options && options.employmentType === 'jo') {
+            return this.calculateJO(options);
+        }
+
+        const gross = Math.max(0, Math.round(Number(grossSalary) * 100) / 100) || 0;
+        const nonTax = Math.max(0, Math.round(Number(nonTaxableAllowance) * 100) / 100) || 0;
+
+        if (gross <= 0) {
+            return {
+                employmentType: 'regular',
+                gross: 0, nonTax: 0,
+                sssEmployee: 0, sssEmployer: 0, sssTotal: 0,
+                philhealthEmployee: 0, philhealthEmployer: 0, philhealthTotal: 0,
+                pagibigEmployee: 0, pagibigEmployer: 0, pagibigTotal: 0,
+                totalGovEmployee: 0, totalGovEmployer: 0,
+                taxableIncome: 0,
+                tax: 0,
+                totalDeductions: 0,
+                netMonthly: 0,
+                netSemiMonthly: 0,
+                isTaxExempt: true,
+                taxBracketLabel: "Walang Sahod",
+                deductionPercent: 0
+            };
+        }
+
+        // 1. SSS (2024-2026 Schedule, RA 11199: 14% total = 4.5% Employee, 9.5% Employer)
+        let sssEE = 0, sssER = 0;
+        if (gross < 4250) {
+            sssEE = 180;
+            sssER = 380;
+        } else if (gross >= 29750) {
+            sssEE = 1350; // 900 regular SSS + 450 WISP
+            sssER = 2850; // 1900 regular SSS + 950 WISP
+        } else {
+            const msc = Math.min(30000, Math.max(4000, Math.round(gross / 500) * 500));
+            sssEE = Math.round(msc * 0.045);
+            sssER = Math.round(msc * 0.095);
+        }
+        const sssTotal = sssEE + sssER;
+
+        // 2. PhilHealth (5% total = 2.5% Employee, 2.5% Employer)
+        const phCapped = Math.min(100000, Math.max(10000, gross));
+        const phEE = Math.round(phCapped * 0.025 * 100) / 100;
+        const phER = phEE;
+        const phTotal = phEE + phER;
+
+        // 3. Pag-IBIG (Circular 460 - 2% capped at 10,000 max salary)
+        let piEE = 0, piER = 0;
+        if (gross <= 1500) {
+            piEE = Math.round(gross * 0.01 * 100) / 100;
+            piER = Math.round(gross * 0.02 * 100) / 100;
+        } else {
+            const piCapped = Math.min(10000, gross);
+            piEE = Math.round(piCapped * 0.02 * 100) / 100; // max 200
+            piER = Math.round(piCapped * 0.02 * 100) / 100; // max 200
+        }
+        const piTotal = piEE + piER;
+
+        // Total Mandatory Gov Deductions
+        const totalGovEE = Math.round((sssEE + phEE + piEE) * 100) / 100;
+        const totalGovER = Math.round((sssER + phER + piER) * 100) / 100;
+
+        // 4. Taxable Income & Withholding Tax (TRAIN Law 2023 onwards)
+        const taxableIncome = Math.max(0, Math.round((gross - totalGovEE - nonTax) * 100) / 100);
+        let tax = 0;
+        let taxBracketLabel = "";
+        let isTaxExempt = false;
+
+        if (taxableIncome <= 20833.33) {
+            tax = 0;
+            isTaxExempt = true;
+            taxBracketLabel = "Tax Exempt (Walang tax under TRAIN Law)";
+        } else if (taxableIncome <= 33333.33) {
+            tax = (taxableIncome - 20833.33) * 0.15;
+            taxBracketLabel = "15% sa lagpas ng ₱20,833.33";
+        } else if (taxableIncome <= 66666.67) {
+            tax = 1875 + (taxableIncome - 33333.33) * 0.20;
+            taxBracketLabel = "₱1,875 + 20% sa lagpas ng ₱33,333.33";
+        } else if (taxableIncome <= 166666.67) {
+            tax = 8541.67 + (taxableIncome - 66666.67) * 0.25;
+            taxBracketLabel = "₱8,541.67 + 25% sa lagpas ng ₱66,666.67";
+        } else if (taxableIncome <= 666666.67) {
+            tax = 33541.67 + (taxableIncome - 166666.67) * 0.30;
+            taxBracketLabel = "₱33,541.67 + 30% sa lagpas ng ₱166,666.67";
+        } else {
+            tax = 183541.67 + (taxableIncome - 666666.67) * 0.35;
+            taxBracketLabel = "₱183,541.67 + 35% sa lagpas ng ₱666,666.67";
+        }
+        tax = Math.round(tax * 100) / 100;
+
+        const totalDeductions = Math.round((totalGovEE + tax) * 100) / 100;
+        const netMonthly = Math.max(0, Math.round((gross - totalDeductions + nonTax) * 100) / 100);
+        const netSemiMonthly = Math.round((netMonthly / 2) * 100) / 100;
+
+        return {
+            employmentType: 'regular',
+            gross, nonTax,
+            sssEmployee: sssEE, sssEmployer: sssER, sssTotal,
+            philhealthEmployee: phEE, philhealthEmployer: phER, philhealthTotal: phTotal,
+            pagibigEmployee: piEE, pagibigEmployer: piER, pagibigTotal: piTotal,
+            totalGovEmployee: totalGovEE,
+            totalGovEmployer: totalGovER,
+            taxableIncome,
+            tax,
+            totalDeductions,
+            netMonthly,
+            netSemiMonthly,
+            isTaxExempt,
+            taxBracketLabel,
+            deductionPercent: gross > 0 ? Math.round((totalDeductions / gross) * 1000) / 10 : 0
+        };
+    },
+
+    calculateJO({
+        rateType = 'daily',
+        dailyRate = 0,
+        daysWorked = 22,
+        monthlyRate = 0,
+        hasPremium20 = false,
+        taxType = 'exempt', // 'exempt' | 'ewt2' | 'ewt3' | 'graduated'
+        voluntarySSS = 0,
+        voluntaryPhilHealth = 0,
+        voluntaryPagIBIG = 0
+    } = {}) {
+        let baseGross = 0;
+        if (rateType === 'daily') {
+            const dr = Math.max(0, Number(dailyRate)) || 0;
+            const dw = Math.max(0, Number(daysWorked)) || 0;
+            baseGross = Math.round(dr * dw * 100) / 100;
+        } else {
+            baseGross = Math.max(0, Math.round(Number(monthlyRate) * 100) / 100) || 0;
+        }
+
+        const premium = hasPremium20 ? Math.round(baseGross * 0.20 * 100) / 100 : 0;
+        const gross = Math.round((baseGross + premium) * 100) / 100;
+
+        if (gross <= 0) {
+            return {
+                employmentType: 'jo',
+                rateType,
+                dailyRate: Number(dailyRate) || 0,
+                daysWorked: Number(daysWorked) || 0,
+                monthlyRate: Number(monthlyRate) || 0,
+                baseGross: 0,
+                premium: 0,
+                gross: 0,
+                tax: 0,
+                taxType,
+                taxBracketLabel: 'Walang Sahod',
+                isTaxExempt: true,
+                voluntarySSS: 0,
+                voluntaryPhilHealth: 0,
+                voluntaryPagIBIG: 0,
+                voluntaryTotal: 0,
+                totalGovEmployee: 0,
+                totalDeductions: 0,
+                netMonthly: 0,
+                netSemiMonthly: 0,
+                deductionPercent: 0
+            };
+        }
+
+        const vSSS = Math.max(0, Math.round(Number(voluntarySSS) * 100) / 100) || 0;
+        const vPH = Math.max(0, Math.round(Number(voluntaryPhilHealth) * 100) / 100) || 0;
+        const vPI = Math.max(0, Math.round(Number(voluntaryPagIBIG) * 100) / 100) || 0;
+        const voluntaryTotal = Math.round((vSSS + vPH + vPI) * 100) / 100;
+
+        let tax = 0;
+        let taxBracketLabel = '';
+        let isTaxExempt = false;
+
+        if (taxType === 'exempt') {
+            tax = 0;
+            isTaxExempt = true;
+            taxBracketLabel = 'Tax Exempt (0% - Annual <= ₱250k na may Sworn Declaration)';
+        } else if (taxType === 'ewt2') {
+            tax = Math.round(gross * 0.02 * 100) / 100;
+            taxBracketLabel = '2% Creditable Withholding Tax (BIR Form 2307)';
+        } else if (taxType === 'ewt3') {
+            tax = Math.round(gross * 0.03 * 100) / 100;
+            taxBracketLabel = '3% Percentage Tax (Creditable)';
+        } else if (taxType === 'graduated') {
+            const taxable = Math.max(0, gross - voluntaryTotal);
+            if (taxable <= 20833.33) {
+                tax = 0;
+                isTaxExempt = true;
+                taxBracketLabel = 'Tax Exempt (TRAIN Law <= ₱20,833.33/buwan)';
+            } else if (taxable <= 33333.33) {
+                tax = (taxable - 20833.33) * 0.15;
+                taxBracketLabel = '15% sa lagpas ng ₱20,833.33';
+            } else if (taxable <= 66666.67) {
+                tax = 1875 + (taxable - 33333.33) * 0.20;
+                taxBracketLabel = '₱1,875 + 20% sa lagpas ng ₱33,333.33';
+            } else {
+                tax = 8541.67 + (taxable - 66666.67) * 0.25;
+                taxBracketLabel = '₱8,541.67 + 25% sa lagpas ng ₱66,666.67';
+            }
+            tax = Math.round(tax * 100) / 100;
+        }
+
+        const totalDeductions = Math.round((tax + voluntaryTotal) * 100) / 100;
+        const netMonthly = Math.max(0, Math.round((gross - totalDeductions) * 100) / 100);
+        const netSemiMonthly = Math.round((netMonthly / 2) * 100) / 100;
+
+        return {
+            employmentType: 'jo',
+            rateType,
+            dailyRate: Number(dailyRate) || 0,
+            daysWorked: Number(daysWorked) || 0,
+            monthlyRate: Number(monthlyRate) || 0,
+            baseGross,
+            premium,
+            gross,
+            tax,
+            taxType,
+            taxBracketLabel,
+            isTaxExempt,
+            voluntarySSS: vSSS,
+            voluntaryPhilHealth: vPH,
+            voluntaryPagIBIG: vPI,
+            voluntaryTotal,
+            totalGovEmployee: voluntaryTotal,
+            totalDeductions,
+            netMonthly,
+            netSemiMonthly,
+            deductionPercent: gross > 0 ? Math.round((totalDeductions / gross) * 1000) / 10 : 0
+        };
+    }
+};
+
+window.NetPayEstimatorCard = function NetPayEstimatorCard({ onApply, defaultSalary = "" }) {
+    // Employment Type: 'regular' | 'jo'
+    const [empType, setEmpType] = React.useState('regular');
+
+    // Regular Mode States
+    const [grossInput, setGrossInput] = React.useState(defaultSalary ? String(defaultSalary) : "25000");
+    const [nonTaxInput, setNonTaxInput] = React.useState("");
+
+    // Job Order (JO) Mode States
+    const [joRateType, setJoRateType] = React.useState('daily'); // 'daily' | 'monthly'
+    const [joDailyRate, setJoDailyRate] = React.useState("650");
+    const [joDaysWorked, setJoDaysWorked] = React.useState("22");
+    const [joMonthlyRate, setJoMonthlyRate] = React.useState("18000");
+    const [joHasPremium20, setJoHasPremium20] = React.useState(false);
+    const [joTaxType, setJoTaxType] = React.useState('exempt'); // 'exempt' | 'ewt2' | 'ewt3' | 'graduated'
+    const [joVolSSS, setJoVolSSS] = React.useState("");
+    const [joVolPH, setJoVolPH] = React.useState("");
+    const [joVolPI, setJoVolPI] = React.useState("");
+
+    // UI View Toggles
+    const [showBreakdown, setShowBreakdown] = React.useState(false);
+    const [showDeMinimis, setShowDeMinimis] = React.useState(false);
+    const [showVoluntary, setShowVoluntary] = React.useState(false);
+    const [appliedMessage, setAppliedMessage] = React.useState(null);
+
+    const REGULAR_PRESETS = [
+        { label: "₱18k Min", value: 18000 },
+        { label: "₱25k Junior", value: 25000 },
+        { label: "₱35k Mid", value: 35000 },
+        { label: "₱50k Senior", value: 50000 },
+        { label: "₱75k Lead", value: 75000 }
+    ];
+
+    const JO_DAILY_PRESETS = [
+        { label: "₱550 / day", value: 550 },
+        { label: "₱650 / day", value: 650 },
+        { label: "₱750 / day", value: 750 },
+        { label: "₱850 / day", value: 850 },
+        { label: "₱1,000 / day", value: 1000 }
+    ];
+
+    const JO_MONTHLY_PRESETS = [
+        { label: "₱15k SG-1", value: 15000 },
+        { label: "₱18k SG-3", value: 18000 },
+        { label: "₱22k SG-6", value: 22000 },
+        { label: "₱27k SG-11", value: 27000 },
+        { label: "₱35k Tech", value: 35000 }
+    ];
+
+    const result = React.useMemo(() => {
+        if (empType === 'jo') {
+            return window.TipidNetPay.calculateJO({
+                rateType: joRateType,
+                dailyRate: joDailyRate,
+                daysWorked: joDaysWorked,
+                monthlyRate: joMonthlyRate,
+                hasPremium20: joHasPremium20,
+                taxType: joTaxType,
+                voluntarySSS: joVolSSS,
+                voluntaryPhilHealth: joVolPH,
+                voluntaryPagIBIG: joVolPI
+            });
+        }
+        return window.TipidNetPay.calculate(grossInput, nonTaxInput);
+    }, [
+        empType, grossInput, nonTaxInput,
+        joRateType, joDailyRate, joDaysWorked, joMonthlyRate, joHasPremium20,
+        joTaxType, joVolSSS, joVolPH, joVolPI
+    ]);
+
+    const handleApplyPay = (amount, mode) => {
+        if (!amount || amount <= 0) return;
+        if (typeof onApply === "function") {
+            onApply(amount, mode);
+        } else {
+            window.dispatchEvent(new CustomEvent("tipid-apply-netpay", { detail: { amount, mode } }));
+        }
+        setAppliedMessage(mode === 'semi' ? 'Nai-apply ang Sahod bawat Cutoff!' : 'Nai-apply ang Buong Buwan sa Badyet!');
+        if (window.TipidCelebration) {
+            window.TipidCelebration.playChime();
+        }
+        setTimeout(() => setAppliedMessage(null), 3500);
+    };
+
+    return (
+        <div className="bg-white/80 dark:bg-ink2/30 backdrop-blur-2xl rounded-[2rem] border border-white/80 dark:border-white/10 shadow-ios p-5 sm:p-7 relative overflow-hidden transition-all">
+            {/* Top decorative gradient bar */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-pesoLight to-teal-500" />
+
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-black/5 dark:border-white/10">
+                <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 dark:bg-emerald-400/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20 shadow-xs">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect width="16" height="20" x="4" y="2" rx="2"/>
+                            <line x1="8" x2="16" y1="6" y2="6"/>
+                            <line x1="16" x2="16" y1="14" y2="18"/>
+                            <path d="M16 10h.01"/>
+                            <path d="M12 10h.01"/>
+                            <path d="M8 10h.01"/>
+                            <path d="M12 14h.01"/>
+                            <path d="M8 14h.01"/>
+                            <path d="M12 18h.01"/>
+                            <path d="M8 18h.01"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <h3 className="font-display text-[1.15rem] sm:text-[1.25rem] font-bold text-ink dark:text-paper leading-tight">
+                                Kaltas-Sahod & Net Pay Estimator
+                            </h3>
+                        </div>
+                        <p className="text-[11.5px] sm:text-[12px] text-ink2/60 dark:text-paper/50 mt-0.5">
+                            {empType === 'jo'
+                                ? "Kalkulahin ang take-home pay ng Job Order (JO) / COS sa gobyerno."
+                                : "Kalkulahin ang SSS, PhilHealth, Pag-IBIG at BIR Tax (TRAIN Law) bago mag-badyet."}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="self-start sm:self-auto shrink-0 flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-mono font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300 border border-emerald-500/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        {empType === 'jo' ? "CSC-DBM & BIR 2307" : "2024–2026 Tables"}
+                    </span>
+                </div>
+            </div>
+
+            {/* Employment Type Selector (Pill Switch) */}
+            <div className="mb-5">
+                <label className="block text-[11px] font-mono font-bold uppercase tracking-wider text-ink2/70 dark:text-paper/60 pl-1 mb-2">
+                    Uri ng Empleo (Employment Type)
+                </label>
+                <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-black/5 dark:bg-white/10 w-full sm:w-fit border border-black/5 dark:border-white/10">
+                    <button
+                        type="button"
+                        onClick={() => setEmpType('regular')}
+                        className={"flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs sm:text-[13px] font-bold transition-all " + (
+                            empType === 'regular'
+                                ? "bg-white dark:bg-ink text-peso dark:text-pesoLight shadow-sm"
+                                : "text-ink2/70 dark:text-paper/70 hover:text-ink dark:hover:text-paper"
+                        )}
+                    >
+                        <span className="inline-flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span>Regular / Private Employee</span></span>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setEmpType('jo')}
+                        className={"flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs sm:text-[13px] font-bold transition-all " + (
+                            empType === 'jo'
+                                ? "bg-white dark:bg-ink text-peso dark:text-pesoLight shadow-sm"
+                                : "text-ink2/70 dark:text-paper/70 hover:text-ink dark:hover:text-paper"
+                        )}
+                    >
+                        <span className="inline-flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><line x1="2" x2="22" y1="2" y2="2"/><line x1="12" x2="12" y1="6" y2="18"/><line x1="6" x2="6" y1="6" y2="18"/><line x1="18" x2="18" y1="6" y2="18"/><polygon points="12 2 20 7 4 7"/><line x1="2" x2="22" y1="18" y2="18"/><line x1="2" x2="22" y1="22" y2="22"/></svg><span>Job Order (JO) / COS (Government)</span></span>
+                    </button>
+                </div>
+            </div>
+
+            {/* ========================================================= */}
+            {/* 1. REGULAR EMPLOYEE FORM                                  */}
+            {/* ========================================================= */}
+            {empType === 'regular' && (
+                <div className="space-y-3.5 mb-6 animate-[fadeIn_0.2s_ease-out]">
+                    <div>
+                        <label className="block text-[11px] font-mono font-bold uppercase tracking-wider text-ink2/70 dark:text-paper/60 pl-1 mb-1.5">
+                            Gross Monthly Basic Salary (₱)
+                        </label>
+                        <div className="flex items-center gap-2 bg-white/70 dark:bg-black/30 border border-black/10 dark:border-white/15 rounded-2xl px-4 py-1.5 focus-within:ring-2 focus-within:ring-peso/40 transition-all shadow-inner">
+                            <span className="text-xl font-mono font-bold text-peso dark:text-pesoLight select-none">₱</span>
+                            <input
+                                type="number"
+                                min="0"
+                                step="100"
+                                value={grossInput}
+                                onChange={(e) => setGrossInput(e.target.value)}
+                                placeholder="e.g. 25000"
+                                className="w-full bg-transparent py-2.5 text-lg sm:text-xl font-mono font-bold text-ink dark:text-paper focus:outline-none placeholder:text-ink2/30"
+                            />
+                            {grossInput && (
+                                <button
+                                    type="button"
+                                    onClick={() => setGrossInput("")}
+                                    className="text-ink2/40 hover:text-ink dark:text-paper/40 dark:hover:text-paper p-1"
+                                    title="Clear"
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Quick Presets */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[11px] font-semibold text-ink2/50 dark:text-paper/40 mr-1">Presets:</span>
+                        {REGULAR_PRESETS.map((p) => (
+                            <button
+                                key={p.value}
+                                type="button"
+                                onClick={() => setGrossInput(String(p.value))}
+                                className={"text-[11.5px] font-bold px-2.5 py-1 rounded-xl transition-all active:scale-95 border " + (
+                                    Number(grossInput) === p.value
+                                        ? "bg-peso text-white border-peso shadow-xs"
+                                        : "bg-black/[0.03] dark:bg-white/[0.05] text-ink2 dark:text-paper/70 border-black/5 dark:border-white/10 hover:bg-black/[0.06]"
+                                )}
+                            >
+                                {p.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Optional De Minimis / Non-taxable Toggle */}
+                    <div className="pt-1">
+                        <button
+                            type="button"
+                            onClick={() => setShowDeMinimis(!showDeMinimis)}
+                            className="text-[11.5px] font-bold text-peso dark:text-pesoLight hover:underline flex items-center gap-1 focus:outline-none"
+                        >
+                            <span>{showDeMinimis ? "− Itago ang Non-taxable Allowances" : "+ Magdagdag ng De Minimis / Non-taxable Allowance (Optional)"}</span>
+                        </button>
+                        {showDeMinimis && (
+                            <div className="mt-2 p-3 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-line/60 dark:border-white/10 flex items-center gap-2">
+                                <span className="text-xs text-ink2/70 dark:text-paper/60 shrink-0">De Minimis (Rice, Transpo): ₱</span>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={nonTaxInput}
+                                    onChange={(e) => setNonTaxInput(e.target.value)}
+                                    placeholder="0"
+                                    className="w-full bg-transparent text-sm font-mono font-bold text-ink dark:text-paper focus:outline-none"
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* ========================================================= */}
+            {/* 2. JOB ORDER (JO) / COS FORM                              */}
+            {/* ========================================================= */}
+            {empType === 'jo' && (
+                <div className="space-y-4 mb-6 animate-[fadeIn_0.2s_ease-out]">
+                    {/* JO Info Notice */}
+                    <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-300 text-xs flex items-start gap-2.5 leading-relaxed">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                        <div>
+                            <span className="font-bold">Para sa Job Order / Contract of Service:</span> Walang GSIS o mandatory SSS/PhilHealth kaltas ang ahensya ng gobyerno. Karaniwang buo ang sahod mo o may 2%–3% BIR Form 2307 Withholding Tax.
+                        </div>
+                    </div>
+
+                    {/* Rate Mode: Daily (Arawan) vs Monthly Contract */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-xs font-mono font-bold uppercase tracking-wider text-ink2/70 dark:text-paper/60">
+                                Paraan ng Sahod:
+                            </span>
+                            <div className="inline-flex rounded-xl bg-black/5 dark:bg-white/10 p-0.5">
+                                <button
+                                    type="button"
+                                    onClick={() => setJoRateType('daily')}
+                                    className={"px-3 py-1 rounded-lg text-xs font-bold transition-all " + (
+                                        joRateType === 'daily'
+                                            ? "bg-white dark:bg-ink text-peso dark:text-pesoLight shadow-xs"
+                                            : "text-ink2/60 dark:text-paper/60"
+                                    )}
+                                >
+                                    <span className="inline-flex items-center gap-1.5"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><circle cx="12" cy="15" r="2"/></svg><span>Arawan (Daily Rate)</span></span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setJoRateType('monthly')}
+                                    className={"px-3 py-1 rounded-lg text-xs font-bold transition-all " + (
+                                        joRateType === 'monthly'
+                                            ? "bg-white dark:bg-ink text-peso dark:text-pesoLight shadow-xs"
+                                            : "text-ink2/60 dark:text-paper/60"
+                                    )}
+                                >
+                                    <span className="inline-flex items-center gap-1.5"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg><span>Buwanang Kontrata</span></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Daily Inputs */}
+                        {joRateType === 'daily' ? (
+                            <div className="space-y-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-[11px] font-mono font-bold uppercase tracking-wider text-ink2/70 dark:text-paper/60 pl-1 mb-1">
+                                            Daily Rate (₱ / araw)
+                                        </label>
+                                        <div className="flex items-center gap-2 bg-white/70 dark:bg-black/30 border border-black/10 dark:border-white/15 rounded-2xl px-3.5 py-1.5 focus-within:ring-2 focus-within:ring-peso/40 transition-all shadow-inner">
+                                            <span className="text-lg font-mono font-bold text-peso dark:text-pesoLight select-none">₱</span>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                value={joDailyRate}
+                                                onChange={(e) => setJoDailyRate(e.target.value)}
+                                                placeholder="e.g. 650"
+                                                className="w-full bg-transparent py-2 text-base sm:text-lg font-mono font-bold text-ink dark:text-paper focus:outline-none"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[11px] font-mono font-bold uppercase tracking-wider text-ink2/70 dark:text-paper/60 pl-1 mb-1">
+                                            Araw na Pinasukan (Days Worked)
+                                        </label>
+                                        <div className="flex items-center gap-2 bg-white/70 dark:bg-black/30 border border-black/10 dark:border-white/15 rounded-2xl px-3.5 py-1.5 focus-within:ring-2 focus-within:ring-peso/40 transition-all shadow-inner">
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                max="31"
+                                                value={joDaysWorked}
+                                                onChange={(e) => setJoDaysWorked(e.target.value)}
+                                                placeholder="22"
+                                                className="w-full bg-transparent py-2 text-base sm:text-lg font-mono font-bold text-ink dark:text-paper focus:outline-none"
+                                            />
+                                            <span className="text-xs font-mono font-bold text-ink2/50 dark:text-paper/40 select-none pr-1">araw</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Daily Presets */}
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-[11px] font-semibold text-ink2/50 dark:text-paper/40 mr-1">Daily Presets:</span>
+                                    {JO_DAILY_PRESETS.map((p) => (
+                                        <button
+                                            key={p.value}
+                                            type="button"
+                                            onClick={() => setJoDailyRate(String(p.value))}
+                                            className={"text-[11px] font-bold px-2 py-0.5 rounded-xl border transition-all " + (
+                                                Number(joDailyRate) === p.value
+                                                    ? "bg-peso text-white border-peso shadow-xs"
+                                                    : "bg-black/[0.03] dark:bg-white/[0.05] text-ink2 dark:text-paper/70 border-black/5 dark:border-white/10 hover:bg-black/[0.06]"
+                                            )}
+                                        >
+                                            {p.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            /* Monthly Contract Inputs */
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="block text-[11px] font-mono font-bold uppercase tracking-wider text-ink2/70 dark:text-paper/60 pl-1 mb-1">
+                                        Buwanang Kontrata / Rate (₱)
+                                    </label>
+                                    <div className="flex items-center gap-2 bg-white/70 dark:bg-black/30 border border-black/10 dark:border-white/15 rounded-2xl px-4 py-1.5 focus-within:ring-2 focus-within:ring-peso/40 transition-all shadow-inner">
+                                        <span className="text-lg font-mono font-bold text-peso dark:text-pesoLight select-none">₱</span>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={joMonthlyRate}
+                                            onChange={(e) => setJoMonthlyRate(e.target.value)}
+                                            placeholder="e.g. 20000"
+                                            className="w-full bg-transparent py-2.5 text-base sm:text-lg font-mono font-bold text-ink dark:text-paper focus:outline-none"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Monthly Presets */}
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-[11px] font-semibold text-ink2/50 dark:text-paper/40 mr-1">SG Presets:</span>
+                                    {JO_MONTHLY_PRESETS.map((p) => (
+                                        <button
+                                            key={p.value}
+                                            type="button"
+                                            onClick={() => setJoMonthlyRate(String(p.value))}
+                                            className={"text-[11px] font-bold px-2 py-0.5 rounded-xl border transition-all " + (
+                                                Number(joMonthlyRate) === p.value
+                                                    ? "bg-peso text-white border-peso shadow-xs"
+                                                    : "bg-black/[0.03] dark:bg-white/[0.05] text-ink2 dark:text-paper/70 border-black/5 dark:border-white/10 hover:bg-black/[0.06]"
+                                            )}
+                                        >
+                                            {p.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* 20% Premium Toggle (CSC-COA-DBM Joint Circular) */}
+                    <div className="p-3 rounded-2xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/5 dark:border-white/10 flex items-center justify-between gap-3">
+                        <div>
+                            <span className="text-xs font-bold text-ink dark:text-paper block leading-tight">
+                                +20% JO Premium (CSC-COA-DBM)
+                            </span>
+                            <span className="text-[11px] text-ink2/60 dark:text-paper/50">
+                                Dagdag 20% sa base pay kapalit ng 13th month & leave benefits.
+                            </span>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setJoHasPremium20(!joHasPremium20)}
+                            className={"relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none " + (
+                                joHasPremium20 ? "bg-peso" : "bg-black/20 dark:bg-white/20"
+                            )}
+                        >
+                            <span className={"pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out " + (
+                                joHasPremium20 ? "translate-x-5" : "translate-x-0"
+                            )} />
+                        </button>
+                    </div>
+
+                    {/* BIR Withholding Tax Selection */}
+                    <div>
+                        <label className="block text-[11px] font-mono font-bold uppercase tracking-wider text-ink2/70 dark:text-paper/60 pl-1 mb-1.5">
+                            Kaltas sa Tax ng Ahensya (BIR Withholding)
+                        </label>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            {[
+                                { id: 'exempt', label: '0% Tax Exempt', desc: '≤ ₱250k/yr Sworn' },
+                                { id: 'ewt2', label: '2% Form 2307', desc: 'Creditable Tax' },
+                                { id: 'ewt3', label: '3% Percentage', desc: 'Service Tax' },
+                                { id: 'graduated', label: 'TRAIN Law', desc: 'Graduated Tax' }
+                            ].map((t) => (
+                                <button
+                                    key={t.id}
+                                    type="button"
+                                    onClick={() => setJoTaxType(t.id)}
+                                    className={"p-2.5 rounded-xl border text-left transition-all active:scale-95 " + (
+                                        joTaxType === t.id
+                                            ? "bg-peso/10 dark:bg-pesoLight/15 border-peso text-peso dark:text-pesoLight ring-1 ring-peso"
+                                            : "bg-white/60 dark:bg-ink2/40 border-black/10 dark:border-white/10 text-ink dark:text-paper hover:bg-black/5"
+                                    )}
+                                >
+                                    <span className="block text-xs font-bold leading-tight">{t.label}</span>
+                                    <span className="block text-[10px] text-ink2/60 dark:text-paper/50 mt-0.5">{t.desc}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Optional Voluntary Contributions Toggle */}
+                    <div className="pt-1">
+                        <button
+                            type="button"
+                            onClick={() => setShowVoluntary(!showVoluntary)}
+                            className="text-[11.5px] font-bold text-peso dark:text-pesoLight hover:underline flex items-center gap-1 focus:outline-none"
+                        >
+                            <span>{showVoluntary ? "− Itago ang Sariling Hulog sa SSS / PhilHealth / Pag-IBIG" : "+ Naghuhulog ka ba sa sarili mong SSS, PhilHealth, o Pag-IBIG? (Optional)"}</span>
+                        </button>
+
+                        {showVoluntary && (
+                            <div className="mt-2.5 p-3.5 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-line/60 dark:border-white/10 space-y-2.5">
+                                <p className="text-[11px] text-ink2/60 dark:text-paper/50">
+                                    I-type ang halaga kung ikaw ay nagbabayad buwan-buwan bilang Voluntary / Self-Employed member para awtomatiko itong ibawas sa iyong take-home budget:
+                                </p>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                                    <div>
+                                        <label className="block text-[10.5px] font-bold text-ink2/70 dark:text-paper/60 mb-1">Voluntary SSS (₱):</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            placeholder="e.g. 560"
+                                            value={joVolSSS}
+                                            onChange={(e) => setJoVolSSS(e.target.value)}
+                                            className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/15 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-ink dark:text-paper focus:outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10.5px] font-bold text-ink2/70 dark:text-paper/60 mb-1">PhilHealth (₱):</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            placeholder="e.g. 500"
+                                            value={joVolPH}
+                                            onChange={(e) => setJoVolPH(e.target.value)}
+                                            className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/15 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-ink dark:text-paper focus:outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10.5px] font-bold text-ink2/70 dark:text-paper/60 mb-1">Pag-IBIG (₱):</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            placeholder="e.g. 200"
+                                            value={joVolPI}
+                                            onChange={(e) => setJoVolPI(e.target.value)}
+                                            className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/15 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-ink dark:text-paper focus:outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* ========================================================= */}
+            {/* HERO RESULTS CARDS (ADAPTIVE FOR BOTH REGULAR & JO)       */}
+            {/* ========================================================= */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-6">
+                {/* 1. Bawat Sahod (Cutoff) */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-peso/10 to-transparent border border-emerald-500/25 dark:border-emerald-400/20 relative overflow-hidden">
+                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+                        Bawat Sahod (Kinsenas)
+                    </span>
+                    <p className="font-display text-2xl sm:text-[1.75rem] font-bold text-emerald-700 dark:text-emerald-300 mt-1 tracking-tight">
+                        ₱{window.peso ? window.peso(result.netSemiMonthly) : result.netSemiMonthly.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                    </p>
+                    <p className="text-[11px] font-medium text-emerald-900/60 dark:text-emerald-200/60 mt-0.5">
+                        Tinatayang pumapasok kada cutoff (15th / 30th)
+                    </p>
+                </div>
+
+                {/* 2. Buwanang Take-Home Pay */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-black/[0.03] dark:bg-white/[0.04] border border-black/5 dark:border-white/10">
+                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-ink2/60 dark:text-paper/60">
+                        Buwanang Net Pay
+                    </span>
+                    <p className="font-display text-2xl sm:text-[1.75rem] font-bold text-ink dark:text-paper mt-1 tracking-tight">
+                        ₱{window.peso ? window.peso(result.netMonthly) : result.netMonthly.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                    </p>
+                    <p className="text-[11px] font-medium text-ink2/50 dark:text-paper/40 mt-0.5">
+                        {empType === 'jo' ? "Kabuuang sahod matapos ang tax at voluntary" : "Kabuuang take-home matapos ang kaltas"}
+                    </p>
+                </div>
+
+                {/* 3. Kabuuang Kaltas */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-rose-500/5 dark:bg-rose-400/10 border border-rose-500/20 dark:border-rose-400/20">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">
+                            Kabuuang Kaltas
+                        </span>
+                        <span className="text-[10.5px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-300">
+                            {result.deductionPercent}%
+                        </span>
+                    </div>
+                    <p className="font-display text-2xl sm:text-[1.75rem] font-bold text-rose-600 dark:text-rose-300 mt-1 tracking-tight">
+                        -₱{window.peso ? window.peso(result.totalDeductions) : result.totalDeductions.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                    </p>
+                    <p className="text-[11px] font-medium text-rose-900/60 dark:text-rose-200/60 mt-0.5 truncate">
+                        {empType === 'jo'
+                            ? ("Tax: ₱" + (window.peso ? window.peso(result.tax) : result.tax.toFixed(2)) + " • Voluntary: ₱" + (window.peso ? window.peso(result.voluntaryTotal || 0) : (result.voluntaryTotal || 0).toFixed(2)))
+                            : ("Gov: ₱" + (window.peso ? window.peso(result.totalGovEmployee) : result.totalGovEmployee.toFixed(2)) + " • Tax: ₱" + (window.peso ? window.peso(result.tax) : result.tax.toFixed(2)))}
+                    </p>
+                </div>
+            </div>
+
+            {/* Expandable Breakdown Accordion */}
+            <div className="mb-6">
+                <button
+                    type="button"
+                    onClick={() => setShowBreakdown(!showBreakdown)}
+                    className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/10 hover:bg-black/[0.04] transition-colors"
+                >
+                    <div className="flex items-center gap-2">
+                        <span className="text-peso dark:text-pesoLight">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3h18v18H3zM3 9h18M9 21V9"/></svg>
+                        </span>
+                        <span className="text-xs font-bold text-ink dark:text-paper">
+                            {showBreakdown ? "Itago ang Itemized Kaltas Breakdown" : "Ipakita ang Itemized Kaltas & Breakdown Details"}
+                        </span>
+                    </div>
+                    <span className="text-xs font-bold text-peso dark:text-pesoLight">
+                        <span className="inline-flex items-center gap-1"><span>{showBreakdown ? "Itago" : "Tingnan"}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={"transition-transform duration-200 " + (showBreakdown ? "rotate-180" : "")}><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </span>
+                </button>
+
+                {showBreakdown && (
+                    <div className="mt-3.5 grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-2xl bg-paperDim/50 dark:bg-black/20 border border-black/5 dark:border-white/10 animate-[fadeIn_0.25s_ease-out]">
+                        {empType === 'regular' ? (
+                            <React.Fragment>
+                                {/* SSS */}
+                                <div className="p-3.5 rounded-xl bg-white dark:bg-ink2/60 border border-line/60 dark:border-white/10">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="font-bold text-xs text-ink dark:text-paper flex items-center gap-1.5">
+                                            <span className="w-2 h-2 rounded-full bg-blue-500" /> SSS Contribution
+                                        </span>
+                                        <span className="font-mono font-bold text-xs text-ink dark:text-paper">
+                                            ₱{result.sssEmployee.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="text-[11px] text-ink2/60 dark:text-paper/50 flex justify-between">
+                                        <span>Employer Share:</span>
+                                        <span>₱{result.sssEmployer.toFixed(2)}</span>
+                                    </div>
+                                    <div className="text-[10px] text-ink2/40 dark:text-paper/40 mt-1">
+                                        {Number(grossInput) > 20000 ? "May regular SSS at WISP Mandatory Savings" : "Regular SSS Contribution (RA 11199)"}
+                                    </div>
+                                </div>
+
+                                {/* PhilHealth */}
+                                <div className="p-3.5 rounded-xl bg-white dark:bg-ink2/60 border border-line/60 dark:border-white/10">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="font-bold text-xs text-ink dark:text-paper flex items-center gap-1.5">
+                                            <span className="w-2 h-2 rounded-full bg-emerald-500" /> PhilHealth Premium
+                                        </span>
+                                        <span className="font-mono font-bold text-xs text-ink dark:text-paper">
+                                            ₱{result.philhealthEmployee.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="text-[11px] text-ink2/60 dark:text-paper/50 flex justify-between">
+                                        <span>Employer Share (2.5%):</span>
+                                        <span>₱{result.philhealthEmployer.toFixed(2)}</span>
+                                    </div>
+                                    <div className="text-[10px] text-ink2/40 dark:text-paper/40 mt-1">
+                                        5% Total Premium (2.5% Employee share, 2024-2026)
+                                    </div>
+                                </div>
+
+                                {/* Pag-IBIG */}
+                                <div className="p-3.5 rounded-xl bg-white dark:bg-ink2/60 border border-line/60 dark:border-white/10">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="font-bold text-xs text-ink dark:text-paper flex items-center gap-1.5">
+                                            <span className="w-2 h-2 rounded-full bg-red-500" /> Pag-IBIG (HDMF)
+                                        </span>
+                                        <span className="font-mono font-bold text-xs text-ink dark:text-paper">
+                                            ₱{result.pagibigEmployee.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="text-[11px] text-ink2/60 dark:text-paper/50 flex justify-between">
+                                        <span>Employer Share:</span>
+                                        <span>₱{result.pagibigEmployer.toFixed(2)}</span>
+                                    </div>
+                                    <div className="text-[10px] text-ink2/40 dark:text-paper/40 mt-1">
+                                        Circular No. 460 (Max cap: ₱10,000 salary)
+                                    </div>
+                                </div>
+
+                                {/* BIR Tax */}
+                                <div className="p-3.5 rounded-xl bg-white dark:bg-ink2/60 border border-line/60 dark:border-white/10">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="font-bold text-xs text-ink dark:text-paper flex items-center gap-1.5">
+                                            <span className={"w-2 h-2 rounded-full " + (result.isTaxExempt ? "bg-emerald-500" : "bg-purple-500")} />
+                                            BIR Withholding Tax
+                                        </span>
+                                        <span className={"font-mono font-bold text-xs " + (result.isTaxExempt ? "text-emerald-600 dark:text-emerald-400" : "text-ink dark:text-paper")}>
+                                            {result.isTaxExempt ? "₱0 (EXEMPT)" : "₱" + result.tax.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="text-[11px] text-ink2/60 dark:text-paper/50 flex justify-between">
+                                        <span>Taxable Income:</span>
+                                        <span>₱{result.taxableIncome.toFixed(2)}</span>
+                                    </div>
+                                    <div className="text-[10px] text-ink2/40 dark:text-paper/40 mt-1">
+                                        {result.taxBracketLabel}
+                                    </div>
+                                </div>
+                            </React.Fragment>
+                        ) : (
+                            /* JO Breakdown Cards */
+                            <React.Fragment>
+                                {/* Gross Pay Breakdown */}
+                                <div className="p-3.5 rounded-xl bg-white dark:bg-ink2/60 border border-line/60 dark:border-white/10">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="font-bold text-xs text-ink dark:text-paper">Base Gross Salary</span>
+                                        <span className="font-mono font-bold text-xs text-ink dark:text-paper">₱{result.baseGross.toFixed(2)}</span>
+                                    </div>
+                                    {result.premium > 0 && (
+                                        <div className="text-[11px] text-emerald-700 dark:text-emerald-400 flex justify-between font-semibold mt-1">
+                                            <span>+20% Premium:</span>
+                                            <span>+₱{result.premium.toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                    <div className="text-[10px] text-ink2/50 dark:text-paper/40 mt-1">
+                                        {result.rateType === 'daily'
+                                            ? ("₱" + result.dailyRate + " × " + result.daysWorked + " araw")
+                                            : "Fixed Monthly Rate"}
+                                    </div>
+                                </div>
+
+                                {/* BIR Tax Deduction */}
+                                <div className="p-3.5 rounded-xl bg-white dark:bg-ink2/60 border border-line/60 dark:border-white/10">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="font-bold text-xs text-ink dark:text-paper">BIR Tax Withholding</span>
+                                        <span className={"font-mono font-bold text-xs " + (result.tax === 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
+                                            {result.tax === 0 ? "₱0 (EXEMPT)" : "-₱" + result.tax.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="text-[10px] text-ink2/50 dark:text-paper/40 mt-1">
+                                        {result.taxBracketLabel}
+                                    </div>
+                                </div>
+
+                                {/* Voluntary SSS / PhilHealth / PagIBIG */}
+                                <div className="p-3.5 rounded-xl bg-white dark:bg-ink2/60 border border-line/60 dark:border-white/10 sm:col-span-2">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="font-bold text-xs text-ink dark:text-paper">Sariling Hulog (Voluntary Contributions)</span>
+                                        <span className="font-mono font-bold text-xs text-ink dark:text-paper">
+                                            ₱{result.voluntaryTotal.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-2 text-[11px] text-ink2/60 dark:text-paper/50 mt-1">
+                                        <div>SSS: ₱{result.voluntarySSS.toFixed(2)}</div>
+                                        <div>PhilHealth: ₱{result.voluntaryPhilHealth.toFixed(2)}</div>
+                                        <div>Pag-IBIG: ₱{result.voluntaryPagIBIG.toFixed(2)}</div>
+                                    </div>
+                                    <div className="text-[10px] text-ink2/40 dark:text-paper/40 mt-1.5">
+                                        *Ito ay sariling hulog mo sa opisina ng SSS/PhilHealth/Pag-IBIG, hindi kinakaltas ng ahensya.
+                                    </div>
+                                </div>
+                            </React.Fragment>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            {/* Action Buttons to Apply to Budget */}
+            <div className="pt-2 border-t border-black/5 dark:border-white/10 flex flex-col sm:flex-row items-center gap-2.5">
+                <button
+                    type="button"
+                    onClick={() => handleApplyPay(result.netSemiMonthly, "semi")}
+                    className="w-full sm:flex-1 py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-pesoLight to-peso text-white hover:brightness-105 active:scale-98 transition-all flex items-center justify-center gap-2 shadow-sm"
+                >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    <span>I-apply ang Bawat Sahod (₱{window.peso ? window.peso(result.netSemiMonthly) : result.netSemiMonthly.toFixed(2)}) sa Badyet</span>
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => handleApplyPay(result.netMonthly, "monthly")}
+                    className="w-full sm:w-auto px-4 py-3.5 rounded-xl font-bold text-xs sm:text-sm bg-black/5 dark:bg-white/10 text-ink dark:text-paper hover:bg-black/10 dark:hover:bg-white/15 active:scale-98 transition-all"
+                >
+                    I-apply ang Buwanan (₱{window.peso ? window.peso(result.netMonthly) : result.netMonthly.toFixed(2)})
+                </button>
+            </div>
+
+            {/* Feedback notification toast */}
+            {appliedMessage && (
+                <div className="mt-3.5 p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-2 animate-[fadeIn_0.2s_ease-out]">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>{appliedMessage} Awtomatikong na-update ang Allowance & Daily Pacing mo sa ibaba!</span>
+                </div>
+            )}
         </div>
     );
 };

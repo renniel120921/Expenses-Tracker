@@ -269,12 +269,12 @@
 
             const mascotMessage = React.useMemo(() => {
                 if (count === 0) {
-                    return "Wala pang naitatalang transaksyon? I-toggle ang 'Preview Demo' sa ibaba para ma-test ang filters at search! ✨";
+                    return "Wala pang naitatalang transaksyon. Mag-log ng kita o gastusin sa Dashboard upang masimulan ang pag-track!";
                 }
                 if (net >= 0) {
-                    return `Great job! May net surplus kang ₱${window.peso(net)}. Ipagpatuloy ang masinop na pagba-budget! 💚`;
+                    return `Great job! May net surplus kang ₱${window.peso(net)}. Ipagpatuloy ang masinop na pagba-budget!`;
                 }
-                return `Pansin: Mas mataas ang nagastos ng ₱${window.peso(Math.abs(net))}. I-filter ang 'Luho' para ma-spot ang pwede pang i-trim! 💡`;
+                return `Pansin: Mas mataas ang nagastos ng ₱${window.peso(Math.abs(net))}. I-filter ang 'Luho' para ma-spot ang pwede pang i-trim!`;
             }, [count, net]);
 
             return (
@@ -578,6 +578,7 @@
             const toggleDarkMode = () => setDarkMode(!darkMode);
 
             React.useEffect(() => {
+                if (componentsReady) return;
                 const interval = setInterval(() => {
                     if (window.EntryList && window.Navbar && window.ExpenseItem) {
                         setComponentsReady(true);

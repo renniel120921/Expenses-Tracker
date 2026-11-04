@@ -411,8 +411,12 @@
         function ChartApp() {
             const [user, setUser] = React.useState(undefined);
             const [entries, setEntries] = React.useState([]);
-            const [authChecking, setAuthChecking] = React.useState(true);
-            const [componentsReady, setComponentsReady] = React.useState(false);
+            const [componentsReady, setComponentsReady] = React.useState(() => {
+                return typeof window.Navbar !== "undefined" && typeof window.ExpenseChart !== "undefined";
+            });
+            const [authChecking, setAuthChecking] = React.useState(() => {
+                try { return !localStorage.getItem("tipid_auth_cached_user"); } catch (_) { return true; }
+            });
             const [sharedStats, setSharedStats] = React.useState({});
 
             const [darkMode, setDarkMode] = React.useState(() => {
@@ -433,6 +437,7 @@
             const toggleDarkMode = () => setDarkMode(!darkMode);
 
             React.useEffect(() => {
+                if (componentsReady) return;
                 const interval = setInterval(() => {
                     if (window.ExpenseChart && window.Navbar) {
                         setComponentsReady(true);

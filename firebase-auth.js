@@ -291,7 +291,37 @@ function friendlyError(errOrCode) {
   return map[code] || "May problema. Subukan ulit.";
 }
 
+// Synchronous client session cache for instant, zero-flicker page transitions
+function cacheAuthUser(u) {
+  try {
+    if (u && u.uid) {
+      const snap = {
+        uid: u.uid,
+        displayName: u.displayName || "",
+        email: u.email || "",
+        photoURL: u.photoURL || ""
+      };
+      localStorage.setItem("tipid_auth_cached_user", JSON.stringify(snap));
+    } else {
+      localStorage.removeItem("tipid_auth_cached_user");
+    }
+  } catch (_) {}
+}
+
+onAuthStateChanged(auth, (u) => {
+  cacheAuthUser(u);
+});
+
 window.TipidAuth = {
+  // Synchronously retrieves cached user snapshot for immediate UI rendering without loading states
+  getCachedUser() {
+    try {
+      const raw = localStorage.getItem("tipid_auth_cached_user");
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  },
   async signUp(name, email, password) {
     assertOnline();
     const normEmail = normalizeEmail(email);
@@ -384,6 +414,7 @@ window.TipidAuth = {
   },
 
   async logOut() {
+    cacheAuthUser(null);
     // Deliberately NOT gated by assertOnline() — logging out just clears the
     // locally-cached session, so it must keep working with zero connectivity.
     if (window.TipidData?.clearLocalCache) await window.TipidData.clearLocalCache();

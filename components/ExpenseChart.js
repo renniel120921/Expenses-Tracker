@@ -82,19 +82,6 @@ const CHART_ICONS = {
     )
 };
 
-// Realistic Philippine Demonstration Sample Data
-const SAMPLE_DEMO_ENTRIES = [
-    { id: "demo-1", desc: "Jollibee Mega Meal", amount: 249.00, type: "expense", category: "Pagkain", method: "GCash", spendType: "need", date: new Date(Date.now() - 86400000 * 1).toISOString() },
-    { id: "demo-2", desc: "Meralco Electricity Bill", amount: 2850.00, type: "expense", category: "Bills", method: "Maya", spendType: "need", date: new Date(Date.now() - 86400000 * 2).toISOString() },
-    { id: "demo-3", desc: "Puregold Weekly Grocery", amount: 1680.50, type: "expense", category: "Pagkain", method: "Cash", spendType: "need", date: new Date(Date.now() - 86400000 * 3).toISOString() },
-    { id: "demo-4", desc: "Petron Fuel Refill", amount: 750.00, type: "expense", category: "Pamasahe", method: "GCash", spendType: "need", date: new Date(Date.now() - 86400000 * 4).toISOString() },
-    { id: "demo-5", desc: "Starbucks Iced Caramel", amount: 215.00, type: "expense", category: "Pagkain", method: "Maya", spendType: "luho", date: new Date(Date.now() - 86400000 * 5).toISOString() },
-    { id: "demo-6", desc: "Smart Regular Load 500", amount: 500.00, type: "expense", category: "Load", method: "GCash", spendType: "need", date: new Date(Date.now() - 86400000 * 6).toISOString() },
-    { id: "demo-7", desc: "Shopee Tech Accessory", amount: 480.00, type: "expense", category: "Project Components", method: "ShopeePay", spendType: "luho", date: new Date(Date.now() - 86400000 * 6).toISOString() },
-    { id: "demo-8", desc: "Bi-monthly Salary", amount: 18500.00, type: "income", category: "Kita", method: "BDO", date: new Date(Date.now() - 86400000 * 7).toISOString() },
-    { id: "demo-9", desc: "Freelance Project Pay", amount: 6200.00, type: "income", category: "Kita", method: "GCash", date: new Date(Date.now() - 86400000 * 3).toISOString() },
-];
-
 window.ExpenseChart = function ExpenseChart({ entries = [], onStatsChange }) {
     const { useState, useMemo, useEffect, useRef } = React;
     const peso = window.peso || ((n) => Number(n || 0).toLocaleString("en-PH", { minimumFractionDigits: 2 }));
@@ -102,18 +89,12 @@ window.ExpenseChart = function ExpenseChart({ entries = [], onStatsChange }) {
     // View Options: 'category', 'trend', 'flow', 'wallet', 'needwant'
     const [view, setView] = useState("category");
     const [dateFilter, setDateFilter] = useState("thisMonth"); // 'thisWeek', 'thisMonth', 'thisYear', 'all'
-    const [useDemoMode, setUseDemoMode] = useState(false);
 
     const chartRef = useRef(null);
     const chartInstance = useRef(null);
 
-    // Active dataset: uses live Firebase entries or toggled demo data
-    const activeEntries = useMemo(() => {
-        if (useDemoMode || entries.length === 0) {
-            return useDemoMode ? SAMPLE_DEMO_ENTRIES : entries;
-        }
-        return entries;
-    }, [entries, useDemoMode]);
+    // Active dataset: uses live Firebase entries
+    const activeEntries = entries || [];
 
     // 1. Date Range Filtering
     const filteredEntries = useMemo(() => {
@@ -262,15 +243,16 @@ window.ExpenseChart = function ExpenseChart({ entries = [], onStatsChange }) {
 
         // VIEW 1: DOUGHNUT CATEGORY DISTRIBUTION
         if (view === "category") {
+            const hasData = analytics.catAmounts.length > 0 && analytics.catAmounts.some(v => v > 0);
             config = {
                 type: 'doughnut',
                 data: {
-                    labels: analytics.catLabels.map(l => (window.CATEGORY_DISPLAY && window.CATEGORY_DISPLAY[l]) || l),
+                    labels: hasData ? analytics.catLabels.map(l => (window.CATEGORY_DISPLAY && window.CATEGORY_DISPLAY[l]) || l) : ["No Expenses"],
                     datasets: [{
-                        data: analytics.catAmounts,
-                        backgroundColor: analytics.catColors,
+                        data: hasData ? analytics.catAmounts : [1],
+                        backgroundColor: hasData ? analytics.catColors : ['rgba(128, 128, 128, 0.15)'],
                         borderWidth: 0,
-                        hoverOffset: 6,
+                        hoverOffset: hasData ? 6 : 0,
                         borderRadius: 4
                     }]
                 },
@@ -279,7 +261,7 @@ window.ExpenseChart = function ExpenseChart({ entries = [], onStatsChange }) {
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
-                        tooltip: { padding: 12, cornerRadius: 10 }
+                        tooltip: { enabled: hasData, padding: 12, cornerRadius: 10 }
                     },
                     cutout: '74%'
                 }
@@ -356,13 +338,14 @@ window.ExpenseChart = function ExpenseChart({ entries = [], onStatsChange }) {
         }
         // VIEW 4: PAYMENT WALLET CHANNELS (HORIZONTAL BAR)
         else if (view === "wallet") {
+            const hasData = analytics.walletAmounts.length > 0 && analytics.walletAmounts.some(v => v > 0);
             config = {
                 type: 'bar',
                 data: {
-                    labels: analytics.walletLabels,
+                    labels: hasData ? analytics.walletLabels : ["No Wallets"],
                     datasets: [{
                         label: 'Spent via Wallet',
-                        data: analytics.walletAmounts,
+                        data: hasData ? analytics.walletAmounts : [0],
                         backgroundColor: '#0284C7',
                         borderRadius: 6,
                         barPercentage: 0.6
@@ -422,7 +405,6 @@ window.ExpenseChart = function ExpenseChart({ entries = [], onStatsChange }) {
                             </h3>
                             <p className="text-[11.5px] text-ink2/60 dark:text-paper/50">
                                 Filtered by {filterNameMap[dateFilter] || "selected period"}
-                                {useDemoMode && <span className="ml-1.5 text-emerald-600 dark:text-emerald-400 font-bold font-mono">(Sample Demo Data)</span>}
                             </p>
                         </div>
                     </div>
@@ -450,20 +432,6 @@ window.ExpenseChart = function ExpenseChart({ entries = [], onStatsChange }) {
                                 </button>
                             ))}
                         </div>
-
-                        {/* Demo Mode Toggle Button */}
-                        <button
-                            type="button"
-                            onClick={() => setUseDemoMode(v => !v)}
-                            className={`tap-scale px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs ${
-                                useDemoMode
-                                    ? "bg-emerald-500 text-white border-emerald-400 shadow-sm"
-                                    : "bg-white dark:bg-ink2/60 text-ink2/70 dark:text-paper/70 border-black/10 dark:border-white/10 hover:bg-black/5"
-                            }`}
-                        >
-                            <CHART_ICONS.Eye size={13} />
-                            <span>{useDemoMode ? "Live Data" : "Preview Demo"}</span>
-                        </button>
                     </div>
                 </div>
 
@@ -578,109 +546,97 @@ window.ExpenseChart = function ExpenseChart({ entries = [], onStatsChange }) {
 
                 {/* --- CHART DISPLAY CANVAS AREA --- */}
                 <div className="relative w-full min-h-[260px] flex items-center justify-center">
-                    {/* Empty State */}
-                    {filteredEntries.length === 0 ? (
-                        <div className="py-12 flex flex-col items-center justify-center text-center">
-                            <CHART_ICONS.Inbox size={36} className="text-ink2/30 dark:text-paper/30 mb-3" />
-                            <p className="text-sm font-semibold text-ink dark:text-paper">No data recorded for {filterNameMap[dateFilter]}</p>
-                            <p className="text-xs text-ink2/50 dark:text-paper/40 mt-1 mb-4">Log transactions on Dashboard or preview sample graphs.</p>
-                            <button
-                                type="button"
-                                onClick={() => setUseDemoMode(true)}
-                                className="tap-scale px-4 py-2 rounded-xl bg-peso text-white text-xs font-bold shadow-xs hover:shadow-md"
-                            >
-                                Show Sample Demo Graphs
-                            </button>
-                        </div>
-                    ) : (
-                        <>
-                            {/* VIEW 1: DOUGHNUT + CUSTOM LEGEND */}
-                            {view === "category" && (
-                                <div className="w-full flex flex-col md:flex-row items-center gap-6 sm:gap-10">
-                                    <div className="relative w-52 h-52 sm:w-60 sm:h-60 shrink-0">
-                                        <canvas ref={chartRef} />
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-                                            <span className="text-[9px] font-mono uppercase font-bold text-ink2/50 dark:text-paper/40">Total Outflow</span>
-                                            <span className="font-mono text-lg sm:text-xl font-bold text-ink dark:text-paper">₱{peso(analytics.totalExpense)}</span>
-                                        </div>
-                                    </div>
+                    {/* VIEW 1: DOUGHNUT + CUSTOM LEGEND */}
+                    {view === "category" && (
+                        <div className="w-full flex flex-col md:flex-row items-center gap-6 sm:gap-10">
+                            <div className="relative w-52 h-52 sm:w-60 sm:h-60 shrink-0">
+                                <canvas ref={chartRef} />
+                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                                    <span className="text-[9px] font-mono uppercase font-bold text-ink2/50 dark:text-paper/40">Total Outflow</span>
+                                    <span className="font-mono text-lg sm:text-xl font-bold text-ink dark:text-paper">₱{peso(analytics.totalExpense)}</span>
+                                </div>
+                            </div>
 
-                                    {/* Custom Apple-Style Progress Legend */}
-                                    <div className="w-full flex flex-col gap-2.5 min-w-0">
-                                        {sortedCategories.map(c => (
-                                            <div key={c.label} className="flex items-center gap-3 bg-black/[0.02] dark:bg-white/[0.02] p-2.5 rounded-xl border border-black/5 dark:border-white/5">
-                                                <div className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs" style={{ backgroundColor: c.color }} />
-                                                <span className="text-xs font-semibold text-ink dark:text-paper flex-1 truncate">{c.displayLabel || c.label}</span>
-                                                <span className="text-[11px] font-mono text-ink2/50 dark:text-paper/40 w-8 text-right">{c.pct.toFixed(0)}%</span>
-                                                <div className="w-16 sm:w-24 h-1.5 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden shrink-0">
-                                                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${c.pct}%`, backgroundColor: c.color }} />
-                                                </div>
-                                                <span className="font-mono text-xs font-bold text-ink dark:text-paper w-20 text-right truncate">₱{peso(c.amount)}</span>
+                            {/* Custom Apple-Style Progress Legend */}
+                            <div className="w-full flex flex-col gap-2.5 min-w-0">
+                                {sortedCategories.length > 0 ? (
+                                    sortedCategories.map(c => (
+                                        <div key={c.label} className="flex items-center gap-3 bg-black/[0.02] dark:bg-white/[0.02] p-2.5 rounded-xl border border-black/5 dark:border-white/5">
+                                            <div className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs" style={{ backgroundColor: c.color }} />
+                                            <span className="text-xs font-semibold text-ink dark:text-paper flex-1 truncate">{c.displayLabel || c.label}</span>
+                                            <span className="text-[11px] font-mono text-ink2/50 dark:text-paper/40 w-8 text-right">{c.pct.toFixed(0)}%</span>
+                                            <div className="w-16 sm:w-24 h-1.5 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden shrink-0">
+                                                <div className="h-full rounded-full transition-all duration-700" style={{ width: `${c.pct}%`, backgroundColor: c.color }} />
                                             </div>
-                                        ))}
+                                            <span className="font-mono text-xs font-bold text-ink dark:text-paper w-20 text-right truncate">₱{peso(c.amount)}</span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="py-8 text-center text-ink2/50 dark:text-paper/40 text-xs font-medium">
+                                        No expense records found for {filterNameMap[dateFilter]}.
                                     </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* VIEW 2: TIMELINE SPENDING VELOCITY */}
+                    {view === "trend" && (
+                        <div className="w-full h-64 sm:h-72">
+                            <canvas ref={chartRef} />
+                        </div>
+                    )}
+
+                    {/* VIEW 3: INFLOW VS OUTFLOW (DUAL BARS) */}
+                    {view === "flow" && (
+                        <div className="w-full h-64 sm:h-72">
+                            <canvas ref={chartRef} />
+                        </div>
+                    )}
+
+                    {/* VIEW 4: WALLET DISTRIBUTION */}
+                    {view === "wallet" && (
+                        <div className="w-full h-64 sm:h-72">
+                            <canvas ref={chartRef} />
+                        </div>
+                    )}
+
+                    {/* VIEW 5: GUILT TRACKER & 50/30/20 BENCHMARK */}
+                    {view === "needwant" && (
+                        <div className="w-full space-y-6">
+                            <div className="p-5 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 space-y-3">
+                                <div className="flex items-center justify-between text-xs font-semibold">
+                                    <span>Essential Needs vs Discretionary Wants</span>
+                                    <span className="font-mono text-rose-600 dark:text-rose-400 font-bold">{analytics.luhoPct}% Luho</span>
                                 </div>
-                            )}
 
-                            {/* VIEW 2: TIMELINE SPENDING VELOCITY */}
-                            {view === "trend" && (
-                                <div className="w-full h-64 sm:h-72">
-                                    <canvas ref={chartRef} />
+                                <div className="h-3 w-full rounded-full bg-black/10 dark:bg-white/10 overflow-hidden flex">
+                                    <div style={{ width: `${analytics.needsPct}%` }} className="bg-emerald-600 transition-all duration-700" />
+                                    <div style={{ width: `${analytics.luhoPct}%` }} className="bg-rose-500 transition-all duration-700" />
                                 </div>
-                            )}
 
-                            {/* VIEW 3: INFLOW VS OUTFLOW (DUAL BARS) */}
-                            {view === "flow" && (
-                                <div className="w-full h-64 sm:h-72">
-                                    <canvas ref={chartRef} />
+                                <div className="flex items-center justify-between text-xs font-mono">
+                                    <span className="text-emerald-700 dark:text-emerald-400 font-bold">Needs: ₱{peso(analytics.needsTotal)} ({analytics.needsPct}%)</span>
+                                    <span className="text-rose-600 dark:text-rose-400 font-bold">Wants: ₱{peso(analytics.luhoTotal)} ({analytics.luhoPct}%)</span>
                                 </div>
-                            )}
+                            </div>
 
-                            {/* VIEW 4: WALLET DISTRIBUTION */}
-                            {view === "wallet" && (
-                                <div className="w-full h-64 sm:h-72">
-                                    <canvas ref={chartRef} />
+                            {/* 50/30/20 Ideal Guidance Card */}
+                            <div className="grid grid-cols-3 gap-3 text-center text-xs">
+                                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                                    <p className="font-bold text-emerald-800 dark:text-emerald-300">50% Needs</p>
+                                    <p className="text-[11px] text-ink2/60 dark:text-paper/50 mt-0.5">Bills, groceries & transit</p>
                                 </div>
-                            )}
-
-                            {/* VIEW 5: GUILT TRACKER & 50/30/20 BENCHMARK */}
-                            {view === "needwant" && (
-                                <div className="w-full space-y-6">
-                                    <div className="p-5 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 space-y-3">
-                                        <div className="flex items-center justify-between text-xs font-semibold">
-                                            <span>Essential Needs vs Discretionary Wants</span>
-                                            <span className="font-mono text-rose-600 dark:text-rose-400 font-bold">{analytics.luhoPct}% Luho</span>
-                                        </div>
-
-                                        <div className="h-3 w-full rounded-full bg-black/10 dark:bg-white/10 overflow-hidden flex">
-                                            <div style={{ width: `${analytics.needsPct}%` }} className="bg-emerald-600 transition-all duration-700" />
-                                            <div style={{ width: `${analytics.luhoPct}%` }} className="bg-rose-500 transition-all duration-700" />
-                                        </div>
-
-                                        <div className="flex items-center justify-between text-xs font-mono">
-                                            <span className="text-emerald-700 dark:text-emerald-400 font-bold">Needs: ₱{peso(analytics.needsTotal)} ({analytics.needsPct}%)</span>
-                                            <span className="text-rose-600 dark:text-rose-400 font-bold">Wants: ₱{peso(analytics.luhoTotal)} ({analytics.luhoPct}%)</span>
-                                        </div>
-                                    </div>
-
-                                    {/* 50/30/20 Ideal Guidance Card */}
-                                    <div className="grid grid-cols-3 gap-3 text-center text-xs">
-                                        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                                            <p className="font-bold text-emerald-800 dark:text-emerald-300">50% Needs</p>
-                                            <p className="text-[11px] text-ink2/60 dark:text-paper/50 mt-0.5">Bills, groceries & transit</p>
-                                        </div>
-                                        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                                            <p className="font-bold text-amber-800 dark:text-amber-300">30% Wants</p>
-                                            <p className="text-[11px] text-ink2/60 dark:text-paper/50 mt-0.5">Dining out & leisure</p>
-                                        </div>
-                                        <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/20">
-                                            <p className="font-bold text-sky-800 dark:text-sky-300">20% Savings</p>
-                                            <p className="text-[11px] text-ink2/60 dark:text-paper/50 mt-0.5">Emergency cushion</p>
-                                        </div>
-                                    </div>
+                                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                                    <p className="font-bold text-amber-800 dark:text-amber-300">30% Wants</p>
+                                    <p className="text-[11px] text-ink2/60 dark:text-paper/50 mt-0.5">Dining out & leisure</p>
                                 </div>
-                            )}
-                        </>
+                                <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/20">
+                                    <p className="font-bold text-sky-800 dark:text-sky-300">20% Savings</p>
+                                    <p className="text-[11px] text-ink2/60 dark:text-paper/50 mt-0.5">Emergency cushion</p>
+                                </div>
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>

@@ -2,9 +2,6 @@
 // Presentational shell only — no API calls or data-contract changes here.
 // Props: user (Firebase user: displayName, email), onLogout (fn), activeTab (id matching `tabs` below)
 
-const TIPID_NAV_KEY = "tipid:navFrom";
-const TIPID_TRANSITION_MS = 220;
-
 window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
     const userName = user?.displayName ? user.displayName.split(" ")[0] : user?.email?.split("@")[0] || "User";
     const initial = userName.charAt(0).toUpperCase();
@@ -54,17 +51,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
         }
     });
 
-    const [displayActiveTab, setDisplayActiveTab] = React.useState(() => {
-        try {
-            const from = sessionStorage.getItem(TIPID_NAV_KEY);
-            if (from && from !== activeTab) return from;
-        } catch (e) { }
-        return activeTab;
-    });
-
-    const [overlayVisible, setOverlayVisible] = React.useState(() => {
-        try { return !!sessionStorage.getItem(TIPID_NAV_KEY); } catch (e) { return false; }
-    });
+    const displayActiveTab = activeTab;
 
     const isMoreActive = moreMobileTabs.some(t => t.id === displayActiveTab);
 
@@ -84,21 +71,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
         return () => (mq.removeEventListener ? mq.removeEventListener("change", handler) : mq.removeListener(handler));
     }, []);
 
-    React.useEffect(() => {
-        let from = null;
-        try {
-            from = sessionStorage.getItem(TIPID_NAV_KEY);
-            sessionStorage.removeItem(TIPID_NAV_KEY);
-        } catch (e) { }
-
-        if (!from) { setOverlayVisible(false); return; }
-
-        const settle = window.setTimeout(() => {
-            setDisplayActiveTab(activeTab);
-            setOverlayVisible(false);
-        }, reducedMotion ? 0 : 70);
-        return () => window.clearTimeout(settle);
-    }, [activeTab, reducedMotion]);
+    
 
     React.useEffect(() => {
         let ticking = false;
@@ -115,23 +88,28 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
         return () => window.removeEventListener("scroll", onScroll);
     }, []);
 
+    const prefetchHref = React.useCallback((href) => {
+        if (!href || href === "#") return;
+        try {
+            const existing = document.querySelector(`link[rel="prefetch"][href="${href}"]`);
+            if (!existing) {
+                const link = document.createElement("link");
+                link.rel = "prefetch";
+                link.href = href;
+                link.as = "document";
+                document.head.appendChild(link);
+            }
+        } catch (_) {}
+    }, []);
+
     const handleNavigate = React.useCallback((e, href) => {
         if (!href || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-
         let currentFile = "";
-        try { currentFile = window.location.pathname.split("/").pop() || "dashboard.html"; } catch (err) { }
+        try { currentFile = window.location.pathname.split("/").pop() || "dashboard.html"; } catch (err) {}
         if (href === currentFile) { e.preventDefault(); return; }
-
         e.preventDefault();
-        try { sessionStorage.setItem(TIPID_NAV_KEY, activeTab); } catch (err) { }
-
-        if (reducedMotion) {
-            window.location.href = href;
-            return;
-        }
-        setOverlayVisible(true);
-        window.setTimeout(() => { window.location.href = href; }, TIPID_TRANSITION_MS);
-    }, [activeTab, reducedMotion]);
+        window.location.href = href;
+    }, []);
 
     const toggleTheme = () => {
         const nextDark = !isDark;
@@ -224,10 +202,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                 }
             `}</style>
 
-            <div
-                aria-hidden="true"
-                className={`fixed inset-0 z-[70] bg-paper dark:bg-ink2 transition-opacity ease-out ${reducedMotion ? "duration-0" : "duration-[220ms]"} ${overlayVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
-            />
+            
 
             {/* ---------- Desktop Apple HIG Sidebar ---------- */}
             <aside
@@ -265,6 +240,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                                     label={tab.label}
                                     active={isTabActive(tab)}
                                     onClick={(e) => handleNavigate(e, tab.href)}
+                                    onPrefetch={() => prefetchHref(tab.href)}
                                     icon={<tab.icon size={18} />}
                                 />
                             ))}
@@ -283,6 +259,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                                     label={tab.label}
                                     active={isTabActive(tab)}
                                     onClick={(e) => handleNavigate(e, tab.href)}
+                                    onPrefetch={() => prefetchHref(tab.href)}
                                     icon={<tab.icon size={18} />}
                                 />
                             ))}
@@ -301,6 +278,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                                     label={tab.label}
                                     active={isTabActive(tab)}
                                     onClick={(e) => handleNavigate(e, tab.href)}
+                                    onPrefetch={() => prefetchHref(tab.href)}
                                     icon={<tab.icon size={18} />}
                                 />
                             ))}
@@ -411,6 +389,7 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                             label={tab.label}
                             active={displayActiveTab === tab.id}
                             onClick={(e) => handleNavigate(e, tab.href)}
+                            onPrefetch={() => prefetchHref(tab.href)}
                             icon={<tab.icon active={displayActiveTab === tab.id} size={22} />}
                         />
                     ))}
@@ -442,6 +421,8 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
                                 key={tab.id}
                                 href={tab.href}
                                 onClick={(e) => handleNavigate(e, tab.href)}
+                                onMouseEnter={() => prefetchHref(tab.href)}
+                                onTouchStart={() => prefetchHref(tab.href)}
                                 className="tipid-sheet-item group flex flex-col items-center justify-center gap-2.5 p-4 rounded-[1.25rem] bg-white dark:bg-white/[0.05] hover:bg-paperDim dark:hover:bg-white/10 active:scale-95 transition-all duration-200 border border-line/30 dark:border-white/5 shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
                                 style={isMobileMenuOpen ? { animation: `tipid-sheet-item-in 0.35s cubic-bezier(0.34,1.4,0.64,1) both`, animationDelay: `${i * 35}ms` } : undefined}
                             >
@@ -458,10 +439,12 @@ window.Navbar = function Navbar({ user, onLogout, activeTab = "home" }) {
     );
 };
 
-const SidebarNavLink = ({ href, label, active, icon, onClick }) => (
+const SidebarNavLink = ({ href, label, active, icon, onClick, onPrefetch }) => (
     <a
         href={href}
         onClick={onClick}
+        onMouseEnter={onPrefetch}
+        onTouchStart={onPrefetch}
         aria-current={active ? "page" : undefined}
         title={label}
         className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-peso/40 ${
@@ -482,12 +465,14 @@ const SidebarNavLink = ({ href, label, active, icon, onClick }) => (
 
 // MINIMAL BOTTOM NAV BUTTON — icon + label, color communicates state (no background pill),
 // matching the reference tab bar's understated realism.
-const BottomNavBtn = ({ href, icon, label, active, onClick, as = "a" }) => {
+const BottomNavBtn = ({ href, icon, label, active, onClick, onPrefetch, as = "a" }) => {
     const Tag = as;
     return (
         <Tag
             href={href}
             onClick={onClick}
+            onMouseEnter={onPrefetch}
+            onTouchStart={onPrefetch}
             aria-current={active ? "page" : undefined}
             aria-label={label}
             className="relative flex-1 flex flex-col items-center justify-center gap-1 py-2.5 focus:outline-none rounded-xl active:scale-95 transition-transform duration-200 cursor-pointer group"

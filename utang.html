@@ -428,11 +428,19 @@
         /* --- ROOT UTANG PAGE --- */
         function UtangPage() {
             const authReady = window.useAuthReady();
-            const [user, setUser] = React.useState(null);
+            const [user, setUser] = React.useState(() => {
+                try {
+                    return window.TipidAuth?.getCachedUser ? window.TipidAuth.getCachedUser() : JSON.parse(localStorage.getItem("tipid_auth_cached_user") || "null");
+                } catch (_) { return null; }
+            });
             const [utangList, setUtangList] = React.useState([]);
             const [loading, setLoading] = React.useState(true);
-            const [authChecking, setAuthChecking] = React.useState(true);
-            const [componentsReady, setComponentsReady] = React.useState(false);
+            const [componentsReady, setComponentsReady] = React.useState(() => {
+                return typeof window.Navbar !== "undefined" && typeof window.UtangTracker !== "undefined";
+            });
+            const [authChecking, setAuthChecking] = React.useState(() => {
+                try { return !localStorage.getItem("tipid_auth_cached_user"); } catch (_) { return true; }
+            });
 
             const [darkMode, setDarkMode] = React.useState(() => {
                 return localStorage.getItem("tipid_theme") === "dark" ||
@@ -452,6 +460,7 @@
             const toggleDarkMode = () => setDarkMode(!darkMode);
 
             React.useEffect(() => {
+                if (componentsReady) return;
                 const interval = setInterval(() => {
                     if (window.UtangTracker && window.Navbar) {
                         setComponentsReady(true);

@@ -32,8 +32,8 @@ const SCANNER_ICONS = {
             <polyline points="21 15 16 10 5 21" />
         </svg>
     ),
-    Check: ({ size = 18, className = "" }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    Check: ({ size = 18, className = "", strokeWidth = 2.8 }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
             <polyline points="20 6 9 17 4 12" />
         </svg>
     ),
@@ -126,12 +126,40 @@ const SCANNER_ICONS = {
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className={className}>
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
         </svg>
+    ),
+    Calendar: ({ size = 15, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+    ),
+    List: ({ size = 15, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <line x1="8" y1="6" x2="21" y2="6" />
+            <line x1="8" y1="12" x2="21" y2="12" />
+            <line x1="8" y1="18" x2="21" y2="18" />
+            <line x1="3" y1="6" x2="3.01" y2="6" strokeWidth="3" />
+            <line x1="3" y1="12" x2="3.01" y2="12" strokeWidth="3" />
+            <line x1="3" y1="18" x2="3.01" y2="18" strokeWidth="3" />
+        </svg>
+    ),
+    ChevronDown: ({ size = 14, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <polyline points="6 9 12 15 18 9" />
+        </svg>
+    ),
+    ChevronUp: ({ size = 14, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <polyline points="18 15 12 9 6 15" />
+        </svg>
     )
 };
 
 // --- PHILIPPINE MERCHANT & CATEGORY INTELLIGENCE DICTIONARY ---
 const PH_STORE_RULES = [
-    // 🍔 Food & Dining (Fast food, Resto, Cafe, Bakery)
+    // Food & Dining (Fast food, Resto, Cafe, Bakery)
     {
         category: "Pagkain",
         stores: [
@@ -139,32 +167,35 @@ const PH_STORE_RULES = [
             "Burger King", "Wendy's", "Popeyes", "Shakey's", "Pizza Hut", "Subway", "Tokyo Tokyo",
             "BonChon", "Army Navy", "Starbucks", "Dunkin", "Krispy Kreme", "Tim Hortons",
             "Seattle's Best", "Chatime", "Gong Cha", "Macao Imperial", "Coco", "Tiger Sugar",
-            "Goldilocks", "Red Ribbon", "Pan de Manila", "Carinderia", "Kainan", "Bistro", "Resto",
-            "Cafe", "Restaurant", "Bakery", "Grill"
+            "Goldilocks", "Red Ribbon", "Pan de Manila", "Carinderia", "Kainan"
         ],
-        keywords: ["food", "kainan", "meal", "dine-in", "takeout", "chickenjoy", "burger", "coffee", "rice", "milktea"]
+        keywords: [
+            "food", "kainan", "meal", "dine-in", "takeout", "chickenjoy", "burger", "coffee", "rice",
+            "milktea", "bakery", "bakeshop", "diner", "bistro", "resto", "restaurant", "grill"
+        ]
     },
-    // 🛒 Groceries & Supermarkets (under Pagkain)
+    // Groceries & Supermarkets (under Pagkain)
     {
         category: "Pagkain",
         stores: [
             "SM Supermarket", "SM Hypermarket", "Savemore", "Puregold", "Robinsons Supermarket",
             "Robinsons Easymart", "Super8", "WalterMart", "AllDay", "S&R", "Landers", "Dali",
-            "Osave", "Shopwise", "Gaisano", "Alfamart", "7-Eleven", "Uncle John's", "Lawson", "FamilyMart"
+            "Osave", "Shopwise", "Gaisano", "Alfamart", "7-Eleven", "Uncle John's", "Lawson", "FamilyMart",
+            "South Supermarket", "Metro Gaisano", "Landmark", "Cash & Carry", "Ever Supermarket", "Unimart", "Pioneer Centre"
         ],
-        keywords: ["supermarket", "grocery", "mart", "convenience", "hypermarket"]
+        keywords: ["supermarket", "grocery", "mart", "mini mart", "convenience", "hypermarket", "market", "sari-sari", "groceries"]
     },
-    // ⛽ Transportation & Fuel
+    // Transportation & Fuel
     {
         category: "Pamasahe",
         stores: [
             "Petron", "Shell", "Caltex", "Phoenix", "Cleanfuel", "Seaoil", "PTT", "Unioil",
-            "Total", "Flying V", "Grab", "Angkas", "JoyRide", "Move It", "Taxi", "MRT", "LRT",
+            "Total Energies", "Flying V", "Grab", "Angkas", "JoyRide", "Move It", "Taxi", "MRT", "LRT",
             "Beep", "Autosweep", "Easytrip"
         ],
-        keywords: ["fuel", "gasoline", "diesel", "petrol", "transport", "toll", "fare", "pamasahe", "ride", "pump"]
+        keywords: ["fuel", "gasoline", "diesel", "petrol", "transport", "toll", "fare", "pamasahe", "ride", "pump", "station"]
     },
-    // 💡 Utilities & Bills
+    // Utilities & Bills
     {
         category: "Bills",
         stores: [
@@ -173,22 +204,22 @@ const PH_STORE_RULES = [
         ],
         keywords: ["bill", "utility", "electric", "water bill", "statement of account", "due date", "kwh", "internet"]
     },
-    // 📱 Mobile Load & Data
+    // Mobile Load & Data
     {
         category: "Load",
         stores: ["Prepaid Load", "Autoload", "Load Max", "Data Promo", "Giga", "GoSurf"],
         keywords: ["load", "eload", "regular load", "data promo", "prepaid"]
     },
-    // 💊 Pharmacy / Health (Mapped to Iba pa)
+    // Pharmacy / Health (Mapped to Iba pa)
     {
         category: "Iba pa",
         stores: [
             "Mercury Drug", "Watsons", "Southstar Drug", "Generika", "Rose Pharmacy", "TGP",
             "The Generics Pharmacy"
         ],
-        keywords: ["drug", "pharmacy", "medicine", "tablets", "capsule", "rx"]
+        keywords: ["drug", "pharmacy", "medicine", "tablets", "capsule", "rx", "pharma"]
     },
-    // 🔧 Electronics & Hardware (Mapped to Project Components)
+    // Electronics & Hardware (Mapped to Project Components)
     {
         category: "Project Components",
         stores: [
@@ -198,6 +229,340 @@ const PH_STORE_RULES = [
         keywords: ["hardware", "tools", "electronics", "cable", "screw", "computer", "gadget"]
     }
 ];
+
+// Helper to convert ALL UPPERCASE text to Title Case
+function toTitleCase(str) {
+    if (!str) return "";
+    return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase());
+}
+
+// Client-Side Canvas Image Preprocessor for High-Accuracy OCR
+async function preprocessImageForOCR(imageSrcOrElement) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+            try {
+                // Constrain max dimension to 1600px for optimal OCR DPI and performance
+                const maxDim = 1600;
+                let w = img.naturalWidth || img.width;
+                let h = img.naturalHeight || img.height;
+                if (w > maxDim || h > maxDim) {
+                    if (w > h) {
+                        h = Math.round((h * maxDim) / w);
+                        w = maxDim;
+                    } else {
+                        w = Math.round((w * maxDim) / h);
+                        h = maxDim;
+                    }
+                }
+
+                const canvas = document.createElement("canvas");
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, w, h);
+
+                const imgData = ctx.getImageData(0, 0, w, h);
+                const d = imgData.data;
+
+                // Grayscale and dynamic contrast normalization
+                let minLum = 255;
+                let maxLum = 0;
+                const luminances = new Uint8Array(w * h);
+
+                for (let i = 0, j = 0; i < d.length; i += 4, j++) {
+                    const lum = Math.round(0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]);
+                    luminances[j] = lum;
+                    if (lum < minLum) minLum = lum;
+                    if (lum > maxLum) maxLum = lum;
+                }
+
+                const range = maxLum - minLum;
+                const stretch = range > 30;
+
+                for (let i = 0, j = 0; i < d.length; i += 4, j++) {
+                    let val = luminances[j];
+                    if (stretch) {
+                        val = Math.round(((val - minLum) / range) * 255);
+                    }
+                    // Push background to crisp white and text to deep black
+                    if (val > 185) {
+                        val = 255;
+                    } else if (val < 90) {
+                        val = Math.max(0, val - 30);
+                    }
+                    d[i] = val;
+                    d[i + 1] = val;
+                    d[i + 2] = val;
+                }
+
+                ctx.putImageData(imgData, 0, 0);
+                resolve(canvas.toDataURL("image/jpeg", 0.92));
+            } catch (err) {
+                console.warn("Canvas preprocessing fallback:", err);
+                resolve(typeof imageSrcOrElement === "string" ? imageSrcOrElement : img.src);
+            }
+        };
+        img.onerror = () => {
+            resolve(typeof imageSrcOrElement === "string" ? imageSrcOrElement : "");
+        };
+        img.src = typeof imageSrcOrElement === "string" ? imageSrcOrElement : imageSrcOrElement.src;
+    });
+}
+
+// Extract money values safely from a line, handling PHP/P prefix without requiring word boundaries
+function extractNumbersFromLine(line) {
+    if (!line) return [];
+    let clean = line;
+    // Replace comma decimal if followed by 2 digits: e.g. 164,50 -> 164.50
+    clean = clean.replace(/(\d),(\d{2})(?!\d)/g, "$1.$2");
+    // Remove comma thousands separators: e.g. 1,000.00 -> 1000.00
+    clean = clean.replace(/,/g, "");
+    // Fix spaces around decimal point: e.g. 164 . 50 -> 164.50
+    clean = clean.replace(/(\d+)\s*\.\s*/g, "$1.");
+    // Fix OCR 'O' or 'o' for zeros in decimals: e.g. .5O -> .50, .OO -> .00
+    clean = clean.replace(/(\d+)\.([0-9])([oO])\b/g, (m, g1, g2) => g1 + "." + g2 + "0");
+    clean = clean.replace(/(\d+)\.([oO])([0-9])\b/g, (m, g1, g2) => g1 + ".0" + g2);
+    clean = clean.replace(/(\d+)\.([oO])([oO])\b/g, (m, g1) => g1 + ".00");
+
+    const moneyRegex = /(?:PHP|₱|P|Php|\$)?\s*([0-9]{1,6}(?:\.[0-9]{1,2})?)(?!\d)/gi;
+    const results = [];
+    let match;
+    while ((match = moneyRegex.exec(clean)) !== null) {
+        const val = parseFloat(match[1]);
+        if (!isNaN(val) && val > 0 && val < 1000000) {
+            // Exclude calendar years unless the line explicitly indicates a financial total
+            if (val >= 2024 && val <= 2035 && !/total|php|due|sale|amount/i.test(line)) {
+                continue;
+            }
+            results.push(val);
+        }
+    }
+    return results;
+}
+
+// Smart OCR Parsing: Extracts Grand Total Amount & Candidates
+function extractAmountAndCandidates(rawText, detectedItems = []) {
+    if (!rawText || !rawText.trim()) return { amount: null, candidates: [] };
+
+    const lines = rawText.split(/\r?\n+/).map(l => l.trim()).filter(Boolean);
+    const totalKeywords = /(?:grand\s*total|total\s*due|amount\s*due|total\s*amount|total\s*sale|net\s*total|net\s*amount|total\s*bill|total\s*php|total\s*p|t0tal|tota1|\btotal\b)/i;
+    const subtotalKeywords = /(?:sub\s*total|vatable|vat\s*amount|service\s*charge|discount)/i;
+    const paymentKeywords = /(?:cash|tendered|received|sukli|change|balik|paid\s*via|gcash|maya)/i;
+
+    let primaryAmount = null;
+    const candidates = new Set();
+    let detectedCash = null;
+    let detectedChange = null;
+
+    // Scan lines
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        // Track Cash & Change for mathematical cross validation
+        if (/cash|tendered/i.test(line) && !/change|sukli/i.test(line)) {
+            const nums = extractNumbersFromLine(line);
+            if (nums.length > 0) detectedCash = nums[0];
+        }
+        if (/change|sukli|balik/i.test(line)) {
+            const nums = extractNumbersFromLine(line);
+            if (nums.length > 0) detectedChange = nums[0];
+        }
+
+        // Match Grand Total line
+        if (totalKeywords.test(line) && !subtotalKeywords.test(line) && !/subtotal/i.test(line)) {
+            let checkLine = line;
+            if (/sub\s*total/i.test(line)) {
+                checkLine = line.replace(/.*sub\s*total[^\d]*[\d.]+/i, "");
+            }
+
+            const matches = extractNumbersFromLine(checkLine);
+            if (matches.length > 0) {
+                primaryAmount = matches[matches.length - 1].toFixed(2);
+                matches.forEach(m => candidates.add(m.toFixed(2)));
+                break;
+            }
+
+            // Check immediate next line if total keyword was on its own line
+            if (i + 1 < lines.length) {
+                const nextLine = lines[i + 1];
+                if (!paymentKeywords.test(nextLine)) {
+                    const nextMatches = extractNumbersFromLine(nextLine);
+                    if (nextMatches.length > 0) {
+                        primaryAmount = nextMatches[nextMatches.length - 1].toFixed(2);
+                        nextMatches.forEach(m => candidates.add(m.toFixed(2)));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    // Mathematical Cross-Validation: Cash - Change = Total
+    if (detectedCash !== null && detectedChange !== null && detectedCash > detectedChange) {
+        const mathTotal = (detectedCash - detectedChange).toFixed(2);
+        if (!primaryAmount || primaryAmount === detectedCash.toFixed(2)) {
+            primaryAmount = mathTotal;
+        }
+        candidates.add(mathTotal);
+    }
+
+    // Cross-Validation with Line Items Sum
+    if (!primaryAmount && detectedItems && detectedItems.length > 0) {
+        const itemsSum = detectedItems.reduce((acc, item) => acc + (item.price || 0), 0);
+        if (itemsSum > 0 && itemsSum < 100000) {
+            const sumStr = itemsSum.toFixed(2);
+            primaryAmount = sumStr;
+            candidates.add(sumStr);
+        }
+    }
+
+    // Collect all candidates across text
+    lines.forEach(l => {
+        const nums = extractNumbersFromLine(l);
+        nums.forEach(n => candidates.add(n.toFixed(2)));
+    });
+
+    // Fallback: If no primaryAmount found, choose the most sensible monetary value
+    if (!primaryAmount && candidates.size > 0) {
+        const candArray = Array.from(candidates).map(Number).filter(n => n > 0 && n < 500000);
+        const filtered = detectedCash ? candArray.filter(n => Math.abs(n - detectedCash) > 0.01) : candArray;
+        if (filtered.length > 0) {
+            primaryAmount = Math.max(...filtered).toFixed(2);
+        } else if (candArray.length > 0) {
+            primaryAmount = Math.max(...candArray).toFixed(2);
+        }
+    }
+
+    return {
+        amount: primaryAmount,
+        candidates: Array.from(candidates).slice(0, 6)
+    };
+}
+
+// Store & Category Intelligence Extractor
+function detectStoreAndCategory(rawText) {
+    if (!rawText || !rawText.trim()) return { store: "Receipt", category: "Pagkain" };
+
+    const lines = rawText.split(/\r?\n+/).map(l => l.trim()).filter(Boolean);
+    const nonStoreKeywords = /(?:tin|vat|non-vat|official\s*receipt|sales\s*invoice|or\s*#|si\s*#|invoice|receipt|date|time|cashier|terminal|machine|pos|tel|phone|address|st\.|ave\.|street|avenue|city|brgy|barangay|pasay|manila|makati|quezon|cebu|davao)/i;
+
+    // Header inspection (lines 1 to 4)
+    const headerLines = lines.slice(0, 4);
+    const headerText = headerLines.join(" ");
+
+    // 1. Check known stores in header lines first
+    for (const rule of PH_STORE_RULES) {
+        for (const store of rule.stores) {
+            const storeRegex = new RegExp(`(?:^|[^a-zA-Z0-9])${store}(?:[^a-zA-Z0-9]|$)`, "i");
+            if (storeRegex.test(headerText)) {
+                return { store, category: rule.category };
+            }
+        }
+    }
+
+    // 2. Extract dynamic store name from top lines (e.g. MALAYA SUPERMARKET)
+    let dynamicStore = "";
+    for (let i = 0; i < headerLines.length; i++) {
+        const line = headerLines[i];
+        if (/[a-zA-Z]{3,}/.test(line) && !nonStoreKeywords.test(line) && line.length >= 3 && line.length <= 50) {
+            dynamicStore = line.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, "");
+            break;
+        }
+    }
+
+    // Determine category based on header or keywords
+    let matchedCategory = "Pagkain";
+    const textToAnalyze = (dynamicStore + " " + rawText).toLowerCase();
+
+    for (const rule of PH_STORE_RULES) {
+        if (rule.keywords.some(k => textToAnalyze.includes(k))) {
+            matchedCategory = rule.category;
+            break;
+        }
+    }
+
+    if (dynamicStore) {
+        return {
+            store: toTitleCase(dynamicStore),
+            category: matchedCategory
+        };
+    }
+
+    // 3. Fallback: Check known stores across whole text with word boundaries
+    for (const rule of PH_STORE_RULES) {
+        for (const store of rule.stores) {
+            const storeRegex = new RegExp(`\\b${store}\\b`, "i");
+            if (storeRegex.test(rawText)) {
+                return { store, category: rule.category };
+            }
+        }
+    }
+
+    return { store: "Receipt", category: matchedCategory };
+}
+
+// Payment Method Auto-Detector
+function detectMethodFromText(rawText, wallets = ["Cash"]) {
+    if (!rawText) return wallets[0] || "Cash";
+    const lower = rawText.toLowerCase();
+    if (lower.includes("gcash") && wallets.includes("GCash")) return "GCash";
+    if ((lower.includes("maya") || lower.includes("paymaya")) && wallets.includes("Maya")) return "Maya";
+    if ((lower.includes("cash") || lower.includes("sukli") || lower.includes("change")) && wallets.includes("Cash")) return "Cash";
+    for (const w of wallets) {
+        if (lower.includes(w.toLowerCase())) return w;
+    }
+    return wallets[0] || "Cash";
+}
+
+// Receipt Date Extractor
+function detectDateFromText(rawText) {
+    if (!rawText) return null;
+    const dateRegexes = [
+        /(?:date|petsa)?\s*[:#]?\s*([0-1]?[0-9])[\/\-]([0-3]?[0-9])[\/\-](202[4-9]|203[0-5])/i,
+        /(?:date|petsa)?\s*[:#]?\s*(202[4-9]|203[0-5])[\/\-]([0-1]?[0-9])[\/\-]([0-3]?[0-9])/i
+    ];
+
+    for (const reg of dateRegexes) {
+        const m = rawText.match(reg);
+        if (m) {
+            if (m[1].length === 4) {
+                const y = m[1];
+                const mo = m[2].padStart(2, "0");
+                const d = m[3].padStart(2, "0");
+                return `${y}-${mo}-${d}`;
+            } else {
+                const mo = m[1].padStart(2, "0");
+                const d = m[2].padStart(2, "0");
+                const y = m[3];
+                return `${y}-${mo}-${d}`;
+            }
+        }
+    }
+    return null;
+}
+
+// Line Items Breakdown Extractor
+function extractLineItems(text) {
+    if (!text) return [];
+    const lines = text.split(/\r?\n+/).map(l => l.trim()).filter(Boolean);
+    const ignoreKeywords = /(?:tin|vat|non-vat|official|receipt|invoice|total|subtotal|change|sukli|cash|tendered|date|time|cashier|or\s*#|si\s*#|thank|come\s*again|serves\s*as|tel|phone|pos|machine|terminal)/i;
+    const items = [];
+    for (const line of lines) {
+        if (ignoreKeywords.test(line)) continue;
+        const itemMatch = line.match(/^([0-9]{1,2}[xX]?\s+)?([A-Za-z0-9\s\-\.\/&]{3,40})\s+(?:PHP|₱|P|Php)?\s*([0-9]{1,5}(?:\.[0-9]{1,2})?)$/i);
+        if (itemMatch) {
+            const qty = itemMatch[1] ? itemMatch[1].trim() : "1";
+            const name = toTitleCase(itemMatch[2].trim());
+            const price = parseFloat(itemMatch[3]);
+            if (name.length >= 3 && !isNaN(price) && price > 0 && price < 10000) {
+                items.push({ qty, name, price });
+            }
+        }
+    }
+    return items;
+}
 
 // Helper to draw a squircle icon plate
 function CategorySquircle({ category, size = 40, iconSize = 18 }) {
@@ -253,6 +618,9 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
     const [candidateAmounts, setCandidateAmounts] = useState([]);
     const [detectedStore, setDetectedStore] = useState("");
     const [extractedCategory, setExtractedCategory] = useState("Pagkain");
+    const [extractedDate, setExtractedDate] = useState(null);
+    const [extractedItems, setExtractedItems] = useState([]);
+    const [showItemsBreakdown, setShowItemsBreakdown] = useState(false);
     const [spendType, setSpendType] = useState("need");
 
     const preferredWallet = useMemo(() => {
@@ -336,7 +704,7 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
             Swal.fire({
                 icon: 'error',
                 title: 'Camera Access Needed',
-                text: 'Unable to access your device camera. Please verify camera permissions in your browser or choose "Upload Receipt Image".',
+                text: 'Unable to access your device camera. Please verify camera permissions in your browser or choose "Upload Receipt Photo".',
                 confirmButtonColor: '#B5483B',
                 customClass: { popup: 'tipid-swal' }
             });
@@ -385,12 +753,12 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
     const handleFileUpload = (e) => {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
-        if (!file.type.startsWith("image/") || file.size > 12 * 1024 * 1024) {
+        if (!file.type.startsWith("image/") || file.size > 14 * 1024 * 1024) {
             e.target.value = "";
             return Swal.fire({
                 icon: 'warning',
                 title: 'Unsupported File',
-                text: 'Please select a valid image file (JPG, PNG, or WEBP) under 12 MB.',
+                text: 'Please select a valid image file (JPG, PNG, or WEBP) under 14 MB.',
                 confirmButtonColor: '#1F6F54',
                 customClass: { popup: 'tipid-swal' }
             });
@@ -437,7 +805,7 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
         reader.readAsDataURL(file);
     };
 
-    // Helper: Ensure Tesseract.js is ready
+    // Ensure Tesseract.js is ready
     const ensureTesseractLoaded = () => {
         if (window.Tesseract) return Promise.resolve();
         return new Promise((resolve, reject) => {
@@ -449,100 +817,7 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
         });
     };
 
-    // Smart OCR Parsing: Extracts Amount & Candidates
-    const extractAmountAndCandidates = (rawText) => {
-        if (!rawText || !rawText.trim()) return { amount: null, candidates: [] };
-
-        // Normalize text lines
-        const lines = rawText.split(/\r?\n+/).map(l => l.trim()).filter(Boolean);
-        const moneyRegex = /(?:(?:₱|PHP|P)\s*)?([0-9]{1,4}(?:,[0-9]{3})*(?:\.[0-9]{2}))\b/gi;
-        const rawMoneyRegex = /\b([0-9]{1,6}\.[0-9]{2})\b/g;
-
-        const totalKeywords = /\b(grand\s*total|total\s*due|amount\s*due|total\s*amount|total\s*sale|net\s*total|total\s*bill|total)\b/i;
-        const subtotalKeywords = /\b(sub\s*total|vatable|vat\s*amount|service\s*charge|discount|change|sukli)\b/i;
-
-        let primaryAmount = null;
-        const candidates = new Set();
-
-        // 1. Search line by line near TOTAL keywords
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            const cleanLine = line.replace(/,/g, "");
-
-            if (totalKeywords.test(cleanLine) && !subtotalKeywords.test(cleanLine)) {
-                const matches = [...cleanLine.matchAll(rawMoneyRegex)].map(m => parseFloat(m[1])).filter(n => !isNaN(n) && n > 0 && n < 500000);
-                if (matches.length > 0) {
-                    primaryAmount = Math.max(...matches).toFixed(2);
-                    matches.forEach(m => candidates.add(m.toFixed(2)));
-                    break;
-                }
-                // Check immediate next line if total was on separate line
-                if (i + 1 < lines.length) {
-                    const nextLine = lines[i + 1].replace(/,/g, "");
-                    const nextMatches = [...nextLine.matchAll(rawMoneyRegex)].map(m => parseFloat(m[1])).filter(n => !isNaN(n) && n > 0 && n < 500000);
-                    if (nextMatches.length > 0) {
-                        primaryAmount = Math.max(...nextMatches).toFixed(2);
-                        nextMatches.forEach(m => candidates.add(m.toFixed(2)));
-                        break;
-                    }
-                }
-            }
-        }
-
-        // 2. Collect all candidate amounts in the whole text
-        const allText = rawText.replace(/,/g, "");
-        const allMatches = [...allText.matchAll(rawMoneyRegex)]
-            .map(m => parseFloat(m[1]))
-            .filter(n => !isNaN(n) && n > 0 && n < 500000 && n !== 2024 && n !== 2025 && n !== 2026 && n !== 2027);
-
-        allMatches.forEach(m => candidates.add(m.toFixed(2)));
-
-        if (!primaryAmount && allMatches.length > 0) {
-            primaryAmount = Math.max(...allMatches).toFixed(2);
-        }
-
-        return {
-            amount: primaryAmount,
-            candidates: Array.from(candidates).slice(0, 5)
-        };
-    };
-
-    // Store & Category Auto-Classifier
-    const detectStoreAndCategory = (rawText) => {
-        if (!rawText) return { store: "", category: "Pagkain" };
-        const lower = rawText.toLowerCase();
-
-        for (const rule of PH_STORE_RULES) {
-            for (const store of rule.stores) {
-                if (lower.includes(store.toLowerCase())) {
-                    return { store, category: rule.category };
-                }
-            }
-        }
-
-        for (const rule of PH_STORE_RULES) {
-            if (rule.keywords.some(k => lower.includes(k))) {
-                return { store: "Receipt", category: rule.category };
-            }
-        }
-
-        return { store: "Receipt", category: "Pagkain" };
-    };
-
-    // Wallet / Method Auto-Detector
-    const detectMethodFromText = (rawText) => {
-        if (!rawText) return null;
-        const lower = rawText.toLowerCase();
-        if (lower.includes("gcash") && wallets.includes("GCash")) return "GCash";
-        if ((lower.includes("maya") || lower.includes("paymaya")) && wallets.includes("Maya")) return "Maya";
-        if ((lower.includes("cash") || lower.includes("sukli") || lower.includes("change")) && wallets.includes("Cash")) return "Cash";
-        for (const w of wallets) {
-            if (lower.includes(w.toLowerCase())) return w;
-        }
-        return null;
-    };
-
-    // Main OCR Execution
+    // Main OCR Execution with Canvas Preprocessing
     const processImage = async (base64Image) => {
         setStatus("SCANNING");
         setScanError(null);
@@ -550,19 +825,32 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
 
         try {
             await ensureTesseractLoaded();
+
+            // Step 1: Client-Side Canvas Preprocessing (grayscale & contrast normalization)
+            const preprocessedUrl = await preprocessImageForOCR(base64Image);
             setScanStep(2);
 
-            // Execute Tesseract recognition with progress
+            // Step 2: Execute Tesseract Recognition
             const worker = await window.Tesseract.createWorker("eng");
-            const ret = await worker.recognize(base64Image);
+            let ret = await worker.recognize(preprocessedUrl);
+
+            let rawText = ret && ret.data && ret.data.text ? ret.data.text : "";
+
+            // Fast fallback to original image if preprocessed text is empty
+            if ((!rawText || rawText.trim().length < 10) && preprocessedUrl !== base64Image) {
+                ret = await worker.recognize(base64Image);
+                rawText = ret && ret.data && ret.data.text ? ret.data.text : "";
+            }
+
             await worker.terminate();
-
             setScanStep(3);
-            const rawText = ret && ret.data && ret.data.text ? ret.data.text : "";
 
-            const { amount, candidates } = extractAmountAndCandidates(rawText);
+            // Step 3: Extract Essential Expense Fields
+            const detectedItems = extractLineItems(rawText);
+            const { amount, candidates } = extractAmountAndCandidates(rawText, detectedItems);
             const { store, category } = detectStoreAndCategory(rawText);
-            const detectedWallet = detectMethodFromText(rawText);
+            const detectedWallet = detectMethodFromText(rawText, wallets);
+            const detectedDate = detectDateFromText(rawText);
 
             if (amount) {
                 setExtractedAmount(amount);
@@ -573,8 +861,11 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
             }
 
             setCandidateAmounts(candidates);
-            setDetectedStore(store !== "Receipt" ? `${store} Receipt` : "Receipt (Auto-Scanned)");
+            setDetectedStore(store !== "Receipt" ? store : "Receipt");
             setExtractedCategory(category);
+            setExtractedDate(detectedDate);
+            setExtractedItems(detectedItems);
+            setShowItemsBreakdown(false);
             if (detectedWallet) setMethod(detectedWallet);
 
             setStatus("RESULT");
@@ -583,95 +874,11 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
             setScanError("Receipt text could not be recognized clearly. Please review or input details manually below.");
             setExtractedAmount("");
             setAmountWasDetected(false);
-            setDetectedStore("Receipt (Manual Entry)");
+            setDetectedStore("Receipt");
+            setExtractedDate(null);
+            setExtractedItems([]);
             setStatus("RESULT");
         }
-    };
-
-    // Generates a crisp synthetic Jollibee receipt for one-click testing
-    const runDemoReceipt = () => {
-        const demoCanvas = document.createElement("canvas");
-        demoCanvas.width = 600;
-        demoCanvas.height = 800;
-        const ctx = demoCanvas.getContext("2d");
-
-        // Receipt background
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(0, 0, 600, 800);
-
-        // Header
-        ctx.fillStyle = "#111111";
-        ctx.font = "bold 28px 'Courier New', monospace";
-        ctx.textAlign = "center";
-        ctx.fillText("JOLLIBEE FOODS CORP.", 300, 70);
-
-        ctx.font = "20px 'Courier New', monospace";
-        ctx.fillText("SM MEGAMALL BRANCH", 300, 105);
-        ctx.fillText("VAT REG TIN: 000-333-111-000", 300, 135);
-        ctx.fillText("---------------------------------", 300, 165);
-
-        // Date & Cashier
-        ctx.font = "19px 'Courier New', monospace";
-        ctx.textAlign = "left";
-        ctx.fillText("DATE: 2026-11-03", 50, 205);
-        ctx.fillText("TIME: 12:45 PM", 380, 205);
-        ctx.fillText("CASHIER: J. REYES", 50, 235);
-        ctx.fillText("OR NO: 994821", 380, 235);
-        ctx.fillText("---------------------------------", 50, 265);
-
-        // Items
-        ctx.fillText("1x 2pc Chickenjoy Meal", 50, 310);
-        ctx.textAlign = "right";
-        ctx.fillText("219.00", 550, 310);
-
-        ctx.textAlign = "left";
-        ctx.fillText("1x Jolly Spaghetti", 50, 350);
-        ctx.textAlign = "right";
-        ctx.fillText("60.00", 550, 350);
-
-        ctx.textAlign = "left";
-        ctx.fillText("1x Peach Mango Pie", 50, 390);
-        ctx.textAlign = "right";
-        ctx.fillText("48.00", 550, 390);
-
-        ctx.fillText("---------------------------------", 550, 430);
-
-        // Subtotal & VAT
-        ctx.textAlign = "left";
-        ctx.fillText("SUBTOTAL:", 50, 470);
-        ctx.textAlign = "right";
-        ctx.fillText("327.00", 550, 470);
-
-        ctx.textAlign = "left";
-        ctx.fillText("12% VAT:", 50, 505);
-        ctx.textAlign = "right";
-        ctx.fillText("35.04", 550, 505);
-
-        ctx.fillText("=================================", 550, 540);
-
-        // Total
-        ctx.font = "bold 26px 'Courier New', monospace";
-        ctx.textAlign = "left";
-        ctx.fillText("TOTAL AMOUNT DUE:", 50, 580);
-        ctx.textAlign = "right";
-        ctx.fillText("PHP 327.00", 550, 580);
-
-        ctx.font = "20px 'Courier New', monospace";
-        ctx.fillText("=================================", 550, 615);
-
-        // Payment
-        ctx.textAlign = "left";
-        ctx.fillText("PAID VIA GCASH QR", 50, 650);
-        ctx.textAlign = "right";
-        ctx.fillText("327.00", 550, 650);
-
-        ctx.textAlign = "center";
-        ctx.fillText("THANK YOU FOR DINING WITH US!", 300, 720);
-        ctx.fillText("PLEASE COME AGAIN", 300, 750);
-
-        const demoUrl = demoCanvas.toDataURL("image/jpeg", 0.95);
-        setImageSrc(demoUrl);
-        processImage(demoUrl);
     };
 
     // Save extracted expense
@@ -691,7 +898,7 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
 
         setSaving(true);
         try {
-            const description = detectedStore.trim() || "Receipt (Auto-Scanned)";
+            const description = detectedStore.trim() || "Receipt";
 
             await window.TipidData.addExpense(uid, {
                 desc: description,
@@ -748,6 +955,10 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
         setExtractedAmount("");
         setCandidateAmounts([]);
         setAmountWasDetected(false);
+        setDetectedStore("");
+        setExtractedDate(null);
+        setExtractedItems([]);
+        setShowItemsBreakdown(false);
         setScanError(null);
         setStatus("IDLE");
         if (fileInputRef.current) fileInputRef.current.value = "";
@@ -759,6 +970,11 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
             localStorage.removeItem(`tipid_recent_scans_${uid}`);
         } catch (_) {}
     };
+
+    const itemsTotal = useMemo(() => {
+        if (!extractedItems || extractedItems.length === 0) return "0.00";
+        return extractedItems.reduce((acc, it) => acc + (it.price || 0), 0).toFixed(2);
+    }, [extractedItems]);
 
     return (
         <div className="space-y-6 sm:space-y-8">
@@ -880,32 +1096,6 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
                                 </div>
                             </div>
                         </div>
-
-                        {/* Interactive Demo Receipt Try-Out Strip */}
-                        <div className="rounded-2xl bg-emerald-500/8 dark:bg-emerald-400/8 border border-emerald-500/15 dark:border-emerald-400/15 p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-                            <div className="flex items-center gap-3 text-center sm:text-left">
-                                <span className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
-                                    <SCANNER_ICONS.Sparkles size={17} />
-                                </span>
-                                <div>
-                                    <p className="text-[13px] font-semibold text-ink dark:text-paper">
-                                        Walang hawak na resibo ngayon?
-                                    </p>
-                                    <p className="text-[11.5px] text-ink2/65 dark:text-paper/60">
-                                        Subukan ang aming synthetic Jollibee receipt para ma-test ang AI OCR.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={runDemoReceipt}
-                                className="tap-scale px-4 py-2.5 rounded-xl bg-peso text-white text-xs font-bold shadow-sm hover:shadow-md flex items-center gap-2 shrink-0 transition-all"
-                            >
-                                <SCANNER_ICONS.Zap size={14} />
-                                <span>Test Demo Receipt</span>
-                            </button>
-                        </div>
                     </div>
                 )}
 
@@ -927,7 +1117,7 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
                             {/* Viewfinder Overlays & Reticles */}
                             <div className="absolute inset-6 sm:inset-10 pointer-events-none flex flex-col justify-between">
                                 <div className="flex justify-between">
-                                    <div className="w-8 h-8 border-t-4 border-l-4 border-emerald-400 rounded-tl-xl drop-shadow-md" />
+                                    <div className="w-8 h-8 border-t-4 border-emerald-400 rounded-tl-xl drop-shadow-md" />
                                     <div className="w-8 h-8 border-t-4 border-r-4 border-emerald-400 rounded-tr-xl drop-shadow-md" />
                                 </div>
 
@@ -1075,7 +1265,7 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
                             </div>
                         )}
 
-                        {/* Side-by-side or stacked review form */}
+                        {/* Review Form */}
                         <form onSubmit={handleSave} className="space-y-5">
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
                                 {/* Left Side: Receipt Thumbnail Preview */}
@@ -1112,16 +1302,24 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
                                 <div className="md:col-span-8 space-y-4">
                                     {/* 1. Store / Description Field */}
                                     <div className="space-y-1.5">
-                                        <label className="text-[11px] font-mono font-semibold uppercase tracking-wider text-ink2/60 dark:text-paper/50 pl-1">
-                                            Store / Description
-                                        </label>
+                                        <div className="flex items-center justify-between pl-1">
+                                            <label className="text-[11px] font-mono font-semibold uppercase tracking-wider text-ink2/60 dark:text-paper/50">
+                                                Store / Description
+                                            </label>
+                                            {extractedDate && (
+                                                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-black/5 dark:bg-white/10 text-[10.5px] font-mono text-ink2/70 dark:text-paper/70">
+                                                    <SCANNER_ICONS.Calendar size={11} className="text-peso dark:text-pesoLight" />
+                                                    <span>Receipt Date: {extractedDate}</span>
+                                                </div>
+                                            )}
+                                        </div>
                                         <div className="flex items-center gap-2.5 bg-white/90 dark:bg-ink2/40 ring-1 ring-black/5 dark:ring-white/10 rounded-[14px] px-3.5 py-2.5 focus-within:ring-2 focus-within:ring-peso/50 transition-all shadow-xs">
                                             <CategorySquircle category={extractedCategory} size={34} iconSize={16} />
                                             <input
                                                 type="text"
                                                 value={detectedStore}
                                                 onChange={(e) => setDetectedStore(e.target.value)}
-                                                placeholder="e.g. Jollibee, SM Supermarket"
+                                                placeholder="e.g. Malaya Supermarket, Jollibee"
                                                 maxLength={120}
                                                 className="w-full bg-transparent font-medium text-sm sm:text-base text-ink dark:text-paper focus:outline-none placeholder-ink2/30"
                                             />
@@ -1198,7 +1396,7 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
                                                     ))}
                                                 </select>
                                                 <span className="absolute right-3.5 pointer-events-none text-ink2/40">
-                                                    ▼
+                                                    <SCANNER_ICONS.ChevronDown size={14} />
                                                 </span>
                                             </div>
                                         </div>
@@ -1220,7 +1418,7 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
                                                     ))}
                                                 </select>
                                                 <span className="absolute right-3.5 pointer-events-none text-ink2/40">
-                                                    ▼
+                                                    <SCANNER_ICONS.ChevronDown size={14} />
                                                 </span>
                                             </div>
                                         </div>
@@ -1256,6 +1454,41 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
                                             </button>
                                         </div>
                                     </div>
+
+                                    {/* 5. Detected Line Items (Expandable Accordion) */}
+                                    {extractedItems && extractedItems.length > 0 && (
+                                        <div className="pt-1">
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowItemsBreakdown(!showItemsBreakdown)}
+                                                className="tap-scale w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-black/[0.03] dark:bg-white/[0.04] border border-black/5 dark:border-white/10 text-ink2/80 dark:text-paper/80 text-xs font-medium hover:bg-black/[0.06] transition-colors"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <SCANNER_ICONS.List size={14} className="text-peso dark:text-pesoLight" />
+                                                    <span>Scanned Line Items ({extractedItems.length} items • ₱{itemsTotal})</span>
+                                                </div>
+                                                <span>
+                                                    {showItemsBreakdown ? <SCANNER_ICONS.ChevronUp size={13} /> : <SCANNER_ICONS.ChevronDown size={13} />}
+                                                </span>
+                                            </button>
+
+                                            {showItemsBreakdown && (
+                                                <div className="mt-2 p-3 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/10 space-y-1.5 animate-[fadeIn_0.2s_ease-out]">
+                                                    {extractedItems.map((item, idx) => (
+                                                        <div key={idx} className="flex items-center justify-between text-xs py-1 border-b border-black/5 dark:border-white/5 last:border-b-0">
+                                                            <div className="flex items-center gap-2 truncate pr-2">
+                                                                <span className="font-mono text-[11px] text-ink2/50 dark:text-paper/50">{item.qty}x</span>
+                                                                <span className="text-ink dark:text-paper font-medium truncate">{item.name}</span>
+                                                            </div>
+                                                            <span className="font-mono text-ink dark:text-paper font-semibold shrink-0">
+                                                                ₱{window.peso(item.price)}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -1341,7 +1574,8 @@ window.ReceiptScanner = function ReceiptScanner({ uid, wallets = ["Cash"], onSta
                                         ₱{window.peso(scan.amount)}
                                     </p>
                                     <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-700 dark:text-emerald-400 font-semibold">
-                                        ✓ Logged
+                                        <SCANNER_ICONS.Check size={11} strokeWidth={3} />
+                                        <span>Logged</span>
                                     </span>
                                 </div>
                             </div>
