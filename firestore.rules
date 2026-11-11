@@ -1,46 +1,312 @@
 rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: appStats
+// Document ID: public (singleton aggregate stats document)
+// Fields:
+//   - totalUsers: int (required, >= 1, == 1 on create, == resource.data.totalUsers + 1 on update)
+//   - updatedAt: timestamp (required, == request.time)
+//
+// Collection: users
+// Document ID: {uid} (matches request.auth.uid)
+// Fields (all optional, written via setDoc(..., { merge: true })):
+//   - monthlyBudget: number | null (0 .. 1e12)
+//   - wallets: map (size <= 50; Cash if present is number -1e12 .. 1e12)
+//   - financialGoals: map (updatedAt, name, targetAmount, wallet, contribution, frequency, startDate)
+//   - notificationSettings: map (updatedAt, dailyReminders, reminderTime, overbudgetAlerts, budgetThreshold, lastReminderDate)
+//   - preferences: map (lang in ['en', 'tl'], updatedAt)
+//   - lang: string ('en' | 'tl')
+//   - statsCounted: bool (once true, cannot be overwritten to false or removed via update)
+//
+// Subcollection: users/{uid}/expenses/{entryId}
+//   - Required: type ('income' | 'expense'), desc (1..120), amount (0 < x <= 1e12),
+//     category (1..50), method (1..50)
+//   - Optional: spendType ('need' | 'luho'), createdAt (timestamp, immutable once set),
+//     timestamp (timestamp), date (YYYY-MM-DD), note (<= 500 or null)
+//
+// Subcollection: users/{uid}/bills/{billId}
+//   - Required: title (1..120), amount (0 < x <= 1e12), dueDate (YYYY-MM-DD),
+//     category (1..50), status ('Unpaid' | 'Paid')
+//   - Optional: notes (<= 500 or null), createdAt (timestamp, immutable once set),
+//     updatedAt (timestamp)
+//
+// Subcollection: users/{uid}/utang/{utangId}
+//   - Required: name (1..120), amount (0 < x <= 1e12), direction ('owed_to_me' | 'i_owe'),
+//     status ('Unpaid' | 'Paid')
+//   - Optional: dueDate (null or YYYY-MM-DD), notes (<= 500 or null),
+//     createdAt (timestamp, immutable once set), updatedAt (timestamp),
+//     settledAt (null or timestamp)
+//
+// ===============================================================
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    function owns(uid) { return request.auth != null && request.auth.uid == uid; }
-    function validMoney(value) { return value is number && value > 0 && value <= 1000000000000; }
-    function shortText(value, max) { return value is string && value.size() > 0 && value.size() <= max; }
-    function optionalText(value, max) { return value == null || (value is string && value.size() <= max); }
-    function validDateKey(value) { return value is string && value.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); }
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function owns(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function validMoney(value) {
+      return value is number && value > 0 && value <= 1000000000000;
+    }
+
+    function validNonNegativeMoney(value) {
+      return value is number && value >= 0 && value <= 1000000000000;
+    }
+
+    function validSignedMoney(value) {
+      return value is number && value >= -1000000000000 && value <= 1000000000000;
+    }
+
+    function shortText(value, max) {
+      return value is string && value.size() > 0 && value.size() <= max;
+    }
+
+    function optionalText(value, max) {
+      return value == null || (value is string && value.size() <= max);
+    }
+
+    function validDateKey(value) {
+      return value is string && value.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    function userDocPath(uid) {
+      return /databases/$(database)/documents/users/$(uid);
+    }
+
+    function isUnmarkedUserDoc(userDoc) {
+      return userDoc == null
+        || !('statsCounted' in userDoc.data)
+        || userDoc.data.statsCounted != true;
+    }
+
+    function hasStatsCountedTrue(userDoc) {
+      return userDoc != null
+        && 'statsCounted' in userDoc.data
+        && userDoc.data.statsCounted == true;
+    }
+
+    // Verify user has not already been counted prior to this transaction
+    function userNotCountedBefore(uid) {
+      return !exists(userDocPath(uid)) || isUnmarkedUserDoc(get(userDocPath(uid)));
+    }
+
+    // Verify user document exists with statsCounted == true once transaction commits
+    function userMarkedCountedAfter(uid) {
+      return existsAfter(userDocPath(uid)) && hasStatsCountedTrue(getAfter(userDocPath(uid)));
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidAppStats(data) {
+      return data.keys().hasOnly(['totalUsers', 'updatedAt'])
+        && data.keys().hasAll(['totalUsers', 'updatedAt'])
+        && data.totalUsers is int
+        && data.totalUsers >= 1
+        && data.updatedAt is timestamp
+        && data.updatedAt == request.time;
+    }
+
+    function isValidAppStatsCreate(data) {
+      return isValidAppStats(data)
+        && data.totalUsers == 1;
+    }
+
+    function isValidAppStatsUpdate(newData, oldData) {
+      return isValidAppStats(newData)
+        && 'totalUsers' in oldData
+        && oldData.totalUsers is int
+        && oldData.totalUsers >= 0
+        && newData.totalUsers == oldData.totalUsers + 1;
+    }
+
+    function isValidFinancialGoals(fg) {
+      return fg is map
+        && fg.keys().hasOnly(['updatedAt', 'name', 'targetAmount', 'wallet', 'contribution', 'frequency', 'startDate'])
+        && (!('updatedAt' in fg) || fg.updatedAt is timestamp)
+        && (!('name' in fg) || fg.name == null || (fg.name is string && fg.name.size() <= 100))
+        && (!('targetAmount' in fg) || fg.targetAmount == null || validMoney(fg.targetAmount))
+        && (!('wallet' in fg) || fg.wallet == null || (fg.wallet is string && fg.wallet.size() <= 50))
+        && (!('contribution' in fg) || fg.contribution == null || validMoney(fg.contribution))
+        && (!('frequency' in fg) || fg.frequency == null || (fg.frequency is string && fg.frequency.size() <= 30))
+        && (!('startDate' in fg) || fg.startDate == null || validDateKey(fg.startDate));
+    }
+
+    function isValidNotificationSettings(ns) {
+      return ns is map
+        && ns.keys().hasOnly(['updatedAt', 'dailyReminders', 'reminderTime', 'overbudgetAlerts', 'budgetThreshold', 'lastReminderDate'])
+        && (!('updatedAt' in ns) || ns.updatedAt is timestamp)
+        && (!('dailyReminders' in ns) || ns.dailyReminders is bool)
+        && (!('reminderTime' in ns) || (ns.reminderTime is string && ns.reminderTime.size() <= 16))
+        && (!('overbudgetAlerts' in ns) || ns.overbudgetAlerts is bool)
+        && (!('budgetThreshold' in ns) || (ns.budgetThreshold is number && ns.budgetThreshold >= 0 && ns.budgetThreshold <= 100))
+        && (!('lastReminderDate' in ns) || ns.lastReminderDate == null || (ns.lastReminderDate is string && ns.lastReminderDate.size() <= 20));
+    }
+
+    function isValidPreferences(prefs) {
+      return prefs is map
+        && prefs.keys().hasOnly(['lang', 'updatedAt'])
+        && (!('lang' in prefs) || prefs.lang in ['en', 'tl'])
+        && (!('updatedAt' in prefs) || prefs.updatedAt is timestamp);
+    }
+
+    function isValidMonthlyBudget(value) {
+      return value == null || validNonNegativeMoney(value);
+    }
+
+    function isValidWallets(wallets) {
+      return wallets is map
+        && wallets.size() <= 50
+        && (!('Cash' in wallets) || validSignedMoney(wallets.Cash));
+    }
+
+    function isValidUserDoc(data) {
+      return (!('monthlyBudget' in data) || isValidMonthlyBudget(data.monthlyBudget))
+        && (!('wallets' in data) || isValidWallets(data.wallets))
+        && (!('financialGoals' in data) || isValidFinancialGoals(data.financialGoals))
+        && (!('notificationSettings' in data) || isValidNotificationSettings(data.notificationSettings))
+        && (!('preferences' in data) || isValidPreferences(data.preferences))
+        && (!('lang' in data) || data.lang in ['en', 'tl'])
+        && (!('statsCounted' in data) || data.statsCounted is bool);
+    }
+
+    function isValidUserDocUpdate(newData, oldData) {
+      let affected = newData.diff(oldData).affectedKeys();
+      return (!('monthlyBudget' in affected) || !('monthlyBudget' in newData) || isValidMonthlyBudget(newData.monthlyBudget))
+        && (!('wallets' in affected) || !('wallets' in newData) || isValidWallets(newData.wallets))
+        && (!('financialGoals' in affected) || !('financialGoals' in newData) || isValidFinancialGoals(newData.financialGoals))
+        && (!('notificationSettings' in affected) || !('notificationSettings' in newData) || isValidNotificationSettings(newData.notificationSettings))
+        && (!('preferences' in affected) || !('preferences' in newData) || isValidPreferences(newData.preferences))
+        && (!('lang' in affected) || !('lang' in newData) || newData.lang in ['en', 'tl'])
+        && (!('statsCounted' in affected) || !('statsCounted' in newData) || newData.statsCounted is bool);
+    }
+
+    function statsCountedNotRevoked(newData, oldData) {
+      return !('statsCounted' in oldData)
+        || oldData.statsCounted != true
+        || ('statsCounted' in newData && newData.statsCounted == true);
+    }
+
+    function createdAtUnchanged(newData, oldData) {
+      return !('createdAt' in oldData)
+        || ('createdAt' in newData && newData.createdAt == oldData.createdAt);
+    }
+
+    function isValidExpense(data) {
+      return data.keys().hasOnly([
+          'type', 'desc', 'amount', 'category', 'method',
+          'spendType', 'createdAt', 'timestamp', 'date', 'note'
+        ])
+        && data.keys().hasAll(['type', 'desc', 'amount', 'category', 'method'])
+        && data.type in ['income', 'expense']
+        && shortText(data.desc, 120)
+        && validMoney(data.amount)
+        && shortText(data.category, 50)
+        && shortText(data.method, 50)
+        && (!('spendType' in data) || data.spendType in ['need', 'luho'])
+        && (!('createdAt' in data) || data.createdAt is timestamp)
+        && (!('timestamp' in data) || data.timestamp is timestamp)
+        && (!('date' in data) || validDateKey(data.date))
+        && (!('note' in data) || optionalText(data.note, 500));
+    }
+
+    function isValidBill(data) {
+      return data.keys().hasOnly([
+          'title', 'amount', 'dueDate', 'category', 'notes',
+          'status', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasAll(['title', 'amount', 'dueDate', 'category', 'status'])
+        && shortText(data.title, 120)
+        && validMoney(data.amount)
+        && validDateKey(data.dueDate)
+        && shortText(data.category, 50)
+        && (!('notes' in data) || optionalText(data.notes, 500))
+        && data.status in ['Unpaid', 'Paid']
+        && (!('createdAt' in data) || data.createdAt is timestamp)
+        && (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+
+    function isValidUtang(data) {
+      return data.keys().hasOnly([
+          'name', 'amount', 'direction', 'dueDate', 'notes',
+          'status', 'createdAt', 'updatedAt', 'settledAt'
+        ])
+        && data.keys().hasAll(['name', 'amount', 'direction', 'status'])
+        && shortText(data.name, 120)
+        && validMoney(data.amount)
+        && data.direction in ['owed_to_me', 'i_owe']
+        && (!('dueDate' in data) || data.dueDate == null || validDateKey(data.dueDate))
+        && (!('notes' in data) || optionalText(data.notes, 500))
+        && data.status in ['Unpaid', 'Paid']
+        && (!('createdAt' in data) || data.createdAt is timestamp)
+        && (!('updatedAt' in data) || data.updatedAt is timestamp)
+        && (!('settledAt' in data) || data.settledAt == null || data.settledAt is timestamp);
+    }
+
+    // ===============================================================
+    // Match Rules
+    // ===============================================================
+
+    // Public aggregate user counter only (singleton doc; no PII, no list/delete)
+    match /appStats/public {
+      allow get: if true;
+      allow list, delete: if false;
+      allow create: if isAuthenticated()
+        && isValidAppStatsCreate(request.resource.data)
+        && userNotCountedBefore(request.auth.uid)
+        && userMarkedCountedAfter(request.auth.uid);
+      allow update: if isAuthenticated()
+        && isValidAppStatsUpdate(request.resource.data, resource.data)
+        && userNotCountedBefore(request.auth.uid)
+        && userMarkedCountedAfter(request.auth.uid);
+    }
 
     match /users/{uid} {
-      allow read, create, update, delete: if owns(uid);
+      allow read: if owns(uid);
+      allow create: if owns(uid)
+        && request.resource.data.keys().hasOnly(['monthlyBudget', 'wallets', 'financialGoals', 'notificationSettings', 'preferences', 'lang', 'statsCounted'])
+        && isValidUserDoc(request.resource.data);
+      allow update: if owns(uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['monthlyBudget', 'wallets', 'financialGoals', 'notificationSettings', 'preferences', 'lang', 'statsCounted'])
+        && isValidUserDocUpdate(request.resource.data, resource.data)
+        && statsCountedNotRevoked(request.resource.data, resource.data);
+      allow delete: if owns(uid);
 
       match /expenses/{entryId} {
         allow read, delete: if owns(uid);
-        allow create, update: if owns(uid)
-          && request.resource.data.type in ['income', 'expense']
-          && shortText(request.resource.data.desc, 120)
-          && validMoney(request.resource.data.amount)
-          && shortText(request.resource.data.category, 50)
-          && shortText(request.resource.data.method, 50)
-          && (!request.resource.data.keys().hasAny(['spendType']) || request.resource.data.spendType in ['need', 'luho']);
+        allow create: if owns(uid) && isValidExpense(request.resource.data);
+        allow update: if owns(uid)
+          && isValidExpense(request.resource.data)
+          && createdAtUnchanged(request.resource.data, resource.data);
       }
 
       match /bills/{billId} {
         allow read, delete: if owns(uid);
-        allow create, update: if owns(uid)
-          && shortText(request.resource.data.title, 120)
-          && validMoney(request.resource.data.amount)
-          && validDateKey(request.resource.data.dueDate)
-          && shortText(request.resource.data.category, 50)
-          && optionalText(request.resource.data.notes, 500)
-          && request.resource.data.status in ['Unpaid', 'Paid'];
+        allow create: if owns(uid) && isValidBill(request.resource.data);
+        allow update: if owns(uid)
+          && isValidBill(request.resource.data)
+          && createdAtUnchanged(request.resource.data, resource.data);
       }
 
       match /utang/{utangId} {
         allow read, delete: if owns(uid);
-        allow create, update: if owns(uid)
-          && shortText(request.resource.data.name, 120)
-          && validMoney(request.resource.data.amount)
-          && request.resource.data.direction in ['owed_to_me', 'i_owe']
-          && (request.resource.data.dueDate == null || validDateKey(request.resource.data.dueDate))
-          && optionalText(request.resource.data.notes, 500)
-          && request.resource.data.status in ['Unpaid', 'Paid'];
+        allow create: if owns(uid) && isValidUtang(request.resource.data);
+        allow update: if owns(uid)
+          && isValidUtang(request.resource.data)
+          && createdAtUnchanged(request.resource.data, resource.data);
       }
 
       match /{unknownCollection}/{document=**} {

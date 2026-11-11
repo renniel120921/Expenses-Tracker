@@ -1,0 +1,63 @@
+{
+  "name": "Tipid Expense Tracker",
+  "short_name": "Tipid",
+  "description": "Calm, structured expense, budget, bills, and debt tracking.",
+  "id": "/",
+  "start_url": "/login.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "lang": "en",
+  "background_color": "#F6F7F5",
+  "theme_color": "#1F6F54",
+  "categories": ["finance", "productivity"],
+  "icons": [
+    {
+      "src": "/assets/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Quick Add Expense",
+      "short_name": "Add Expense",
+      "description": "Log an expense or income quickly",
+      "url": "/dashboard.html?action=new_expense",
+      "icons": [{ "src": "/assets/favicon-32.png", "sizes": "32x32", "type": "image/png" }]
+    },
+    {
+      "name": "Bills Schedule",
+      "short_name": "Bills",
+      "description": "View upcoming and overdue bills",
+      "url": "/bills.html",
+      "icons": [{ "src": "/assets/favicon-32.png", "sizes": "32x32", "type": "image/png" }]
+    },
+    {
+      "name": "Utang Ledger",
+      "short_name": "Utang",
+      "description": "Track payables and receivables",
+      "url": "/utang.html",
+      "icons": [{ "src": "/assets/favicon-32.png", "sizes": "32x32", "type": "image/png" }]
+    }
+  ]
+}
