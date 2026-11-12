@@ -2,5 +2,8 @@ node_modules/
 dist/
 .firebase/
 firebase-debug.log
+.env
+.env.*
+!.env.example
 *.local
 .tmp-google-auth-edge-profile/

@@ -251,40 +251,40 @@ const offlinePillars = computed(() =>
         {
           icon: HardDrive,
           step: "01",
-          title: "Buong Multi-Page Shell Cache",
-          body: "Lahat ng 9 page at hashed bundle ay naka-precache sa Service Worker, may timeout guard laban sa mabagal na signal, at gumagana pati may query links."
+          title: "9-Page Offline Cache",
+          body: "Lahat ng 9 pages at assets ay naka-cache sa Service Worker."
         },
         {
           icon: Database,
           step: "02",
-          title: "Hindi Humihinto Kahit Walang Signal",
-          body: "Naka-save agad sa local IndexedDB ang gastos, bills, utang, at budget adjustment nang hindi nagha-hang ang modal buttons."
+          title: "Instant Local Writes",
+          body: "Tuloy ang gastos, bills, at utang sa IndexedDB kahit walang signal."
         },
         {
           icon: RefreshCw,
           step: "03",
-          title: "Auto Sync at Live Header Telemetry",
-          body: "Makikita sa status pill kung may naka-queue sa device at kusang magsi-sync sa Cloud Firestore pagbalik ng koneksyon."
+          title: "Auto Cloud Sync",
+          body: "Kusang nagsi-sync sa Firestore at makikita sa status pill."
         }
       ]
     : [
         {
           icon: HardDrive,
           step: "01",
-          title: "Full 9-Page Shell Precaching",
-          body: "Every page and content-hashed bundle loads from the Service Worker with Lie-Fi timeout fallback and query-aware navigation offline."
+          title: "9-Page Offline Shell",
+          body: "All 9 workspace screens and assets load cleanly from cache offline."
         },
         {
           icon: Database,
           step: "02",
-          title: "Non-Blocking Local Writes",
-          body: "Record expenses, mark bills paid, or settle utang while disconnected — IndexedDB saves immediately so forms never freeze."
+          title: "Instant Local Writes",
+          body: "Log expenses, bills, or utang offline — IndexedDB saves right away."
         },
         {
           icon: RefreshCw,
           step: "03",
-          title: "Automatic Cloud Reconciliation",
-          body: "Real-time metadata listeners track pending writes in your header pill and confirm when all offline edits sync back to Firebase."
+          title: "Auto Cloud Sync",
+          body: "Queues pending offline edits and syncs back automatically online."
         }
       ]
 );
@@ -297,8 +297,8 @@ const walletGroups = computed(() => {
   return isTl.value
     ? [
         { title: "E-Wallets", items: ewallets },
-        { title: "Mga Digital Bank", items: digital },
-        { title: "Cash at Commercial Banks", items: banks }
+        { title: "Digital Banks", items: digital },
+        { title: "Cash & Commercial Banks", items: banks }
       ]
     : [
         { title: "E-Wallets", items: ewallets },
@@ -315,25 +315,25 @@ const modules = computed(() =>
           icon: Wallet,
           tone: "bg-[var(--accent-soft)] text-[var(--accent)]",
           title: "Overview & Wallets",
-          body: "Balanse cards, top spending tiles, at Spend vs Budget meters hanggang eksaktong centavo."
+          body: "Net balance, top spend tiles, at Spend vs Budget meters."
         },
         {
           icon: ListOrdered,
           tone: "bg-[var(--income-soft)] text-[var(--income)]",
           title: "Transactions Ledger",
-          body: "Date-grouped ledger rows, live filter pills, SMS quick-fill, print statement, at CSV export."
+          body: "Date-grouped history, filters, SMS quick-fill, at CSV export."
         },
         {
           icon: PieChart,
           tone: "bg-[var(--warning-soft)] text-[var(--warning)]",
           title: "Clear Analytics",
-          body: "Income vs Outcome vs Budget switcher kasama ang category doughnut at Essentials Ratio."
+          body: "Income, Outcome, Budget views at Essentials vs Wants ratio."
         },
         {
           icon: ReceiptText,
           tone: "bg-[var(--expense-soft)] text-[var(--expense)]",
           title: "Bills & Utang",
-          body: "Interactive payment cards, due-date calendar dots, at receivables/payables balance."
+          body: "Bills schedule, due calendar, at receivables vs payables."
         }
       ]
     : [
@@ -341,25 +341,25 @@ const modules = computed(() =>
           icon: Wallet,
           tone: "bg-[var(--accent-soft)] text-[var(--accent)]",
           title: "Overview & Wallets",
-          body: "Deep-emerald balance statement, ranked spend tiles, and exact Spend vs Budget meters."
+          body: "Net balance, top spending tiles, and Spend vs Budget meters."
         },
         {
           icon: ListOrdered,
           tone: "bg-[var(--income-soft)] text-[var(--income)]",
           title: "Transactions Ledger",
-          body: "Date-grouped searchable history with wallet filters, SMS parser, print layout, and CSV."
+          body: "Date-grouped history, search filters, SMS quick-fill, and CSV."
         },
         {
           icon: PieChart,
           tone: "bg-[var(--warning-soft)] text-[var(--warning)]",
           title: "Clear Analytics",
-          body: "Income, Outcome & Budget views with category share breakdown and Needs vs Wants balance."
+          body: "Income, Outcome & Budget views plus Needs vs Wants share."
         },
         {
           icon: ReceiptText,
           tone: "bg-[var(--expense-soft)] text-[var(--expense)]",
           title: "Bills & Utang",
-          body: "Tap-to-edit bill cards, due calendar indicators, and net receivables vs payables tracking."
+          body: "Due-date bills calendar and net receivables vs payables."
         }
       ]
 );
@@ -371,34 +371,34 @@ const securityPillars = computed(() =>
         {
           icon: ShieldCheck,
           title: "Integer-Centavo Math",
-          body: "Lahat ng balanse at kabuuan ay kinukuwenta gamit ang eksaktong integer centavos upang maiwasan ang rounding errors."
+          body: "Eksaktong centavo math upang iwasan ang rounding errors."
         },
         {
           icon: Fingerprint,
-          title: "Biometric & PIN App Lock",
-          body: "Gamitin ang WebAuthn biometrics ng iyong device o magtakda ng 4–8 digit salted SHA-256 PIN sa Settings."
+          title: "Biometric & PIN Lock",
+          body: "WebAuthn biometrics o 4–8 digit salted SHA-256 PIN."
         },
         {
           icon: FileSpreadsheet,
-          title: "Per-User Isolation & Safe CSV",
-          body: "Naka-isolate bawat user sa Firestore security rules at formula-safe ang CSV downloads laban sa spreadsheet injection."
+          title: "Per-User Isolation",
+          body: "Hiwalay ang data sa Firestore rules at formula-safe ang CSV."
         }
       ]
     : [
         {
           icon: ShieldCheck,
-          title: "Integer-Centavo Accounting",
-          body: "Every balance, budget remainder, and split computes in exact integer centavos rather than floats to prevent rounding drift."
+          title: "Exact Centavo Math",
+          body: "All balances compute in integer centavos to prevent rounding drift."
         },
         {
           icon: Fingerprint,
-          title: "Biometric & PIN App Lock",
-          body: "Protect private balances on shared devices using WebAuthn biometrics (Face ID, Touch ID, Windows Hello) or a local PIN."
+          title: "Biometric & PIN Lock",
+          body: "Supports Face ID, Touch ID, Windows Hello, or a local PIN."
         },
         {
           icon: FileSpreadsheet,
-          title: "Per-User Isolation & Safe CSV",
-          body: "Strict per-user Firestore access isolation pairs with local IndexedDB encryption persistence and OWASP-neutralized CSV exports."
+          title: "Per-User Isolation",
+          body: "Strict per-user Firestore rules and OWASP-safe CSV exports."
         }
       ]
 );
@@ -408,46 +408,46 @@ const faqs = computed(() =>
   isTl.value
     ? [
         {
-          q: "Gumagana ba ang Tipid kahit walang internet?",
-          a: "Oo. Naka-precache ang lahat ng 9 pages sa Service Worker at naka-store sa IndexedDB ang Firestore data kaya tuloy-tuloy ang pagbabasa, pagdaragdag ng gastos, at pag-marka ng bills kahit offline."
+          q: "Gumagana ba offline ang Tipid?",
+          a: "Oo. Naka-cache ang 9 pages at naka-IndexedDB ang data — kusang magsi-sync online."
         },
         {
-          q: "Paano kinukuwenta ang total users sa landing page?",
-          a: "Gumagamit ito ng hiwalay na public aggregate counter (`appStats/public`) sa Firestore kaya nakikita ang aktwal na bilang nang hindi nalalantad ang anumang pribadong profile o pinansyal na data."
+          q: "Paano kinukuwenta ang total users?",
+          a: "Hiwalay na public counter (`appStats/public`) ang binabasa nang walang personal data."
         },
         {
-          q: "Aling mga wallet at bangko sa Pilipinas ang suportado?",
-          a: "May built-in na 26 accounts tulad ng Cash, GCash, Maya, SeaBank, MariBank, GoTyme Bank, BPI, BDO Unibank, UnionBank, Metrobank, at iba pa."
+          q: "Anong PH wallets at banks ang suportado?",
+          a: "26 built-in accounts: Cash, GCash, Maya, SeaBank, GoTyme, BPI, BDO, UnionBank, at iba pa."
         },
         {
           q: "Paano gumagana ang SMS Quick-Fill?",
-          a: "Direktang sinusuri sa browser mo ang kinopyang text notification mula sa bangko o e-wallet upang punan agad ang halaga, uri, merchant, at kategorya."
+          a: "Sa browser lang pinoproseso ang pasted SMS para makuha ang halaga at kategorya."
         },
         {
-          q: "Puwede ko bang i-install ang Tipid bilang mobile app?",
-          a: "Oo. Bilang Progressive Web App (PWA), puwede itong i-add sa Home Screen sa iOS Safari, Android Chrome, o Desktop browser na may quick-action shortcuts."
+          q: "Puwede bang i-install sa iPhone o Android?",
+          a: "Oo. Gamitin ang Add to Home Screen sa Safari (iOS) o Chrome (Android)."
         }
       ]
     : [
         {
-          q: "How does Tipid work offline?",
-          a: "Its Service Worker caches all 9 workspace screens and assets on device while Cloud Firestore persists your ledger in IndexedDB — so logging expenses, bills, or utang offline resolves right away and syncs automatically upon reconnect."
+          q: "How does offline mode work?",
+          a: "All 9 pages load from cache while IndexedDB stores offline writes until reconnect."
         },
         {
-          q: "How is the total user count displayed safely?",
-          a: "Tipid reads a dedicated public aggregate counter document in Firestore (`appStats/public`) without ever exposing user UIDs, emails, or financial records, and caches the latest count locally for offline viewing."
+          q: "Is the user counter private?",
+          a: "Yes. It reads an aggregate counter (`appStats/public`) with zero personal records."
         },
         {
-          q: "Which Philippine wallets and banks are supported?",
-          a: "Tipid includes 26 built-in accounts—including Cash, GCash, Maya, SeaBank, MariBank, GoTyme Bank, BPI, BDO Unibank, UnionBank, and Metrobank—with independent starting balances."
+          q: "Which PH banks and wallets are included?",
+          a: "26 accounts including Cash, GCash, Maya, SeaBank, MariBank, GoTyme, BPI, BDO, and UnionBank."
         },
         {
-          q: "How does the SMS Auto-Fill parser work?",
-          a: "Pasting a bank or e-wallet SMS notification runs entirely inside your browser to extract the peso amount, direction (income vs expense), wallet, merchant, and category."
+          q: "How does SMS Quick-Fill work?",
+          a: "Text parsing runs locally in your browser to fill amount, wallet, and category."
         },
         {
-          q: "Can I install Tipid on my phone or desktop?",
-          a: "Yes. Tipid is an installable Progressive Web App with standalone window support, quick-action shortcuts for Add Expense, Bills, and Utang, and safe update prompts."
+          q: "Does it work on iOS and Android?",
+          a: "Yes. Install Tipid via Add to Home Screen in iOS Safari or Android Chrome."
         }
       ]
 );
@@ -456,12 +456,15 @@ const faqs = computed(() =>
 <template>
   <div class="min-h-dvh flex flex-col bg-[var(--bg-canvas)] text-[var(--text-primary)]">
     <!-- Floating Glass Capsule Navigation -->
-    <div class="pointer-events-none sticky top-3 z-30 mx-auto mt-3 w-full max-w-6xl px-3 sm:px-6">
-      <header class="tipid-floating-chrome pointer-events-auto flex items-center justify-between gap-2 rounded-3xl px-3.5 py-2 sm:px-4">
-        <div class="flex min-w-0 items-center gap-5">
-          <a href="index.html" class="flex shrink-0 items-center gap-2.5 no-underline">
-            <img src="/assets/logo.svg" alt="" width="34" height="34" class="h-8.5 w-8.5 rounded-xl shadow-xs" />
-            <span class="text-lg font-bold tracking-tight text-[var(--text-primary)]">Tipid</span>
+    <div
+      class="pointer-events-none sticky top-0 z-30 mx-auto w-full max-w-6xl px-3 sm:px-6"
+      style="padding-top: max(0.75rem, var(--safe-top))"
+    >
+      <header class="tipid-floating-chrome pointer-events-auto flex items-center justify-between gap-2 rounded-3xl px-3 py-2 sm:px-4">
+        <div class="flex shrink-0 items-center gap-5">
+          <a href="index.html" class="flex shrink-0 items-center gap-2 no-underline">
+            <img src="/assets/logo.svg" alt="" width="34" height="34" class="h-8 w-8 shrink-0 rounded-xl shadow-xs sm:h-8.5 sm:w-8.5" />
+            <span class="whitespace-nowrap text-base font-bold tracking-tight text-[var(--text-primary)] sm:text-lg">Tipid</span>
           </a>
 
           <div class="hidden items-center gap-4 text-xs font-semibold text-[var(--text-secondary)] md:flex">
@@ -486,7 +489,7 @@ const faqs = computed(() =>
         <nav aria-label="Landing" class="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <button
             type="button"
-            class="tipid-compact inline-flex min-h-[34px] items-center rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 py-1 text-xs font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
+            class="tipid-compact tipid-compact-touch inline-flex h-[36px] items-center rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
             @click="switchLanguage"
           >
             {{ isTl ? "EN" : "FIL" }}
@@ -494,7 +497,7 @@ const faqs = computed(() =>
 
           <button
             type="button"
-            class="tipid-compact inline-flex h-[34px] w-[34px] items-center justify-center rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
+            class="tipid-compact tipid-compact-touch inline-flex h-[36px] w-[36px] items-center justify-center rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
             aria-label="Toggle color theme"
             @click="toggleQuickTheme"
           >
@@ -505,16 +508,17 @@ const faqs = computed(() =>
 
           <a
             href="login.html"
-            class="inline-flex min-h-[36px] items-center rounded-full px-3 py-1.5 text-xs font-semibold text-[var(--text-secondary)] no-underline transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)] sm:text-sm"
+            class="hidden min-h-[36px] items-center rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap text-[var(--text-secondary)] no-underline transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)] sm:inline-flex sm:text-sm"
           >
             {{ isTl ? "Log in" : "Log in" }}
           </a>
 
           <a
             href="signup.html"
-            class="tipid-cta inline-flex min-h-[36px] items-center gap-1.5 rounded-full bg-[var(--accent)] px-4 py-1.5 text-xs font-semibold text-white no-underline hover:bg-[var(--accent-hover)] sm:text-sm"
+            class="tipid-compact tipid-compact-touch tipid-cta inline-flex min-h-[36px] items-center gap-1.5 rounded-full bg-[var(--accent)] px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap text-white no-underline hover:bg-[var(--accent-hover)] sm:px-4 sm:text-sm"
           >
-            <span>{{ isTl ? "Magsimula" : "Get started" }}</span>
+            <span class="sm:hidden">{{ isTl ? "Simula" : "Sign up" }}</span>
+            <span class="hidden sm:inline">{{ isTl ? "Magsimula" : "Get started" }}</span>
           </a>
         </nav>
       </header>
@@ -555,8 +559,8 @@ const faqs = computed(() =>
             <p class="max-w-xl text-base leading-relaxed text-[var(--text-secondary)] sm:text-lg">
               {{
                 isTl
-                  ? "Subaybayan ang balanse sa Cash, GCash, Maya, at mga bangko, magtala ng bills at utang kahit walang signal, at awtomatikong mag-sync online."
-                  : "Track daily cash flow across Cash, PH e-wallets, and banks, manage bills calendar and utang ledgers, and keep logging seamlessly even when you lose signal."
+                  ? "Bantayan ang Cash, GCash, Maya, bills, at utang sa isang lugar — gumagana kahit offline."
+                  : "Track Cash, GCash, Maya, banks, bills, and utang — even offline."
               }}
             </p>
 
@@ -830,7 +834,7 @@ const faqs = computed(() =>
                     type="text"
                     aria-label="Sample item description"
                     :placeholder="isTl ? 'Hal. Merienda' : 'e.g. Merienda'"
-                    class="tipid-input min-h-[40px] min-w-0 flex-1 rounded-2xl border-[var(--border-subtle)] bg-[var(--bg-inset)]/60 py-1.5 text-xs focus:bg-[var(--bg-surface)]"
+                    class="tipid-input min-h-[44px] min-w-0 flex-1 rounded-2xl border-[var(--border-subtle)] bg-[var(--bg-inset)]/60 py-1.5 text-base sm:min-h-[40px] sm:text-xs focus:bg-[var(--bg-surface)]"
                   />
                   <input
                     v-model="amountInput"
@@ -839,13 +843,13 @@ const faqs = computed(() =>
                     step="1"
                     inputmode="decimal"
                     aria-label="Sample item amount"
-                    placeholder="₱ Amount"
-                    class="tipid-input min-h-[40px] w-24 shrink-0 rounded-2xl border-[var(--border-subtle)] bg-[var(--bg-inset)]/60 py-1.5 font-mono text-xs focus:bg-[var(--bg-surface)]"
+                    placeholder="₱"
+                    class="tipid-input min-h-[44px] w-24 shrink-0 rounded-2xl border-[var(--border-subtle)] bg-[var(--bg-inset)]/60 py-1.5 font-mono text-base sm:min-h-[40px] sm:text-xs focus:bg-[var(--bg-surface)]"
                   />
                   <button
                     type="submit"
                     aria-label="Add sample item"
-                    class="tipid-compact tipid-cta inline-flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-2xl bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)]"
+                    class="tipid-cta inline-flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-2xl bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] sm:h-[40px] sm:w-[40px]"
                   >
                     <Plus :size="17" aria-hidden="true" />
                   </button>
@@ -911,13 +915,13 @@ const faqs = computed(() =>
                 <div class="space-y-4 lg:col-span-5">
                   <span class="tipid-eyebrow text-[var(--accent)]">dashboard.html</span>
                   <h3 class="text-xl font-bold text-[var(--text-primary)]">
-                    {{ isTl ? "Malinaw na net balance, top expenses, at budget pacing" : "Ranked expenses, wallet cards, and Spend vs Budget meters" }}
+                    {{ isTl ? "Net balance, top spend, at budget meters" : "Balances, top expenses, and budget pace" }}
                   </h3>
                   <p class="text-sm leading-relaxed text-[var(--text-secondary)]">
                     {{
                       isTl
-                        ? "Isang tingin lang ay kita agad ang kabuuang balanse, top categories ngayong buwan, at mga natitirang budget limit."
-                        : "Review your net position across linked wallets, inspect top spending categories at a glance, and track remaining caps without spreadsheets."
+                        ? "Kita agad ang kabuuang balanse, top categories, at limit bawat buwan."
+                        : "Track net wallet totals, ranked spend categories, and monthly limits."
                     }}
                   </p>
                   <ul class="space-y-2 text-xs text-[var(--text-secondary)]">
@@ -977,13 +981,13 @@ const faqs = computed(() =>
                 <div class="space-y-4 lg:col-span-5">
                   <span class="tipid-eyebrow text-[var(--accent)]">Client-Side SMS Parser</span>
                   <h3 class="text-xl font-bold text-[var(--text-primary)]">
-                    {{ isTl ? "I-paste ang bank o e-wallet SMS upang makuha ang detalye" : "Paste PH bank & e-wallet alerts for instant logging" }}
+                    {{ isTl ? "I-paste ang bank o e-wallet SMS" : "Auto-fill from bank & e-wallet SMS" }}
                   </h3>
                   <p class="text-sm leading-relaxed text-[var(--text-secondary)]">
                     {{
                       isTl
-                        ? "Lokal na pinoproseso sa browser ang kinopyang SMS notice upang awtomatikong makuha ang halaga, direksyon, wallet, at kategorya."
-                        : "Runs completely inside your browser via parseTransactionSms—zero external webhooks—even when working completely offline."
+                        ? "Lokal na pinoproseso sa browser upang makuha ang halaga, wallet, at kategorya."
+                        : "Parsed locally in your browser via parseTransactionSms — works offline."
                     }}
                   </p>
                   <div class="flex flex-wrap gap-2">
@@ -1003,13 +1007,13 @@ const faqs = computed(() =>
                   <div>
                     <label for="landing-sms-input" class="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-[var(--text-secondary)]">
                       <Smartphone :size="14" class="text-[var(--accent)]" aria-hidden="true" />
-                      <span>{{ isTl ? "Subukan o i-edit ang SMS notification:" : "Try or edit SMS notification text:" }}</span>
+                      <span>{{ isTl ? "Subukan ang SMS notification:" : "Try or edit SMS text:" }}</span>
                     </label>
                     <textarea
                       id="landing-sms-input"
                       v-model="smsSampleText"
                       rows="3"
-                      class="tipid-input rounded-2xl border-[var(--border-subtle)] bg-[var(--bg-inset)]/60 font-mono text-xs focus:bg-[var(--bg-surface)]"
+                      class="tipid-input rounded-2xl border-[var(--border-subtle)] bg-[var(--bg-inset)]/60 font-mono text-base sm:text-xs focus:bg-[var(--bg-surface)]"
                     />
                   </div>
 
@@ -1053,13 +1057,13 @@ const faqs = computed(() =>
                 <div class="space-y-4 lg:col-span-5">
                   <span class="tipid-eyebrow text-[var(--accent)]">bills.html · utang.html</span>
                   <h3 class="text-xl font-bold text-[var(--text-primary)]">
-                    {{ isTl ? "Walang makalimutang due date at paniningil" : "Stay ahead of upcoming bills and net utang position" }}
+                    {{ isTl ? "Walang makalimutang due date at paniningil" : "Upcoming bills and net utang position" }}
                   </h3>
                   <p class="text-sm leading-relaxed text-[var(--text-secondary)]">
                     {{
                       isTl
-                        ? "Tap-to-edit bills calendar para sa utilities at subscriptions, kasama ang malinaw na receivables vs payables breakdown."
-                        : "Track upcoming, overdue, and paid bills with an interactive monthly calendar alongside a dedicated receivables vs payables ledger."
+                        ? "Due-date calendar para sa bills, kasama ang malinaw na pautang at utang."
+                        : "Track upcoming, overdue, and paid bills alongside receivables and payables."
                     }}
                   </p>
                 </div>
@@ -1110,13 +1114,13 @@ const faqs = computed(() =>
                 <div class="space-y-4 lg:col-span-5">
                   <span class="tipid-eyebrow text-[var(--accent)]">chart.html · history.html</span>
                   <h3 class="text-xl font-bold text-[var(--text-primary)]">
-                    {{ isTl ? "Malinaw na ratio ng Need vs Want at maayos na CSV" : "Category mix, savings rate, and audit-safe exports" }}
+                    {{ isTl ? "Need vs Want ratio at safe CSV export" : "Category mix, savings rate, and exports" }}
                   </h3>
                   <p class="text-sm leading-relaxed text-[var(--text-secondary)]">
                     {{
                       isTl
-                        ? "Alamin kung nasusunod ang iyong target essentials ratio at i-download o i-print ang grouped history anytime."
-                        : "Visualize spending shares by category and wallet, monitor Essentials vs Discretionary ratio, and export formula-safe CSV or print statements."
+                        ? "Suriin ang gastos bawat kategorya at mag-download o mag-print ng statements anytime."
+                        : "Inspect category shares, check Needs vs Wants, and export safe CSV or print."
                     }}
                   </p>
                 </div>
@@ -1162,7 +1166,7 @@ const faqs = computed(() =>
                 {{ isTl ? "Pinahusay na Offline Mode" : "Offline-First Reliability" }}
               </p>
               <h2 class="mt-2 text-2xl font-bold tracking-tight text-[var(--text-primary)] sm:text-3xl">
-                {{ isTl ? "Tuloy ang pagtatala kahit walang internet o mahina ang signal" : "Built to stay fast on airplanes, subways, and patchy signal" }}
+                {{ isTl ? "Tuloy ang talaan kahit walang internet" : "Fast and reliable, even offline" }}
               </h2>
             </div>
 
@@ -1306,7 +1310,7 @@ const faqs = computed(() =>
               {{ isTl ? "Pinansyal na Integridad" : "Architecture & Security" }}
             </p>
             <h2 class="mt-2 text-2xl font-bold tracking-tight text-[var(--text-primary)] sm:text-3xl">
-              {{ isTl ? "Dinisenyo para sa eksaktong tala at kaligtasan ng data" : "Engineered for financial accuracy and user privacy" }}
+              {{ isTl ? "Eksaktong kuwenta at ligtas na data" : "Accurate math, private by design" }}
             </h2>
           </div>
 
@@ -1339,10 +1343,10 @@ const faqs = computed(() =>
                 </span>
               </div>
               <h2 class="mt-3 text-2xl font-bold tracking-tight text-white">
-                {{ isTl ? "Buuin ang iyong malinis na ledger ngayon." : "Start tracking with zero clutter today." }}
+                {{ isTl ? "Buuin ang iyong ledger ngayon." : "Start tracking with clarity." }}
               </h2>
               <p class="mt-2 text-xs leading-relaxed text-white/80">
-                {{ isTl ? "Libre, mabilis, gumagana offline, at protektado ang iyong personal na pinansyal na data." : "Free to set up, responsive across phones and desktops, and built for reliable offline sync." }}
+                {{ isTl ? "Libre, mabilis, at gumagana kahit offline." : "Free, responsive across devices, and works offline." }}
               </p>
               <div class="mt-5 flex flex-wrap gap-2.5">
                 <a

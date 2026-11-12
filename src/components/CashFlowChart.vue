@@ -80,7 +80,7 @@ const series = computed(() => {
       }
       if (e.type === "income") {
         monthMap[mKey].incomeCents += amt;
-      } else {
+      } else if (e.type === "expense") {
         monthMap[mKey].expenseCents += amt;
       }
     }
@@ -166,7 +166,7 @@ const series = computed(() => {
     }
     if (e.type === "income") {
       dayMap[k].incomeCents += amt;
-    } else {
+    } else if (e.type === "expense") {
       dayMap[k].expenseCents += amt;
     }
   }

@@ -11,10 +11,12 @@ import {
   Clock,
   Download,
   Plus,
+  Repeat,
   RotateCcw,
   Search,
   SlidersHorizontal,
-  Trash2
+  Trash2,
+  Wallet
 } from "@lucide/vue";
 import AppShell from "@/components/AppShell.vue";
 import BaseDialog from "@/components/BaseDialog.vue";
@@ -23,11 +25,11 @@ import { useAuthGuard } from "@/composables/useAuthGuard";
 import { useFinanceData } from "@/composables/useFinanceData";
 import { pushToast } from "@/composables/useToast";
 import { getCategoryIcon } from "@/lib/categoryIcons";
-import { csvEscapeCell, formatPeso, fromCentavos, manilaDateKey, money, toCentavos } from "@/lib/core";
-import { addBill, deleteBill, updateBill, updateBillStatus } from "@/lib/data";
+import { csvEscapeCell, formatPeso, fromCentavos, manilaDateKey, money, sumActiveWalletsBalance, toCentavos } from "@/lib/core";
+import { addBill, deleteBill, markBillPaidAndScheduleNext, updateBill, updateBillStatus } from "@/lib/data";
 import { notifyWriteResult } from "@/lib/offlineSync";
 import { useI18n } from "@/lib/i18n";
-import type { BillRecord } from "@/types/finance";
+import type { BillRecurrence, BillRecord } from "@/types/finance";
 
 const BILL_CATEGORIES = [
   "Utilities",
@@ -85,7 +87,7 @@ function splitPesoParts(amount: number): { whole: string; decimals: string } {
 
 const { user, isOffline, isLocked, unlockSession } = useAuthGuard();
 const uidRef = computed(() => user.value?.uid);
-const { bills, loadingBills } = useFinanceData(uidRef, { withBills: true });
+const { bills, loadingBills, wallets, walletBalances } = useFinanceData(uidRef, { withBills: true });
 const { t, isTl } = useI18n();
 
 const todayKey = manilaDateKey() || new Date().toISOString().slice(0, 10);
@@ -155,9 +157,26 @@ const billTitle = ref("");
 const billAmount = ref("");
 const billDueDate = ref(todayKey);
 const billCategory = ref<string>(BILL_CATEGORIES[0]);
+const billRecurrence = ref<BillRecurrence>("none");
 const billNotes = ref("");
 const billError = ref("");
 const savingBill = ref(false);
+const billTitleInputRef = ref<HTMLInputElement | null>(null);
+const billAmountInputRef = ref<HTMLInputElement | null>(null);
+const billDueDateInputRef = ref<HTMLInputElement | null>(null);
+
+const recurrenceOptions = computed(() => [
+  { id: "none" as const, label: isTl.value ? "Minsan" : "One-time" },
+  { id: "weekly" as const, label: isTl.value ? "Linggo" : "Weekly" },
+  { id: "monthly" as const, label: isTl.value ? "Buwanan" : "Monthly" },
+  { id: "quarterly" as const, label: "3 Mos" },
+  { id: "yearly" as const, label: isTl.value ? "Taon" : "Yearly" }
+]);
+
+function recurrenceLabel(rec?: BillRecurrence): string {
+  if (!rec || rec === "none") return "";
+  return recurrenceOptions.value.find((o) => o.id === rec)?.label || rec;
+}
 
 const billCategoryOptions = computed<string[]>(() => {
   const list: string[] = [...BILL_CATEGORIES];
@@ -252,6 +271,14 @@ const counts = computed(() => {
 });
 
 const heroSplit = computed(() => splitPesoParts(counts.value.unpaidTotal));
+
+const liquidWalletBalance = computed(() => sumActiveWalletsBalance(wallets.value, walletBalances.value));
+const freeAfterBills = computed(() =>
+  fromCentavos(
+    toCentavos(liquidWalletBalance.value, { allowZero: true, allowNegative: true }) -
+      toCentavos(counts.value.unpaidTotal, { allowZero: true })
+  )
+);
 
 const previewCategories = computed(() => {
   const seen = new Set<string>();
@@ -538,6 +565,7 @@ function openAddDialog(prefillDate?: string) {
   billAmount.value = "";
   billDueDate.value = prefillDate || selectedDateKey.value || todayKey;
   billCategory.value = BILL_CATEGORIES[0];
+  billRecurrence.value = "none";
   billNotes.value = "";
   billError.value = "";
   addOpen.value = true;
@@ -549,6 +577,7 @@ function openEditDialog(bill: BillRecord) {
   billAmount.value = String(bill.amount ?? "");
   billDueDate.value = bill.dueDate || todayKey;
   billCategory.value = bill.category || BILL_CATEGORIES[0];
+  billRecurrence.value = bill.recurrence || "none";
   billNotes.value = bill.notes || "";
   billError.value = "";
   addOpen.value = true;
@@ -611,6 +640,7 @@ async function handleAddBill() {
   const cleanTitle = billTitle.value.trim();
   if (!cleanTitle) {
     billError.value = isTl.value ? "Ilagay ang pangalan ng bayarin." : "Enter a bill title.";
+    billTitleInputRef.value?.focus();
     return;
   }
 
@@ -619,11 +649,13 @@ async function handleAddBill() {
     safeAmount = money(billAmount.value);
   } catch {
     billError.value = isTl.value ? "Ilagay ang tamang halaga na lampas sa ₱0." : "Enter a valid amount greater than ₱0.";
+    billAmountInputRef.value?.focus();
     return;
   }
 
   if (!billDueDate.value) {
     billError.value = isTl.value ? "Pumili ng takdang petsa." : "Select a due date.";
+    billDueDateInputRef.value?.focus();
     return;
   }
 
@@ -634,6 +666,7 @@ async function handleAddBill() {
       amount: safeAmount,
       dueDate: billDueDate.value,
       category: billCategory.value,
+      recurrence: billRecurrence.value,
       notes: billNotes.value.trim()
     };
     if (editingBill.value) {
@@ -670,16 +703,25 @@ async function handleAddBill() {
 async function togglePaid(bill: BillRecord) {
   const uid = user.value?.uid;
   if (!uid || togglingId.value) return;
-  const nextStatus = bill.status === "Paid" ? "Unpaid" : "Paid";
+  const markingPaid = bill.status !== "Paid";
   togglingId.value = bill.id;
   try {
-    await updateBillStatus(uid, bill.id, nextStatus);
-    pushToast(
-      nextStatus === "Paid"
-        ? isTl.value ? "Minarkahang bayad." : "Marked as paid."
-        : isTl.value ? "Ibinalik sa hindi pa bayad." : "Marked as unpaid.",
-      "success"
-    );
+    if (markingPaid) {
+      const { nextDueDate } = await markBillPaidAndScheduleNext(uid, bill);
+      pushToast(
+        nextDueDate
+          ? isTl.value
+            ? `Bayad na. Susunod na due: ${nextDueDate}`
+            : `Marked paid. Next due ${nextDueDate} scheduled.`
+          : isTl.value
+            ? "Minarkahang bayad."
+            : "Marked as paid.",
+        "success"
+      );
+    } else {
+      await updateBillStatus(uid, bill.id, "Unpaid");
+      pushToast(isTl.value ? "Ibinalik sa hindi pa bayad." : "Marked as unpaid.", "success");
+    }
   } catch {
     pushToast(isTl.value ? "Hindi na-update ang bayarin." : "Could not update bill status.", "error");
   } finally {
@@ -780,6 +822,15 @@ async function confirmDeleteBill() {
             </span>
             <span class="font-mono text-[11px] font-semibold text-white/75">
               {{ counts.completionPct }}% {{ isTl ? "kumpleto" : "cleared" }}
+            </span>
+            <span
+              :class="[
+                'inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-mono text-[11px] font-semibold',
+                freeAfterBills >= 0 ? 'bg-white/14 text-[#7BE5B5]' : 'bg-rose-500/25 text-rose-200'
+              ]"
+            >
+              <Wallet :size="12" aria-hidden="true" />
+              <span>{{ isTl ? "Natitirang Pondo:" : "After Bills:" }} {{ freeAfterBills < 0 ? "-" : "" }}₱{{ formatPeso(Math.abs(freeAfterBills)) }}</span>
             </span>
           </div>
 
@@ -977,15 +1028,15 @@ async function confirmDeleteBill() {
                   <input
                     v-model="searchQuery"
                     type="search"
-                    class="tipid-input min-h-[38px] py-1.5 pl-9 text-xs"
-                    :placeholder="isTl ? 'Hanapin ang bayarin o tala...' : 'Search bills or notes...'"
+                    class="tipid-input min-h-[44px] py-1.5 pl-9 text-base sm:min-h-[38px] sm:text-xs"
+                    :placeholder="isTl ? 'Hanapin ang bayarin...' : 'Search bills...'"
                     aria-label="Search bills"
                   />
                 </div>
 
                 <select
                   v-model="sortBy"
-                  class="tipid-input min-h-[38px] py-1.5 text-xs sm:w-40"
+                  class="tipid-input min-h-[44px] py-1.5 text-base sm:min-h-[38px] sm:w-40 sm:text-xs"
                   aria-label="Sort bills"
                 >
                   <option value="dueDate">{{ isTl ? "Takdang Petsa" : "Due Date" }}</option>
@@ -1104,6 +1155,13 @@ async function confirmDeleteBill() {
                           ]"
                         >
                           {{ dueRelativeLabel(bill).text }}
+                        </span>
+                        <span
+                          v-if="recurrenceLabel(bill.recurrence)"
+                          class="inline-flex items-center gap-1 rounded-md bg-[var(--accent-soft)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--accent)]"
+                        >
+                          <Repeat :size="10" aria-hidden="true" />
+                          <span>{{ recurrenceLabel(bill.recurrence) }}</span>
                         </span>
                       </div>
 
@@ -1354,6 +1412,7 @@ async function confirmDeleteBill() {
                           </p>
                           <p class="truncate text-[11px] text-[var(--text-muted)]">
                             {{ bill.category }}
+                            <template v-if="recurrenceLabel(bill.recurrence)"> · {{ recurrenceLabel(bill.recurrence) }}</template>
                             <template v-if="bill.notes"> · {{ bill.notes }}</template>
                           </p>
                         </div>
@@ -1402,12 +1461,14 @@ async function confirmDeleteBill() {
           </label>
           <input
             id="bill-title"
+            ref="billTitleInputRef"
             v-model="billTitle"
             type="text"
             maxlength="120"
             required
-            class="tipid-input"
+            class="tipid-input text-base sm:text-sm"
             :placeholder="isTl ? 'hal. Meralco, PLDT Fiber, Upa' : 'e.g. Meralco, PLDT Fiber, Apartment Rent'"
+            @input="billError = ''"
           />
         </div>
 
@@ -1420,14 +1481,16 @@ async function confirmDeleteBill() {
               <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 font-mono font-semibold text-[var(--text-muted)]">₱</span>
               <input
                 id="bill-amount"
+                ref="billAmountInputRef"
                 v-model="billAmount"
                 type="number"
                 inputmode="decimal"
                 step="0.01"
                 min="0.01"
                 required
-                class="tipid-input pl-8 font-mono"
+                class="tipid-input pl-8 font-mono text-base sm:text-sm"
                 placeholder="0.00"
+                @input="billError = ''"
               />
             </div>
           </div>
@@ -1438,10 +1501,12 @@ async function confirmDeleteBill() {
             </label>
             <input
               id="bill-date"
+              ref="billDueDateInputRef"
               v-model="billDueDate"
               type="date"
               required
-              class="tipid-input"
+              class="tipid-input text-base sm:text-sm"
+              @input="billError = ''"
             />
           </div>
         </div>
@@ -1450,10 +1515,31 @@ async function confirmDeleteBill() {
           <label for="bill-category" class="mb-1.5 block text-xs font-semibold text-[var(--text-secondary)]">
             {{ isTl ? "Kategorya" : "Category" }}
           </label>
-          <select id="bill-category" v-model="billCategory" class="tipid-input">
+          <select id="bill-category" v-model="billCategory" class="tipid-input text-base sm:text-sm">
             <option v-for="cat in billCategoryOptions" :key="cat" :value="cat">{{ cat }}</option>
           </select>
         </div>
+
+        <fieldset class="space-y-1.5">
+          <legend class="text-xs font-semibold text-[var(--text-secondary)]">
+            {{ isTl ? "Uulit ba tuwing..." : "Repeat Schedule" }}
+          </legend>
+          <div class="grid grid-cols-5 gap-1.5">
+            <label
+              v-for="opt in recurrenceOptions"
+              :key="opt.id"
+              :class="[
+                'flex cursor-pointer items-center justify-center rounded-xl border px-1.5 py-2 text-center text-[11px] font-semibold transition-colors',
+                billRecurrence === opt.id
+                  ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]'
+                  : 'border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
+              ]"
+            >
+              <input v-model="billRecurrence" type="radio" name="bill-recurrence" :value="opt.id" class="visually-hidden" />
+              {{ opt.label }}
+            </label>
+          </div>
+        </fieldset>
 
         <div>
           <label for="bill-notes" class="mb-1.5 block text-xs font-semibold text-[var(--text-secondary)]">
@@ -1464,7 +1550,7 @@ async function confirmDeleteBill() {
             v-model="billNotes"
             rows="2"
             maxlength="500"
-            class="tipid-input resize-y"
+            class="tipid-input resize-y text-base sm:text-sm"
             :placeholder="isTl ? 'Account number o paalala...' : 'Account number or payment channel...'"
           />
         </div>

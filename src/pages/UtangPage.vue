@@ -1000,7 +1000,7 @@ function handleExportCsv() {
                 inputmode="decimal"
                 step="0.01"
                 min="0.01"
-                class="tipid-input min-h-[38px] py-1.5 pl-7 font-mono text-xs"
+                class="tipid-input min-h-[44px] py-1.5 pl-7 font-mono text-base sm:min-h-[38px] sm:text-xs"
                 placeholder="0.00"
               />
             </div>

@@ -21,10 +21,12 @@ import {
   Users,
   ShieldCheck,
   ShoppingBag,
-  Tag
+  Tag,
+  PiggyBank,
+  Gauge
 } from "@lucide/vue";
 import AppShell from "@/components/AppShell.vue";
-import WalletCard from "@/components/WalletCard.vue";
+import WalletDeck from "@/components/WalletDeck.vue";
 import TransactionModal from "@/components/TransactionModal.vue";
 import TransactionDetailDialog from "@/components/TransactionDetailDialog.vue";
 import BudgetModal from "@/components/BudgetModal.vue";
@@ -35,23 +37,52 @@ import { useAuthGuard } from "@/composables/useAuthGuard";
 import { useFinanceData } from "@/composables/useFinanceData";
 import { pushToast } from "@/composables/useToast";
 import { useI18n } from "@/lib/i18n";
-import { entryDate, formatPeso, fromCentavos, getCategoryColor, sumMoney, toCentavos } from "@/lib/core";
-import { deleteEntry } from "@/lib/data";
+import {
+  entryDate,
+  formatPeso,
+  fromCentavos,
+  getCategoryColor,
+  manilaDateKey,
+  resolveShortcutTransactionType,
+  sumActiveWalletsBalance,
+  sumMoney,
+  toCentavos
+} from "@/lib/core";
+import { deleteEntry, markBillPaidAndScheduleNext } from "@/lib/data";
+import {
+  computeCategoryBudgetStatuses,
+  computeSafeToSpendMetrics,
+  resolveBudgetCycleWindow
+} from "@/lib/planMath";
 import { resolveWalletVisual } from "@/lib/walletVisuals";
 import { getCategoryIcon, getWalletKindIcon } from "@/lib/categoryIcons";
-import type { EntryType, TransactionEntry } from "@/types/finance";
+import type { BillRecord, EntryType, TransactionEntry } from "@/types/finance";
 
 const { user, isOffline, isLocked, unlockSession } = useAuthGuard();
 const uidRef = computed(() => user.value?.uid);
-const { entries, budget, baseBalances, walletBalances, overallBalance, wallets, bills, utangList } =
-  useFinanceData(uidRef, { withBills: true, withUtang: true });
+const {
+  entries,
+  budget,
+  budgetCycle,
+  baseBalances,
+  walletBalances,
+  overallBalance,
+  wallets,
+  bills,
+  utangList,
+  savingsGoals
+} = useFinanceData(uidRef, {
+  withBills: true,
+  withUtang: true,
+  withSavingsGoals: true
+});
 const { t, isTl } = useI18n();
 
 const horizon = ref<"thisMonth" | "thisWeek" | "last30Days" | "all">("thisMonth");
 const chartMode = ref<"daily" | "cumulative" | "flow">("daily");
 const balanceHidden = ref(false);
 
-const txFilter = ref<"all" | "expense" | "income" | "need" | "luho">("all");
+const txFilter = ref<"all" | "expense" | "income" | "transfer" | "need" | "luho">("all");
 const searchQuery = ref("");
 
 const txModalOpen = ref(false);
@@ -66,10 +97,11 @@ const pendingDelete = ref<TransactionEntry | null>(null);
 const deleting = ref(false);
 
 onMounted(() => {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("action") === "new_expense") {
-    txDefaultType.value = "expense";
+  const shortcutType = resolveShortcutTransactionType(window.location.search);
+  if (shortcutType) {
+    txDefaultType.value = shortcutType;
     txModalOpen.value = true;
+    window.history.replaceState({}, "", window.location.pathname);
   }
 });
 
@@ -119,7 +151,7 @@ const monthStats = computed(() => {
     }
     if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) {
       if (e.type === "income") incThisCents += cents;
-      else expThisCents += cents;
+      else if (e.type === "expense") expThisCents += cents;
     } else if (d.getFullYear() === lastMonthRef.getFullYear() && d.getMonth() === lastMonthRef.getMonth()) {
       if (e.type === "income") incLastCents += cents;
     }
@@ -200,7 +232,7 @@ const horizonSummary = computed(() => {
     }
     if (e.type === "income") {
       incCents += cents;
-    } else {
+    } else if (e.type === "expense") {
       expCents += cents;
       if (e.spendType === "luho") wantCents += cents;
       else needCents += cents;
@@ -241,17 +273,73 @@ const filteredRecentEntries = computed(() => {
     .filter((e) => {
       if (txFilter.value === "expense" && e.type !== "expense") return false;
       if (txFilter.value === "income" && e.type !== "income") return false;
+      if (txFilter.value === "transfer" && e.type !== "transfer") return false;
       if (txFilter.value === "need" && (e.type !== "expense" || e.spendType === "luho")) return false;
       if (txFilter.value === "luho" && (e.type !== "expense" || e.spendType !== "luho")) return false;
       if (q) {
         const displayWallet = resolveWalletVisual(e.method || "Cash").displayName;
-        const hay = `${e.desc} ${e.category} ${e.method} ${displayWallet}`.toLowerCase();
+        const toDisplayWallet = e.toMethod ? resolveWalletVisual(e.toMethod).displayName : "";
+        const hay = `${e.desc} ${e.category} ${e.method} ${displayWallet} ${e.toMethod || ""} ${toDisplayWallet}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     })
     .slice(0, 8);
 });
+
+const safeToSpend = computed(() => {
+  const todayKey = manilaDateKey() || new Date().toISOString().slice(0, 10);
+  const windowInfo = resolveBudgetCycleWindow(todayKey, budgetCycle.value);
+  const { totalPeriodExpense } = computeCategoryBudgetStatuses({
+    entries: entries.value,
+    budgets: [],
+    cycleStartKey: windowInfo.startKey,
+    cycleEndKey: windowInfo.endKey
+  });
+  const unpaidInCycle = sumMoney(
+    bills.value
+      .filter((b) => b.status !== "Paid" && b.dueDate && b.dueDate <= windowInfo.endKey)
+      .map((b) => b.amount)
+  );
+  return computeSafeToSpendMetrics({
+    capAmount: Number(budget.value || 0),
+    spentAmount: totalPeriodExpense,
+    remainingDays: windowInfo.remainingDays,
+    activeLiquidityBalance: sumActiveWalletsBalance(wallets.value, walletBalances.value),
+    unpaidBillsInCycle: unpaidInCycle
+  });
+});
+
+const savingsSummary = computed(() => {
+  const saved = sumMoney(savingsGoals.value.map((g) => g.savedAmount));
+  const target = sumMoney(savingsGoals.value.map((g) => g.targetAmount));
+  const pct = target > 0 ? Math.min(100, Math.round((saved / target) * 100)) : 0;
+  return { count: savingsGoals.value.length, saved, target, pct };
+});
+
+const payingBillId = ref<string | null>(null);
+async function quickMarkBillPaid(bill: BillRecord) {
+  const uid = user.value?.uid;
+  if (!uid || payingBillId.value) return;
+  payingBillId.value = bill.id;
+  try {
+    const { nextDueDate } = await markBillPaidAndScheduleNext(uid, bill);
+    pushToast(
+      nextDueDate
+        ? isTl.value
+          ? `Bayad na. Susunod na due: ${nextDueDate}`
+          : `Paid. Next bill due ${nextDueDate}.`
+        : isTl.value
+          ? "Minarkahang bayad."
+          : "Bill marked as paid.",
+      "success"
+    );
+  } catch {
+    pushToast(isTl.value ? "Hindi na-update ang bayarin." : "Could not update bill.", "error");
+  } finally {
+    payingBillId.value = null;
+  }
+}
 
 const dueBills = computed(() => bills.value.filter((b) => b.status === "Unpaid" || b.status === "Overdue"));
 const overdueCount = computed(() => bills.value.filter((b) => b.status === "Overdue").length);
@@ -273,7 +361,7 @@ const utangSummary = computed(() => {
 });
 
 function entryBadgeStyle(entry: TransactionEntry): Record<string, string> | undefined {
-  if (entry.type === "income") return undefined;
+  if (entry.type !== "expense") return undefined;
   const color = getCategoryColor(entry.category);
   return {
     backgroundColor: `color-mix(in srgb, ${color} 13%, transparent)`,
@@ -474,10 +562,10 @@ async function confirmDeleteEntry() {
             </div>
             <div>
               <p class="text-xs font-semibold text-[var(--text-primary)]">
-                {{ isTl ? "Wala pang nakaranggo na gastos sa panahong ito." : "No categorized expenses yet in this window." }}
+                {{ isTl ? "Wala pang nakaranggo na gastos." : "No expenses yet." }}
               </p>
               <p class="text-[11px] text-[var(--text-muted)]">
-                {{ isTl ? "Lalabas dito ang pinakamalalaking kategorya kapag may naitala na." : "Your top spending categories rank here automatically once logged." }}
+                {{ isTl ? "Lalabas ang top categories dito." : "Top categories rank here automatically." }}
               </p>
             </div>
           </div>
@@ -545,14 +633,81 @@ async function confirmDeleteEntry() {
           <h2 class="text-base font-bold tracking-tight text-[var(--text-primary)] sm:text-lg">
             {{ isTl ? "Gastos vs badyet" : "Spend vs budget" }}
           </h2>
-          <button
-            type="button"
-            class="tipid-compact inline-flex items-center gap-1 rounded-full bg-[var(--accent-soft)] px-3 py-1 text-xs font-semibold text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-white"
-            @click="budgetModalOpen = true"
+          <div class="flex items-center gap-2">
+            <a
+              href="plan.html"
+              class="inline-flex items-center gap-1 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)] no-underline transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+            >
+              <span>{{ isTl ? "Plano" : "Plan Hub" }}</span>
+              <ChevronRight :size="12" aria-hidden="true" />
+            </a>
+            <button
+              type="button"
+              class="tipid-compact inline-flex items-center gap-1 rounded-full bg-[var(--accent-soft)] px-3 py-1 text-xs font-semibold text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-white"
+              @click="budgetModalOpen = true"
+            >
+              <Pencil :size="11" aria-hidden="true" />
+              <span>{{ budgetCycle === "kinsenas" ? "Kinsenas" : isTl ? "Buwanan" : "Monthly" }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Compact Plan Preview Strip (Safe-to-Spend Today + Savings Jars) -->
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <a
+            href="plan.html?tab=budgets"
+            class="tipid-card-interactive flex items-center justify-between gap-3 p-4 no-underline"
           >
-            <Pencil :size="11" aria-hidden="true" />
-            <span>{{ isTl ? "Buwanan" : "Monthly" }}</span>
-          </button>
+            <div class="flex min-w-0 items-center gap-3">
+              <div class="tipid-icon-badge h-9 w-9 shrink-0 bg-[var(--accent-soft)] text-[var(--accent)]">
+                <Gauge :size="17" aria-hidden="true" />
+              </div>
+              <div class="min-w-0">
+                <p class="truncate text-xs font-semibold text-[var(--text-muted)]">
+                  {{ isTl ? "Ligtas Gastusin / Araw" : "Safe-to-Spend Today" }}
+                </p>
+                <p class="tipid-amount truncate font-mono text-base font-bold text-[var(--text-primary)]">
+                  <template v-if="safeToSpend.capAmount > 0">
+                    ₱{{ formatPeso(safeToSpend.dailySafeSpend) }}<span class="text-xs font-medium text-[var(--text-muted)]"> / day</span>
+                  </template>
+                  <template v-else>
+                    {{ isTl ? "Itakda ang limit" : "Set cycle budget" }}
+                  </template>
+                </p>
+              </div>
+            </div>
+            <span class="shrink-0 rounded-full bg-[var(--bg-inset)] px-2.5 py-1 font-mono text-[11px] font-semibold text-[var(--text-secondary)]">
+              {{ safeToSpend.remainingDays }}d {{ isTl ? "natitira" : "left" }}
+            </span>
+          </a>
+
+          <a
+            href="plan.html?tab=jars"
+            class="tipid-card-interactive flex items-center justify-between gap-3 p-4 no-underline"
+          >
+            <div class="flex min-w-0 items-center gap-3">
+              <div class="tipid-icon-badge h-9 w-9 shrink-0 bg-[var(--income-soft)] text-[var(--income)]">
+                <PiggyBank :size="17" aria-hidden="true" />
+              </div>
+              <div class="min-w-0">
+                <p class="truncate text-xs font-semibold text-[var(--text-muted)]">
+                  {{ isTl ? "Mga Ipon Jars" : "Savings Jars" }}
+                </p>
+                <p class="tipid-amount truncate font-mono text-base font-bold text-[var(--text-primary)]">
+                  <template v-if="savingsSummary.count > 0">
+                    ₱{{ formatPeso(savingsSummary.saved) }}
+                    <span class="text-xs font-medium text-[var(--text-muted)]">/ ₱{{ formatPeso(savingsSummary.target) }}</span>
+                  </template>
+                  <template v-else>
+                    {{ isTl ? "Gumawa ng goal" : "Start a goal jar" }}
+                  </template>
+                </p>
+              </div>
+            </div>
+            <span class="shrink-0 rounded-full bg-[var(--income-soft)] px-2.5 py-1 font-mono text-[11px] font-semibold text-[var(--income)]">
+              {{ savingsSummary.count > 0 ? `${savingsSummary.count} · ${savingsSummary.pct}%` : "+ New" }}
+            </span>
+          </a>
         </div>
 
         <div class="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 lg:grid-cols-4">
@@ -712,43 +867,15 @@ async function confirmDeleteEntry() {
         </div>
       </section>
 
-      <!-- Real Bank & E-Wallet Cards Strip (#accounts-section scroll target for My Balances) -->
-      <section id="accounts-section" aria-label="Accounts and wallets" class="scroll-mt-24 space-y-3.5">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <div class="flex items-center gap-2.5">
-            <div class="tipid-icon-badge h-8 w-8 bg-[var(--accent-soft)] text-[var(--accent)]">
-              <ShieldCheck :size="16" aria-hidden="true" />
-            </div>
-            <div class="flex items-center gap-2">
-              <h2 class="text-sm font-bold text-[var(--text-primary)]">{{ t.walletsHeading }}</h2>
-              <span class="rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2 py-0.5 font-mono text-[11px] font-semibold text-[var(--text-secondary)]">
-                {{ wallets.length }}
-              </span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            class="tipid-compact inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--accent)] shadow-xs transition-colors hover:border-[var(--accent)]/35 hover:bg-[var(--accent-soft)]"
-            @click="openAddWallet"
-          >
-            <Plus :size="14" aria-hidden="true" />
-            <span>{{ t.addWallet }}</span>
-          </button>
-        </div>
-
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          <WalletCard
-            v-for="method in wallets"
-            :key="method"
-            :method="method"
-            :balance="walletBalances[method] ?? 0"
-            :total-positive-balance="totalPositiveWalletBalance"
-            :balance-hidden="balanceHidden"
-            @edit="openEditWallet"
-          />
-        </div>
-      </section>
+      <!-- Real Bank & E-Wallet Cards Deck (#accounts-section scroll target for My Balances) -->
+      <WalletDeck
+        :wallets="wallets"
+        :wallet-balances="walletBalances"
+        :total-positive-balance="totalPositiveWalletBalance"
+        :balance-hidden="balanceHidden"
+        @add="openAddWallet"
+        @edit="openEditWallet"
+      />
 
       <!-- Cash Flow + Commitments Grid -->
       <section class="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -834,10 +961,14 @@ async function confirmDeleteEntry() {
             </a>
 
             <ul v-if="dueBills.length > 0" class="mt-3.5 space-y-2.5">
-              <li v-for="bill in dueBills.slice(0, 3)" :key="bill.id">
+              <li
+                v-for="bill in dueBills.slice(0, 3)"
+                :key="bill.id"
+                class="flex items-center gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-inset)]/40 px-3 py-2 text-xs transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--bg-inset)]"
+              >
                 <a
                   :href="`bills.html?bill=${encodeURIComponent(bill.id)}`"
-                  class="flex items-center justify-between gap-2.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-inset)]/40 px-3 py-2.5 text-xs no-underline transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--bg-inset)]"
+                  class="flex min-w-0 flex-1 items-center justify-between gap-2.5 no-underline"
                 >
                   <div class="min-w-0 flex items-center gap-2.5">
                     <div
@@ -862,6 +993,16 @@ async function confirmDeleteEntry() {
                     ₱{{ formatPeso(bill.amount) }}
                   </span>
                 </a>
+                <button
+                  type="button"
+                  :disabled="payingBillId === bill.id"
+                  class="tipid-compact tipid-compact-touch inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--income)] transition-colors hover:border-[var(--income)] hover:bg-[var(--income-soft)]"
+                  :aria-label="isTl ? `Markahan na bayad ang ${bill.title}` : `Mark ${bill.title} paid`"
+                  :title="isTl ? 'Markahang bayad' : 'Mark paid'"
+                  @click="quickMarkBillPaid(bill)"
+                >
+                  <CheckCircle2 :size="15" aria-hidden="true" />
+                </button>
               </li>
             </ul>
             <div v-else class="mt-4 flex flex-col items-center gap-2 rounded-xl border border-dashed border-[var(--border-subtle)] px-3 py-5 text-center">
@@ -889,7 +1030,7 @@ async function confirmDeleteEntry() {
 
       <!-- Recent Transactions Feed -->
       <section aria-label="Recent transactions" class="tipid-card p-5">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div class="flex items-center gap-2.5">
             <div class="tipid-icon-badge h-8 w-8 bg-[var(--bg-inset)] text-[var(--accent)]">
               <ArrowRightLeft :size="15" aria-hidden="true" />
@@ -903,30 +1044,31 @@ async function confirmDeleteEntry() {
             </div>
           </div>
 
-          <div class="flex flex-wrap items-center gap-2">
-            <div class="relative min-w-0 flex-1 sm:w-52 sm:flex-initial">
+          <div class="flex w-full flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center lg:w-auto lg:justify-end">
+            <div class="relative w-full min-w-[200px] sm:flex-1 lg:w-56 lg:flex-initial">
               <Search :size="14" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" aria-hidden="true" />
               <input
                 v-model="searchQuery"
                 type="search"
                 :placeholder="t.commonSearch"
-                class="tipid-input min-h-[36px] py-1.5 pl-8 text-xs"
+                class="tipid-input min-h-[44px] w-full py-1.5 pl-9 pr-3 text-base sm:min-h-[38px] sm:text-xs"
               />
             </div>
 
-            <div class="flex gap-1 overflow-x-auto rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-inset)] p-1">
+            <div class="flex max-w-full items-center gap-1 overflow-x-auto rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-inset)] p-1">
               <button
                 v-for="tab in [
                   { id: 'all', label: 'All' },
                   { id: 'expense', label: 'Expense' },
                   { id: 'income', label: 'Income' },
+                  { id: 'transfer', label: 'Transfer' },
                   { id: 'need', label: 'Need' },
                   { id: 'luho', label: 'Want' }
                 ]"
                 :key="tab.id"
                 type="button"
                 :class="[
-                  'tipid-compact min-h-[30px] rounded-lg px-2.5 py-1 text-xs font-semibold whitespace-nowrap transition-colors',
+                  'tipid-compact min-h-[34px] shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold whitespace-nowrap transition-colors sm:min-h-[30px]',
                   txFilter === tab.id ? 'bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-xs' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                 ]"
                 @click="txFilter = tab.id as typeof txFilter"
@@ -969,7 +1111,11 @@ async function confirmDeleteEntry() {
               <div
                 :class="[
                   'tipid-icon-badge h-10 w-10',
-                  entry.type === 'income' ? 'bg-[var(--income-soft)] text-[var(--income)]' : ''
+                  entry.type === 'income'
+                    ? 'bg-[var(--income-soft)] text-[var(--income)]'
+                    : entry.type === 'transfer'
+                      ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
+                      : ''
                 ]"
                 :style="entryBadgeStyle(entry)"
                 aria-hidden="true"
@@ -983,7 +1129,7 @@ async function confirmDeleteEntry() {
                     {{ entry.desc }}
                   </p>
                   <span
-                    v-if="entry.type !== 'income'"
+                    v-if="entry.type === 'expense'"
                     :class="[
                       'hidden shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold sm:inline-block',
                       entry.spendType === 'luho'
@@ -992,6 +1138,12 @@ async function confirmDeleteEntry() {
                     ]"
                   >
                     {{ entry.spendType === "luho" ? "Want" : "Need" }}
+                  </span>
+                  <span
+                    v-else-if="entry.type === 'transfer'"
+                    class="hidden shrink-0 rounded-md bg-[var(--accent-soft)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--accent)] sm:inline-block"
+                  >
+                    Transfer
                   </span>
                 </div>
                 <p class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-[var(--text-muted)]">
@@ -1004,6 +1156,10 @@ async function confirmDeleteEntry() {
                       aria-hidden="true"
                     />
                     <span>{{ resolveWalletVisual(entry.method || "Cash").displayName }}</span>
+                    <template v-if="entry.type === 'transfer' && entry.toMethod">
+                      <ArrowRightLeft :size="10" class="shrink-0 text-[var(--text-muted)]" aria-hidden="true" />
+                      <span>{{ resolveWalletVisual(entry.toMethod).displayName }}</span>
+                    </template>
                   </span>
                   <span>{{ entryDate(entry)?.toLocaleDateString("en-US", { month: "short", day: "numeric" }) || "" }}</span>
                 </p>
@@ -1017,7 +1173,7 @@ async function confirmDeleteEntry() {
                   entry.type === 'income' ? 'text-[var(--income)]' : 'text-[var(--text-primary)]'
                 ]"
               >
-                {{ entry.type === "income" ? "+" : "-" }}₱{{ formatPeso(entry.amount) }}
+                {{ entry.type === "transfer" ? "" : entry.type === "income" ? "+" : "-" }}₱{{ formatPeso(entry.amount) }}
               </span>
               <button
                 type="button"
@@ -1035,7 +1191,7 @@ async function confirmDeleteEntry() {
 
     <TransactionModal
       v-if="user"
-      :open="txModalOpen"
+      :open="txModalOpen && !isLocked"
       :uid="user.uid"
       :wallets="wallets"
       :wallet-balances="walletBalances"

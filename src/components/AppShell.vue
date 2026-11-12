@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import {
   LayoutDashboard,
   ListOrdered,
   PieChart,
+  PiggyBank,
   ReceiptText,
   Users,
   Settings,
@@ -13,10 +14,14 @@ import {
   LogOut,
   WifiOff,
   RefreshCw,
-  CheckCircle2
+  CheckCircle2,
+  Sparkles,
+  AlertTriangle
 } from "@lucide/vue";
 import { useTheme } from "@/composables/useTheme";
 import { usePageTransition } from "@/composables/usePageTransition";
+import { useSharedFinanceSnapshot } from "@/composables/useFinanceData";
+import { analyzeSpendingBehavior } from "@/lib/assistantEngine";
 import { useI18n } from "@/lib/i18n";
 import { logOut } from "@/lib/auth";
 import { hasPendingSync, justSynced, queuedWriteCount } from "@/lib/offlineSync";
@@ -28,6 +33,7 @@ import {
 } from "@/lib/swRegistration";
 import AppToast from "./AppToast.vue";
 import LockScreen from "./LockScreen.vue";
+import TipidAssistantDrawer from "./TipidAssistantDrawer.vue";
 import type { NavTab } from "@/types/finance";
 import type { AuthUserView } from "@/composables/useAuthGuard";
 
@@ -43,14 +49,30 @@ const emit = defineEmits<{
 }>();
 
 const { themePreference, isDark, toggleQuickTheme } = useTheme();
-const { t, isTl } = useI18n();
+const { t, lang, isTl } = useI18n();
 const mainRef = ref<HTMLElement | null>(null);
 const { entryDir, leavingDir, handleShellClick, handleShellPointerOver } = usePageTransition(mainRef);
+const assistantOpen = ref(false);
+const sharedLedgerSnapshot = useSharedFinanceSnapshot();
+const assistantWarnings = computed(() =>
+  props.user?.uid ? analyzeSpendingBehavior(sharedLedgerSnapshot, lang.value) : []
+);
+const hasCriticalWarning = computed(() =>
+  assistantWarnings.value.some((w) => w.severity === "critical")
+);
+
+watch(
+  () => props.isLocked,
+  (locked) => {
+    if (locked) assistantOpen.value = false;
+  }
+);
 
 const navItems = computed(() => [
   { id: "home" as NavTab, href: "dashboard.html", label: t.value.navHome, icon: LayoutDashboard },
   { id: "history" as NavTab, href: "history.html", label: t.value.navHistory, icon: ListOrdered },
   { id: "analytics" as NavTab, href: "chart.html", label: t.value.navAnalytics, icon: PieChart },
+  { id: "plan" as NavTab, href: "plan.html", label: t.value.navPlan, icon: PiggyBank },
   { id: "bills" as NavTab, href: "bills.html", label: t.value.navBills, icon: ReceiptText },
   { id: "utang" as NavTab, href: "utang.html", label: t.value.navUtang, icon: Users },
   { id: "profile" as NavTab, href: "profile.html", label: t.value.navProfile, icon: Settings, desktopOnly: true }
@@ -88,13 +110,13 @@ onMounted(() => {
       {{ isTl ? "Tumalon sa pangunahing nilalaman" : "Skip to main content" }}
     </a>
 
-    <!-- Offline & Sync telemetry status pill -->
+    <!-- Desktop Floating Offline & Sync Telemetry Pill (>= 768px) -->
     <div
       v-if="isOffline || hasPendingSync || justSynced"
       role="status"
       aria-live="polite"
       :class="[
-        'fixed top-3 left-1/2 z-50 -translate-x-1/2 max-w-[calc(100vw-1.5rem)] rounded-full border px-4 py-1.5 text-xs font-semibold shadow-[var(--shadow-popover)] backdrop-blur-md flex items-center gap-1.5',
+        'fixed top-4 left-[calc(50%+7.5rem)] z-50 hidden -translate-x-1/2 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap shadow-[var(--shadow-popover)] backdrop-blur-md md:inline-flex',
         isOffline
           ? 'border-[var(--border-strong)] bg-[var(--warning-soft)] text-[var(--warning)]'
           : hasPendingSync
@@ -103,34 +125,37 @@ onMounted(() => {
       ]"
     >
       <template v-if="isOffline">
-        <WifiOff :size="14" aria-hidden="true" />
+        <WifiOff :size="13" aria-hidden="true" />
         <span v-if="hasPendingSync">
           {{
             isTl
-              ? `Offline · May ${queuedWriteCount > 0 ? queuedWriteCount : "mga"} naka-save sa device`
-              : `Offline · ${queuedWriteCount > 0 ? queuedWriteCount : "Changes"} saved locally to sync`
+              ? `Offline · ${queuedWriteCount > 0 ? queuedWriteCount : "May"} naka-queue`
+              : `Offline · ${queuedWriteCount > 0 ? queuedWriteCount : "Saved"} queued`
           }}
         </span>
         <span v-else>
-          {{ isTl ? "Offline mode — puwedeng magtala, isi-sync online." : "Offline mode — works offline & syncs online." }}
+          {{ isTl ? "Offline mode" : "Offline · Saved locally" }}
         </span>
       </template>
       <template v-else-if="hasPendingSync">
-        <RefreshCw :size="14" class="animate-spin" aria-hidden="true" />
-        <span>{{ isTl ? "Nagsi-sync ng mga pagbabago..." : "Syncing offline changes..." }}</span>
+        <RefreshCw :size="13" class="animate-spin" aria-hidden="true" />
+        <span>{{ isTl ? "Nagsi-sync..." : "Syncing..." }}</span>
       </template>
       <template v-else>
-        <CheckCircle2 :size="14" aria-hidden="true" />
-        <span>{{ isTl ? "Na-sync na sa cloud." : "All offline changes synced." }}</span>
+        <CheckCircle2 :size="13" aria-hidden="true" />
+        <span>{{ isTl ? "Na-sync na" : "Synced" }}</span>
       </template>
     </div>
 
     <!-- Mobile Floating Top Capsule (< 768px) -->
-    <div class="pointer-events-none sticky top-3 z-30 mx-3 pt-3 md:hidden print:hidden" style="padding-top: max(0.75rem, var(--safe-top))">
+    <div
+      class="pointer-events-none sticky top-0 z-30 mx-3 flex flex-col items-center gap-2 md:hidden print:hidden"
+      style="padding-top: max(0.75rem, var(--safe-top))"
+    >
       <header
-        class="tipid-floating-chrome pointer-events-auto flex items-center justify-between rounded-2xl px-3.5 py-2"
+        class="tipid-floating-chrome pointer-events-auto flex w-full items-center justify-between gap-2 rounded-2xl px-3.5 py-2"
       >
-        <a href="dashboard.html" class="flex items-center gap-2.5 no-underline">
+        <a href="dashboard.html" class="flex shrink-0 items-center gap-2.5 no-underline">
           <img src="/assets/logo.svg" alt="" width="30" height="30" class="h-7.5 w-7.5 rounded-xl shadow-xs" />
           <span class="text-base font-bold tracking-tight text-[var(--text-primary)]">Tipid</span>
         </a>
@@ -177,6 +202,43 @@ onMounted(() => {
           </button>
         </div>
       </header>
+
+      <!-- Mobile Non-Overlapping Offline / Sync Status Pill docked cleanly below top bar -->
+      <div
+        v-if="isOffline || hasPendingSync || justSynced"
+        role="status"
+        aria-live="polite"
+        :class="[
+          'pointer-events-auto inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold whitespace-nowrap shadow-[var(--shadow-floating)] backdrop-blur-md',
+          isOffline
+            ? 'border-[var(--border-strong)] bg-[var(--warning-soft)] text-[var(--warning)]'
+            : hasPendingSync
+              ? 'border-[var(--border-strong)] bg-[var(--accent-soft)] text-[var(--accent)]'
+              : 'border-[var(--border-strong)] bg-[var(--income-soft)] text-[var(--income)]'
+        ]"
+      >
+        <template v-if="isOffline">
+          <WifiOff :size="12" class="shrink-0" aria-hidden="true" />
+          <span v-if="hasPendingSync" class="truncate">
+            {{
+              isTl
+                ? `Offline · ${queuedWriteCount > 0 ? queuedWriteCount : "May"} naka-queue`
+                : `Offline · ${queuedWriteCount > 0 ? queuedWriteCount : "Saved"} queued`
+            }}
+          </span>
+          <span v-else class="truncate">
+            {{ isTl ? "Offline mode" : "Offline · Saved locally" }}
+          </span>
+        </template>
+        <template v-else-if="hasPendingSync">
+          <RefreshCw :size="12" class="shrink-0 animate-spin" aria-hidden="true" />
+          <span>{{ isTl ? "Nagsi-sync..." : "Syncing..." }}</span>
+        </template>
+        <template v-else>
+          <CheckCircle2 :size="12" class="shrink-0" aria-hidden="true" />
+          <span>{{ isTl ? "Na-sync na" : "Synced" }}</span>
+        </template>
+      </div>
     </div>
 
     <!-- Desktop Floating Sidebar Island (>= 768px) -->
@@ -248,7 +310,7 @@ onMounted(() => {
         <li
           v-for="item in navItems"
           :key="item.id"
-          :class="[item.desktopOnly ? 'hidden md:block' : 'flex-1 md:flex-none']"
+          :class="[item.desktopOnly ? 'hidden md:block' : 'min-w-0 flex-1 md:flex-none']"
         >
           <a
             :href="item.href"
@@ -271,7 +333,7 @@ onMounted(() => {
       tabindex="-1"
       :data-page-enter="entryDir"
       :data-page-leaving="leavingDir ?? undefined"
-      class="tipid-workspace-main mx-auto w-full max-w-6xl px-4 pb-28 pt-5 sm:px-6 md:pl-[calc(228px+2.5rem)] lg:pl-[calc(244px+2.75rem)] md:pr-8 md:pb-12 md:pt-8 print:max-w-none print:p-0"
+      class="tipid-workspace-main mx-auto w-full max-w-6xl px-4 pb-[calc(6.75rem+var(--safe-bottom))] pt-5 sm:px-6 md:pl-[calc(228px+2.5rem)] lg:pl-[calc(244px+2.75rem)] md:pr-8 md:pb-12 md:pt-8 print:max-w-none print:p-0"
     >
       <slot />
     </main>
@@ -313,6 +375,47 @@ onMounted(() => {
     </div>
 
     <AppToast />
+
+    <!-- Global Workspace Tipid AI Coach Launcher -->
+    <button
+      v-if="user?.uid && !isLocked"
+      type="button"
+      aria-controls="tipid-assistant-dialog"
+      :aria-expanded="assistantOpen"
+      :aria-label="
+        assistantWarnings.length > 0
+          ? (isTl ? `Buksan ang Tipid Coach (${assistantWarnings.length} spending warning)` : `Open Tipid Coach (${assistantWarnings.length} spending alert)`)
+          : (isTl ? 'Buksan ang Tipid Coach AI' : 'Open Tipid Coach AI')
+      "
+      class="tipid-floating-chrome fixed bottom-[calc(5.25rem+var(--safe-bottom))] right-[max(0.875rem,var(--safe-right))] z-30 inline-flex h-11 items-center gap-2 rounded-full border border-[var(--border-strong)] px-3.5 text-xs font-semibold text-[var(--text-primary)] shadow-[var(--shadow-floating)] transition-transform hover:scale-[1.02] active:scale-[0.98] md:bottom-6 md:right-6 print:hidden"
+      @click="assistantOpen = true"
+    >
+      <span class="relative inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)] text-white shadow-xs">
+        <Sparkles :size="13" aria-hidden="true" />
+      </span>
+      <span class="hidden min-[380px]:inline">Tipid AI</span>
+      <span
+        v-if="assistantWarnings.length > 0"
+        :class="[
+          'inline-flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-full px-1.5 text-[10px] font-bold',
+          hasCriticalWarning
+            ? 'bg-[var(--expense-soft)] text-[var(--expense)]'
+            : 'bg-[var(--warning-soft)] text-[var(--warning)]'
+        ]"
+      >
+        <AlertTriangle :size="10" aria-hidden="true" />
+        <span>{{ assistantWarnings.length }}</span>
+      </span>
+    </button>
+
+    <TipidAssistantDrawer
+      v-if="user?.uid && !isLocked"
+      :open="assistantOpen"
+      :uid="user.uid"
+      :is-offline="isOffline"
+      @close="assistantOpen = false"
+    />
+
     <LockScreen
       v-if="isLocked && user?.uid"
       :uid="user.uid"
@@ -326,17 +429,19 @@ onMounted(() => {
 /* Mobile Floating Bottom Pill Dock */
 .tipid-primary-nav {
   position: fixed;
-  inset-inline: 0.75rem;
+  inset-inline-start: max(0.5rem, var(--safe-left));
+  inset-inline-end: max(0.5rem, var(--safe-right));
   bottom: max(0.875rem, var(--safe-bottom));
   z-index: 30;
-  max-inline-size: 28rem;
+  max-inline-size: min(30rem, calc(100% - 1rem));
   margin-inline: auto;
   border-radius: 1.5rem;
   border: 1px solid var(--border-subtle);
   background: color-mix(in srgb, var(--bg-surface) 86%, transparent);
+  -webkit-backdrop-filter: blur(22px);
   backdrop-filter: blur(22px);
   box-shadow: var(--shadow-floating);
-  padding: 0.375rem;
+  padding: 0.375rem 0.25rem;
 }
 
 .tipid-nav-list {
@@ -346,7 +451,7 @@ onMounted(() => {
   list-style: none;
   margin: 0;
   padding: 0;
-  gap: 0.125rem;
+  gap: 0.0625rem;
 }
 
 .tipid-nav-link {
@@ -356,9 +461,9 @@ onMounted(() => {
   justify-content: center;
   gap: 0.2rem;
   min-block-size: 48px;
-  padding: 0.375rem 0.25rem;
+  padding: 0.375rem 0.125rem;
   border-radius: 1rem;
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   font-weight: 500;
   color: var(--text-muted);
   text-decoration: none;
@@ -369,7 +474,7 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
+  width: 2rem;
   height: 1.5rem;
   border-radius: 9999px;
   transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.16s ease, color 0.16s ease;
@@ -399,6 +504,7 @@ onMounted(() => {
     border-radius: 0;
     border: 0;
     background: transparent;
+    -webkit-backdrop-filter: none;
     backdrop-filter: none;
     box-shadow: none;
     padding: 0.75rem;

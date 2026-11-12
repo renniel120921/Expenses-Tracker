@@ -10,15 +10,17 @@ const PAGE_ORDER: Record<string, number> = {
   "history.html": 1,
   "chart.html": 2,
   "analytics.html": 2,
-  "bills.html": 3,
-  "utang.html": 4,
-  "profile.html": 5
+  "plan.html": 3,
+  "bills.html": 4,
+  "utang.html": 5,
+  "profile.html": 6
 };
 
 const WORKSPACE_ROUTES = [
   "dashboard.html",
   "history.html",
   "chart.html",
+  "plan.html",
   "bills.html",
   "utang.html",
   "profile.html"

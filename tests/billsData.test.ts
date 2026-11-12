@@ -51,6 +51,7 @@ describe("Bills CRUD validation and Firestore contract", () => {
       dueDate: "2026-11-15",
       category: "Utang / Loan",
       notes: "Monthly installment",
+      recurrence: "none",
       status: "Unpaid",
       createdAt: "SERVER_TS"
     });
@@ -62,6 +63,7 @@ describe("Bills CRUD validation and Firestore contract", () => {
       amount: 1699.5,
       dueDate: "2026-11-28",
       category: "Internet & Mobile",
+      recurrence: "monthly",
       notes: "Account 123"
     });
 
@@ -71,6 +73,7 @@ describe("Bills CRUD validation and Firestore contract", () => {
       dueDate: "2026-11-28",
       category: "Internet & Mobile",
       notes: "Account 123",
+      recurrence: "monthly",
       updatedAt: "SERVER_TS"
     });
 

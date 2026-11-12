@@ -6,6 +6,7 @@ export interface TranslationDictionary {
   navHome: string;
   navHistory: string;
   navAnalytics: string;
+  navPlan: string;
   navBills: string;
   navUtang: string;
   navProfile: string;
@@ -40,6 +41,9 @@ export interface TranslationDictionary {
   analyticsTitle: string;
   analyticsSubtitle: string;
 
+  planTitle: string;
+  planSubtitle: string;
+
   billsTitle: string;
   billsSubtitle: string;
   addBill: string;
@@ -66,6 +70,7 @@ const DICTIONARIES: Record<LanguageCode, TranslationDictionary> = {
     navHome: "Overview",
     navHistory: "History",
     navAnalytics: "Analytics",
+    navPlan: "Plan",
     navBills: "Bills",
     navUtang: "Utang",
     navProfile: "Settings",
@@ -100,6 +105,9 @@ const DICTIONARIES: Record<LanguageCode, TranslationDictionary> = {
     analyticsTitle: "Analytics",
     analyticsSubtitle: "Spending breakdown by category, wallet, and essentials ratio.",
 
+    planTitle: "Budgets & Goals",
+    planSubtitle: "Category limits, safe daily spend, and savings jars.",
+
     billsTitle: "Bills Schedule",
     billsSubtitle: "Track recurring utilities, subscriptions, and due dates.",
     addBill: "Add Bill",
@@ -123,8 +131,9 @@ const DICTIONARIES: Record<LanguageCode, TranslationDictionary> = {
   tl: {
     navHome: "Buod",
     navHistory: "Talaan",
-    navAnalytics: "Pagsusuri",
-    navBills: "Bayarin",
+    navAnalytics: "Tsart",
+    navPlan: "Plano",
+    navBills: "Bills",
     navUtang: "Utang",
     navProfile: "Settings",
     navLogout: "Mag-log out",
@@ -157,6 +166,9 @@ const DICTIONARIES: Record<LanguageCode, TranslationDictionary> = {
 
     analyticsTitle: "Pagsusuri",
     analyticsSubtitle: "Distribusyon ng gastos ayon sa kategorya, wallet, at Need vs Want.",
+
+    planTitle: "Badyet at Ipon",
+    planSubtitle: "Limit bawat kategorya, safe spend bawat araw, at savings jars.",
 
     billsTitle: "Mga Bayarin",
     billsSubtitle: "Subaybayan ang nakatakda at overdue na mga bayarin.",

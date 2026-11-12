@@ -1,7 +1,8 @@
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 import vue from "@vitejs/plugin-vue";
 import tailwindcss from "@tailwindcss/vite";
 import fs from "node:fs";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 
 const MPA_INPUTS = {
@@ -11,6 +12,7 @@ const MPA_INPUTS = {
   dashboard: path.resolve(__dirname, "dashboard.html"),
   history: path.resolve(__dirname, "history.html"),
   chart: path.resolve(__dirname, "chart.html"),
+  plan: path.resolve(__dirname, "plan.html"),
   bills: path.resolve(__dirname, "bills.html"),
   utang: path.resolve(__dirname, "utang.html"),
   profile: path.resolve(__dirname, "profile.html")
@@ -217,8 +219,97 @@ function analyticsAliasPlugin(): Plugin {
   };
 }
 
+function sendLocalChatJson(res: ServerResponse, statusCode: number, body: unknown, allowPost = false): void {
+  res.statusCode = statusCode;
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store, private");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  if (allowPost) res.setHeader("Allow", "POST");
+  res.end(JSON.stringify(body));
+}
+
+export function localChatApiPlugin(): Plugin {
+  return {
+    name: "tipid-local-chat-api",
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const pathname = (req.url || "").split("?")[0];
+        if (pathname !== "/api/chat") {
+          next();
+          return;
+        }
+
+        if (req.method !== "POST") {
+          sendLocalChatJson(
+            res,
+            405,
+            { code: "method-not-allowed", error: "Method not allowed" },
+            true
+          );
+          return;
+        }
+
+        const env = loadEnv(server.config.mode || "development", process.cwd(), "");
+        const apiKey = (env.GEMINI_API_KEY || process.env.GEMINI_API_KEY || "").trim();
+
+        if (!apiKey) {
+          req.resume();
+          sendLocalChatJson(res, 200, { mode: "local", code: "ai/not-configured" });
+          return;
+        }
+
+        void (async () => {
+          try {
+            const chatMod = (await server.ssrLoadModule("/api/chat.ts")) as {
+              handleChatRequest?: (
+                r: IncomingMessage,
+                s: ServerResponse,
+                deps: { apiKey?: string; model?: string; projectId?: string }
+              ) => Promise<void>;
+            };
+            if (typeof chatMod.handleChatRequest === "function") {
+              await chatMod.handleChatRequest(req, res, {
+                apiKey,
+                model: env.GEMINI_MODEL || process.env.GEMINI_MODEL,
+                projectId: env.FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID
+              });
+              return;
+            }
+          } catch (err) {
+            console.error("[TipidDev] /api/chat middleware error:", err);
+          }
+
+          if (!res.writableEnded) {
+            sendLocalChatJson(res, 200, { mode: "local", code: "ai/dev-fallback" });
+          }
+        })();
+      });
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const pathname = (req.url || "").split("?")[0];
+        if (pathname !== "/api/chat") {
+          next();
+          return;
+        }
+        if (req.method !== "POST") {
+          sendLocalChatJson(
+            res,
+            405,
+            { code: "method-not-allowed", error: "Method not allowed" },
+            true
+          );
+          return;
+        }
+        req.resume();
+        sendLocalChatJson(res, 200, { mode: "local", code: "preview/local-only" });
+      });
+    }
+  };
+}
+
 export default defineConfig({
-  plugins: [vue(), tailwindcss(), analyticsAliasPlugin(), tipidServiceWorkerPlugin()],
+  plugins: [vue(), tailwindcss(), analyticsAliasPlugin(), localChatApiPlugin(), tipidServiceWorkerPlugin()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src")

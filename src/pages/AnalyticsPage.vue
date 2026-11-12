@@ -211,7 +211,7 @@ const outflowMetrics = computed(() => {
   const activeDays = new Set<string>();
 
   for (const e of chartScopedEntries.value) {
-    if (e.type === "income") continue;
+    if (e.type !== "expense") continue;
     let cents = 0;
     try {
       cents = toCentavos(e.amount, { allowZero: true });
@@ -261,7 +261,7 @@ const budgetMetrics = computed(() => {
   const catMap: Record<string, { label: string; cents: number; count: number }> = {};
 
   for (const e of budgetScopedEntries.value) {
-    if (e.type === "income") continue;
+    if (e.type !== "expense") continue;
     let cents = 0;
     try {
       cents = toCentavos(e.amount, { allowZero: true });

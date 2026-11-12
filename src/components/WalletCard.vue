@@ -94,7 +94,7 @@ const cardVars = computed(() => ({
         type="button"
         class="tipid-compact tipid-compact-touch inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-current/20 bg-white/14 opacity-90 backdrop-blur-xs transition-colors hover:bg-white/25 hover:opacity-100"
         :aria-label="`Adjust ${visual.displayName} balance`"
-        :title="`Adjust ${visual.displayName} balance`"
+        :title="`Edit or remove ${visual.displayName}`"
         @click="emit('edit', method)"
       >
         <Pencil :size="14" aria-hidden="true" />

@@ -2,9 +2,12 @@ import {
   collection,
   addDoc,
   deleteDoc,
+  deleteField,
   updateDoc,
   doc,
   setDoc,
+  writeBatch,
+  increment,
   onSnapshot,
   query,
   orderBy,
@@ -30,11 +33,17 @@ import {
   isDateKey,
   manilaDateKey
 } from "./core";
+import { computeNextBillDueDate } from "./planMath";
 import type {
+  BillRecurrence,
   BillRecord,
+  BudgetCycle,
+  CategoryBudgetRecord,
   FinancialGoal,
   LanguageCode,
   NotificationSettings,
+  SavingsGoalColor,
+  SavingsGoalRecord,
   SpendType,
   TransactionEntry,
   UserDocumentData,
@@ -44,6 +53,44 @@ import type {
 } from "@/types/finance";
 
 const BILL_WRITE_STATUSES = ["Unpaid", "Paid"] as const;
+const BILL_RECURRENCES: readonly BillRecurrence[] = ["none", "weekly", "monthly", "quarterly", "yearly"];
+const BUDGET_CYCLES: readonly BudgetCycle[] = ["monthly", "kinsenas"];
+const SAVINGS_GOAL_COLORS: readonly SavingsGoalColor[] = ["emerald", "blue", "amber", "violet", "rose"];
+
+const warnedPermissionSources = new Set<string>();
+
+export function isPermissionDeniedError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const record = error as { code?: unknown; message?: unknown };
+  const code = typeof record.code === "string" ? record.code.toLowerCase() : "";
+  if (code === "permission-denied" || code.endsWith("/permission-denied")) {
+    return true;
+  }
+  const msg = typeof record.message === "string" ? record.message.toLowerCase() : "";
+  return msg.includes("missing or insufficient permissions") || msg.includes("permission-denied");
+}
+
+function handleOptionalSubscriptionError(
+  source: "savingsGoals" | "categoryBudgets",
+  label: string,
+  error: unknown,
+  clearData: () => void,
+  onError?: (err: unknown) => void
+): void {
+  clearSnapshotSyncSource(source);
+  clearData();
+  if (isPermissionDeniedError(error)) {
+    if (import.meta.env.DEV && !warnedPermissionSources.has(source)) {
+      warnedPermissionSources.add(source);
+      console.warn(
+        `[TipidData] Read blocked for ${label} — publish updated firestore.rules in Firebase Console.`
+      );
+    }
+  } else {
+    console.error(`[TipidData] Error subscribing to ${label}:`, error);
+  }
+  onError?.(error);
+}
 
 function validUid(uid: string): string {
   const value = String(uid || "");
@@ -83,6 +130,14 @@ function utangRef(uid: string) {
   return collection(db, "users", validUid(uid), "utang");
 }
 
+function savingsGoalsRef(uid: string) {
+  return collection(db, "users", validUid(uid), "savingsGoals");
+}
+
+function categoryBudgetsRef(uid: string) {
+  return collection(db, "users", validUid(uid), "categoryBudgets");
+}
+
 export async function addExpense(
   uid: string,
   payload: { desc: string; amount: number; category: string; method: string; spendType?: SpendType }
@@ -111,6 +166,31 @@ export async function addIncome(
     amount: money(payload.amount),
     category: "Kita",
     method: cleanText(payload.method || "Cash", "Wallet", 50),
+    createdAt: serverTimestamp()
+  };
+  return executeOfflineAwareWrite(() => addDoc(ref, data));
+}
+
+export async function addTransfer(
+  uid: string,
+  payload: { desc?: string; amount: number; fromMethod: string; toMethod: string; note?: string }
+): Promise<OfflineWriteResult> {
+  const ref = entriesRef(uid);
+  const fromWallet = assertSafeObjectKey(cleanText(payload.fromMethod, "Source wallet", 50), "Source wallet");
+  const toWallet = assertSafeObjectKey(cleanText(payload.toMethod, "Destination wallet", 50), "Destination wallet");
+  if (fromWallet === toWallet) {
+    throw new RangeError("Source and destination wallets must be different");
+  }
+  const safeAmount = money(payload.amount);
+  const rawDesc = String(payload.desc ?? "").trim() || `${fromWallet} -> ${toWallet}`;
+  const data = {
+    type: "transfer" as const,
+    desc: cleanText(rawDesc, "Description", 120),
+    amount: safeAmount,
+    category: "Transfer",
+    method: fromWallet,
+    toMethod: toWallet,
+    note: optionalText(payload.note || "", 500),
     createdAt: serverTimestamp()
   };
   return executeOfflineAwareWrite(() => addDoc(ref, data));
@@ -184,6 +264,14 @@ export async function setBudget(uid: string, monthlyBudget: number): Promise<Off
   );
 }
 
+export async function setBudgetCycle(uid: string, cycle: BudgetCycle): Promise<OfflineWriteResult> {
+  const ref = userDocRef(uid);
+  const safeCycle = assertChoice(cycle, BUDGET_CYCLES, "budget cycle");
+  return executeOfflineAwareWrite(() =>
+    setDoc(ref, { budgetCycle: safeCycle }, { merge: true })
+  );
+}
+
 export async function saveWalletBaseBalance(
   uid: string,
   method: string,
@@ -194,6 +282,17 @@ export async function saveWalletBaseBalance(
   const safeBalance = money(balance, { allowZero: true, allowNegative: true });
   return executeOfflineAwareWrite(() =>
     setDoc(ref, { wallets: { [safeMethod]: safeBalance } }, { merge: true })
+  );
+}
+
+export async function removeWallet(uid: string, method: string): Promise<OfflineWriteResult> {
+  const ref = userDocRef(uid);
+  const safeMethod = assertSafeObjectKey(cleanText(method, "", 50), "Wallet");
+  if (safeMethod.toLowerCase() === "cash") {
+    throw new RangeError("Cannot remove the default Cash ledger");
+  }
+  return executeOfflineAwareWrite(() =>
+    setDoc(ref, { wallets: { [safeMethod]: deleteField() } }, { merge: true })
   );
 }
 
@@ -227,15 +326,24 @@ export async function saveFinancialGoals(uid: string, goals: FinancialGoal): Pro
 
 export async function addBill(
   uid: string,
-  payload: { title: string; amount: number; dueDate: string; category: string; notes?: string }
+  payload: {
+    title: string;
+    amount: number;
+    dueDate: string;
+    category: string;
+    notes?: string;
+    recurrence?: BillRecurrence;
+  }
 ): Promise<OfflineWriteResult> {
   const ref = billsRef(uid);
+  const recurrence = assertChoice(payload.recurrence || "none", BILL_RECURRENCES, "bill recurrence");
   const data = {
     title: cleanText(payload.title, "Bill title", 120),
     amount: money(payload.amount),
     dueDate: validDate(payload.dueDate, true),
     category: cleanText(payload.category || "Bills", "Category", 50),
     notes: optionalText(payload.notes || "", 500),
+    recurrence,
     status: "Unpaid",
     createdAt: serverTimestamp()
   };
@@ -245,15 +353,24 @@ export async function addBill(
 export async function updateBill(
   uid: string,
   billId: string,
-  payload: { title: string; amount: number; dueDate: string; category: string; notes?: string }
+  payload: {
+    title: string;
+    amount: number;
+    dueDate: string;
+    category: string;
+    notes?: string;
+    recurrence?: BillRecurrence;
+  }
 ): Promise<OfflineWriteResult> {
   const ref = doc(db, "users", validUid(uid), "bills", validId(billId, "bill identifier"));
+  const recurrence = assertChoice(payload.recurrence || "none", BILL_RECURRENCES, "bill recurrence");
   const data = {
     title: cleanText(payload.title, "Bill title", 120),
     amount: money(payload.amount),
     dueDate: validDate(payload.dueDate, true),
     category: cleanText(payload.category || "Bills", "Category", 50),
     notes: optionalText(payload.notes || "", 500),
+    recurrence,
     updatedAt: serverTimestamp()
   };
   return executeOfflineAwareWrite(() => updateDoc(ref, data));
@@ -267,6 +384,43 @@ export async function updateBillStatus(
   const ref = doc(db, "users", validUid(uid), "bills", validId(billId, "bill identifier"));
   const safeStatus = assertChoice(status, BILL_WRITE_STATUSES, "bill status");
   return executeOfflineAwareWrite(() => updateDoc(ref, { status: safeStatus }));
+}
+
+/**
+ * Marks a bill as Paid and atomically schedules the next cycle bill when recurring.
+ */
+export async function markBillPaidAndScheduleNext(
+  uid: string,
+  bill: BillRecord
+): Promise<{ result: OfflineWriteResult; nextDueDate: string | null }> {
+  const safeUid = validUid(uid);
+  const currentRef = doc(db, "users", safeUid, "bills", validId(bill.id, "bill identifier"));
+  const recurrence = BILL_RECURRENCES.includes(bill.recurrence || "none")
+    ? (bill.recurrence as BillRecurrence)
+    : "none";
+  const nextDue = computeNextBillDueDate(bill.dueDate, recurrence);
+
+  if (!nextDue) {
+    const result = await executeOfflineAwareWrite(() => updateDoc(currentRef, { status: "Paid" }));
+    return { result, nextDueDate: null };
+  }
+
+  const batch = writeBatch(db);
+  batch.update(currentRef, { status: "Paid", updatedAt: serverTimestamp() });
+  const nextRef = doc(billsRef(safeUid));
+  batch.set(nextRef, {
+    title: cleanText(bill.title, "Bill title", 120),
+    amount: money(bill.amount),
+    dueDate: validDate(nextDue, true),
+    category: cleanText(bill.category || "Bills", "Category", 50),
+    notes: optionalText(bill.notes || "", 500),
+    recurrence,
+    status: "Unpaid",
+    createdAt: serverTimestamp()
+  });
+
+  const result = await executeOfflineAwareWrite(() => batch.commit());
+  return { result, nextDueDate: nextDue };
 }
 
 export async function deleteBill(uid: string, billId: string): Promise<OfflineWriteResult> {
@@ -430,6 +584,208 @@ export async function saveLanguagePreference(
   return executeOfflineAwareWrite(() =>
     setDoc(ref, { preferences, lang: safeLang }, { merge: true })
   );
+}
+
+export async function addSavingsGoal(
+  uid: string,
+  payload: {
+    name: string;
+    targetAmount: number;
+    savedAmount?: number;
+    wallet?: string | null;
+    targetDate?: string | null;
+    color?: SavingsGoalColor;
+  }
+): Promise<OfflineWriteResult> {
+  const ref = savingsGoalsRef(uid);
+  const color = assertChoice(payload.color || "emerald", SAVINGS_GOAL_COLORS, "goal accent color");
+  const wallet =
+    payload.wallet && String(payload.wallet).trim()
+      ? cleanText(payload.wallet, "Wallet", 50)
+      : null;
+  const data = {
+    name: cleanText(payload.name, "Goal name", 80),
+    targetAmount: money(payload.targetAmount),
+    savedAmount: money(payload.savedAmount ?? 0, { allowZero: true }),
+    wallet,
+    targetDate: validDate(payload.targetDate, false),
+    color,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  };
+  return executeOfflineAwareWrite(() => addDoc(ref, data));
+}
+
+export async function updateSavingsGoal(
+  uid: string,
+  goalId: string,
+  payload: {
+    name: string;
+    targetAmount: number;
+    savedAmount: number;
+    wallet?: string | null;
+    targetDate?: string | null;
+    color?: SavingsGoalColor;
+  }
+): Promise<OfflineWriteResult> {
+  const ref = doc(db, "users", validUid(uid), "savingsGoals", validId(goalId, "savings goal identifier"));
+  const color = assertChoice(payload.color || "emerald", SAVINGS_GOAL_COLORS, "goal accent color");
+  const wallet =
+    payload.wallet && String(payload.wallet).trim()
+      ? cleanText(payload.wallet, "Wallet", 50)
+      : null;
+  const data = {
+    name: cleanText(payload.name, "Goal name", 80),
+    targetAmount: money(payload.targetAmount),
+    savedAmount: money(payload.savedAmount, { allowZero: true }),
+    wallet,
+    targetDate: validDate(payload.targetDate, false),
+    color,
+    updatedAt: serverTimestamp()
+  };
+  return executeOfflineAwareWrite(() => updateDoc(ref, data));
+}
+
+/**
+ * Adds a positive contribution to a savings jar and optionally records a
+ * matching Savings expense from a wallet in a single atomic batch.
+ */
+export async function depositToSavingsGoal(
+  uid: string,
+  goal: Pick<SavingsGoalRecord, "id" | "name">,
+  depositAmount: number,
+  options?: { deductFromWallet?: string | null }
+): Promise<OfflineWriteResult> {
+  const safeUid = validUid(uid);
+  const safeDeposit = money(depositAmount);
+  const goalRef = doc(db, "users", safeUid, "savingsGoals", validId(goal.id, "savings goal identifier"));
+
+  const batch = writeBatch(db);
+  batch.update(goalRef, {
+    savedAmount: increment(safeDeposit),
+    updatedAt: serverTimestamp()
+  });
+
+  if (options?.deductFromWallet && String(options.deductFromWallet).trim()) {
+    const safeWallet = assertSafeObjectKey(
+      cleanText(options.deductFromWallet, "Wallet", 50),
+      "Wallet"
+    );
+    const entryDoc = doc(entriesRef(safeUid));
+    batch.set(entryDoc, {
+      type: "expense",
+      desc: cleanText(`Savings: ${goal.name}`, "Description", 120),
+      amount: safeDeposit,
+      category: "Savings",
+      method: safeWallet,
+      spendType: "need",
+      createdAt: serverTimestamp()
+    });
+  }
+
+  return executeOfflineAwareWrite(() => batch.commit());
+}
+
+export async function deleteSavingsGoal(uid: string, goalId: string): Promise<OfflineWriteResult> {
+  const ref = doc(db, "users", validUid(uid), "savingsGoals", validId(goalId, "savings goal identifier"));
+  return executeOfflineAwareWrite(() => deleteDoc(ref));
+}
+
+export function subscribeSavingsGoals(
+  uid: string,
+  cb: (goals: SavingsGoalRecord[]) => void,
+  onError?: (err: unknown) => void
+): Unsubscribe {
+  const q = query(savingsGoalsRef(uid), orderBy("createdAt", "desc"));
+  const unsub = onSnapshot(
+    q,
+    { includeMetadataChanges: true },
+    (snap) => {
+      updateSnapshotSyncState("savingsGoals", snap.metadata.hasPendingWrites, snap.metadata.fromCache);
+      const list: SavingsGoalRecord[] = snap.docs.map((d) => {
+        const data = d.data({ serverTimestamps: "estimate" }) as Omit<SavingsGoalRecord, "id">;
+        return {
+          ...data,
+          id: d.id,
+          savedAmount: Number(data.savedAmount ?? 0),
+          targetAmount: Number(data.targetAmount ?? 0)
+        };
+      });
+      cb(list);
+    },
+    (error) => {
+      handleOptionalSubscriptionError("savingsGoals", "savings goals", error, () => cb([]), onError);
+    }
+  );
+  return () => {
+    clearSnapshotSyncSource("savingsGoals");
+    unsub();
+  };
+}
+
+export async function saveCategoryBudget(
+  uid: string,
+  payload: { id?: string; category: string; limitAmount: number }
+): Promise<OfflineWriteResult> {
+  const safeUid = validUid(uid);
+  const safeCategory = cleanText(payload.category, "Category", 50);
+  const safeLimit = money(payload.limitAmount);
+
+  if (payload.id) {
+    const ref = doc(db, "users", safeUid, "categoryBudgets", validId(payload.id, "budget identifier"));
+    return executeOfflineAwareWrite(() =>
+      updateDoc(ref, {
+        category: safeCategory,
+        limitAmount: safeLimit,
+        updatedAt: serverTimestamp()
+      })
+    );
+  }
+
+  return executeOfflineAwareWrite(() =>
+    addDoc(categoryBudgetsRef(safeUid), {
+      category: safeCategory,
+      limitAmount: safeLimit,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    })
+  );
+}
+
+export async function deleteCategoryBudget(uid: string, budgetId: string): Promise<OfflineWriteResult> {
+  const ref = doc(db, "users", validUid(uid), "categoryBudgets", validId(budgetId, "budget identifier"));
+  return executeOfflineAwareWrite(() => deleteDoc(ref));
+}
+
+export function subscribeCategoryBudgets(
+  uid: string,
+  cb: (budgets: CategoryBudgetRecord[]) => void,
+  onError?: (err: unknown) => void
+): Unsubscribe {
+  const q = query(categoryBudgetsRef(uid), orderBy("category", "asc"));
+  const unsub = onSnapshot(
+    q,
+    { includeMetadataChanges: true },
+    (snap) => {
+      updateSnapshotSyncState("categoryBudgets", snap.metadata.hasPendingWrites, snap.metadata.fromCache);
+      const list: CategoryBudgetRecord[] = snap.docs.map((d) => {
+        const data = d.data({ serverTimestamps: "estimate" }) as Omit<CategoryBudgetRecord, "id">;
+        return {
+          ...data,
+          id: d.id,
+          limitAmount: Number(data.limitAmount ?? 0)
+        };
+      });
+      cb(list);
+    },
+    (error) => {
+      handleOptionalSubscriptionError("categoryBudgets", "category budgets", error, () => cb([]), onError);
+    }
+  );
+  return () => {
+    clearSnapshotSyncSource("categoryBudgets");
+    unsub();
+  };
 }
 
 export async function clearLocalCache(): Promise<boolean> {

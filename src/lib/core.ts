@@ -69,13 +69,69 @@ export function walletBalances(
       } catch {
         continue;
       }
-      cents[method] = (cents[method] || 0) + (entry?.type === "income" ? amount : -amount);
+      if (entry?.type === "transfer") {
+        const toRaw = String(entry?.toMethod || "");
+        const toMethod = FORBIDDEN_OBJECT_KEYS.has(toRaw) ? "" : toRaw;
+        cents[method] = (cents[method] || 0) - amount;
+        if (toMethod && toMethod !== method) {
+          cents[toMethod] = (cents[toMethod] || 0) + amount;
+        }
+      } else {
+        cents[method] = (cents[method] || 0) + (entry?.type === "income" ? amount : -amount);
+      }
     }
   }
 
   return Object.fromEntries(
     Object.entries(cents).map(([method, amount]) => [method, fromCentavos(amount)])
   );
+}
+
+/**
+ * Sums current balances strictly for active linked wallets using integer centavos.
+ */
+export function sumActiveWalletsBalance(
+  wallets: ReadonlyArray<string>,
+  balancesMap: Readonly<Record<string, number>>
+): number {
+  let cents = 0;
+  for (const method of wallets) {
+    if (FORBIDDEN_OBJECT_KEYS.has(method)) continue;
+    const raw = Number(balancesMap[method] ?? 0);
+    if (!Number.isFinite(raw)) continue;
+    cents += Math.sign(raw) * toCentavos(Math.abs(raw), { allowZero: true });
+  }
+  return fromCentavos(cents);
+}
+
+/**
+ * Computes the base balance to persist in Firestore so current entries plus base
+ * balance equal the user's desired current balance (used when reconciling or re-linking).
+ */
+export function deriveWalletBaseBalance(
+  entries: ReadonlyArray<Partial<TransactionEntry>> | null | undefined,
+  method: string,
+  targetBalance: unknown
+): number {
+  const targetCents = toCentavos(targetBalance, { allowZero: true, allowNegative: true });
+  let netCents = 0;
+  if (Array.isArray(entries)) {
+    for (const entry of entries) {
+      let amountCents = 0;
+      try {
+        amountCents = toCentavos(entry?.amount, { allowZero: true });
+      } catch {
+        continue;
+      }
+      if (entry?.type === "transfer") {
+        if (entry.method === method) netCents -= amountCents;
+        if (entry.toMethod === method) netCents += amountCents;
+      } else if (entry?.method === method) {
+        netCents += entry?.type === "income" ? amountCents : -amountCents;
+      }
+    }
+  }
+  return fromCentavos(targetCents - netCents);
 }
 
 export function stripUnsafeText(value: unknown): string {
@@ -261,9 +317,9 @@ export function buildTransactionsCsv(entries: ReadonlyArray<TransactionEntry>): 
     const values = [
       date ? date.toISOString() : "",
       e.type,
-      e.type === "income" ? "" : e.spendType || "need",
+      e.type === "expense" ? e.spendType || "need" : "",
       e.category,
-      e.method,
+      e.type === "transfer" && e.toMethod ? `${e.method} -> ${e.toMethod}` : e.method,
       money(e.amount, { allowZero: true }),
       e.desc ?? e.note ?? ""
     ];
@@ -337,3 +393,16 @@ export const SUPPORTED_WALLETS: readonly WalletDefinition[] = [
   { id: "PSBank", name: "PSBank", type: "bank" },
   { id: "PayPal", name: "PayPal", type: "ewallet" }
 ];
+
+const SHORTCUT_ACTION_MAP: Readonly<Record<string, "expense" | "income">> = {
+  new_expense: "expense",
+  new_income: "income"
+};
+
+/** Maps a PWA launcher shortcut `?action=` query string to an initial transaction type. */
+export function resolveShortcutTransactionType(search: string): "expense" | "income" | null {
+  if (!search) return null;
+  const params = new URLSearchParams(search);
+  const action = (params.get("action") || "").trim().toLowerCase();
+  return SHORTCUT_ACTION_MAP[action] ?? null;
+}

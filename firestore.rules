@@ -14,6 +14,7 @@ rules_version = '2';
 // Document ID: {uid} (matches request.auth.uid)
 // Fields (all optional, written via setDoc(..., { merge: true })):
 //   - monthlyBudget: number | null (0 .. 1e12)
+//   - budgetCycle: string ('monthly' | 'kinsenas')
 //   - wallets: map (size <= 50; Cash if present is number -1e12 .. 1e12)
 //   - financialGoals: map (updatedAt, name, targetAmount, wallet, contribution, frequency, startDate)
 //   - notificationSettings: map (updatedAt, dailyReminders, reminderTime, overbudgetAlerts, budgetThreshold, lastReminderDate)
@@ -22,16 +23,17 @@ rules_version = '2';
 //   - statsCounted: bool (once true, cannot be overwritten to false or removed via update)
 //
 // Subcollection: users/{uid}/expenses/{entryId}
-//   - Required: type ('income' | 'expense'), desc (1..120), amount (0 < x <= 1e12),
+//   - Required: type ('income' | 'expense' | 'transfer'), desc (1..120), amount (0 < x <= 1e12),
 //     category (1..50), method (1..50)
+//   - Conditional: toMethod (required 1..50 and != method when type == 'transfer'; omitted or null otherwise)
 //   - Optional: spendType ('need' | 'luho'), createdAt (timestamp, immutable once set),
 //     timestamp (timestamp), date (YYYY-MM-DD), note (<= 500 or null)
 //
 // Subcollection: users/{uid}/bills/{billId}
 //   - Required: title (1..120), amount (0 < x <= 1e12), dueDate (YYYY-MM-DD),
 //     category (1..50), status ('Unpaid' | 'Paid')
-//   - Optional: notes (<= 500 or null), createdAt (timestamp, immutable once set),
-//     updatedAt (timestamp)
+//   - Optional: notes (<= 500 or null), recurrence ('none' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'),
+//     createdAt (timestamp, immutable once set), updatedAt (timestamp)
 //
 // Subcollection: users/{uid}/utang/{utangId}
 //   - Required: name (1..120), amount (0 < x <= 1e12), direction ('owed_to_me' | 'i_owe'),
@@ -39,6 +41,16 @@ rules_version = '2';
 //   - Optional: dueDate (null or YYYY-MM-DD), notes (<= 500 or null),
 //     createdAt (timestamp, immutable once set), updatedAt (timestamp),
 //     settledAt (null or timestamp)
+//
+// Subcollection: users/{uid}/savingsGoals/{goalId}
+//   - Required: name (1..80), targetAmount (0 < x <= 1e12), savedAmount (0 <= x <= 1e12)
+//   - Optional: wallet (<= 50 or null), targetDate (YYYY-MM-DD or null),
+//     color ('emerald' | 'blue' | 'amber' | 'violet' | 'rose'),
+//     createdAt (timestamp, immutable once set), updatedAt (timestamp)
+//
+// Subcollection: users/{uid}/categoryBudgets/{budgetId}
+//   - Required: category (1..50), limitAmount (0 < x <= 1e12)
+//   - Optional: createdAt (timestamp, immutable once set), updatedAt (timestamp)
 //
 // ===============================================================
 
@@ -175,6 +187,7 @@ service cloud.firestore {
 
     function isValidUserDoc(data) {
       return (!('monthlyBudget' in data) || isValidMonthlyBudget(data.monthlyBudget))
+        && (!('budgetCycle' in data) || (data.budgetCycle is string && data.budgetCycle in ['monthly', 'kinsenas']))
         && (!('wallets' in data) || isValidWallets(data.wallets))
         && (!('financialGoals' in data) || isValidFinancialGoals(data.financialGoals))
         && (!('notificationSettings' in data) || isValidNotificationSettings(data.notificationSettings))
@@ -186,6 +199,7 @@ service cloud.firestore {
     function isValidUserDocUpdate(newData, oldData) {
       let affected = newData.diff(oldData).affectedKeys();
       return (!('monthlyBudget' in affected) || !('monthlyBudget' in newData) || isValidMonthlyBudget(newData.monthlyBudget))
+        && (!('budgetCycle' in affected) || !('budgetCycle' in newData) || (newData.budgetCycle is string && newData.budgetCycle in ['monthly', 'kinsenas']))
         && (!('wallets' in affected) || !('wallets' in newData) || isValidWallets(newData.wallets))
         && (!('financialGoals' in affected) || !('financialGoals' in newData) || isValidFinancialGoals(newData.financialGoals))
         && (!('notificationSettings' in affected) || !('notificationSettings' in newData) || isValidNotificationSettings(newData.notificationSettings))
@@ -207,15 +221,18 @@ service cloud.firestore {
 
     function isValidExpense(data) {
       return data.keys().hasOnly([
-          'type', 'desc', 'amount', 'category', 'method',
+          'type', 'desc', 'amount', 'category', 'method', 'toMethod',
           'spendType', 'createdAt', 'timestamp', 'date', 'note'
         ])
         && data.keys().hasAll(['type', 'desc', 'amount', 'category', 'method'])
-        && data.type in ['income', 'expense']
+        && data.type is string
+        && data.type in ['income', 'expense', 'transfer']
         && shortText(data.desc, 120)
         && validMoney(data.amount)
         && shortText(data.category, 50)
         && shortText(data.method, 50)
+        && (data.type != 'transfer' || ('toMethod' in data && shortText(data.toMethod, 50) && data.toMethod != data.method))
+        && (data.type == 'transfer' || !('toMethod' in data) || data.toMethod == null)
         && (!('spendType' in data) || data.spendType in ['need', 'luho'])
         && (!('createdAt' in data) || data.createdAt is timestamp)
         && (!('timestamp' in data) || data.timestamp is timestamp)
@@ -226,7 +243,7 @@ service cloud.firestore {
     function isValidBill(data) {
       return data.keys().hasOnly([
           'title', 'amount', 'dueDate', 'category', 'notes',
-          'status', 'createdAt', 'updatedAt'
+          'recurrence', 'status', 'createdAt', 'updatedAt'
         ])
         && data.keys().hasAll(['title', 'amount', 'dueDate', 'category', 'status'])
         && shortText(data.title, 120)
@@ -234,6 +251,7 @@ service cloud.firestore {
         && validDateKey(data.dueDate)
         && shortText(data.category, 50)
         && (!('notes' in data) || optionalText(data.notes, 500))
+        && (!('recurrence' in data) || (data.recurrence is string && data.recurrence in ['none', 'weekly', 'monthly', 'quarterly', 'yearly']))
         && data.status in ['Unpaid', 'Paid']
         && (!('createdAt' in data) || data.createdAt is timestamp)
         && (!('updatedAt' in data) || data.updatedAt is timestamp);
@@ -254,6 +272,31 @@ service cloud.firestore {
         && (!('createdAt' in data) || data.createdAt is timestamp)
         && (!('updatedAt' in data) || data.updatedAt is timestamp)
         && (!('settledAt' in data) || data.settledAt == null || data.settledAt is timestamp);
+    }
+
+    function isValidSavingsGoal(data) {
+      return data.keys().hasOnly([
+          'name', 'targetAmount', 'savedAmount', 'wallet',
+          'targetDate', 'color', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasAll(['name', 'targetAmount', 'savedAmount'])
+        && shortText(data.name, 80)
+        && validMoney(data.targetAmount)
+        && validNonNegativeMoney(data.savedAmount)
+        && (!('wallet' in data) || optionalText(data.wallet, 50))
+        && (!('targetDate' in data) || data.targetDate == null || validDateKey(data.targetDate))
+        && (!('color' in data) || (data.color is string && data.color in ['emerald', 'blue', 'amber', 'violet', 'rose']))
+        && (!('createdAt' in data) || data.createdAt is timestamp)
+        && (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+
+    function isValidCategoryBudget(data) {
+      return data.keys().hasOnly(['category', 'limitAmount', 'createdAt', 'updatedAt'])
+        && data.keys().hasAll(['category', 'limitAmount'])
+        && shortText(data.category, 50)
+        && validMoney(data.limitAmount)
+        && (!('createdAt' in data) || data.createdAt is timestamp)
+        && (!('updatedAt' in data) || data.updatedAt is timestamp);
     }
 
     // ===============================================================
@@ -277,10 +320,10 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if owns(uid);
       allow create: if owns(uid)
-        && request.resource.data.keys().hasOnly(['monthlyBudget', 'wallets', 'financialGoals', 'notificationSettings', 'preferences', 'lang', 'statsCounted'])
+        && request.resource.data.keys().hasOnly(['monthlyBudget', 'budgetCycle', 'wallets', 'financialGoals', 'notificationSettings', 'preferences', 'lang', 'statsCounted'])
         && isValidUserDoc(request.resource.data);
       allow update: if owns(uid)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['monthlyBudget', 'wallets', 'financialGoals', 'notificationSettings', 'preferences', 'lang', 'statsCounted'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['monthlyBudget', 'budgetCycle', 'wallets', 'financialGoals', 'notificationSettings', 'preferences', 'lang', 'statsCounted'])
         && isValidUserDocUpdate(request.resource.data, resource.data)
         && statsCountedNotRevoked(request.resource.data, resource.data);
       allow delete: if owns(uid);
@@ -306,6 +349,22 @@ service cloud.firestore {
         allow create: if owns(uid) && isValidUtang(request.resource.data);
         allow update: if owns(uid)
           && isValidUtang(request.resource.data)
+          && createdAtUnchanged(request.resource.data, resource.data);
+      }
+
+      match /savingsGoals/{goalId} {
+        allow read, delete: if owns(uid);
+        allow create: if owns(uid) && isValidSavingsGoal(request.resource.data);
+        allow update: if owns(uid)
+          && isValidSavingsGoal(request.resource.data)
+          && createdAtUnchanged(request.resource.data, resource.data);
+      }
+
+      match /categoryBudgets/{budgetId} {
+        allow read, delete: if owns(uid);
+        allow create: if owns(uid) && isValidCategoryBudget(request.resource.data);
+        allow update: if owns(uid)
+          && isValidCategoryBudget(request.resource.data)
           && createdAtUnchanged(request.resource.data, resource.data);
       }
 

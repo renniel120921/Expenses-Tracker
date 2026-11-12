@@ -231,7 +231,10 @@ async function handleForgot() {
     </aside>
 
     <!-- Right Workspace Form Column -->
-    <div class="tipid-atmosphere relative flex flex-col justify-between px-4 py-4 sm:px-8 sm:py-6 lg:col-span-7">
+    <div
+      class="tipid-atmosphere relative flex flex-col justify-between px-4 sm:px-8 sm:py-6 lg:col-span-7"
+      style="padding-top: max(1rem, var(--safe-top)); padding-bottom: max(1.25rem, var(--safe-bottom))"
+    >
       <div class="tipid-grid-bg pointer-events-none absolute inset-0 opacity-40" aria-hidden="true" />
 
       <!-- Floating Top Navigation Pill -->
@@ -239,7 +242,7 @@ async function handleForgot() {
         <header class="tipid-floating-chrome flex items-center justify-between gap-2 rounded-2xl px-3 py-2">
           <a
             href="index.html"
-            class="inline-flex min-h-[36px] items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-semibold text-[var(--text-secondary)] no-underline transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
+            class="tipid-compact tipid-compact-touch inline-flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-semibold text-[var(--text-secondary)] no-underline transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
             @click="navigateAuth($event, 'index.html', 'exit')"
           >
             <ArrowLeft :size="14" aria-hidden="true" />
@@ -248,24 +251,24 @@ async function handleForgot() {
 
           <a
             href="index.html"
-            class="flex items-center gap-2 no-underline lg:hidden"
+            class="flex shrink-0 items-center gap-2 no-underline lg:hidden"
             @click="navigateAuth($event, 'index.html', 'exit')"
           >
-            <img src="/assets/logo.svg" alt="" width="26" height="26" class="h-6.5 w-6.5 rounded-lg" />
-            <span class="text-sm font-bold tracking-tight text-[var(--text-primary)]">Tipid</span>
+            <img src="/assets/logo.svg" alt="" width="26" height="26" class="h-6.5 w-6.5 shrink-0 rounded-lg" />
+            <span class="whitespace-nowrap text-sm font-bold tracking-tight text-[var(--text-primary)]">Tipid</span>
           </a>
 
-          <div class="flex items-center gap-1.5">
+          <div class="flex shrink-0 items-center gap-1.5">
             <button
               type="button"
-              class="tipid-compact inline-flex min-h-[32px] items-center rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--text-secondary)] hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
+              class="tipid-compact tipid-compact-touch inline-flex min-h-[32px] items-center rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--text-secondary)] hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
               @click="switchLanguage"
             >
               {{ isTl ? "EN" : "FIL" }}
             </button>
             <button
               type="button"
-              class="tipid-compact inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
+              class="tipid-compact tipid-compact-touch inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
               aria-label="Toggle color theme"
               @click="toggleQuickTheme"
             >
@@ -414,7 +417,7 @@ async function handleForgot() {
                 autocapitalize="none"
                 spellcheck="false"
                 placeholder="name@example.com"
-                class="tipid-input rounded-xl text-xs"
+                class="tipid-input rounded-xl text-base sm:text-xs"
               />
               <button
                 type="button"

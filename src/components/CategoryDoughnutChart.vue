@@ -39,7 +39,7 @@ const canvasRef = ref<HTMLCanvasElement | null>(null);
 let chartInstance: Chart | null = null;
 
 const breakdown = computed(() => {
-  const expenses = props.entries.filter((e) => e.type !== "income");
+  const expenses = props.entries.filter((e) => e.type === "expense");
   const catMap: Record<string, number> = {};
   let totalCents = 0;
 

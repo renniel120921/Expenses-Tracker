@@ -85,9 +85,9 @@ const { lang, t, isTl, setLanguage } = useI18n();
 
 const activeTab = ref<ProfileTabId>("plan");
 const tabDefs = computed(() => [
-  { id: "plan" as const, label: isTl.value ? "Badyet at Ipon" : "Plan & Goal" },
+  { id: "plan" as const, label: isTl.value ? "Plano" : "Plan" },
   { id: "prefs" as const, label: isTl.value ? "Kagustuhan" : "Preferences" },
-  { id: "security" as const, label: isTl.value ? "Seguridad" : "Security & Data" }
+  { id: "security" as const, label: isTl.value ? "Seguridad" : "Security" }
 ]);
 
 function selectTab(id: ProfileTabId) {
@@ -211,7 +211,7 @@ const monthBudgetStats = computed(() => {
   const curYm = (manilaDateKey() || new Date().toISOString().slice(0, 10)).slice(0, 7);
   let spentCents = 0;
   for (const e of entries.value) {
-    if (e.type === "income") continue;
+    if (e.type !== "expense") continue;
     const d = entryDate(e);
     const dk = d ? manilaDateKey(d) : null;
     if (!dk || !dk.startsWith(curYm)) continue;
@@ -914,7 +914,7 @@ async function handleDeleteAccount() {
           </section>
 
           <!-- 4 Quick Action Tiles -->
-          <section aria-label="Quick profile shortcuts" class="grid grid-cols-4 gap-2.5">
+          <section aria-label="Quick profile shortcuts" class="grid grid-cols-2 gap-2.5 min-[375px]:grid-cols-4">
             <button
               type="button"
               class="tipid-card-interactive flex flex-col items-center justify-center gap-1.5 px-2 py-3 text-center"
@@ -1013,7 +1013,7 @@ async function handleDeleteAccount() {
                   {{ isTl ? "Buwanang Badyet at Target na Ipon" : "Monthly Budget & Savings Goal" }}
                 </h2>
                 <p class="mt-0.5 text-xs text-[var(--text-secondary)]">
-                  {{ isTl ? "Itakda ang limit sa paggastos at layunin ng ipon." : "Control monthly spending alerts and estimate target payoff dates." }}
+                  {{ isTl ? "Limit sa gastos at target na ipon." : "Monthly spending cap and savings target." }}
                 </p>
               </div>
             </div>
@@ -1185,7 +1185,7 @@ async function handleDeleteAccount() {
                   {{ isTl ? "Mga Kagustuhan" : "Appearance & Reminders" }}
                 </h2>
                 <p class="mt-0.5 text-xs text-[var(--text-secondary)]">
-                  {{ isTl ? "Tema ng kulay, wika, at mga paalala sa arawang paggamit." : "Customize theme contrast, language, default wallet, and budget alerts." }}
+                  {{ isTl ? "Tema, wika, default wallet, at mga paalala." : "Theme, language, default wallet, and alerts." }}
                 </p>
               </div>
             </div>
@@ -1265,17 +1265,17 @@ async function handleDeleteAccount() {
             </div>
 
             <div class="divide-y divide-[var(--border-subtle)] rounded-xl border border-[var(--border-subtle)]">
-              <div class="flex items-center justify-between gap-4 p-3.5 sm:px-4">
+              <div class="flex flex-wrap items-center justify-between gap-3 p-3.5 sm:flex-nowrap sm:gap-4 sm:px-4">
                 <label for="pref-hide-centavos" class="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
                   <div class="tipid-icon-badge h-8 w-8 bg-[var(--bg-inset)] text-[var(--text-secondary)]" aria-hidden="true">
                     <Coins :size="15" />
                   </div>
-                  <div class="min-w-0">
+                  <div class="min-w-0 flex-1">
                     <span class="block text-sm font-medium text-[var(--text-primary)]">
-                      {{ isTl ? "Itago ang Centavos" : "Compact Whole-Peso Format" }}
+                      {{ isTl ? "Itago ang Centavos" : "Compact Whole-Peso" }}
                     </span>
                     <span class="block text-xs text-[var(--text-muted)]">
-                      {{ isTl ? "Alisin ang .00 kung buo ang halaga." : "Default display precision across preferences." }}
+                      {{ isTl ? "Alisin ang .00 kung buo." : "Hide .00 on whole amounts." }}
                     </span>
                   </div>
                 </label>
@@ -1283,64 +1283,64 @@ async function handleDeleteAccount() {
                   id="pref-hide-centavos"
                   type="checkbox"
                   role="switch"
-                  class="tipid-switch"
+                  class="tipid-switch shrink-0"
                   :checked="hideCentavos"
                   @change="handleToggleCentavos(($event.target as HTMLInputElement).checked)"
                 />
               </div>
 
-              <div class="flex items-center justify-between gap-4 p-3.5 sm:px-4">
+              <div class="flex flex-col gap-3 p-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-4">
                 <label for="pref-daily-reminders" class="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
                   <div class="tipid-icon-badge h-8 w-8 bg-[var(--accent-soft)] text-[var(--accent)]" aria-hidden="true">
                     <Bell :size="15" />
                   </div>
-                  <div class="min-w-0">
+                  <div class="min-w-0 flex-1">
                     <span class="block text-sm font-medium text-[var(--text-primary)]">
-                      {{ isTl ? "Araw-araw na Paalala" : "Daily Logging Reminder" }}
+                      {{ isTl ? "Arawang Paalala" : "Daily Reminder" }}
                     </span>
                     <span class="block text-xs text-[var(--text-muted)]">
-                      {{ isTl ? "Oras ng paalala para sa arawang tala." : "Remind me to record daily expenses." }}
+                      {{ isTl ? "Paalala para magtala araw-araw." : "Prompt to log daily expenses." }}
                     </span>
                   </div>
                 </label>
-                <div class="flex shrink-0 items-center gap-2.5">
+                <div class="flex shrink-0 items-center justify-end gap-2.5 pl-11 sm:pl-0">
                   <input
                     v-if="dailyReminders"
                     v-model="reminderTime"
                     type="time"
                     aria-label="Reminder time"
-                    class="tipid-compact rounded-lg border border-[var(--border-strong)] bg-[var(--bg-surface)] px-2 py-1 text-xs"
+                    class="tipid-compact min-h-[40px] min-w-0 rounded-lg border border-[var(--border-strong)] bg-[var(--bg-surface)] px-2.5 py-1 text-base sm:min-h-[34px] sm:py-1 sm:text-xs"
                   />
                   <input
                     id="pref-daily-reminders"
                     v-model="dailyReminders"
                     type="checkbox"
                     role="switch"
-                    class="tipid-switch"
+                    class="tipid-switch shrink-0"
                   />
                 </div>
               </div>
 
-              <div class="flex items-center justify-between gap-4 p-3.5 sm:px-4">
+              <div class="flex flex-col gap-3 p-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-4">
                 <label for="pref-overbudget-alerts" class="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
                   <div class="tipid-icon-badge h-8 w-8 bg-[var(--warning-soft)] text-[var(--warning)]" aria-hidden="true">
                     <AlertTriangle :size="15" />
                   </div>
-                  <div class="min-w-0">
+                  <div class="min-w-0 flex-1">
                     <span class="block text-sm font-medium text-[var(--text-primary)]">
-                      {{ isTl ? "Babala sa Badyet" : "Over-Budget Threshold Alerts" }}
+                      {{ isTl ? "Babala sa Badyet" : "Budget Alerts" }}
                     </span>
                     <span class="block text-xs text-[var(--text-muted)]">
-                      {{ isTl ? "Babala kapag naabot ang itinakdang porsyento." : "Warn when monthly spending exceeds threshold." }}
+                      {{ isTl ? "Babala malapit sa limit." : "Warn when spending nears cap." }}
                     </span>
                   </div>
                 </label>
-                <div class="flex shrink-0 items-center gap-2.5">
+                <div class="flex shrink-0 items-center justify-end gap-2.5 pl-11 sm:pl-0">
                   <select
                     v-if="overbudgetAlerts"
                     v-model.number="budgetThreshold"
                     aria-label="Budget threshold percentage"
-                    class="tipid-compact rounded-lg border border-[var(--border-strong)] bg-[var(--bg-surface)] px-2 py-1 text-xs"
+                    class="tipid-compact min-h-[40px] rounded-lg border border-[var(--border-strong)] bg-[var(--bg-surface)] px-2.5 py-1 text-base sm:min-h-[34px] sm:py-1 sm:text-xs"
                   >
                     <option :value="75">75%</option>
                     <option :value="80">80%</option>
@@ -1352,7 +1352,7 @@ async function handleDeleteAccount() {
                     v-model="overbudgetAlerts"
                     type="checkbox"
                     role="switch"
-                    class="tipid-switch"
+                    class="tipid-switch shrink-0"
                   />
                 </div>
               </div>
@@ -1394,7 +1394,7 @@ async function handleDeleteAccount() {
                       {{ isTl ? "Seguridad at App Lock" : "Security & App Lock" }}
                     </h2>
                     <p class="mt-0.5 text-xs text-[var(--text-secondary)]">
-                      {{ isTl ? "Protektahan ang mga balanse sa device na ito gamit ang biometrics o PIN." : "Require Face ID / Touch ID or a local PIN passcode before opening ledgers." }}
+                      {{ isTl ? "Protektahan gamit ang biometrics o PIN." : "Require Face ID, Touch ID, or a local PIN." }}
                     </p>
                   </div>
                 </div>
@@ -1487,7 +1487,7 @@ async function handleDeleteAccount() {
                     {{ isTl ? "Data at Account" : "Data & Session Controls" }}
                   </h2>
                   <p class="mt-0.5 text-xs text-[var(--text-secondary)]">
-                    {{ isTl ? "I-export ang talaan, i-reset ang device prefs, o mag-sign out." : "Export your statement, reset device defaults, or sign out securely." }}
+                    {{ isTl ? "I-export ang CSV, i-reset ang prefs, o mag-sign out." : "Export CSV, reset device prefs, or sign out." }}
                   </p>
                 </div>
               </div>
@@ -1535,7 +1535,7 @@ async function handleDeleteAccount() {
 
                 <div class="flex flex-col gap-3 border-t border-[var(--expense)]/15 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
                   <p class="text-xs text-[var(--text-secondary)]">
-                    {{ isTl ? "Permanenteng tatanggalin ang iyong account access sa Firebase." : "Permanently remove your authentication login from this workspace." }}
+                    {{ isTl ? "Permanenteng tatanggalin ang iyong account access." : "Permanently remove your login access." }}
                   </p>
 
                   <button

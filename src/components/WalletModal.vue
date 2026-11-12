@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
+import { Trash2 } from "@lucide/vue";
 import BaseDialog from "./BaseDialog.vue";
-import { SUPPORTED_WALLETS, toCentavos, fromCentavos, sumMoney, money } from "@/lib/core";
+import { SUPPORTED_WALLETS, deriveWalletBaseBalance, money } from "@/lib/core";
 import { resolveWalletVisual } from "@/lib/walletVisuals";
-import { saveWalletBaseBalance } from "@/lib/data";
+import { removeWallet, saveWalletBaseBalance } from "@/lib/data";
 import { notifyWriteResult } from "@/lib/offlineSync";
 import { pushToast } from "@/composables/useToast";
 import { useI18n } from "@/lib/i18n";
@@ -34,27 +35,41 @@ const editDisplayName = computed(() =>
   props.editMethod ? resolveWalletVisual(props.editMethod).displayName : ""
 );
 
+const isDefaultCashWallet = computed(
+  () => (props.editMethod ?? "").trim().toLowerCase() === "cash"
+);
+
+const canRemoveWallet = computed(
+  () => props.mode === "edit" && Boolean(props.editMethod?.trim()) && !isDefaultCashWallet.value
+);
+
 const chosenMethod = ref("GCash");
 const balanceInput = ref("");
 const saving = ref(false);
+const removing = ref(false);
+const confirmingRemove = ref(false);
 const error = ref("");
+const busy = computed(() => saving.value || removing.value);
 
 watch(
-  () => props.open,
-  (isOpen) => {
+  () => [props.open, props.mode, props.editMethod] as const,
+  ([isOpen]) => {
     if (!isOpen) return;
     error.value = "";
+    confirmingRemove.value = false;
+    removing.value = false;
     if (props.mode === "edit" && props.editMethod) {
       chosenMethod.value = props.editMethod;
       balanceInput.value = String(props.walletBalances[props.editMethod] ?? 0);
     } else {
-      chosenMethod.value = availableWallets.value[0]?.id || "GCash";
+      chosenMethod.value = availableWallets.value[0]?.id || "";
       balanceInput.value = "0";
     }
   }
 );
 
 async function submitWallet() {
+  if (busy.value) return;
   error.value = "";
   let targetBal: number;
   try {
@@ -72,29 +87,25 @@ async function submitWallet() {
 
   saving.value = true;
   try {
+    // Reconcile against historical entries using integer centavos so both initial linking
+    // and balance updates match the entered amount without phantom historical drift.
+    const baseBal = deriveWalletBaseBalance(props.entries, targetMethod, targetBal);
+    const res = await saveWalletBaseBalance(props.uid, targetMethod, baseBal);
+    const displayLabel = resolveWalletVisual(targetMethod).displayName;
+
     if (props.mode === "edit") {
-      // Derive authoritative base balance using integer centavos relative to existing entries
-      const methodEntries = props.entries.filter((e) => e.method === targetMethod);
-      const inc = sumMoney(methodEntries.filter((e) => e.type === "income").map((e) => e.amount));
-      const exp = sumMoney(methodEntries.filter((e) => e.type !== "income").map((e) => e.amount));
-      const net = inc - exp;
-      const baseBal = fromCentavos(
-        toCentavos(targetBal, { allowZero: true }) - toCentavos(net, { allowZero: true, allowNegative: true })
-      );
-      const res = await saveWalletBaseBalance(props.uid, targetMethod, baseBal);
       notifyWriteResult(
         pushToast,
         res,
-        `${targetMethod} balance updated.`,
-        `${targetMethod} balance saved offline — syncs when online.`
+        `${displayLabel} balance updated.`,
+        `${displayLabel} balance saved offline — syncs when online.`
       );
     } else {
-      const res = await saveWalletBaseBalance(props.uid, targetMethod, targetBal);
       notifyWriteResult(
         pushToast,
         res,
-        `${targetMethod} linked.`,
-        `${targetMethod} linked offline — syncs when online.`
+        `${displayLabel} linked.`,
+        `${displayLabel} linked offline — syncs when online.`
       );
     }
     emit("close");
@@ -104,70 +115,147 @@ async function submitWallet() {
     saving.value = false;
   }
 }
+
+async function confirmRemoveWallet() {
+  if (!canRemoveWallet.value || !props.editMethod || busy.value) return;
+  error.value = "";
+  removing.value = true;
+  const targetMethod = props.editMethod;
+  const displayLabel = editDisplayName.value || targetMethod;
+
+  try {
+    const res = await removeWallet(props.uid, targetMethod);
+    notifyWriteResult(
+      pushToast,
+      res,
+      `${displayLabel} removed.`,
+      `${displayLabel} removed offline — syncs when online.`
+    );
+    emit("close");
+  } catch {
+    error.value = isTl.value ? "Hindi naalis ang card." : "Could not remove card.";
+  } finally {
+    removing.value = false;
+  }
+}
 </script>
 
 <template>
   <BaseDialog
     :open="open"
-    :title="mode === 'edit' ? (isTl ? `I-update ang ${editDisplayName}` : `Adjust ${editDisplayName} Balance`) : (isTl ? 'Magdagdag ng Wallet' : 'Link Account')"
-    :subtitle="mode === 'edit' ? (isTl ? 'I-adjust ang aktuwal na balanse ngayon.' : 'Reconcile this wallet to its current actual balance.') : (isTl ? 'Pumili ng e-wallet o bank account na susubaybayan.' : 'Select a wallet or bank account to track.')"
+    :title="mode === 'edit' ? (isTl ? `Pamahalaan ang ${editDisplayName}` : `Manage ${editDisplayName}`) : (isTl ? 'Magdagdag ng Wallet' : 'Link Account')"
+    :subtitle="mode === 'edit' ? (isTl ? 'I-update ang balanse o alisin ang card.' : 'Update balance or remove this card.') : (isTl ? 'Pumili ng wallet o bank account.' : 'Choose a wallet or bank account to track.')"
     max-width-class="max-w-sm"
     @close="emit('close')"
   >
-    <form class="space-y-4" @submit.prevent="submitWallet">
-      <div v-if="mode === 'add'">
-        <label for="wallet-select" class="mb-1 block text-xs font-medium text-[var(--text-secondary)]">
-          {{ isTl ? "Account / Wallet" : "Account / Wallet" }}
-        </label>
-        <select id="wallet-select" v-model="chosenMethod" class="tipid-input text-sm" :disabled="availableWallets.length === 0">
-          <option v-for="w in availableWallets" :key="w.id" :value="w.id">
-            {{ w.name }} ({{ resolveWalletVisual(w.id).kindLabel }})
-          </option>
-        </select>
-        <p v-if="availableWallets.length === 0" class="mt-1 text-xs text-[var(--text-muted)]">
-          {{ isTl ? "Naka-link na ang lahat ng sinusuportahang wallet." : "All supported accounts are already linked." }}
-        </p>
-      </div>
+    <div class="space-y-4">
+      <form class="space-y-4" @submit.prevent="submitWallet">
+        <div v-if="mode === 'add'">
+          <label for="wallet-select" class="mb-1 block text-xs font-medium text-[var(--text-secondary)]">
+            {{ isTl ? "Account / Wallet" : "Account / Wallet" }}
+          </label>
+          <select id="wallet-select" v-model="chosenMethod" class="tipid-input text-base sm:text-sm" :disabled="availableWallets.length === 0">
+            <option v-for="w in availableWallets" :key="w.id" :value="w.id">
+              {{ w.name }} ({{ resolveWalletVisual(w.id).kindLabel }})
+            </option>
+          </select>
+          <p v-if="availableWallets.length === 0" class="mt-1 text-xs text-[var(--text-muted)]">
+            {{ isTl ? "Naka-link na ang lahat ng sinusuportahang wallet." : "All supported accounts are already linked." }}
+          </p>
+        </div>
 
-      <div>
-        <label for="wallet-balance-input" class="mb-1 block text-xs font-medium text-[var(--text-secondary)]">
-          {{ mode === 'edit' ? (isTl ? 'Kasalukuyang Balanse (PHP)' : 'Current Balance (PHP)') : (isTl ? 'Panimulang Balanse (PHP)' : 'Initial Balance (PHP)') }}
-        </label>
-        <div class="relative">
-          <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 font-mono font-semibold text-[var(--text-muted)]">₱</span>
-          <input
-            id="wallet-balance-input"
-            v-model="balanceInput"
-            type="number"
-            min="0"
-            step="0.01"
-            inputmode="decimal"
-            autofocus
-            required
-            placeholder="0.00"
-            class="tipid-input pl-8 font-mono text-base font-semibold tabular-nums"
-          />
+        <div>
+          <label for="wallet-balance-input" class="mb-1 block text-xs font-medium text-[var(--text-secondary)]">
+            {{ mode === 'edit' ? (isTl ? 'Kasalukuyang Balanse (PHP)' : 'Current Balance (PHP)') : (isTl ? 'Panimulang Balanse (PHP)' : 'Initial Balance (PHP)') }}
+          </label>
+          <div class="relative">
+            <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 font-mono font-semibold text-[var(--text-muted)]">₱</span>
+            <input
+              id="wallet-balance-input"
+              v-model="balanceInput"
+              type="number"
+              min="0"
+              step="0.01"
+              inputmode="decimal"
+              autofocus
+              required
+              placeholder="0.00"
+              class="tipid-input pl-8 font-mono text-base font-semibold tabular-nums"
+            />
+          </div>
+        </div>
+
+        <p v-if="error" role="alert" class="text-xs font-medium text-[var(--expense)]">{{ error }}</p>
+
+        <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            :disabled="busy"
+            class="rounded-xl border border-[var(--border-strong)] px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-inset)] disabled:opacity-60"
+            @click="emit('close')"
+          >
+            {{ isTl ? "Kanselahin" : "Cancel" }}
+          </button>
+          <button
+            type="submit"
+            :disabled="busy || (mode === 'add' && availableWallets.length === 0)"
+            class="rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-60"
+          >
+            {{ saving ? "..." : mode === "edit" ? (isTl ? "I-update" : "Update") : (isTl ? "Idagdag" : "Add Wallet") }}
+          </button>
+        </div>
+      </form>
+
+      <div v-if="mode === 'edit'" class="border-t border-[var(--border-subtle)] pt-3">
+        <p v-if="isDefaultCashWallet" class="text-center text-xs text-[var(--text-muted)]">
+          {{ isTl ? "Default wallet ang Cash at hindi pwedeng alisin." : "Cash stays active as your default ledger." }}
+        </p>
+
+        <button
+          v-else-if="!confirmingRemove"
+          type="button"
+          :disabled="busy"
+          class="flex w-full items-center justify-center gap-1.5 rounded-xl border border-[var(--expense)]/25 px-4 py-2.5 text-xs font-semibold text-[var(--expense)] transition-colors hover:bg-[var(--expense)]/10 disabled:opacity-50"
+          @click="confirmingRemove = true"
+        >
+          <Trash2 :size="14" aria-hidden="true" />
+          <span>{{ isTl ? "Alisin ang Card" : "Remove Card" }}</span>
+        </button>
+
+        <div
+          v-else
+          role="region"
+          :aria-label="isTl ? 'Kumpirmahin ang pag-alis ng card' : 'Confirm card removal'"
+          class="space-y-2.5 rounded-xl border border-[var(--expense)]/30 bg-[var(--expense)]/8 p-3"
+        >
+          <div class="space-y-0.5">
+            <p class="text-xs font-bold text-[var(--expense)]">
+              {{ isTl ? `Alisin ang ${editDisplayName}?` : `Remove ${editDisplayName}?` }}
+            </p>
+            <p class="text-[11px] text-[var(--text-secondary)]">
+              {{ isTl ? "Mananatili ang dating records sa History." : "Past transactions stay in History." }}
+            </p>
+          </div>
+          <div class="flex items-center justify-end gap-2">
+            <button
+              type="button"
+              :disabled="busy"
+              class="rounded-lg border border-[var(--border-strong)] bg-[var(--bg-surface)] px-3.5 py-2 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-inset)] disabled:opacity-60"
+              @click="confirmingRemove = false"
+            >
+              {{ isTl ? "Itago" : "Keep" }}
+            </button>
+            <button
+              type="button"
+              :disabled="busy"
+              class="rounded-lg bg-[var(--expense)] px-3.5 py-2 text-xs font-semibold text-white hover:opacity-95 disabled:opacity-60"
+              @click="confirmRemoveWallet"
+            >
+              {{ removing ? "..." : (isTl ? "Oo, Alisin" : "Remove") }}
+            </button>
+          </div>
         </div>
       </div>
-
-      <p v-if="error" role="alert" class="text-xs font-medium text-[var(--expense)]">{{ error }}</p>
-
-      <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <button
-          type="button"
-          class="rounded-xl border border-[var(--border-strong)] px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-inset)]"
-          @click="emit('close')"
-        >
-          {{ isTl ? "Kanselahin" : "Cancel" }}
-        </button>
-        <button
-          type="submit"
-          :disabled="saving || (mode === 'add' && availableWallets.length === 0)"
-          class="rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
-        >
-          {{ saving ? "..." : mode === "edit" ? (isTl ? "I-update" : "Update") : (isTl ? "Idagdag" : "Add Wallet") }}
-        </button>
-      </div>
-    </form>
+    </div>
   </BaseDialog>
 </template>

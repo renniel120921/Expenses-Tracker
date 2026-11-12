@@ -14,6 +14,7 @@ import {
   SlidersHorizontal,
   ArrowUp,
   ArrowDown,
+  ArrowLeftRight,
   X
 } from "@lucide/vue";
 import AppShell from "@/components/AppShell.vue";
@@ -47,7 +48,7 @@ const { t, isTl } = useI18n();
 const searchQuery = ref("");
 const showSearch = ref(false);
 const showFilters = ref(false);
-const typeFilter = ref<"all" | "income" | "expense">("all");
+const typeFilter = ref<"all" | "income" | "expense" | "transfer">("all");
 const categoryFilter = ref("all");
 const walletFilter = ref("all");
 const monthFilter = ref("all");
@@ -65,7 +66,7 @@ onMounted(() => {
   const monthParam = params.get("month");
   const qParam = params.get("q");
 
-  if (typeParam === "income" || typeParam === "expense") {
+  if (typeParam === "income" || typeParam === "expense" || typeParam === "transfer") {
     typeFilter.value = typeParam;
   }
   if (catParam) {
@@ -180,8 +181,11 @@ const filteredEntries = computed(() => {
     if (typeFilter.value !== "all" && e.type !== typeFilter.value) return false;
     if (categoryFilter.value !== "all" && e.category !== categoryFilter.value) return false;
     if (targetWalletId) {
-      const entryWalletId = resolveWalletVisual(e.method || "Cash").id.toLowerCase();
-      if (entryWalletId !== targetWalletId && (e.method || "Cash") !== walletFilter.value) return false;
+      const fromWalletId = resolveWalletVisual(e.method || "Cash").id.toLowerCase();
+      const toWalletId = e.toMethod ? resolveWalletVisual(e.toMethod).id.toLowerCase() : "";
+      const matchesFrom = fromWalletId === targetWalletId || (e.method || "Cash") === walletFilter.value;
+      const matchesTo = Boolean(e.toMethod && (toWalletId === targetWalletId || e.toMethod === walletFilter.value));
+      if (!matchesFrom && !matchesTo) return false;
     }
     if (monthFilter.value !== "all") {
       const d = entryDate(e);
@@ -190,7 +194,8 @@ const filteredEntries = computed(() => {
     }
     if (q) {
       const displayWallet = resolveWalletVisual(e.method || "Cash").displayName;
-      const hay = `${e.desc} ${e.category} ${e.method} ${displayWallet} ${e.note || ""}`.toLowerCase();
+      const toDisplayWallet = e.toMethod ? resolveWalletVisual(e.toMethod).displayName : "";
+      const hay = `${e.desc} ${e.category} ${e.method} ${displayWallet} ${e.toMethod || ""} ${toDisplayWallet} ${e.note || ""}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
@@ -208,7 +213,7 @@ const summary = computed(() => {
       continue;
     }
     if (e.type === "income") inflowCents += amt;
-    else outflowCents += amt;
+    else if (e.type === "expense") outflowCents += amt;
   }
 
   return {
@@ -244,7 +249,7 @@ const groupedByDate = computed(() => {
       groups[dateKey] = { label, items: [], net: 0 };
     }
     groups[dateKey].items.push(e);
-    const signed = e.type === "income" ? e.amount : -e.amount;
+    const signed = e.type === "income" ? e.amount : e.type === "expense" ? -e.amount : 0;
     groups[dateKey].net = fromCentavos(
       toCentavos(groups[dateKey].net, { allowZero: true, allowNegative: true }) +
         toCentavos(signed, { allowZero: true, allowNegative: true })
@@ -257,7 +262,7 @@ const groupedByDate = computed(() => {
 });
 
 function entryBadgeStyle(entry: TransactionEntry): Record<string, string> | undefined {
-  if (entry.type === "income") return undefined;
+  if (entry.type !== "expense") return undefined;
   const color = getCategoryColor(entry.category);
   return {
     backgroundColor: `color-mix(in srgb, ${color} 15%, transparent)`,
@@ -430,8 +435,8 @@ async function confirmDelete() {
           type="search"
           aria-label="Search transactions"
           autofocus
-          :placeholder="isTl ? 'Maghanap ng detalye, kategorya, tala, o account...' : 'Search description, category, notes, or account...'"
-          class="tipid-input min-h-[42px] py-2 pl-10 text-xs sm:text-sm"
+          :placeholder="isTl ? 'Hanapin ang detalye, kategorya, o wallet...' : 'Search description, category, or wallet...'"
+          class="tipid-input min-h-[44px] py-2 pl-10 text-base sm:min-h-[42px] sm:text-sm"
         />
       </div>
 
@@ -442,7 +447,8 @@ async function confirmDelete() {
             v-for="tab in [
               { id: 'all', label: t.commonAll },
               { id: 'income', label: isTl ? 'Kita' : 'Income' },
-              { id: 'expense', label: isTl ? 'Gastos' : 'Expense' }
+              { id: 'expense', label: isTl ? 'Gastos' : 'Expense' },
+              { id: 'transfer', label: isTl ? 'Lipat' : 'Transfer' }
             ]"
             :key="tab.id"
             type="button"
@@ -508,7 +514,7 @@ async function confirmDelete() {
           <select
             id="history-filter-category"
             v-model="categoryFilter"
-            class="tipid-input min-h-[40px] py-1.5 text-xs sm:text-sm"
+            class="tipid-input min-h-[44px] py-1.5 text-base sm:min-h-[40px] sm:text-sm"
           >
             <option value="all">{{ isTl ? "Lahat ng Kategorya" : "All Categories" }}</option>
             <option v-for="c in CATEGORIES" :key="c" :value="c">{{ c }}</option>
@@ -523,7 +529,7 @@ async function confirmDelete() {
           <select
             id="history-filter-wallet"
             v-model="walletFilter"
-            class="tipid-input min-h-[40px] py-1.5 text-xs sm:text-sm"
+            class="tipid-input min-h-[44px] py-1.5 text-base sm:min-h-[40px] sm:text-sm"
           >
             <option value="all">{{ isTl ? "Lahat ng Account" : "All Accounts" }}</option>
             <option v-for="w in wallets" :key="w" :value="w">
@@ -539,7 +545,7 @@ async function confirmDelete() {
           <select
             id="history-filter-month"
             v-model="monthFilter"
-            class="tipid-input min-h-[40px] py-1.5 text-xs sm:text-sm"
+            class="tipid-input min-h-[44px] py-1.5 text-base sm:min-h-[40px] sm:text-sm"
           >
             <option value="all">{{ isTl ? "Lahat ng Buwan" : "All Months" }}</option>
             <option v-for="m in availableMonths" :key="m" :value="m">
@@ -566,19 +572,19 @@ async function confirmDelete() {
 
         <h2 class="mt-4 text-base font-bold text-[var(--text-primary)]">
           <template v-if="hasActiveFilters">
-            {{ isTl ? "Walang tugma sa kasalukuyang filter" : "No transactions match these filters" }}
+            {{ isTl ? "Walang tugma sa filter" : "No matching transactions" }}
           </template>
           <template v-else>
-            {{ isTl ? "Wala pang naitalang transaksyon" : "Your transaction ledger is empty" }}
+            {{ isTl ? "Wala pang transaksyon" : "No transactions yet" }}
           </template>
         </h2>
 
         <p class="mt-1.5 max-w-md text-xs leading-relaxed text-[var(--text-secondary)] sm:text-sm">
           <template v-if="hasActiveFilters">
-            {{ isTl ? "Subukang paluwagin ang paghahanap o ibalik ang mga filter." : "Try adjusting your search keywords, category, account, or period filters." }}
+            {{ isTl ? "Subukang palitan o i-reset ang filters." : "Try clearing or adjusting your filters." }}
           </template>
           <template v-else>
-            {{ isTl ? "Simulan ang iyong talaan sa pagdagdag ng unang gastos o kita." : "Log your first expense, inflow, or SMS notice to see detailed date-grouped entries here." }}
+            {{ isTl ? "Magtala ng unang gastos o kita." : "Log your first expense or inflow to start." }}
           </template>
         </p>
 
@@ -642,7 +648,11 @@ async function confirmDelete() {
                 <span
                   :class="[
                     'tipid-icon-badge h-11 w-11 shrink-0 rounded-full',
-                    item.type === 'income' ? 'bg-[var(--income-soft)] text-[var(--income)]' : ''
+                    item.type === 'income'
+                      ? 'bg-[var(--income-soft)] text-[var(--income)]'
+                      : item.type === 'transfer'
+                        ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
+                        : ''
                   ]"
                   :style="entryBadgeStyle(item)"
                   aria-hidden="true"
@@ -654,10 +664,10 @@ async function confirmDelete() {
                 <div class="min-w-0 flex-1">
                   <div class="flex flex-wrap items-center gap-1.5">
                     <p class="truncate text-sm font-bold text-[var(--text-primary)]">
-                      {{ item.category }}
+                      {{ item.type === 'transfer' ? (isTl ? 'Lipat-pondo' : 'Transfer') : item.category }}
                     </p>
                     <span
-                      v-if="item.type !== 'income'"
+                      v-if="item.type === 'expense'"
                       :class="[
                         'shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold',
                         item.spendType === 'luho'
@@ -666,6 +676,12 @@ async function confirmDelete() {
                       ]"
                     >
                       {{ item.spendType === "luho" ? "Want" : "Need" }}
+                    </span>
+                    <span
+                      v-else-if="item.type === 'transfer'"
+                      class="shrink-0 rounded-md bg-[var(--accent-soft)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--accent)]"
+                    >
+                      {{ isTl ? "Lipat" : "Internal" }}
                     </span>
                   </div>
 
@@ -686,6 +702,10 @@ async function confirmDelete() {
                         aria-hidden="true"
                       />
                       <span>{{ resolveWalletVisual(item.method || "Cash").displayName }}</span>
+                      <template v-if="item.type === 'transfer' && item.toMethod">
+                        <ArrowLeftRight :size="10" class="shrink-0 text-[var(--text-muted)]" aria-hidden="true" />
+                        <span>{{ resolveWalletVisual(item.toMethod).displayName }}</span>
+                      </template>
                     </span>
                     <span v-if="item.note" class="truncate text-[var(--text-muted)]">
                       · {{ item.note }}
@@ -698,10 +718,14 @@ async function confirmDelete() {
                   <p
                     :class="[
                       'tipid-amount font-mono text-sm font-bold sm:text-base',
-                      item.type === 'income' ? 'text-[var(--income)]' : 'text-[var(--expense)]'
+                      item.type === 'income'
+                        ? 'text-[var(--income)]'
+                        : item.type === 'transfer'
+                          ? 'text-[var(--text-primary)]'
+                          : 'text-[var(--expense)]'
                     ]"
                   >
-                    {{ item.type === "income" ? "+" : "-" }}₱{{ formatPeso(item.amount) }}
+                    {{ item.type === "transfer" ? "" : item.type === "income" ? "+" : "-" }}₱{{ formatPeso(item.amount) }}
                   </p>
                   <p class="mt-0.5 font-mono text-[11px] text-[var(--text-muted)]">
                     {{ entryTimeLabel(item) }}

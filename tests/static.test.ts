@@ -12,6 +12,7 @@ const KEPT_PAGES = [
   "dashboard.html",
   "history.html",
   "chart.html",
+  "plan.html",
   "bills.html",
   "utang.html",
   "profile.html"
@@ -74,6 +75,30 @@ describe("MPA entry pages, CSP hardening, and retired-page cleanup", () => {
     expect(assetFiles).toContain("apple-touch-icon.png");
     expect(assetFiles).toContain("favicon-32.png");
     expect(assetFiles.some((f) => /tippy/i.test(f))).toBe(false);
+
+    const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, "public/manifest.json"), "utf8")) as {
+      shortcuts?: Array<{
+        name: string;
+        short_name?: string;
+        url: string;
+        icons?: Array<{ src: string }>;
+      }>;
+      icons?: Array<{ src: string }>;
+    };
+    expect(Array.isArray(manifest.icons) && manifest.icons.length > 0).toBe(true);
+    expect(Array.isArray(manifest.shortcuts)).toBe(true);
+    expect(manifest.shortcuts?.map((s) => s.url)).toEqual([
+      "/dashboard.html?action=new_expense",
+      "/dashboard.html?action=new_income"
+    ]);
+    for (const shortcut of manifest.shortcuts || []) {
+      expect(shortcut.name.length).toBeGreaterThan(0);
+      expect(shortcut.icons?.length).toBeGreaterThan(0);
+      for (const icon of shortcut.icons || []) {
+        const iconPath = path.join(ROOT, "public", icon.src.replace(/^\//, ""));
+        expect(fs.existsSync(iconPath), `${icon.src} should exist`).toBe(true);
+      }
+    }
   });
 
   it("uses system font stack in main.css per HIG direction", () => {

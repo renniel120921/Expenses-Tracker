@@ -1,5 +1,6 @@
 import type { Component } from "vue";
 import {
+  ArrowLeftRight,
   Banknote,
   Building2,
   CalendarClock,
@@ -20,6 +21,7 @@ import {
   Wifi,
   Zap
 } from "@lucide/vue";
+import type { EntryType } from "@/types/finance";
 import type { WalletKind } from "@/lib/walletVisuals";
 
 const EXACT_CATEGORY_ICONS: Record<string, Component> = {
@@ -35,6 +37,7 @@ const EXACT_CATEGORY_ICONS: Record<string, Component> = {
   shopping: ShoppingBag,
   savings: PiggyBank,
   ipon: PiggyBank,
+  transfer: ArrowLeftRight,
   healthcare: HeartPulse,
   entertainment: Clapperboard,
   kita: Coins,
@@ -58,8 +61,9 @@ const KEYWORD_CATEGORY_ICONS: ReadonlyArray<readonly [RegExp, Component]> = [
 /**
  * Returns a crisp vector icon component for transaction and bill categories.
  */
-export function getCategoryIcon(category: string, type?: "expense" | "income"): Component {
+export function getCategoryIcon(category: string, type?: EntryType): Component {
   if (type === "income") return Coins;
+  if (type === "transfer") return ArrowLeftRight;
   const normalized = String(category || "").trim().toLowerCase();
   if (normalized && EXACT_CATEGORY_ICONS[normalized]) {
     return EXACT_CATEGORY_ICONS[normalized];

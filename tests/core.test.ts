@@ -13,6 +13,7 @@ import {
   manilaDateKey,
   money,
   parseDateKey,
+  resolveShortcutTransactionType,
   storageKey,
   sumMoney,
   toCentavos,
@@ -159,5 +160,13 @@ describe("SMS quick-parser & local passcode lock", () => {
 
     disableBiometrics(uid);
     expect(isBiometricEnabled(uid)).toBe(false);
+  });
+
+  it("maps PWA shortcut action query params to expense or income forms", () => {
+    expect(resolveShortcutTransactionType("?action=new_expense")).toBe("expense");
+    expect(resolveShortcutTransactionType("?action=new_income")).toBe("income");
+    expect(resolveShortcutTransactionType("?foo=bar&action=new_income")).toBe("income");
+    expect(resolveShortcutTransactionType("?action=unknown")).toBeNull();
+    expect(resolveShortcutTransactionType("")).toBeNull();
   });
 });

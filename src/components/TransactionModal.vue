@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
-import { Loader2, Sparkles } from "@lucide/vue";
+import { ArrowLeftRight, Loader2, Sparkles } from "@lucide/vue";
 import BaseDialog from "./BaseDialog.vue";
 import { CATEGORIES, formatPeso, money, storageKey } from "@/lib/core";
 import { resolveWalletVisual } from "@/lib/walletVisuals";
-import { addExpense, addIncome } from "@/lib/data";
+import { addExpense, addIncome, addTransfer } from "@/lib/data";
 import { notifyWriteResult } from "@/lib/offlineSync";
 import { parseTransactionSms } from "@/lib/smsParser";
 import { pushToast } from "@/composables/useToast";
@@ -35,11 +35,39 @@ const amount = ref("");
 const desc = ref("");
 const category = ref<string>(CATEGORIES[0]);
 const method = ref<string>(props.wallets[0] || "Cash");
+const toMethod = ref<string>(props.wallets[1] || props.wallets[0] || "Cash");
 const spendType = ref<SpendType>("need");
 const saving = ref(false);
 const showSms = ref(false);
 const smsText = ref("");
 const error = ref("");
+const amountInputRef = ref<HTMLInputElement | null>(null);
+const descInputRef = ref<HTMLInputElement | null>(null);
+const toWalletSelectRef = ref<HTMLSelectElement | null>(null);
+const walletTouched = ref(false);
+
+function resolveOtherWallet(primary: string): string {
+  return props.wallets.find((w) => w !== primary) || primary || "Cash";
+}
+
+function syncDefaultWallets() {
+  const preferred = resolvePreferredWallet();
+  method.value = preferred;
+  toMethod.value = resolveOtherWallet(preferred);
+}
+
+function markWalletTouched() {
+  walletTouched.value = true;
+  error.value = "";
+}
+
+function swapTransferWallets() {
+  walletTouched.value = true;
+  const from = method.value;
+  method.value = toMethod.value;
+  toMethod.value = from;
+  error.value = "";
+}
 
 function resolvePreferredWallet(): string {
   const list = props.wallets;
@@ -67,14 +95,31 @@ watch(
       amount.value = "";
       desc.value = "";
       category.value = CATEGORIES[0];
-      method.value = resolvePreferredWallet();
+      walletTouched.value = false;
+      syncDefaultWallets();
       spendType.value = "need";
       showSms.value = false;
       smsText.value = "";
       error.value = "";
     }
+  },
+  { immediate: true }
+);
+
+watch(
+  () => props.wallets,
+  () => {
+    if (props.open && !walletTouched.value) {
+      syncDefaultWallets();
+    }
   }
 );
+
+watch([type, method], ([nextType, nextMethod]) => {
+  if (nextType === "transfer" && toMethod.value === nextMethod && props.wallets.length > 1) {
+    toMethod.value = resolveOtherWallet(nextMethod);
+  }
+});
 
 const parsedAmount = computed(() => {
   const n = Number(amount.value);
@@ -83,7 +128,11 @@ const parsedAmount = computed(() => {
 
 const currentWalletBalance = computed(() => props.walletBalances[method.value] ?? 0);
 const insufficient = computed(() => {
-  return type.value === "expense" && parsedAmount.value > 0 && parsedAmount.value > currentWalletBalance.value;
+  return (
+    (type.value === "expense" || type.value === "transfer") &&
+    parsedAmount.value > 0 &&
+    parsedAmount.value > currentWalletBalance.value
+  );
 });
 
 function applySmsParse() {
@@ -112,24 +161,60 @@ async function handleSubmit() {
     safeAmount = money(amount.value);
   } catch {
     error.value = isTl.value ? "Maglagay ng wastong halaga." : "Enter a valid positive amount.";
+    amountInputRef.value?.focus();
     return;
   }
 
-  if (!desc.value.trim()) {
+  if (type.value !== "transfer" && !desc.value.trim()) {
     error.value = isTl.value ? "Maglagay ng paglalarawan." : "Enter a description.";
+    descInputRef.value?.focus();
     return;
   }
 
-  if (type.value === "expense" && safeAmount > currentWalletBalance.value) {
+  if (type.value === "transfer") {
+    if (props.wallets.length < 2) {
+      error.value = isTl.value
+        ? "Magdagdag muna ng pangalawang wallet para makapag-transfer."
+        : "Add a second wallet first to transfer funds.";
+      toWalletSelectRef.value?.focus();
+      return;
+    }
+    if (!toMethod.value || toMethod.value === method.value) {
+      error.value = isTl.value
+        ? "Pumili ng ibang paglilipatang wallet."
+        : "Choose a different destination wallet.";
+      toWalletSelectRef.value?.focus();
+      return;
+    }
+  }
+
+  if ((type.value === "expense" || type.value === "transfer") && safeAmount > currentWalletBalance.value) {
     error.value = isTl.value
-      ? `Kulang ang balanse sa ${method.value} (₱${formatPeso(currentWalletBalance.value)} lang).`
-      : `Insufficient balance in ${method.value} (₱${formatPeso(currentWalletBalance.value)} available).`;
+      ? `Kulang ang balanse sa ${resolveWalletVisual(method.value).displayName} (₱${formatPeso(currentWalletBalance.value)} lang).`
+      : `Insufficient balance in ${resolveWalletVisual(method.value).displayName} (₱${formatPeso(currentWalletBalance.value)} available).`;
+    amountInputRef.value?.focus();
     return;
   }
 
   saving.value = true;
   try {
-    if (type.value === "income") {
+    if (type.value === "transfer") {
+      const fromLabel = resolveWalletVisual(method.value).displayName;
+      const toLabel = resolveWalletVisual(toMethod.value).displayName;
+      const cleanDesc = desc.value.trim() || `Transfer: ${fromLabel} -> ${toLabel}`;
+      const res = await addTransfer(props.uid, {
+        desc: cleanDesc,
+        amount: safeAmount,
+        fromMethod: method.value,
+        toMethod: toMethod.value
+      });
+      notifyWriteResult(
+        pushToast,
+        res,
+        isTl.value ? "Nailipat ang pondo." : "Transfer recorded.",
+        isTl.value ? "Naka-save ang transfer offline — isi-sync online." : "Transfer saved offline — syncs when online."
+      );
+    } else if (type.value === "income") {
       const res = await addIncome(props.uid, { desc: desc.value.trim(), amount: safeAmount, method: method.value });
       notifyWriteResult(
         pushToast,
@@ -167,12 +252,12 @@ async function handleSubmit() {
   <BaseDialog
     :open="open"
     :title="isTl ? 'Bagong Transaksyon' : 'New Transaction'"
-    :subtitle="isTl ? 'Itala ang gastos o kita sa iyong napiling wallet.' : 'Record an expense or income to a wallet.'"
+    :subtitle="isTl ? 'Itala ang gastos, kita, o lipat-pondo sa wallet.' : 'Record an expense, income, or wallet transfer.'"
     @close="emit('close')"
   >
     <form class="space-y-4" @submit.prevent="handleSubmit">
       <!-- Type Radio Group -->
-      <fieldset class="grid grid-cols-2 gap-1.5 rounded-xl bg-[var(--bg-inset)] p-1">
+      <fieldset class="grid grid-cols-3 gap-1.5 rounded-xl bg-[var(--bg-inset)] p-1">
         <legend class="visually-hidden">{{ isTl ? "Uri ng transaksyon" : "Transaction type" }}</legend>
         <label
           :class="[
@@ -180,8 +265,8 @@ async function handleSubmit() {
             type === 'expense' ? 'bg-[var(--bg-surface)] text-[var(--expense)] shadow-xs' : 'text-[var(--text-secondary)]'
           ]"
         >
-          <input v-model="type" type="radio" name="tx-type" value="expense" class="visually-hidden" />
-          {{ isTl ? "Gastos (Expense)" : "Expense" }}
+          <input v-model="type" type="radio" name="tx-type" value="expense" class="visually-hidden" @change="error = ''" />
+          {{ isTl ? "Gastos" : "Expense" }}
         </label>
         <label
           :class="[
@@ -189,8 +274,17 @@ async function handleSubmit() {
             type === 'income' ? 'bg-[var(--bg-surface)] text-[var(--income)] shadow-xs' : 'text-[var(--text-secondary)]'
           ]"
         >
-          <input v-model="type" type="radio" name="tx-type" value="income" class="visually-hidden" />
-          {{ isTl ? "Kita (Income)" : "Income" }}
+          <input v-model="type" type="radio" name="tx-type" value="income" class="visually-hidden" @change="error = ''" />
+          {{ isTl ? "Kita" : "Income" }}
+        </label>
+        <label
+          :class="[
+            'flex cursor-pointer items-center justify-center rounded-lg py-2 text-xs font-semibold transition-colors',
+            type === 'transfer' ? 'bg-[var(--bg-surface)] text-[var(--accent)] shadow-xs' : 'text-[var(--text-secondary)]'
+          ]"
+        >
+          <input v-model="type" type="radio" name="tx-type" value="transfer" class="visually-hidden" @change="error = ''" />
+          {{ isTl ? "Lipat" : "Transfer" }}
         </label>
       </fieldset>
 
@@ -205,6 +299,7 @@ async function handleSubmit() {
           </span>
           <input
             id="tx-amount"
+            ref="amountInputRef"
             v-model="amount"
             type="number"
             step="0.01"
@@ -214,26 +309,35 @@ async function handleSubmit() {
             required
             placeholder="0.00"
             class="tipid-input pl-8 font-mono text-lg font-bold tabular-nums"
+            @input="error = ''"
           />
         </div>
         <p v-if="insufficient" class="mt-1 text-xs font-medium text-[var(--expense)]">
-          {{ isTl ? `Short ng ₱${formatPeso(parsedAmount - currentWalletBalance)} sa ${method}` : `Short by ₱${formatPeso(parsedAmount - currentWalletBalance)} in ${method}` }}
+          {{ isTl ? `Short ng ₱${formatPeso(parsedAmount - currentWalletBalance)} sa ${resolveWalletVisual(method).displayName}` : `Short by ₱${formatPeso(parsedAmount - currentWalletBalance)} in ${resolveWalletVisual(method).displayName}` }}
         </p>
       </div>
 
       <!-- Description -->
       <div>
         <label for="tx-desc" class="mb-1 block text-xs font-medium text-[var(--text-secondary)]">
-          {{ isTl ? "Paglalarawan" : "Description" }}
+          {{ type === "transfer" ? (isTl ? "Paglalarawan (opsyonal)" : "Note / Description (optional)") : (isTl ? "Paglalarawan" : "Description") }}
         </label>
         <input
           id="tx-desc"
+          ref="descInputRef"
           v-model="desc"
           type="text"
           maxlength="120"
-          required
-          :placeholder="type === 'income' ? 'e.g., Monthly salary, Freelance' : 'e.g., Grocery, Grab fare, Electric bill'"
-          class="tipid-input text-sm"
+          :required="type !== 'transfer'"
+          :placeholder="
+            type === 'transfer'
+              ? (isTl ? 'hal. Cash-in GCash, Savings transfer' : 'e.g., Cash-in GCash, Move to savings')
+              : type === 'income'
+                ? 'e.g., Monthly salary, Freelance'
+                : 'e.g., Grocery, Grab fare, Electric bill'
+          "
+          class="tipid-input text-base sm:text-sm"
+          @input="error = ''"
         />
       </div>
 
@@ -268,13 +372,59 @@ async function handleSubmit() {
         </div>
       </fieldset>
 
-      <!-- Category & Wallet -->
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <!-- Transfer Wallets -->
+      <div v-if="type === 'transfer'" class="space-y-2.5">
+        <div class="grid grid-cols-1 items-end gap-2.5 sm:grid-cols-[1fr_auto_1fr]">
+          <div>
+            <label for="tx-from-wallet" class="mb-1 block text-xs font-medium text-[var(--text-secondary)]">
+              {{ isTl ? "Mula sa Wallet" : "From Wallet" }}
+            </label>
+            <select id="tx-from-wallet" v-model="method" class="tipid-input text-base sm:text-sm" @change="markWalletTouched">
+              <option v-for="w in wallets" :key="w" :value="w">
+                {{ resolveWalletVisual(w).displayName }} (₱{{ formatPeso(walletBalances[w] ?? 0) }})
+              </option>
+            </select>
+          </div>
+
+          <button
+            type="button"
+            class="tipid-compact inline-flex h-10 w-full items-center justify-center rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-inset)] text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] sm:w-10"
+            :title="isTl ? 'Pagpalitin ang wallets' : 'Swap wallets'"
+            :aria-label="isTl ? 'Pagpalitin ang mula at papuntang wallet' : 'Swap source and destination wallets'"
+            @click="swapTransferWallets"
+          >
+            <ArrowLeftRight :size="15" aria-hidden="true" />
+          </button>
+
+          <div>
+            <label for="tx-to-wallet" class="mb-1 block text-xs font-medium text-[var(--text-secondary)]">
+              {{ isTl ? "Papunta sa Wallet" : "To Wallet" }}
+            </label>
+            <select
+              id="tx-to-wallet"
+              ref="toWalletSelectRef"
+              v-model="toMethod"
+              class="tipid-input text-base sm:text-sm"
+              @change="markWalletTouched"
+            >
+              <option v-for="w in wallets" :key="w" :value="w" :disabled="w === method && wallets.length > 1">
+                {{ resolveWalletVisual(w).displayName }} (₱{{ formatPeso(walletBalances[w] ?? 0) }})
+              </option>
+            </select>
+          </div>
+        </div>
+        <p class="text-[11px] text-[var(--text-muted)]">
+          {{ isTl ? "Hindi nakakaapekto ang lipat-pondo sa totals ng gastos o kita." : "Transfers move wallet balances without inflating expenses or income." }}
+        </p>
+      </div>
+
+      <!-- Category & Wallet (Expense / Income) -->
+      <div v-else class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div v-if="type === 'expense'">
           <label for="tx-category" class="mb-1 block text-xs font-medium text-[var(--text-secondary)]">
             {{ isTl ? "Kategorya" : "Category" }}
           </label>
-          <select id="tx-category" v-model="category" class="tipid-input text-sm">
+          <select id="tx-category" v-model="category" class="tipid-input text-base sm:text-sm">
             <option v-for="c in CATEGORIES" :key="c" :value="c">{{ c }}</option>
           </select>
         </div>
@@ -283,7 +433,7 @@ async function handleSubmit() {
           <label for="tx-wallet" class="mb-1 block text-xs font-medium text-[var(--text-secondary)]">
             {{ isTl ? "Wallet / Account" : "Account / Wallet" }}
           </label>
-          <select id="tx-wallet" v-model="method" class="tipid-input text-sm">
+          <select id="tx-wallet" v-model="method" class="tipid-input text-base sm:text-sm" @change="markWalletTouched">
             <option v-for="w in wallets" :key="w" :value="w">
               {{ resolveWalletVisual(w).displayName }} (₱{{ formatPeso(walletBalances[w] ?? 0) }})
             </option>
@@ -313,7 +463,7 @@ async function handleSubmit() {
             rows="2"
             maxlength="4000"
             placeholder="e.g., You paid PHP 340.00 to Meralco using GCash..."
-            class="tipid-input text-xs"
+            class="tipid-input text-base sm:text-xs"
           />
           <button
             type="button"
@@ -343,7 +493,7 @@ async function handleSubmit() {
           class="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
         >
           <Loader2 v-if="saving" :size="16" class="animate-spin" aria-hidden="true" />
-          <span>{{ saving ? (isTl ? "Sinasave..." : "Saving...") : (type === "income" ? (isTl ? "Itala ang Kita" : "Save Income") : (isTl ? "Itala ang Gastos" : "Save Expense")) }}</span>
+          <span>{{ saving ? (isTl ? "Sinasave..." : "Saving...") : (type === "transfer" ? (isTl ? "Ilipat ang Pondo" : "Save Transfer") : type === "income" ? (isTl ? "Itala ang Kita" : "Save Income") : (isTl ? "Itala ang Gastos" : "Save Expense")) }}</span>
         </button>
       </div>
     </form>

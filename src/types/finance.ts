@@ -1,11 +1,14 @@
-export type EntryType = "expense" | "income";
+export type EntryType = "expense" | "income" | "transfer";
 export type SpendType = "need" | "luho";
 export type BillStatus = "Unpaid" | "Paid" | "Overdue";
+export type BillRecurrence = "none" | "weekly" | "monthly" | "quarterly" | "yearly";
+export type BudgetCycle = "monthly" | "kinsenas";
+export type SavingsGoalColor = "emerald" | "blue" | "amber" | "violet" | "rose";
 export type UtangDirection = "owed_to_me" | "i_owe";
 export type UtangStatus = "Unpaid" | "Paid";
 export type LanguageCode = "en" | "tl";
 export type ThemePreference = "system" | "light" | "dark";
-export type NavTab = "home" | "history" | "analytics" | "bills" | "utang" | "profile";
+export type NavTab = "home" | "history" | "analytics" | "plan" | "bills" | "utang" | "profile";
 
 export interface TimestampLike {
   toDate?: () => Date;
@@ -20,6 +23,7 @@ export interface TransactionEntry {
   amount: number;
   category: string;
   method: string;
+  toMethod?: string;
   spendType?: SpendType;
   date?: string;
   createdAt?: TimestampLike | Date | string | number | null;
@@ -33,8 +37,29 @@ export interface BillRecord {
   dueDate: string;
   category: string;
   notes?: string;
+  recurrence?: BillRecurrence;
   status: BillStatus;
   createdAt?: TimestampLike | Date | string | number | null;
+}
+
+export interface SavingsGoalRecord {
+  id: string;
+  name: string;
+  targetAmount: number;
+  savedAmount: number;
+  wallet?: string | null;
+  targetDate?: string | null;
+  color?: SavingsGoalColor;
+  createdAt?: TimestampLike | Date | string | number | null;
+  updatedAt?: TimestampLike | Date | string | number | null;
+}
+
+export interface CategoryBudgetRecord {
+  id: string;
+  category: string;
+  limitAmount: number;
+  createdAt?: TimestampLike | Date | string | number | null;
+  updatedAt?: TimestampLike | Date | string | number | null;
 }
 
 export interface UtangRecord {
@@ -72,6 +97,7 @@ export interface UserPreferences {
 
 export interface UserDocumentData {
   monthlyBudget?: number | null;
+  budgetCycle?: BudgetCycle;
   wallets?: Record<string, number>;
   financialGoals?: FinancialGoal;
   notificationSettings?: NotificationSettings;

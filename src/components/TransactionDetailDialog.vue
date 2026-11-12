@@ -58,8 +58,12 @@ const walletVisual = computed(() =>
   resolveWalletVisual(props.entry?.method || "Cash")
 );
 
+const toWalletVisual = computed(() =>
+  props.entry?.toMethod ? resolveWalletVisual(props.entry.toMethod) : null
+);
+
 const categoryBadgeStyle = computed(() => {
-  if (!props.entry || props.entry.type === "income") return undefined;
+  if (!props.entry || props.entry.type !== "expense") return undefined;
   const color = getCategoryColor(props.entry.category);
   return {
     backgroundColor: `color-mix(in srgb, ${color} 15%, transparent)`,
@@ -80,7 +84,11 @@ const categoryBadgeStyle = computed(() => {
         <div
           :class="[
             'tipid-icon-badge mb-3 h-12 w-12 rounded-2xl',
-            entry.type === 'income' ? 'bg-[var(--income-soft)] text-[var(--income)]' : ''
+            entry.type === 'income'
+              ? 'bg-[var(--income-soft)] text-[var(--income)]'
+              : entry.type === 'transfer'
+                ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
+                : ''
           ]"
           :style="categoryBadgeStyle"
           aria-hidden="true"
@@ -93,10 +101,18 @@ const categoryBadgeStyle = computed(() => {
             'inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide',
             entry.type === 'income'
               ? 'bg-[var(--income-soft)] text-[var(--income)]'
-              : 'bg-[var(--expense-soft)] text-[var(--expense)]'
+              : entry.type === 'transfer'
+                ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
+                : 'bg-[var(--expense-soft)] text-[var(--expense)]'
           ]"
         >
-          {{ entry.type === 'income' ? (isTl ? 'Kita' : 'Income') : (isTl ? 'Gastos' : 'Expense') }}
+          {{
+            entry.type === 'income'
+              ? (isTl ? 'Kita' : 'Income')
+              : entry.type === 'transfer'
+                ? (isTl ? 'Lipat-pondo' : 'Transfer')
+                : (isTl ? 'Gastos' : 'Expense')
+          }}
         </span>
         <p
           :class="[
@@ -104,7 +120,7 @@ const categoryBadgeStyle = computed(() => {
             entry.type === 'income' ? 'text-[var(--income)]' : 'text-[var(--text-primary)]'
           ]"
         >
-          {{ entry.type === 'income' ? '+' : '-' }}₱{{ formatPeso(entry.amount) }}
+          {{ entry.type === 'transfer' ? '' : entry.type === 'income' ? '+' : '-' }}₱{{ formatPeso(entry.amount) }}
         </p>
         <p class="mt-1 text-sm font-semibold text-[var(--text-primary)]">
           {{ entry.desc }}
@@ -120,8 +136,10 @@ const categoryBadgeStyle = computed(() => {
           </dd>
         </div>
         <div class="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-2">
-          <dt class="text-[var(--text-muted)]">{{ isTl ? "Account / Wallet" : "Account / Wallet" }}</dt>
-          <dd class="inline-flex items-center gap-1.5 font-semibold text-[var(--text-primary)]">
+          <dt class="text-[var(--text-muted)]">
+            {{ entry.type === 'transfer' ? (isTl ? 'Mula -> Papunta' : 'From -> To') : 'Account / Wallet' }}
+          </dt>
+          <dd class="inline-flex flex-wrap items-center justify-end gap-1.5 font-semibold text-[var(--text-primary)]">
             <span
               class="h-2 w-2 shrink-0 rounded-full"
               :style="{ backgroundColor: walletVisual.surfaceEnd }"
@@ -129,13 +147,22 @@ const categoryBadgeStyle = computed(() => {
             />
             <component :is="getWalletKindIcon(walletVisual.kind)" :size="13" class="shrink-0 text-[var(--text-secondary)]" aria-hidden="true" />
             <span>{{ walletVisual.displayName }}</span>
-            <span class="rounded bg-[var(--bg-inset)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--text-muted)]">
+            <template v-if="entry.type === 'transfer' && toWalletVisual">
+              <span aria-hidden="true" class="text-[var(--text-muted)]">-&gt;</span>
+              <span
+                class="h-2 w-2 shrink-0 rounded-full"
+                :style="{ backgroundColor: toWalletVisual.surfaceEnd }"
+                aria-hidden="true"
+              />
+              <span>{{ toWalletVisual.displayName }}</span>
+            </template>
+            <span v-else class="rounded bg-[var(--bg-inset)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--text-muted)]">
               {{ walletVisual.kindLabel }}
             </span>
           </dd>
         </div>
         <div
-          v-if="entry.type !== 'income'"
+          v-if="entry.type === 'expense'"
           class="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-2"
         >
           <dt class="text-[var(--text-muted)]">{{ isTl ? "Uri" : "Classification" }}</dt>
