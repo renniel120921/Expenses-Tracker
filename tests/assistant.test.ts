@@ -10,6 +10,7 @@ import {
   buildCompactFinanceContext,
   evaluateActionBehaviorWarning,
   generateLocalAssistantReply,
+  parseNaturalAssistantActions,
   parseNaturalTransactionCommand,
   type AssistantLedgerSnapshot
 } from "@/lib/assistantEngine";
@@ -25,7 +26,11 @@ import {
   TokenVerificationError
 } from "../api/_lib/verifyFirebaseToken";
 import { resetServerRateLimiterForTest } from "../api/_lib/rateLimiter";
-import { sanitizeGeminiResponse } from "../api/_lib/chatProtocol";
+import {
+  buildGeminiRequestBody,
+  parseClientChatPayload,
+  sanitizeGeminiResponse
+} from "../api/_lib/chatProtocol";
 import handler, { handleChatRequest } from "../api/chat";
 
 function createTestRsaCertPair() {
@@ -236,8 +241,11 @@ describe("Tipid Coach spending behavior warnings & natural-language command pars
 
     const local = generateLocalAssistantReply("Log 250 grab maya", makeSnapshot(), "tl");
     expect(local.proposedActions).toHaveLength(1);
-    expect(local.proposedActions[0].category).toBe("Transportation");
-    expect(local.proposedActions[0].method).toBe("Maya");
+    expect(local.proposedActions[0]).toMatchObject({
+      type: "expense",
+      category: "Transportation",
+      method: "Maya"
+    });
   });
 });
 
@@ -439,8 +447,11 @@ describe("Vercel /api/chat security, Firebase JWT auth, rate limiting & Gemini s
 
     expect(clean.reply).toBe("Test clean");
     expect(clean.warning).toBeNull();
-    expect(clean.proposedActions[0].category).toBe("Other");
-    expect(clean.proposedActions[0].method).toBe("Cash");
+    expect(clean.proposedActions[0]).toMatchObject({
+      type: "expense",
+      category: "Other",
+      method: "Cash"
+    });
   });
 
   it("enforces server-side per-UID rate limits with 429 and falls back cleanly on the client", async () => {
@@ -788,6 +799,169 @@ describe("Vercel /api/chat security, Firebase JWT auth, rate limiting & Gemini s
     expect(fallbackCase.getJson()).toMatchObject({
       mode: "ai",
       reply: "Recovered via fast fallback."
+    });
+  });
+
+  it("answers developer knowledge about Renniel Salazar, runs calculators, parses SMS receipts & expanded ledger actions", () => {
+    const today = manilaDateKey(new Date()) || "2026-04-01";
+    const snap = makeSnapshot({
+      budget: 12_000,
+      overallBalance: 14_500,
+      bills: [
+        {
+          id: "bill_meralco",
+          title: "Meralco",
+          amount: 2400,
+          dueDate: today,
+          category: "Bills",
+          recurrence: "monthly",
+          status: "Unpaid"
+        }
+      ],
+      utangList: [
+        {
+          id: "utang_marco",
+          name: "Marco",
+          amount: 750,
+          direction: "owed_to_me",
+          dueDate: null,
+          status: "Unpaid"
+        }
+      ],
+      savingsGoals: [
+        {
+          id: "jar_ef",
+          name: "Emergency Fund",
+          targetAmount: 50_000,
+          savedAmount: 10_000,
+          wallet: "GCash"
+        }
+      ],
+      categoryBudgets: [
+        { id: "cb_food", category: "Food & Dining", limitAmount: 4500 }
+      ]
+    });
+
+    // 1. Developer knowledge (verified facts only) in English and Taglish
+    const devEn = generateLocalAssistantReply("Who built Tipid?", snap, "en");
+    expect(devEn.reply).toContain("Renniel Salazar");
+    expect(devEn.proposedActions).toEqual([]);
+
+    const devTl = generateLocalAssistantReply("Sino gumawa ng app na ito?", snap, "tl");
+    expect(devTl.reply).toContain("Renniel Salazar");
+
+    // 2. Affordability calculator & payday splitter & 50/30/20 audit & app guide
+    const affordOk = generateLocalAssistantReply("Can I afford 1500 shoes?", snap, "en");
+    expect(affordOk.proposedActions).toEqual([]);
+    expect(affordOk.reply).toContain("1,500.00");
+
+    const payday = generateLocalAssistantReply("Split my 15000 sahod", snap, "tl");
+    expect(payday.reply).toContain("15,000.00");
+    expect(payday.reply).toContain("Unpaid Bills");
+
+    const guide = generateLocalAssistantReply("What can you do?", snap, "en");
+    expect(guide.reply).toContain("Confirm & Save");
+
+    // 3. GCash SMS / Receipt parser
+    const [smsExpense] = parseNaturalTransactionCommand(
+      "You have sent PHP 345.50 to Jollibee via GCash Ref No. 987654",
+      snap.wallets
+    );
+    expect(smsExpense).toMatchObject({
+      type: "expense",
+      amount: 345.5,
+      method: "GCash",
+      category: "Food & Dining"
+    });
+
+    // 4. Expanded offline actions (transfer, add bill, settle utang, deposit jar, set budget)
+    const [transfer] = parseNaturalAssistantActions(
+      "Transfer 1500 from Land Bank to GCash",
+      snap
+    );
+    expect(transfer).toMatchObject({
+      type: "transfer",
+      amount: 1500,
+      fromMethod: "Land Bank",
+      toMethod: "GCash"
+    });
+
+    const [deposit] = parseNaturalAssistantActions(
+      "Deposit 500 to Emergency Fund from GCash",
+      snap
+    );
+    expect(deposit).toMatchObject({
+      type: "savings_deposit",
+      goalId: "jar_ef",
+      goalName: "Emergency Fund",
+      amount: 500,
+      deductFromWallet: "GCash"
+    });
+
+    const [settle] = parseNaturalAssistantActions("Nagbayad na si Marco", snap);
+    expect(settle).toMatchObject({
+      type: "settle_utang",
+      utangId: "utang_marco",
+      name: "Marco"
+    });
+
+    // 5. Server prompt includes developer knowledge & sanitizer enforces ID integrity
+    const ctxPayload = buildCompactFinanceContext(snap, analyzeSpendingBehavior(snap, "en"));
+    const parsedReq = parseClientChatPayload({
+      message: "Settle Marco and deposit 500 to Emergency Fund",
+      lang: "en",
+      context: ctxPayload
+    });
+    const geminiReq = buildGeminiRequestBody(parsedReq);
+    expect(geminiReq.systemInstruction.parts[0].text).toContain("Renniel Salazar");
+
+    const sanitized = sanitizeGeminiResponse(
+      JSON.stringify({
+        reply: "Prepared your updates!",
+        warning: { level: "none", title: "", detail: "" },
+        proposedActions: [
+          { type: "mark_bill_paid", targetId: "forged_bill_id", title: "Fake Bill", amount: 999 },
+          { type: "settle_utang", targetId: "utang_marco", name: "Marco", amount: 750 },
+          { type: "savings_deposit", targetId: "jar_ef", amount: 500, deductWallet: "gcash" }
+        ]
+      }),
+      snap.wallets,
+      "en",
+      parsedReq.context
+    );
+
+    expect(sanitized.proposedActions).toHaveLength(2);
+    expect(sanitized.proposedActions[0]).toMatchObject({
+      type: "settle_utang",
+      utangId: "utang_marco"
+    });
+    expect(sanitized.proposedActions[1]).toMatchObject({
+      type: "savings_deposit",
+      goalId: "jar_ef",
+      deductFromWallet: "GCash",
+      amount: 500
+    });
+
+    const sanitizedBudgetAndTransfer = sanitizeGeminiResponse(
+      JSON.stringify({
+        reply: "Budget & transfer check",
+        warning: { level: "none", title: "", detail: "" },
+        proposedActions: [
+          { type: "transfer", amount: 500, method: "Cash", toMethod: "Cash" },
+          { type: "category_budget", category: "Food & Dining", amount: 5000 }
+        ]
+      }),
+      snap.wallets,
+      "en",
+      parsedReq.context
+    );
+
+    expect(sanitizedBudgetAndTransfer.proposedActions).toHaveLength(1);
+    expect(sanitizedBudgetAndTransfer.proposedActions[0]).toMatchObject({
+      type: "category_budget",
+      budgetId: "cb_food",
+      category: "Food & Dining",
+      limitAmount: 5000
     });
   });
 });

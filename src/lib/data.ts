@@ -387,12 +387,14 @@ export async function updateBillStatus(
 }
 
 /**
- * Marks a bill as Paid and atomically schedules the next cycle bill when recurring.
+ * Marks a bill as Paid, optionally deducts the payment atomically from a chosen wallet/card,
+ * and schedules the next cycle bill when recurring.
  */
 export async function markBillPaidAndScheduleNext(
   uid: string,
-  bill: BillRecord
-): Promise<{ result: OfflineWriteResult; nextDueDate: string | null }> {
+  bill: BillRecord,
+  options?: { deductFromWallet?: string | null }
+): Promise<{ result: OfflineWriteResult; nextDueDate: string | null; deductedWallet: string | null }> {
   const safeUid = validUid(uid);
   const currentRef = doc(db, "users", safeUid, "bills", validId(bill.id, "bill identifier"));
   const recurrence = BILL_RECURRENCES.includes(bill.recurrence || "none")
@@ -400,27 +402,52 @@ export async function markBillPaidAndScheduleNext(
     : "none";
   const nextDue = computeNextBillDueDate(bill.dueDate, recurrence);
 
-  if (!nextDue) {
+  const rawWallet = typeof options?.deductFromWallet === "string" ? options.deductFromWallet.trim() : "";
+  const deductedWallet = rawWallet
+    ? assertSafeObjectKey(cleanText(rawWallet, "Wallet", 50), "Wallet")
+    : null;
+
+  if (!nextDue && !deductedWallet) {
     const result = await executeOfflineAwareWrite(() => updateDoc(currentRef, { status: "Paid" }));
-    return { result, nextDueDate: null };
+    return { result, nextDueDate: null, deductedWallet: null };
   }
+
+  const safeTitle = cleanText(bill.title, "Bill title", 120);
+  const safeAmount = money(bill.amount);
+  const safeCategory = cleanText(bill.category || "Bills", "Category", 50);
 
   const batch = writeBatch(db);
   batch.update(currentRef, { status: "Paid", updatedAt: serverTimestamp() });
-  const nextRef = doc(billsRef(safeUid));
-  batch.set(nextRef, {
-    title: cleanText(bill.title, "Bill title", 120),
-    amount: money(bill.amount),
-    dueDate: validDate(nextDue, true),
-    category: cleanText(bill.category || "Bills", "Category", 50),
-    notes: optionalText(bill.notes || "", 500),
-    recurrence,
-    status: "Unpaid",
-    createdAt: serverTimestamp()
-  });
+
+  if (deductedWallet) {
+    const expenseDoc = doc(entriesRef(safeUid));
+    batch.set(expenseDoc, {
+      type: "expense",
+      desc: cleanText(`Bill: ${safeTitle}`.slice(0, 120), "Description", 120),
+      amount: safeAmount,
+      category: safeCategory,
+      method: deductedWallet,
+      spendType: "need",
+      createdAt: serverTimestamp()
+    });
+  }
+
+  if (nextDue) {
+    const nextRef = doc(billsRef(safeUid));
+    batch.set(nextRef, {
+      title: safeTitle,
+      amount: safeAmount,
+      dueDate: validDate(nextDue, true),
+      category: safeCategory,
+      notes: optionalText(bill.notes || "", 500),
+      recurrence,
+      status: "Unpaid",
+      createdAt: serverTimestamp()
+    });
+  }
 
   const result = await executeOfflineAwareWrite(() => batch.commit());
-  return { result, nextDueDate: nextDue };
+  return { result, nextDueDate: nextDue, deductedWallet };
 }
 
 export async function deleteBill(uid: string, billId: string): Promise<OfflineWriteResult> {

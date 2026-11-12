@@ -700,6 +700,7 @@ onBeforeUnmount(() => {
                 :balance="item.balance"
                 :total-positive-balance="totalPositiveBalance"
                 :balance-hidden="balanceHidden"
+                :is-deck-inactive="isDeckScrollable && idx !== activeIndex"
                 @edit="emit('edit', $event)"
               />
             </div>

@@ -459,12 +459,12 @@ html.dark {
       margin-block: auto;
       margin-inline-start: auto;
       margin-inline-end: 1rem;
-      max-inline-size: min(27rem, calc(100dvw - 2rem));
+      max-inline-size: min(28.5rem, calc(100dvw - 2rem));
       inline-size: 100%;
-      block-size: min(44rem, calc(100svh - 2rem));
+      block-size: min(46rem, calc(100svh - 2rem));
       max-block-size: calc(100svh - 2rem);
       border: 1px solid var(--border-subtle);
-      border-radius: 1.5rem;
+      border-radius: 1.625rem;
       transform: translateX(18px);
     }
 
@@ -473,6 +473,54 @@ html.dark {
       @starting-style {
         opacity: 0;
         transform: translateX(24px);
+      }
+    }
+  }
+
+  .tipid-chat-scroll {
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+
+  @supports not (scrollbar-color: auto) {
+    .tipid-chat-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .tipid-chat-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .tipid-chat-scroll::-webkit-scrollbar-thumb {
+      background: var(--border-strong);
+      border-radius: 9999px;
+    }
+  }
+
+  .tipid-chip-rail {
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 18px), transparent 100%);
+    mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 18px), transparent 100%);
+  }
+
+  @supports not (scrollbar-width: none) {
+    .tipid-chip-rail::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .tipid-chat-msg {
+      transition:
+        opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+        translate 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @starting-style {
+      .tipid-chat-msg {
+        opacity: 0;
+        translate: 0 8px;
       }
     }
   }
@@ -654,20 +702,13 @@ html.dark {
     }
   }
 
-  /* Authentic tactile banking & wallet cards with WCAG contrast fallback */
+  /* Authentic double-sided 3D tactile ATM, digital bank & wallet cards */
   .tipid-bank-card {
     container-type: inline-size;
-    min-block-size: 168px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    color: #FFFFFF;
-    background:
-      radial-gradient(ellipse 75% 65% at 96% -12%, color-mix(in srgb, var(--bank-accent, #6EE7B7) 26%, transparent), transparent 64%),
-      linear-gradient(142deg var(--in-oklab), var(--bank-start, #0B3829) 0%, var(--bank-end, #145840) 100%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.22),
-      0 10px 24px -10px rgba(10, 18, 14, 0.38),
-      0 2px 6px rgba(10, 18, 14, 0.14);
-    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+    perspective: 1150px;
+    translate: 0 0;
+    color: var(--bank-ink, #FFFFFF);
+    transition: translate 0.22s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   @supports (color: contrast-color(red)) {
@@ -676,24 +717,314 @@ html.dark {
     }
   }
 
+  .tipid-card-flipper {
+    display: grid;
+    grid-template-areas: "card";
+    transform-style: preserve-3d;
+    transform: rotateY(0deg);
+    scale: 1;
+  }
+
+  .tipid-card-flipper.is-flipped {
+    transform: rotateY(180deg);
+  }
+
+  .tipid-card-face {
+    grid-area: card;
+    position: relative;
+    min-block-size: 204px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background:
+      radial-gradient(ellipse 78% 66% at 94% -10%, color-mix(in srgb, var(--bank-accent, #6EE7B7) 26%, transparent), transparent 62%),
+      radial-gradient(ellipse 90% 80% at 6% 108%, rgba(0, 0, 0, 0.28), transparent 60%),
+      linear-gradient(
+        134deg var(--in-oklab),
+        var(--bank-start, #092D21) 0%,
+        var(--bank-mid, #124E39) 52%,
+        var(--bank-end, #0C3929) 100%
+      );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.36),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.34),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+      0 14px 28px -12px rgba(10, 18, 14, 0.44),
+      0 4px 10px -2px rgba(10, 18, 14, 0.2);
+    transition: box-shadow 0.22s ease, border-color 0.22s ease;
+  }
+
+  .tipid-card-front {
+    transform: rotateY(0deg);
+  }
+
+  .tipid-card-back {
+    transform: rotateY(180deg);
+    background:
+      radial-gradient(ellipse 74% 60% at 12% 100%, color-mix(in srgb, var(--bank-accent, #6EE7B7) 18%, transparent), transparent 60%),
+      linear-gradient(
+        148deg var(--in-oklab),
+        color-mix(in srgb, var(--bank-start, #092D21) 88%, #020617) 0%,
+        color-mix(in srgb, var(--bank-end, #0C3929) 90%, #020617) 100%
+      );
+  }
+
+  .tipid-card-face.is-inactive-face {
+    pointer-events: none;
+  }
+
+  .tipid-card-flip-hit {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    border: 0;
+    padding: 0;
+    border-radius: inherit;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .tipid-card-flip-hit:focus-visible {
+    outline: none;
+  }
+
+  .tipid-bank-card:has(.tipid-card-flip-hit:focus-visible) {
+    outline: 2px solid var(--accent, #0F5B42);
+    outline-offset: 4px;
+    border-radius: 1.25rem;
+  }
+
+  .tipid-card-flip-cue {
+    opacity: 0.72;
+    transition: opacity 0.2s ease;
+  }
+
+  .tipid-bank-card:hover .tipid-card-flip-cue,
+  .tipid-bank-card:focus-within .tipid-card-flip-cue {
+    opacity: 1;
+  }
+
+  .tipid-card-magstripe {
+    background: linear-gradient(180deg, #07090C 0%, #1D242C 44%, #0C1014 100%);
+    border-block: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 1px 2px rgba(0, 0, 0, 0.35);
+  }
+
+  .tipid-card-sigstrip {
+    background:
+      repeating-linear-gradient(135deg, rgba(15, 23, 42, 0.06) 0 4px, transparent 4px 8px),
+      linear-gradient(180deg, #F1F5F9 0%, #E2E8F0 100%);
+    color: #334155;
+    border: 1px solid rgba(15, 23, 42, 0.14);
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.14);
+  }
+
+  .tipid-card-signature {
+    font-family: "Brush Script MT", "Segoe Script", Georgia, serif;
+    color: #0F172A;
+  }
+
+  .tipid-card-cvc-box {
+    background:
+      repeating-linear-gradient(-45deg, rgba(15, 23, 42, 0.03) 0 3px, transparent 3px 6px),
+      #FFFFFF;
+    color: #0F172A;
+    border: 1px solid rgba(15, 23, 42, 0.18);
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.12);
+  }
+
+  /* Self-contained CSS-masked micro-textures per real card finish */
+  .tipid-card-texture {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    opacity: 0.22;
+    mix-blend-mode: overlay;
+    background: linear-gradient(125deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.28) 55%, rgba(255, 255, 255, 0.72) 100%);
+    -webkit-mask-repeat: repeat;
+    mask-repeat: repeat;
+  }
+
+  .tipid-bank-card[data-material="brushed-metal"] .tipid-card-texture {
+    opacity: 0.26;
+    -webkit-mask-image: repeating-linear-gradient(
+      91deg,
+      rgba(0, 0, 0, 0.9) 0px,
+      rgba(0, 0, 0, 0.9) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    mask-image: repeating-linear-gradient(
+      91deg,
+      rgba(0, 0, 0, 0.9) 0px,
+      rgba(0, 0, 0, 0.9) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    -webkit-mask-size: 6px 100%;
+    mask-size: 6px 100%;
+  }
+
+  .tipid-bank-card[data-material="satin-matte"] .tipid-card-texture {
+    opacity: 0.2;
+    -webkit-mask-image: repeating-radial-gradient(
+      circle at 0 0,
+      rgba(0, 0, 0, 0.75) 0px,
+      transparent 1.25px,
+      rgba(0, 0, 0, 0.5) 2.5px
+    );
+    mask-image: repeating-radial-gradient(
+      circle at 0 0,
+      rgba(0, 0, 0, 0.75) 0px,
+      transparent 1.25px,
+      rgba(0, 0, 0, 0.5) 2.5px
+    );
+    -webkit-mask-size: 5px 5px;
+    mask-size: 5px 5px;
+  }
+
+  .tipid-bank-card[data-material="pearl-foil"] .tipid-card-texture {
+    opacity: 0.22;
+    -webkit-mask-image: repeating-linear-gradient(
+      128deg,
+      rgba(0, 0, 0, 0.85) 0px,
+      rgba(0, 0, 0, 0.2) 2px,
+      transparent 2px,
+      transparent 5px
+    );
+    mask-image: repeating-linear-gradient(
+      128deg,
+      rgba(0, 0, 0, 0.85) 0px,
+      rgba(0, 0, 0, 0.2) 2px,
+      transparent 2px,
+      transparent 5px
+    );
+    -webkit-mask-size: 8px 8px;
+    mask-size: 8px 8px;
+  }
+
+  .tipid-bank-card[data-material="carbon-weave"] .tipid-card-texture {
+    opacity: 0.28;
+    -webkit-mask-image:
+      repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.85) 0px, rgba(0, 0, 0, 0.85) 2px, transparent 2px, transparent 6px),
+      repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.75) 0px, rgba(0, 0, 0, 0.75) 2px, transparent 2px, transparent 6px);
+    mask-image:
+      repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.85) 0px, rgba(0, 0, 0, 0.85) 2px, transparent 2px, transparent 6px),
+      repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.75) 0px, rgba(0, 0, 0, 0.75) 2px, transparent 2px, transparent 6px);
+    -webkit-mask-size: 8px 8px;
+    mask-size: 8px 8px;
+  }
+
+  .tipid-bank-card[data-material="guilloche"] .tipid-card-texture {
+    opacity: 0.18;
+    -webkit-mask-image: repeating-linear-gradient(
+      152deg,
+      rgba(0, 0, 0, 0.8) 0px,
+      rgba(0, 0, 0, 0.8) 1px,
+      transparent 1px,
+      transparent 7px
+    );
+    mask-image: repeating-linear-gradient(
+      152deg,
+      rgba(0, 0, 0, 0.8) 0px,
+      rgba(0, 0, 0, 0.8) 1px,
+      transparent 1px,
+      transparent 7px
+    );
+    -webkit-mask-size: 10px 10px;
+    mask-size: 10px 10px;
+  }
+
+  @supports (not (mask-image: linear-gradient(black, white))) and (not (-webkit-mask-image: linear-gradient(black, white))) {
+    .tipid-card-texture {
+      opacity: 0.06;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.35), transparent 60%);
+    }
+  }
+
+  .tipid-card-sheen {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+    background: linear-gradient(
+      118deg,
+      rgba(255, 255, 255, 0.17) 0%,
+      rgba(255, 255, 255, 0.04) 28%,
+      transparent 46%,
+      rgba(255, 255, 255, 0.08) 74%,
+      transparent 100%
+    );
+    transition: opacity 0.25s ease;
+  }
+
+  .tipid-emv-chip {
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  }
+
+  .tipid-card-holo {
+    border: 1px solid rgba(255, 255, 255, 0.36);
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.42),
+      color-mix(in srgb, var(--bank-accent, #38BDF8) 44%, rgba(255, 255, 255, 0.22)),
+      rgba(255, 255, 255, 0.48),
+      rgba(148, 163, 184, 0.3)
+    );
+    box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.35);
+    opacity: 0.72;
+  }
+
+  .tipid-card-embossed {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.36);
+  }
+
+  .tipid-card-digits {
+    text-shadow:
+      0 1px 1px rgba(0, 0, 0, 0.46),
+      0 -0.5px 0 rgba(255, 255, 255, 0.22);
+  }
+
   @media (prefers-reduced-motion: no-preference) {
-    .tipid-bank-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(255, 255, 255, 0.28);
+    .tipid-card-flipper {
+      transition:
+        transform 0.68s cubic-bezier(0.22, 1.08, 0.36, 1),
+        scale 0.16s ease-out;
+    }
+    .tipid-bank-card:not(.is-deck-inactive):hover {
+      translate: 0 -2px;
+    }
+    .tipid-bank-card:hover .tipid-card-face {
+      border-color: rgba(255, 255, 255, 0.34);
       box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.28),
-        0 16px 32px -10px rgba(10, 18, 14, 0.48),
-        0 4px 10px rgba(10, 18, 14, 0.18);
+        inset 0 1px 0 rgba(255, 255, 255, 0.42),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.36),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 18px 34px -10px rgba(10, 18, 14, 0.52),
+        0 5px 12px -2px rgba(10, 18, 14, 0.22);
+    }
+    .tipid-bank-card:not(.is-deck-inactive):has(.tipid-card-flip-hit:active) .tipid-card-flipper {
+      scale: 0.985;
+    }
+    .tipid-bank-card:hover .tipid-card-artwork {
+      transform: scale(1.025);
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
     }
   }
 
   @container (max-width: 245px) {
-    .tipid-bank-card {
-      padding: 1rem;
-      min-block-size: 156px;
+    .tipid-card-face {
+      padding: 0.9rem;
+      min-block-size: 184px;
+    }
+    .tipid-card-back .tipid-card-magstripe {
+      margin-inline: -0.9rem;
     }
     .tipid-bank-card .tipid-bank-card-mid {
-      margin-top: 0.75rem;
+      margin-top: 0.65rem;
     }
     .tipid-bank-card .tipid-bank-card-balance {
       font-size: 1.125rem;
@@ -949,12 +1280,48 @@ html.dark {
   .tipid-card,
   .tipid-card-interactive,
   .tipid-card-emerald,
-  .tipid-bank-card,
+  .tipid-card-face,
   .tipid-floating-chrome,
   .tipid-inset,
   dialog.tipid-dialog {
     border: 1px solid CanvasText !important;
     color: CanvasText !important;
+  }
+  .tipid-bank-card {
+    color: CanvasText !important;
+  }
+  .tipid-card-face {
+    background: Canvas !important;
+  }
+  .tipid-card-face.is-inactive-face {
+    visibility: hidden !important;
+  }
+  .tipid-card-magstripe {
+    background: CanvasText !important;
+    border-block: 1px solid CanvasText !important;
+  }
+  .tipid-card-sigstrip,
+  .tipid-card-cvc-box {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border: 1px solid CanvasText !important;
+  }
+  .tipid-card-signature {
+    color: CanvasText !important;
+  }
+  .tipid-card-texture,
+  .tipid-card-sheen,
+  .tipid-card-artwork,
+  .tipid-card-holo {
+    display: none !important;
+  }
+  .tipid-card-embossed,
+  .tipid-card-digits {
+    text-shadow: none !important;
+  }
+  .tipid-bank-card header *,
+  .tipid-bank-card footer {
+    border-color: CanvasText !important;
   }
   .tipid-checkbox {
     border: 2px solid CanvasText !important;
@@ -1158,6 +1525,252 @@ html.dark {
   opacity: 0;
   translate: 0 4px;
   transition-duration: 0.11s;
+}
+
+/* Bill Payment & Live ATM Card Deduction Stage */
+dialog.tipid-pay-dialog {
+  max-inline-size: min(33.5rem, calc(100dvw - 1.5rem));
+}
+
+.tipid-deduct-stage {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1px solid var(--border-subtle);
+  background:
+    radial-gradient(ellipse 85% 65% at 50% 0%, color-mix(in srgb, var(--tipid-deduct-accent, #10b981) 18%, transparent), transparent 65%),
+    linear-gradient(180deg, rgba(13, 22, 17, 0.04) 0%, rgba(13, 22, 17, 0.015) 100%);
+  padding: 1rem;
+}
+
+.dark .tipid-deduct-stage {
+  background:
+    radial-gradient(ellipse 85% 65% at 50% 0%, color-mix(in srgb, var(--tipid-deduct-accent, #10b981) 24%, transparent), transparent 68%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.015) 100%);
+}
+
+.tipid-deduct-stage-glow {
+  pointer-events: none;
+  position: absolute;
+  inset: -40% -20% auto;
+  height: 180px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--tipid-deduct-accent, #10b981) 26%, transparent), transparent 70%);
+  opacity: 0.7;
+  transition: opacity 0.4s ease;
+}
+
+.tipid-deduct-stage[data-phase="settled"] .tipid-deduct-stage-glow {
+  opacity: 0.95;
+}
+
+.tipid-deduct-header-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.875rem;
+}
+
+.tipid-deduct-source-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  padding: 0.28rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  box-shadow: 0 2px 6px rgba(13, 22, 17, 0.05);
+}
+
+.tipid-deduct-amount-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--expense) 30%, transparent);
+  background: color-mix(in srgb, var(--expense) 12%, var(--bg-surface));
+  padding: 0.28rem 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--expense);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--expense) 14%, transparent);
+}
+
+.tipid-deduct-tag {
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--expense) 16%, transparent);
+  padding: 0.1rem 0.42rem;
+  font-family: inherit;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tipid-deduct-card-wrap {
+  position: relative;
+  z-index: 1;
+  max-inline-size: 23.5rem;
+  margin-inline: auto;
+  border-radius: 1.5rem;
+}
+
+.tipid-deduct-card-wrap::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: 1.375rem;
+  background: linear-gradient(
+    112deg,
+    transparent 24%,
+    rgba(255, 255, 255, 0.28) 48%,
+    color-mix(in srgb, var(--tipid-deduct-accent, #10b981) 34%, transparent) 54%,
+    transparent 76%
+  );
+  opacity: 0;
+}
+
+.tipid-deduct-ledger {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.875rem;
+  border-radius: 0.95rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  padding: 0.65rem 0.75rem;
+}
+
+.tipid-deduct-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.tipid-deduct-metric-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}
+
+.tipid-deduct-metric-val {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.tipid-deduct-metric-val.is-debit {
+  color: var(--expense);
+}
+
+.tipid-deduct-metric-val.is-settled {
+  color: var(--income);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tipid-deduct-card-wrap {
+    animation: tipidDeductCardEnter 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .tipid-deduct-amount-pill {
+    animation: tipidDeductPillDrop 0.44s cubic-bezier(0.22, 1, 0.36, 1) 0.06s both;
+  }
+
+  .tipid-deduct-stage[data-phase="counting"] .tipid-deduct-card-wrap {
+    animation: tipidDeductCardPulse 0.72s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .tipid-deduct-stage[data-phase="counting"] .tipid-deduct-card-wrap::after {
+    animation: tipidDeductSweep 0.78s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .tipid-deduct-ledger {
+    animation: tipidDeductLedgerIn 0.34s cubic-bezier(0.22, 1, 0.36, 1) 0.14s both;
+  }
+}
+
+@keyframes tipidDeductCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tipidDeductPillDrop {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tipidDeductCardPulse {
+  0% {
+    transform: scale(1);
+  }
+  32% {
+    transform: scale(0.978) translateY(2px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes tipidDeductSweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-65%);
+  }
+  35% {
+    opacity: 0.72;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(75%);
+  }
+}
+
+@keyframes tipidDeductLedgerIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (forced-colors: active) {
+  .tipid-deduct-stage,
+  .tipid-deduct-ledger,
+  .tipid-deduct-source-pill,
+  .tipid-deduct-amount-pill {
+    border: 1px solid CanvasText;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

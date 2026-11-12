@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  CreditCard,
   Download,
   Plus,
   Repeat,
@@ -20,6 +21,7 @@ import {
 } from "@lucide/vue";
 import AppShell from "@/components/AppShell.vue";
 import BaseDialog from "@/components/BaseDialog.vue";
+import BillPaymentDialog, { type BillPaymentSettledResult } from "@/components/BillPaymentDialog.vue";
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import { useAuthGuard } from "@/composables/useAuthGuard";
 import { useFinanceData } from "@/composables/useFinanceData";
@@ -588,7 +590,11 @@ function toggleEditingBillPaid() {
   addOpen.value = false;
   editingBill.value = null;
   if (target) {
-    void togglePaid(target);
+    if (target.status !== "Paid") {
+      openPayDialog(target);
+    } else {
+      void markBillUnpaid(target);
+    }
   }
 }
 
@@ -700,33 +706,98 @@ async function handleAddBill() {
   }
 }
 
-async function togglePaid(bill: BillRecord) {
+const payingBill = ref<BillRecord | null>(null);
+const payingSubmitting = ref(false);
+const settledPaymentResult = ref<BillPaymentSettledResult | null>(null);
+const payErrorMessage = ref("");
+let pendingOfflineQueueNotice = false;
+
+function safeWalletCents(value: unknown): number {
+  try {
+    return toCentavos(value, { allowZero: true, allowNegative: true });
+  } catch {
+    return 0;
+  }
+}
+
+function openPayDialog(bill: BillRecord) {
+  payingBill.value = bill;
+  settledPaymentResult.value = null;
+  payErrorMessage.value = "";
+  pendingOfflineQueueNotice = false;
+}
+
+function closePayDialog() {
+  if (payingSubmitting.value) return;
+  const shouldNotifyQueued = pendingOfflineQueueNotice;
+  payingBill.value = null;
+  settledPaymentResult.value = null;
+  payErrorMessage.value = "";
+  pendingOfflineQueueNotice = false;
+  if (shouldNotifyQueued) {
+    pushToast(
+      isTl.value ? "Naka-queue offline ang bayad at bawas sa card." : "Payment queued offline for sync.",
+      "info"
+    );
+  }
+}
+
+async function confirmPayBill(payload: { wallet: string | null }) {
+  const uid = user.value?.uid;
+  const targetBill = payingBill.value;
+  if (!uid || !targetBill || payingSubmitting.value) return;
+
+  const selectedWallet = payload.wallet;
+  const beforeCents = selectedWallet ? safeWalletCents(walletBalances.value[selectedWallet] ?? 0) : 0;
+  const billCents = toCentavos(targetBill.amount, { allowZero: false });
+
+  payingSubmitting.value = true;
+  payErrorMessage.value = "";
+  try {
+    const { result, nextDueDate, deductedWallet } = await markBillPaidAndScheduleNext(uid, targetBill, {
+      deductFromWallet: selectedWallet
+    });
+    pendingOfflineQueueNotice = Boolean(result.queuedOffline);
+    const afterCents = deductedWallet ? beforeCents - billCents : 0;
+    settledPaymentResult.value = {
+      wallet: deductedWallet,
+      beforeBalance: fromCentavos(beforeCents),
+      afterBalance: fromCentavos(afterCents),
+      nextDueDate
+    };
+  } catch {
+    payErrorMessage.value = isTl.value
+      ? "Hindi nakumpleto ang bayad. Pakisubukan muli."
+      : "Could not complete payment. Please try again.";
+  } finally {
+    payingSubmitting.value = false;
+  }
+}
+
+async function markBillUnpaid(bill: BillRecord) {
   const uid = user.value?.uid;
   if (!uid || togglingId.value) return;
-  const markingPaid = bill.status !== "Paid";
   togglingId.value = bill.id;
   try {
-    if (markingPaid) {
-      const { nextDueDate } = await markBillPaidAndScheduleNext(uid, bill);
-      pushToast(
-        nextDueDate
-          ? isTl.value
-            ? `Bayad na. Susunod na due: ${nextDueDate}`
-            : `Marked paid. Next due ${nextDueDate} scheduled.`
-          : isTl.value
-            ? "Minarkahang bayad."
-            : "Marked as paid.",
-        "success"
-      );
-    } else {
-      await updateBillStatus(uid, bill.id, "Unpaid");
-      pushToast(isTl.value ? "Ibinalik sa hindi pa bayad." : "Marked as unpaid.", "success");
-    }
+    await updateBillStatus(uid, bill.id, "Unpaid");
+    pushToast(isTl.value ? "Ibinalik sa hindi pa bayad." : "Marked as unpaid.", "success");
   } catch {
     pushToast(isTl.value ? "Hindi na-update ang bayarin." : "Could not update bill status.", "error");
   } finally {
     togglingId.value = null;
   }
+}
+
+function togglePaid(bill: BillRecord, event?: Event) {
+  if (bill.status !== "Paid") {
+    const input = event?.target as HTMLInputElement | null;
+    if (input && input.type === "checkbox") {
+      input.checked = false;
+    }
+    openPayDialog(bill);
+    return;
+  }
+  void markBillUnpaid(bill);
 }
 
 async function confirmDeleteBill() {
@@ -1107,8 +1178,8 @@ async function confirmDeleteBill() {
                         class="tipid-checkbox"
                         :checked="bill.status === 'Paid'"
                         :disabled="togglingId === bill.id"
-                        :aria-label="bill.status === 'Paid' ? `Mark ${bill.title} as unpaid` : `Mark ${bill.title} as paid`"
-                        @change="togglePaid(bill)"
+                        :aria-label="bill.status === 'Paid' ? `Mark ${bill.title} as unpaid` : `Pay ${bill.title} with ATM card`"
+                        @change="togglePaid(bill, $event)"
                       />
                     </label>
 
@@ -1186,6 +1257,17 @@ async function confirmDeleteBill() {
                         {{ bill.status === "Paid" ? (isTl ? "Bayad" : "settled") : isTl ? "nakatakda" : "scheduled" }}
                       </p>
                     </div>
+
+                    <button
+                      v-if="bill.status !== 'Paid'"
+                      type="button"
+                      class="tipid-compact inline-flex items-center gap-1 rounded-xl bg-[var(--accent)] px-2.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[var(--accent-hover)]"
+                      :aria-label="`${isTl ? 'Bayaran ang' : 'Pay'} ${bill.title}`"
+                      @click="openPayDialog(bill)"
+                    >
+                      <CreditCard :size="13" aria-hidden="true" />
+                      <span>{{ isTl ? "Bayaran" : "Pay" }}</span>
+                    </button>
 
                     <button
                       type="button"
@@ -1376,8 +1458,8 @@ async function confirmDeleteBill() {
                             class="tipid-checkbox"
                             :checked="bill.status === 'Paid'"
                             :disabled="togglingId === bill.id"
-                            :aria-label="bill.status === 'Paid' ? `Mark ${bill.title} as unpaid` : `Mark ${bill.title} as paid`"
-                            @change="togglePaid(bill)"
+                            :aria-label="bill.status === 'Paid' ? `Mark ${bill.title} as unpaid` : `Pay ${bill.title} with ATM card`"
+                            @change="togglePaid(bill, $event)"
                           />
                         </label>
 
@@ -1418,16 +1500,29 @@ async function confirmDeleteBill() {
                         </div>
                       </div>
 
-                      <div class="shrink-0 text-right">
-                        <p class="tipid-amount font-mono text-xs font-bold text-[var(--text-primary)] sm:text-sm">
-                          ₱{{ formatPeso(bill.amount) }}
-                        </p>
-                        <p class="inline-flex items-center justify-end gap-1 text-[10px] font-medium text-[var(--text-muted)]">
-                          <AlertTriangle v-if="billTone(bill) === 'overdue'" :size="10" class="text-[var(--expense)]" aria-hidden="true" />
-                          <CheckCircle2 v-else-if="bill.status === 'Paid'" :size="10" class="text-[var(--income)]" aria-hidden="true" />
-                          <Clock v-else :size="10" aria-hidden="true" />
-                          <span>{{ dueRelativeLabel(bill).text }}</span>
-                        </p>
+                      <div class="flex shrink-0 items-center gap-2">
+                        <div class="text-right">
+                          <p class="tipid-amount font-mono text-xs font-bold text-[var(--text-primary)] sm:text-sm">
+                            ₱{{ formatPeso(bill.amount) }}
+                          </p>
+                          <p class="inline-flex items-center justify-end gap-1 text-[10px] font-medium text-[var(--text-muted)]">
+                            <AlertTriangle v-if="billTone(bill) === 'overdue'" :size="10" class="text-[var(--expense)]" aria-hidden="true" />
+                            <CheckCircle2 v-else-if="bill.status === 'Paid'" :size="10" class="text-[var(--income)]" aria-hidden="true" />
+                            <Clock v-else :size="10" aria-hidden="true" />
+                            <span>{{ dueRelativeLabel(bill).text }}</span>
+                          </p>
+                        </div>
+
+                        <button
+                          v-if="bill.status !== 'Paid'"
+                          type="button"
+                          class="tipid-compact inline-flex items-center gap-1 rounded-lg bg-[var(--accent)] px-2 py-1 text-[11px] font-semibold text-white hover:bg-[var(--accent-hover)]"
+                          :aria-label="`${isTl ? 'Bayaran ang' : 'Pay'} ${bill.title}`"
+                          @click="openPayDialog(bill)"
+                        >
+                          <CreditCard :size="11" aria-hidden="true" />
+                          <span>{{ isTl ? "Bayad" : "Pay" }}</span>
+                        </button>
                       </div>
                     </article>
                   </li>
@@ -1602,6 +1697,19 @@ async function confirmDeleteBill() {
         </div>
       </form>
     </BaseDialog>
+
+    <!-- Pay Bill with ATM Card & Live Deduction Animation Dialog -->
+    <BillPaymentDialog
+      :open="Boolean(payingBill)"
+      :bill="payingBill"
+      :wallets="wallets"
+      :wallet-balances="walletBalances"
+      :processing="payingSubmitting"
+      :payment-result="settledPaymentResult"
+      :error-message="payErrorMessage"
+      @close="closePayDialog"
+      @confirm="confirmPayBill"
+    />
 
     <!-- Confirm Delete -->
     <ConfirmDialog

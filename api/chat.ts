@@ -7,7 +7,7 @@ import {
   sanitizeGeminiResponse
 } from "./_lib/chatProtocol.js";
 
-const MAX_BODY_BYTES = 32 * 1024;
+const MAX_BODY_BYTES = 48 * 1024;
 const DEFAULT_GEMINI_MODEL = "gemini-flash-lite-latest";
 const FAST_FALLBACK_MODELS = ["gemini-flash-lite-latest", "gemini-3.5-flash-lite"] as const;
 const SLOW_HANGING_ALIASES = new Set(["gemini-flash-latest", "gemini-3.8-flash"]);
@@ -204,7 +204,7 @@ export async function handleChatRequest(
       };
       const rawText = aiJson?.candidates?.[0]?.content?.parts?.[0]?.text || "";
       const walletNames = parsed.context.wallets.map((w) => w.name);
-      const result = sanitizeGeminiResponse(rawText, walletNames, parsed.lang);
+      const result = sanitizeGeminiResponse(rawText, walletNames, parsed.lang, parsed.context);
 
       sendJson(res, 200, { ...result, mode: "ai" });
       return;

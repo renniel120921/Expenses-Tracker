@@ -15,7 +15,6 @@ import {
   WifiOff,
   RefreshCw,
   CheckCircle2,
-  Sparkles,
   AlertTriangle
 } from "@lucide/vue";
 import { useTheme } from "@/composables/useTheme";
@@ -34,6 +33,7 @@ import {
 import AppToast from "./AppToast.vue";
 import LockScreen from "./LockScreen.vue";
 import TipidAssistantDrawer from "./TipidAssistantDrawer.vue";
+import TipidCoachAvatar from "./TipidCoachAvatar.vue";
 import type { NavTab } from "@/types/finance";
 import type { AuthUserView } from "@/composables/useAuthGuard";
 
@@ -387,13 +387,11 @@ onMounted(() => {
           ? (isTl ? `Buksan ang Tipid Coach (${assistantWarnings.length} spending warning)` : `Open Tipid Coach (${assistantWarnings.length} spending alert)`)
           : (isTl ? 'Buksan ang Tipid Coach AI' : 'Open Tipid Coach AI')
       "
-      class="tipid-floating-chrome fixed bottom-[calc(5.25rem+var(--safe-bottom))] right-[max(0.875rem,var(--safe-right))] z-30 inline-flex h-11 items-center gap-2 rounded-full border border-[var(--border-strong)] px-3.5 text-xs font-semibold text-[var(--text-primary)] shadow-[var(--shadow-floating)] transition-transform hover:scale-[1.02] active:scale-[0.98] md:bottom-6 md:right-6 print:hidden"
+      class="tipid-floating-chrome fixed bottom-[calc(5.25rem+var(--safe-bottom))] right-[max(0.875rem,var(--safe-right))] z-30 inline-flex h-11 items-center gap-2 rounded-full border border-[var(--border-strong)] pl-2 pr-3.5 text-xs font-semibold text-[var(--text-primary)] shadow-[var(--shadow-floating)] transition-transform hover:scale-[1.02] active:scale-[0.98] md:bottom-6 md:right-6 print:hidden"
       @click="assistantOpen = true"
     >
-      <span class="relative inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)] text-white shadow-xs">
-        <Sparkles :size="13" aria-hidden="true" />
-      </span>
-      <span class="hidden min-[380px]:inline">Tipid AI</span>
+      <TipidCoachAvatar :mood="hasCriticalWarning ? 'caution' : 'idle'" size="xs" />
+      <span class="hidden min-[380px]:inline">Tipid Coach</span>
       <span
         v-if="assistantWarnings.length > 0"
         :class="[
