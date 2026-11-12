@@ -100,7 +100,7 @@ export async function sendAssistantMessage(params: {
           history: history.slice(-8),
           context
         }),
-        signal: AbortSignal.timeout(16_000)
+        signal: AbortSignal.timeout(20_000)
       });
 
       if (res.status === 429) {

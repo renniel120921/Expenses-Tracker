@@ -682,4 +682,112 @@ describe("Vercel /api/chat security, Firebase JWT auth, rate limiting & Gemini s
     await handler(defaultGet.req, defaultGet.res);
     expect(defaultGet.getStatus()).toBe(405);
   });
+
+  it("bypasses hanging gemini-flash-latest alias and falls back cleanly on slow primary models", async () => {
+    const { privateKey, publicKey } = createTestRsaCertPair();
+    const nowSec = Math.floor(Date.now() / 1000);
+    const token = signTestJwt(
+      {
+        aud: "expensestracker-18d2b",
+        iss: "https://securetoken.google.com/expensestracker-18d2b",
+        sub: "uid_model_fallback",
+        exp: nowSec + 3600,
+        iat: nowSec - 5,
+        auth_time: nowSec - 5
+      },
+      privateKey
+    );
+
+    const calledUrls: string[] = [];
+    const fetchLegacyAlias = vi.fn(async (url: string | URL | Request) => {
+      const target = String(url);
+      calledUrls.push(target);
+      return new Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: JSON.stringify({
+                      reply: "Fast lite response.",
+                      warning: { level: "none", title: "", detail: "" },
+                      proposedActions: []
+                    })
+                  }
+                ]
+              }
+            }
+          ]
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    }) as unknown as typeof fetch;
+
+    const legacyCase = createMockReqRes({
+      method: "POST",
+      headers: { authorization: `Bearer ${token}` },
+      body: { message: "check budget" }
+    });
+    await handleChatRequest(legacyCase.req, legacyCase.res, {
+      apiKey: "test-key",
+      model: "gemini-flash-latest",
+      certsOverride: { key_1: publicKey },
+      fetchFn: fetchLegacyAlias
+    });
+
+    expect(legacyCase.getStatus()).toBe(200);
+    expect(calledUrls).toHaveLength(1);
+    expect(calledUrls[0]).toContain("gemini-flash-lite-latest");
+
+    const attemptUrls: string[] = [];
+    const fetchPrimaryTimeout = vi.fn(async (url: string | URL | Request) => {
+      const target = String(url);
+      attemptUrls.push(target);
+      if (target.includes("gemini-3.5-flash:")) {
+        throw new DOMException("The operation timed out", "TimeoutError");
+      }
+      return new Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: JSON.stringify({
+                      reply: "Recovered via fast fallback.",
+                      warning: { level: "none", title: "", detail: "" },
+                      proposedActions: []
+                    })
+                  }
+                ]
+              }
+            }
+          ]
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    }) as unknown as typeof fetch;
+
+    const fallbackCase = createMockReqRes({
+      method: "POST",
+      headers: { authorization: `Bearer ${token}` },
+      body: { message: "check budget" }
+    });
+    await handleChatRequest(fallbackCase.req, fallbackCase.res, {
+      apiKey: "test-key",
+      model: "gemini-3.5-flash",
+      certsOverride: { key_1: publicKey },
+      fetchFn: fetchPrimaryTimeout
+    });
+
+    expect(fallbackCase.getStatus()).toBe(200);
+    expect(attemptUrls).toHaveLength(2);
+    expect(attemptUrls[0]).toContain("gemini-3.5-flash:");
+    expect(attemptUrls[1]).toContain("gemini-flash-lite-latest:");
+    expect(fallbackCase.getJson()).toMatchObject({
+      mode: "ai",
+      reply: "Recovered via fast fallback."
+    });
+  });
 });

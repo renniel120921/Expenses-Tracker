@@ -8,7 +8,9 @@ import {
 } from "./_lib/chatProtocol.js";
 
 const MAX_BODY_BYTES = 32 * 1024;
-const DEFAULT_GEMINI_MODEL = "gemini-flash-latest";
+const DEFAULT_GEMINI_MODEL = "gemini-flash-lite-latest";
+const FAST_FALLBACK_MODELS = ["gemini-flash-lite-latest", "gemini-3.5-flash-lite"] as const;
+const SLOW_HANGING_ALIASES = new Set(["gemini-flash-latest", "gemini-3.8-flash"]);
 const VALID_MODEL_RE = /^[a-zA-Z0-9._-]{3,64}$/;
 
 export interface VercelNodeRequest extends IncomingMessage {
@@ -48,6 +50,10 @@ async function readJsonBody(req: VercelNodeRequest): Promise<unknown> {
       throw new TokenVerificationError("Request payload too large", 413);
     }
     return req.body;
+  }
+
+  if (req.readableEnded) {
+    return {};
   }
 
   const chunks: Buffer[] = [];
@@ -158,44 +164,67 @@ export async function handleChatRequest(
     return;
   }
 
-  const requestedModel = (deps.model ?? process.env.GEMINI_MODEL ?? DEFAULT_GEMINI_MODEL).trim();
-  const model = VALID_MODEL_RE.test(requestedModel) ? requestedModel : DEFAULT_GEMINI_MODEL;
-  const fetchFn = deps.fetchFn || fetch;
-
-  try {
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-    const aiRes = await fetchFn(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": apiKey
-      },
-      body: JSON.stringify(buildGeminiRequestBody(parsed)),
-      signal: AbortSignal.timeout(15_000)
-    });
-
-    if (!aiRes.ok) {
-      sendJson(res, 502, {
-        code: "ai/upstream-error",
-        error: "Assistant temporarily unavailable"
-      });
-      return;
-    }
-
-    const aiJson = (await aiRes.json()) as {
-      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-    };
-    const rawText = aiJson?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    const walletNames = parsed.context.wallets.map((w) => w.name);
-    const result = sanitizeGeminiResponse(rawText, walletNames, parsed.lang);
-
-    sendJson(res, 200, { ...result, mode: "ai" });
-  } catch {
-    sendJson(res, 504, {
-      code: "ai/timeout",
-      error: "Assistant timed out"
-    });
+  const requestedRaw = (deps.model ?? process.env.GEMINI_MODEL ?? DEFAULT_GEMINI_MODEL).trim();
+  const validRequested = VALID_MODEL_RE.test(requestedRaw) ? requestedRaw : DEFAULT_GEMINI_MODEL;
+  const candidateModels: string[] = [];
+  if (!SLOW_HANGING_ALIASES.has(validRequested)) {
+    candidateModels.push(validRequested);
   }
+  for (const fallbackModel of FAST_FALLBACK_MODELS) {
+    if (!candidateModels.includes(fallbackModel)) {
+      candidateModels.push(fallbackModel);
+    }
+  }
+
+  const fetchFn = deps.fetchFn || fetch;
+  const geminiBody = JSON.stringify(buildGeminiRequestBody(parsed));
+  let sawUpstreamError = false;
+  let sawTimeout = false;
+
+  for (const model of candidateModels) {
+    try {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+      const aiRes = await fetchFn(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey
+        },
+        body: geminiBody,
+        signal: AbortSignal.timeout(7500)
+      });
+
+      if (!aiRes.ok) {
+        sawUpstreamError = true;
+        continue;
+      }
+
+      const aiJson = (await aiRes.json()) as {
+        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+      };
+      const rawText = aiJson?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      const walletNames = parsed.context.wallets.map((w) => w.name);
+      const result = sanitizeGeminiResponse(rawText, walletNames, parsed.lang);
+
+      sendJson(res, 200, { ...result, mode: "ai" });
+      return;
+    } catch {
+      sawTimeout = true;
+    }
+  }
+
+  if (sawUpstreamError && !sawTimeout) {
+    sendJson(res, 502, {
+      code: "ai/upstream-error",
+      error: "Assistant temporarily unavailable"
+    });
+    return;
+  }
+
+  sendJson(res, 504, {
+    code: "ai/timeout",
+    error: "Assistant timed out"
+  });
 }
 
 export default async function handler(req: VercelNodeRequest, res: ServerResponse): Promise<void> {

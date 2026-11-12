@@ -1,6 +1,11 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "functions": {
+    "api/*.ts": {
+      "maxDuration": 30
+    }
+  },
   "redirects": [
     { "source": "/analytics.html", "destination": "/chart.html", "permanent": false },
     { "source": "/analytics", "destination": "/chart.html", "permanent": false },
