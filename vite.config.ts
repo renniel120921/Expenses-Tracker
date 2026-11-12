@@ -228,7 +228,10 @@ function sendLocalChatJson(res: ServerResponse, statusCode: number, body: unknow
   res.end(JSON.stringify(body));
 }
 
-export function localChatApiPlugin(): Plugin {
+export function localChatApiPlugin(options?: {
+  loadEnvFn?: (mode: string, envDir: string, prefixes: string | string[]) => Record<string, string>;
+}): Plugin {
+  const resolveEnv = options?.loadEnvFn ?? loadEnv;
   return {
     name: "tipid-local-chat-api",
     configureServer(server) {
@@ -249,7 +252,7 @@ export function localChatApiPlugin(): Plugin {
           return;
         }
 
-        const env = loadEnv(server.config.mode || "development", process.cwd(), "");
+        const env = resolveEnv(server.config.mode || "development", process.cwd(), "");
         const apiKey = (env.GEMINI_API_KEY || process.env.GEMINI_API_KEY || "").trim();
 
         if (!apiKey) {

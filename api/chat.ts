@@ -1,11 +1,11 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { verifyFirebaseIdToken, TokenVerificationError } from "./_lib/verifyFirebaseToken";
-import { checkServerRateLimit } from "./_lib/rateLimiter";
+import { verifyFirebaseIdToken, TokenVerificationError } from "./_lib/verifyFirebaseToken.js";
+import { checkServerRateLimit } from "./_lib/rateLimiter.js";
 import {
   buildGeminiRequestBody,
   parseClientChatPayload,
   sanitizeGeminiResponse
-} from "./_lib/chatProtocol";
+} from "./_lib/chatProtocol.js";
 
 const MAX_BODY_BYTES = 32 * 1024;
 const DEFAULT_GEMINI_MODEL = "gemini-flash-latest";
@@ -199,5 +199,15 @@ export async function handleChatRequest(
 }
 
 export default async function handler(req: VercelNodeRequest, res: ServerResponse): Promise<void> {
-  return handleChatRequest(req, res);
+  try {
+    await handleChatRequest(req, res);
+  } catch (err) {
+    console.error(
+      "[TipidChat] Unhandled handler error:",
+      err instanceof Error ? err.name : "UnknownError"
+    );
+    if (!res.writableEnded) {
+      sendJson(res, 500, { code: "internal-error", error: "Assistant temporarily unavailable" });
+    }
+  }
 }

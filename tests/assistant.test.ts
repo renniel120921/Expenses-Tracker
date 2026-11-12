@@ -1,6 +1,9 @@
 import crypto from "node:crypto";
+import fs from "node:fs";
 import { IncomingMessage, ServerResponse } from "node:http";
 import { Socket } from "node:net";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   analyzeSpendingBehavior,
@@ -23,7 +26,7 @@ import {
 } from "../api/_lib/verifyFirebaseToken";
 import { resetServerRateLimiterForTest } from "../api/_lib/rateLimiter";
 import { sanitizeGeminiResponse } from "../api/_lib/chatProtocol";
-import { handleChatRequest } from "../api/chat";
+import handler, { handleChatRequest } from "../api/chat";
 
 function createTestRsaCertPair() {
   const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
@@ -501,7 +504,7 @@ describe("Vercel /api/chat security, Firebase JWT auth, rate limiting & Gemini s
     delete process.env.GEMINI_API_KEY;
 
     try {
-      const plugin = localChatApiPlugin();
+      const plugin = localChatApiPlugin({ loadEnvFn: () => ({}) });
       const devHandlers: Array<
         (req: IncomingMessage, res: ServerResponse, next: () => void) => void
       > = [];
@@ -560,6 +563,52 @@ describe("Vercel /api/chat security, Firebase JWT auth, rate limiting & Gemini s
       previewHandlers[0](postPreview.req, postPreview.res, vi.fn());
       expect(postPreview.getStatus()).toBe(200);
       expect(postPreview.getJson()).toMatchObject({ mode: "local", code: "preview/local-only" });
+
+      // 3b. Dispatches to handleChatRequest when local key is provided
+      const forwarded: Array<Record<string, unknown>> = [];
+      const configuredPlugin = localChatApiPlugin({
+        loadEnvFn: () => ({ GEMINI_API_KEY: "local-dev-key", GEMINI_MODEL: "gemini-flash-latest" })
+      });
+      const configuredHandlers: typeof devHandlers = [];
+      (
+        configuredPlugin.configureServer as
+          | ((server: {
+              config: { mode: string };
+              ssrLoadModule: (url: string) => Promise<unknown>;
+              middlewares: { use: (fn: unknown) => void };
+            }) => void)
+          | undefined
+      )?.({
+        config: { mode: "development" },
+        ssrLoadModule: async () => ({
+          handleChatRequest: async (
+            _r: IncomingMessage,
+            s: ServerResponse,
+            deps: Record<string, unknown>
+          ) => {
+            forwarded.push(deps);
+            s.statusCode = 200;
+            s.end(JSON.stringify({ mode: "ai", reply: "ok" }));
+          }
+        }),
+        middlewares: {
+          use(fn: unknown) {
+            configuredHandlers.push(fn as (typeof devHandlers)[number]);
+          }
+        }
+      });
+
+      const configuredPost = createMockReqRes({ method: "POST", body: { message: "hi" } });
+      configuredPost.req.url = "/api/chat";
+      configuredHandlers[0](configuredPost.req, configuredPost.res, vi.fn());
+      await vi.waitFor(() => {
+        expect(configuredPost.getStatus()).toBe(200);
+        expect(forwarded).toHaveLength(1);
+      });
+      expect(forwarded[0]).toMatchObject({
+        apiKey: "local-dev-key",
+        model: "gemini-flash-latest"
+      });
     } finally {
       if (prevGeminiKey !== undefined) {
         process.env.GEMINI_API_KEY = prevGeminiKey;
@@ -610,5 +659,27 @@ describe("Vercel /api/chat security, Firebase JWT auth, rate limiting & Gemini s
     expect(first404.mode).toBe("local");
     expect(secondAfter404.mode).toBe("local");
     expect(notFoundFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses explicit .js extensions for all relative imports in api/ so Vercel Node ESM loads cleanly", async () => {
+    const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+    const apiFiles = [
+      path.join(root, "api/chat.ts"),
+      path.join(root, "api/_lib/verifyFirebaseToken.ts"),
+      path.join(root, "api/_lib/rateLimiter.ts"),
+      path.join(root, "api/_lib/chatProtocol.ts")
+    ];
+
+    const relativeImportRe = /(?:from|import)\s*["'](\.\.?\/[^"']+)["']/g;
+    for (const file of apiFiles) {
+      const src = fs.readFileSync(file, "utf8");
+      for (const match of src.matchAll(relativeImportRe)) {
+        expect(match[1], `${path.relative(root, file)} relative import "${match[1]}"`).toMatch(/\.js$/);
+      }
+    }
+
+    const defaultGet = createMockReqRes({ method: "GET" });
+    await handler(defaultGet.req, defaultGet.res);
+    expect(defaultGet.getStatus()).toBe(405);
   });
 });
