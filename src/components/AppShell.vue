@@ -334,7 +334,7 @@ watch(
             class="tipid-nav-link"
           >
             <span class="tipid-nav-icon">
-              <component :is="item.icon" :size="18" class="shrink-0" aria-hidden="true" />
+              <component :is="item.icon" :size="17" class="shrink-0" aria-hidden="true" />
             </span>
             <span class="truncate">{{ item.label }}</span>
           </a>
@@ -349,7 +349,7 @@ watch(
       tabindex="-1"
       :data-page-enter="entryDir"
       :data-page-leaving="leavingDir ?? undefined"
-      class="tipid-workspace-main mx-auto w-full max-w-6xl px-4 pb-[calc(6.75rem+var(--safe-bottom))] pt-5 sm:px-6 md:pl-[calc(228px+2.5rem)] lg:pl-[calc(244px+2.75rem)] md:pr-8 md:pb-12 md:pt-8 print:max-w-none print:p-0"
+      class="tipid-workspace-main mx-auto w-full max-w-6xl px-4 pb-[calc(5rem+var(--safe-bottom))] pt-5 sm:px-6 md:pl-[calc(228px+2.5rem)] lg:pl-[calc(244px+2.75rem)] md:pr-8 md:pb-12 md:pt-8 print:max-w-none print:p-0"
     >
       <slot />
     </main>
@@ -359,7 +359,7 @@ watch(
       v-if="updateAvailable"
       role="region"
       aria-label="App Update Available"
-      class="fixed bottom-24 right-4 z-[130] flex w-[min(22rem,calc(100vw-2rem))] items-center gap-3 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3.5 shadow-[var(--shadow-popover)] md:bottom-5"
+      class="fixed bottom-20 right-4 z-[130] flex w-[min(22rem,calc(100vw-2rem))] items-center gap-3 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3.5 shadow-[var(--shadow-popover)] md:bottom-5"
     >
       <div class="tipid-icon-badge h-9 w-9 bg-[var(--accent-soft)] text-[var(--accent)]">
         <RefreshCw :size="16" aria-hidden="true" />
@@ -403,7 +403,7 @@ watch(
           ? (isTl ? `Buksan ang Tipid Coach (${assistantWarnings.length} spending warning)` : `Open Tipid Coach (${assistantWarnings.length} spending alert)`)
           : (isTl ? 'Buksan ang Tipid Coach AI' : 'Open Tipid Coach AI')
       "
-      class="tipid-floating-chrome fixed bottom-[calc(5.25rem+var(--safe-bottom))] right-[max(0.875rem,var(--safe-right))] z-30 inline-flex h-11 items-center gap-2 rounded-full border border-[var(--border-strong)] pl-2 pr-3.5 text-xs font-semibold text-[var(--text-primary)] shadow-[var(--shadow-floating)] transition-transform hover:scale-[1.02] active:scale-[0.98] md:bottom-6 md:right-6 print:hidden"
+      class="tipid-floating-chrome fixed bottom-[calc(4.35rem+var(--safe-bottom))] right-[max(0.875rem,var(--safe-right))] z-30 inline-flex h-10 items-center gap-2 rounded-full border border-[var(--border-strong)] pl-2 pr-3.5 text-xs font-semibold text-[var(--text-primary)] shadow-[var(--shadow-floating)] transition-transform hover:scale-[1.02] active:scale-[0.98] md:bottom-6 md:right-6 print:hidden"
       @click="assistantOpen = true"
     >
       <TipidCoachAvatar :mood="hasCriticalWarning ? 'caution' : 'idle'" size="xs" />
@@ -445,19 +445,19 @@ watch(
 /* Mobile Floating Bottom Pill Dock */
 .tipid-primary-nav {
   position: fixed;
-  inset-inline-start: max(0.5rem, var(--safe-left));
-  inset-inline-end: max(0.5rem, var(--safe-right));
-  bottom: max(0.875rem, var(--safe-bottom));
+  inset-inline-start: max(0.75rem, var(--safe-left));
+  inset-inline-end: max(0.75rem, var(--safe-right));
+  bottom: max(0.625rem, var(--safe-bottom));
   z-index: 30;
-  max-inline-size: min(30rem, calc(100% - 1rem));
+  max-inline-size: min(28rem, calc(100% - 1.5rem));
   margin-inline: auto;
-  border-radius: 1.5rem;
+  border-radius: 1.25rem;
   border: 1px solid var(--border-subtle);
-  background: color-mix(in srgb, var(--bg-surface) 86%, transparent);
-  -webkit-backdrop-filter: blur(22px);
-  backdrop-filter: blur(22px);
+  background: color-mix(in srgb, var(--bg-surface) 84%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
   box-shadow: var(--shadow-floating);
-  padding: 0.375rem 0.25rem;
+  padding: 0.25rem 0.25rem;
 }
 
 .tipid-nav-list {
@@ -467,7 +467,7 @@ watch(
   list-style: none;
   margin: 0;
   padding: 0;
-  gap: 0.0625rem;
+  gap: 0.125rem;
 }
 
 .tipid-nav-link {
@@ -475,15 +475,18 @@ watch(
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.2rem;
-  min-block-size: 48px;
-  padding: 0.375rem 0.125rem;
-  border-radius: 1rem;
+  gap: 0.125rem;
+  min-block-size: 42px;
+  padding: 0.2rem 0.125rem;
+  border-radius: 0.75rem;
   font-size: 0.625rem;
   font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
   color: var(--text-muted);
   text-decoration: none;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  transition: color 0.16s ease, transform 0.14s cubic-bezier(0.32, 0.72, 0, 1);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .tipid-nav-icon {
@@ -491,23 +494,33 @@ watch(
   align-items: center;
   justify-content: center;
   width: 2rem;
-  height: 1.5rem;
+  height: 1.35rem;
   border-radius: 9999px;
-  transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.16s ease, color 0.16s ease;
+  transition:
+    transform 0.18s cubic-bezier(0.32, 0.72, 0, 1),
+    background-color 0.16s ease,
+    color 0.16s ease;
 }
 
-.tipid-nav-link:hover {
-  color: var(--text-primary);
+@media (hover: hover) {
+  .tipid-nav-link:hover {
+    color: var(--text-primary);
+  }
+}
+
+.tipid-nav-link:active {
+  transform: scale(0.96);
 }
 
 .tipid-nav-link[aria-current="page"] {
   color: var(--accent);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .tipid-nav-link[aria-current="page"] .tipid-nav-icon {
   background: var(--accent-soft);
-  transform: scale(1.06);
+  color: var(--accent);
+  transform: translateY(-0.5px);
 }
 
 /* Desktop Floating Sidebar Rail inside detached left island */
@@ -542,16 +555,23 @@ watch(
     padding: 0.5rem 0.875rem;
     font-size: 0.875rem;
     border-radius: 0.875rem;
+    letter-spacing: normal;
+    line-height: inherit;
   }
 
   .tipid-nav-icon {
     width: auto;
     height: auto;
     background: transparent !important;
+    transform: none !important;
   }
 
   .tipid-nav-link:hover {
     background: var(--bg-inset);
+  }
+
+  .tipid-nav-link:active {
+    transform: none;
   }
 
   .tipid-nav-link[aria-current="page"] {
