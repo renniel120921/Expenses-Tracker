@@ -15,6 +15,7 @@ import {
   resolveBudgetCycleWindow
 } from "@/lib/planMath";
 import { resolveWalletVisual } from "@/lib/walletVisuals";
+import { parseTransactionSms } from "@/lib/smsParser";
 import type {
   BillRecurrence,
   BillRecord,
@@ -808,10 +809,25 @@ function extractReceiptOrSmsAction(
   preferredWallet?: string
 ): Extract<ProposedChatAction, { type: "expense" | "income" }> | null {
   const isSmsOrReceipt =
-    /\b(you have sent|you received|successful(?:ly)?\s+(?:paid|sent|transferred|received)|ref\.?\s*no\.?|reference\s*(?:no|id|#)|gcash\s+payment|pay\s+qr|amount\s+paid|grand\s+total|official\s+receipt|invoice|merchant|instapay|pesonet)\b/i.test(
+    /\b(you have sent|you received|successful(?:ly)?\s+(?:paid|sent|transferred|received)|ref\.?\s*no\.?|reference\s*(?:no|id|#)|gcash\s+payment|pay\s+qr|amount\s+paid|grand\s+total|official\s+receipt|invoice|merchant|instapay|pesonet|debit\s+card|card\s+ending|account\s+ending|debited|credited|charged)\b/i.test(
       cleanText
     );
   if (!isSmsOrReceipt) return null;
+
+  const parsed = parseTransactionSms(cleanText, wallets);
+  if (parsed && (parsed.type === "expense" || parsed.type === "income")) {
+    const isCredit = parsed.type === "income";
+    const category = isCredit ? "Kita" : parsed.category;
+    const spendType: SpendType = LUHO_CUE_RE.test(cleanText) ? "luho" : "need";
+    return {
+      type: parsed.type,
+      amount: Number(parsed.amount),
+      desc: parsed.desc,
+      category,
+      method: parsed.method,
+      spendType
+    };
+  }
 
   const amt = extractAmountFromClause(cleanText);
   if (!amt) return null;

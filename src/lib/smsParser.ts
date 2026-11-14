@@ -7,6 +7,8 @@ export interface ParsedSmsTransaction {
   method: string;
   type: EntryType;
   category: string;
+  bankDetected?: string;
+  cardLastDigits?: string;
 }
 
 const MAX_SMS_INPUT_LENGTH = 4000;
@@ -14,10 +16,38 @@ const MAX_PESO_VALUE = MAX_MONEY_CENTAVOS / 100;
 
 const AMOUNT_PATTERNS = [
   /(?:PHP|Php|₱)\s*([\d,]+(?:\.\d{1,2})?)/i,
-  /(?:amount\s*(?:of|:)?\s*)([\d,]+(?:\.\d{1,2})?)/i
+  /(?:amount\s*(?:of|:)?\s*(?:PHP|Php|₱)?\s*)([\d,]+(?:\.\d{1,2})?)/i,
+  /(?:debited|credited|charged|paid|sent|received)\s*(?:PHP|Php|₱)?\s*([\d,]+(?:\.\d{1,2})?)/i,
+  /\bP\s*([\d,]+(?:\.\d{1,2})?)\s*(?:was|has|debited|paid|to|at|from)/i
 ];
 
-export function parseTransactionSms(rawText: string, availableWallets: readonly string[]): ParsedSmsTransaction | null {
+const WALLET_CANDIDATES: Array<[RegExp, string]> = [
+  [/\b(?:maribank|mari\s*bank)\b/i, "MariBank"],
+  [/\b(?:seabank|sea\s*bank)\b/i, "SeaBank"],
+  [/\b(?:gotyme|go\s*tyme)\b/i, "GoTyme"],
+  [/\b(?:landbank|land\s*bank)\b/i, "LandBank"],
+  [/\bgcash\b/i, "GCash"],
+  [/\b(?:maya|paymaya)\b/i, "Maya"],
+  [/\bbdo\b/i, "BDO"],
+  [/\bbpi\b/i, "BPI"],
+  [/\b(?:unionbank|union\s*bank)\b/i, "UnionBank"],
+  [/\b(?:metrobank|metro\s*bank)\b/i, "Metrobank"],
+  [/\bcimb\b/i, "CIMB"],
+  [/\brcbc\b/i, "RCBC"],
+  [/\bpnb\b/i, "PNB"],
+  [/\b(?:securitybank|security\s*bank)\b/i, "SecurityBank"],
+  [/\b(?:chinabank|china\s*bank)\b/i, "ChinaBank"],
+  [/\b(?:eastwest|east\s*west)\b/i, "EastWest"],
+  [/\btonik\b/i, "Tonik"],
+  [/\buno\s*(?:bank|digital)?\b/i, "UNO"],
+  [/\b(?:shopeepay|shopee\s*pay)\b/i, "ShopeePay"],
+  [/\b(?:grabpay|grab\s*pay)\b/i, "GrabPay"]
+];
+
+export function parseTransactionSms(
+  rawText: string,
+  availableWallets: readonly string[] = []
+): ParsedSmsTransaction | null {
   const text = stripUnsafeText(rawText).slice(0, MAX_SMS_INPUT_LENGTH).trim();
   if (!text) return null;
 
@@ -36,49 +66,85 @@ export function parseTransactionSms(rawText: string, availableWallets: readonly 
   if (!amount) return null;
 
   const lower = text.toLowerCase();
-  const isIncome = /\b(received|credited|deposited|cash[\s-]*in|refund|salary|transferred to your)\b/i.test(text);
+  const isIncome =
+    /\b(received|credited|deposited|cash[\s-]*in|refund|salary|sahod|transferred to your|transfer from|pumasok|natanggap)\b/i.test(
+      text
+    ) &&
+    !/\b(you\s+(?:have\s+)?(?:paid|sent)|debited|charged|purchase|bawas|nabawas)\b/i.test(text);
+
   const type: EntryType = isIncome ? "income" : "expense";
 
-  const walletCandidates: Array<[RegExp, string]> = [
-    [/\bgcash\b/i, "GCash"],
-    [/\bmaya\b/i, "Maya"],
-    [/\bseabank\b/i, "SeaBank"],
-    [/\bmaribank\b/i, "MariBank"],
-    [/\bgotyme\b/i, "GoTyme"],
-    [/\bbdo\b/i, "BDO"],
-    [/\bbpi\b/i, "BPI"],
-    [/\bunionbank\b/i, "UnionBank"],
-    [/\bmetrobank\b/i, "Metrobank"],
-    [/\bshopeepay\b/i, "ShopeePay"],
-    [/\bgrabpay\b/i, "GrabPay"]
-  ];
-
-  let method = availableWallets.includes("Cash") ? "Cash" : availableWallets[0] || "Cash";
-  for (const [re, name] of walletCandidates) {
-    if (re.test(text) && availableWallets.includes(name)) {
-      method = name;
+  // Detect bank identity from SMS / notification text
+  let bankDetected: string | undefined;
+  for (const [re, name] of WALLET_CANDIDATES) {
+    if (re.test(text)) {
+      bankDetected = name;
       break;
     }
   }
 
+  // Detect last 4 digits if available in card/account alert
+  const cardDigitsMatch = text.match(
+    /\b(?:ending in|card ending|account ending|ending|last digits?)\s*(?:in|:)?\s*(\d{4})\b/i
+  );
+  const cardLastDigits = cardDigitsMatch ? cardDigitsMatch[1] : undefined;
+
+  // Resolve best matching wallet in availableWallets
+  let method = availableWallets.includes("Cash")
+    ? "Cash"
+    : availableWallets[0] || (bankDetected ?? "Cash");
+
+  if (bankDetected) {
+    const exact = availableWallets.find((w) => w.toLowerCase() === bankDetected!.toLowerCase());
+    const fuzzy = availableWallets.find((w) => w.toLowerCase().includes(bankDetected!.toLowerCase()));
+    if (exact) {
+      method = exact;
+    } else if (fuzzy) {
+      method = fuzzy;
+    } else if (availableWallets.includes(bankDetected)) {
+      method = bankDetected;
+    } else if (availableWallets.length === 0) {
+      method = bankDetected;
+    }
+  }
+
   let category = "Other";
-  if (/\b(meralco|maynilad|manila water|pldt|globe|smart|converge|internet|electric)\b/i.test(lower)) {
+  if (/\b(meralco|maynilad|manila water|pldt|globe|smart|converge|internet|electric|utilities)\b/i.test(lower)) {
     category = "Bills & Utilities";
-  } else if (/\b(jollibee|mcdo|starbucks|grabfood|foodpanda|chowking|mang inasal|restaurant|cafe)\b/i.test(lower)) {
+  } else if (/\b(jollibee|mcdo|mcdonalds|starbucks|grabfood|foodpanda|chowking|mang inasal|kfc|restaurant|cafe|coffee)\b/i.test(lower)) {
     category = "Food & Dining";
-  } else if (/\b(puregold|sm supermarket|robinsons|savemore|mercury drug|grocery)\b/i.test(lower)) {
+  } else if (/\b(puregold|sm supermarket|robinsons|savemore|mercury drug|grocery|supermarket|dali)\b/i.test(lower)) {
     category = "Groceries";
-  } else if (/\b(grab|angkas|joyride|beep|shell|petron|caltex|toll)\b/i.test(lower)) {
+  } else if (/\b(grab|angkas|joyride|beep|shell|petron|caltex|toll|fuel|gasoline)\b/i.test(lower)) {
     category = "Transportation";
-  } else if (/\b(load|prepaid|promo|data)\b/i.test(lower)) {
+  } else if (/\b(load|prepaid|promo|data|gcash load)\b/i.test(lower)) {
     category = "Mobile & Data";
-  } else if (/\b(shopee|lazada|tiktok shop|mall)\b/i.test(lower)) {
+  } else if (/\b(shopee|lazada|tiktok shop|zalora|shein|mall)\b/i.test(lower)) {
     category = "Shopping";
   }
 
-  const merchantMatch = text.match(/\b(?:to|at|from)\s+([A-Z0-9][A-Za-z0-9 &.'-]{2,36})(?:\s+(?:on|via|ref|with|dated|[.,])|$)/);
-  const rawDesc = merchantMatch?.[1]?.trim() || (isIncome ? `${method} Transfer Received` : `${method} Payment`);
-  const desc = stripUnsafeText(rawDesc).slice(0, 120).trim();
+  const merchantMatch =
+    text.match(/\b(?:to|at|from|with|merchant|store|payee)\s+([A-Za-z0-9&'.\-\s]{2,36}?)(?:\s+(?:on|via|using|ref|reference|card|account|dated|in|into|[.,])|$)/i) ||
+    text.match(/\b(?:paid|sent)\s+(?:PHP|Php|₱)?\s*[\d,.]+\s+(?:to|at)\s+([A-Za-z0-9&'.\-\s]{2,36}?)(?:\s|$)/i);
 
-  return { amount, desc, method, type, category };
+  let rawDesc = merchantMatch?.[1]?.trim() || "";
+  if (/^(?:your|the|a|my|cash|bank|card|account)$/i.test(rawDesc)) {
+    rawDesc = "";
+  }
+
+  const desc = rawDesc
+    ? stripUnsafeText(rawDesc).slice(0, 120).trim()
+    : isIncome
+      ? `${method} Pumasok na Pondo`
+      : `${method} Bayad`;
+
+  return {
+    amount,
+    desc,
+    method,
+    type,
+    category,
+    bankDetected,
+    cardLastDigits
+  };
 }

@@ -127,24 +127,29 @@ let cachedVoices: SpeechSynthesisVoice[] = [];
 
 function loadVoices(): SpeechSynthesisVoice[] {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-    return [];
+    return cachedVoices;
   }
   try {
     const list = window.speechSynthesis.getVoices();
     if (list && list.length > 0) {
       cachedVoices = list;
+      return list;
     }
     return cachedVoices;
   } catch {
-    return [];
+    return cachedVoices;
   }
 }
 
 if (typeof window !== "undefined" && "speechSynthesis" in window) {
   try {
-    window.speechSynthesis.onvoiceschanged = () => {
+    const handleVoices = () => {
       loadVoices();
     };
+    if (typeof window.speechSynthesis.addEventListener === "function") {
+      window.speechSynthesis.addEventListener("voiceschanged", handleVoices);
+    }
+    window.speechSynthesis.onvoiceschanged = handleVoices;
     loadVoices();
   } catch {
     // Graceful fallback
@@ -152,40 +157,245 @@ if (typeof window !== "undefined" && "speechSynthesis" in window) {
 }
 
 /**
- * Picks the highest-quality calm, natural English voice available in the browser.
+ * Female voice markers and names to strictly reject or heavily penalize.
+ * Ensures the coach voice never switches to a female voice on iOS (Samantha/Karen),
+ * Android (Google female default / sfg / tpd), or Windows (Aria/Jenny/Zira).
  */
-function findCalmEnglishVoice(): SpeechSynthesisVoice | null {
-  const voices = cachedVoices.length > 0 ? cachedVoices : loadVoices();
-  if (voices.length === 0) return null;
+const FEMALE_VOICE_MARKERS = [
+  "female",
+  "woman",
+  "girl",
+  "zira",
+  "aria",
+  "jenny",
+  "samantha",
+  "karen",
+  "moira",
+  "serena",
+  "victoria",
+  "susan",
+  "hazel",
+  "catherine",
+  "linda",
+  "ava",
+  "emma",
+  "fiona",
+  "tessa",
+  "allison",
+  "kendra",
+  "kimberly",
+  "salli",
+  "joanna",
+  "ivy",
+  "amy",
+  "nicole",
+  "priti",
+  "neerja",
+  "aditi",
+  "stephanie",
+  "zoe",
+  "en-us-x-sfg", // Google TTS female 1
+  "en-us-x-tpd", // Google TTS female 2
+  "en-us-x-tpc", // Google TTS female 3
+  "en-us-x-tow", // Google TTS female 4
+  "en-gb-x-fis", // Google UK female
+  "en-gb-x-rfs"  // Google UK female
+];
 
-  // 1. Natural / Neural online voices (Edge, Chrome, Windows)
-  const naturalMatch = voices.find(
-    (v) =>
-      v.lang.startsWith("en") &&
-      (/\b(natural|neural|aria|jenny|guy|ryan)\b/i.test(v.name) ||
-        /\b(natural|neural)\b/i.test(v.voiceURI))
-  );
-  if (naturalMatch) return naturalMatch;
+/**
+ * Top tier natural/neural human male voices across Edge, Chrome, Apple, and Android.
+ */
+const TOP_TIER_MALE_VOICES = [
+  "guy",                 // Microsoft Guy Online (Natural) - ultra-natural US male
+  "ryan",                // Microsoft Ryan Online (Natural) - warm US male
+  "christopher",         // Microsoft Christopher Online (Natural)
+  "eric",                // Microsoft Eric Online (Natural)
+  "brian",               // Microsoft Brian Online (Natural)
+  "andrew",              // Microsoft Andrew Online (Natural)
+  "steffan",             // Microsoft Steffan Online (Natural)
+  "daniel (enhanced)",   // Apple iOS Enhanced Siri/Daniel
+  "daniel (premium)",    // Apple iOS Premium Daniel
+  "alex",                // Apple Alex (acoustic breathing synthesis, remarkably human)
+  "en-us-x-iom-network", // Android Google Cloud Neural Male 1
+  "en-us-x-iob-network"  // Android Google Cloud Neural Male 2
+];
 
-  // 2. High quality Apple/macOS voices
-  const appleMatch = voices.find(
-    (v) =>
-      v.lang.startsWith("en") &&
-      /\b(samantha|daniel|karen|moira|alex|serena|oliver)\b/i.test(v.name)
-  );
-  if (appleMatch) return appleMatch;
+/**
+ * Standard high-quality male voices across devices.
+ */
+const SECOND_TIER_MALE_VOICES = [
+  "daniel",              // Apple Daniel (calm, warm gentleman)
+  "oliver",              // Apple Oliver
+  "arthur",              // Apple Arthur
+  "aaron",               // Apple Aaron
+  "gordon",              // Apple Gordon
+  "en-us-x-iom",         // Android Google Male 1 (local)
+  "en-us-x-iob",         // Android Google Male 2 (local)
+  "en-us-x-iol",         // Android Google Male 3 (local)
+  "en-gb-x-rjs",         // Android Google UK Male
+  "en-au-x-aub",         // Android Google AU Male
+  "male"                 // Any voice explicitly tagging gender as male
+];
 
-  // 3. Google English voices
-  const googleMatch = voices.find(
-    (v) => v.lang.startsWith("en") && /\bgoogle\b/i.test(v.name)
-  );
-  if (googleMatch) return googleMatch;
+/**
+ * Desktop classic male voices.
+ */
+const THIRD_TIER_MALE_VOICES = [
+  "david",               // Microsoft David (Windows desktop male)
+  "mark",                // Microsoft Mark
+  "george",              // Microsoft George
+  "fred"                 // Apple Fred
+];
 
-  // 4. Any English voice
-  const anyEnglish = voices.find((v) => v.lang.startsWith("en"));
-  if (anyEnglish) return anyEnglish;
+/**
+ * Evaluates how authentically a voice represents a calm, human male financial coach.
+ * Returns negative scores for female voices, high positive scores for natural male voices.
+ */
+export function scoreVoice(v: SpeechSynthesisVoice): number {
+  if (!v.lang || !v.lang.toLowerCase().startsWith("en")) {
+    return -99999;
+  }
 
-  return voices[0] || null;
+  const name = (v.name || "").toLowerCase();
+  const uri = (v.voiceURI || "").toLowerCase();
+  const combined = `${name} ${uri}`;
+
+  // Strict rejection of female voices
+  for (const marker of FEMALE_VOICE_MARKERS) {
+    if (combined.includes(marker)) {
+      return -10000;
+    }
+  }
+
+  let score = 0;
+
+  // Language affinity: US or PH English is most familiar to Filipino users
+  if (v.lang.toLowerCase().startsWith("en-us") || v.lang.toLowerCase().startsWith("en-ph")) {
+    score += 15;
+  } else if (v.lang.toLowerCase().startsWith("en-gb")) {
+    score += 10;
+  }
+
+  // Tier 1: Natural / Neural Male
+  for (const male of TOP_TIER_MALE_VOICES) {
+    if (combined.includes(male)) {
+      score += 1000;
+      break;
+    }
+  }
+
+  // Tier 2: Standard Male
+  for (const male of SECOND_TIER_MALE_VOICES) {
+    if (combined.includes(male)) {
+      score += 500;
+      break;
+    }
+  }
+
+  // Tier 3: Classic Male
+  for (const male of THIRD_TIER_MALE_VOICES) {
+    if (combined.includes(male)) {
+      score += 200;
+      break;
+    }
+  }
+
+  // Bonus for natural/neural in name
+  if (combined.includes("natural") || combined.includes("neural")) {
+    score += 150;
+  }
+
+  // Bonus for network stream voices on Android
+  if (combined.includes("network") || v.localService === false) {
+    score += 80;
+  }
+
+  // Penalty for generic Android "Google US English" which defaults to female on mobile
+  if (name === "google us english" || name === "google english") {
+    score -= 100;
+  }
+
+  return score;
+}
+
+export interface SelectedVoiceInfo {
+  voice: SpeechSynthesisVoice | null;
+  isExplicitMale: boolean;
+  score: number;
+}
+
+/**
+ * Picks the highest-quality calm, natural English male voice available on the device.
+ * Guaranteed to never pick a female voice if a male voice exists.
+ */
+export function findCalmEnglishVoice(): SelectedVoiceInfo {
+  const voices = loadVoices();
+  if (voices.length === 0) {
+    return { voice: null, isExplicitMale: false, score: 0 };
+  }
+
+  const scored = voices
+    .map((v) => ({ voice: v, score: scoreVoice(v) }))
+    .sort((a, b) => b.score - a.score);
+
+  const best = scored[0];
+  if (!best) {
+    return { voice: null, isExplicitMale: false, score: 0 };
+  }
+
+  // If top candidate has a positive male score, we have a verified male voice
+  if (best.score > 0) {
+    return { voice: best.voice, isExplicitMale: true, score: best.score };
+  }
+
+  // If all available voices on the device scored negative, pick the best English fallback
+  const englishFallback = scored.find((s) => s.voice.lang.toLowerCase().startsWith("en"));
+  if (englishFallback) {
+    return { voice: englishFallback.voice, isExplicitMale: false, score: englishFallback.score };
+  }
+
+  return { voice: best.voice, isExplicitMale: false, score: best.score };
+}
+
+/**
+ * Transforms raw text and Philippine financial tokens into natural, humanized spoken English.
+ * Replaces symbols (₱, %, /) and acronyms (ATM, CVV, GCash) with fluent conversational phrasing.
+ */
+export function humanizeForSpeech(text: string): string {
+  if (!text) return "";
+
+  return text
+    // Strip markdown formatting tokens
+    .replace(/[*_#`~[\]]/g, "")
+    // Convert list bullets to smooth breath pauses
+    .replace(/^\s*[-•]\s*/gm, "")
+    // Ratios & per units before currency replacement: e.g. 50/30/20, /day, /month
+    .replace(/(\d+)\/(\d+)\/(\d+)/g, "$1, $2, $3")
+    .replace(/\/([a-zA-Z]+)\b/g, " per $1")
+    // Currency: Replace ₱1,500.00 with 1,500 pesos, ₱150 with 150 pesos
+    .replace(/₱\s*(\d+(?:,\d{3})*(?:\.\d+)?)/g, "$1 pesos")
+    .replace(/\bPHP\s*(\d+(?:,\d{3})*(?:\.\d+)?)/gi, "$1 pesos")
+    .replace(/₱/g, " pesos ")
+    // Pronunciation of Philippine banking & tech terms
+    .replace(/\bATM\b/g, "A-T-M")
+    .replace(/\bCVV\b/g, "C-V-V")
+    .replace(/\bCVC\b/g, "C-V-C")
+    .replace(/\bSMS\b/g, "S-M-S")
+    .replace(/\bBDO\b/g, "B-D-O")
+    .replace(/\bBPI\b/g, "B-P-I")
+    .replace(/\b3D\b/gi, "3-D")
+    .replace(/\bGCash\b/gi, "G-Cash")
+    .replace(/\bGoTyme\b/gi, "Go-Tyme")
+    .replace(/\bLandBank\b/gi, "Land-Bank")
+    // Human breath pauses: em-dashes and colons to gentle comma pause
+    .replace(/[—–]/g, ", ")
+    .replace(/:\s+/g, ", ")
+    // Ellipses to clean comma pause
+    .replace(/\.{2,}/g, ", ")
+    // Clean redundant commas or spaces
+    .replace(/\s*,\s*,\s*/g, ", ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export interface SpeakOptions {
@@ -229,7 +439,7 @@ export function useCoachVoice() {
       return;
     }
 
-    const cleanText = text.replace(/[*_#`~[\]]/g, "").trim();
+    const cleanText = humanizeForSpeech(text);
     if (!cleanText) {
       stop();
       return;
@@ -241,15 +451,22 @@ export function useCoachVoice() {
       const utterance = new SpeechSynthesisUtterance(cleanText);
       utterance.lang = "en-US";
 
-      const preferredVoice = findCalmEnglishVoice();
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
+      // Select natural male voice
+      const selected = findCalmEnglishVoice();
+      if (selected.voice) {
+        utterance.voice = selected.voice;
       }
 
-      // Calm, measured, reassuring cadence
-      const targetRate = options?.rate ?? 0.94;
+      // Calm, measured, reassuring human male cadence:
+      // When a verified male voice is used:
+      // Rate 0.92: calm, natural, unhurried, reassuring human cadence
+      // Pitch 0.93: warm chest resonance, eliminates tinny/metallic computer frequencies
+      // If no explicit male voice exists, default to 0.94 rate and 0.98 pitch
+      const targetRate = options?.rate ?? (selected.isExplicitMale ? 0.92 : 0.94);
+      const targetPitch = options?.pitch ?? (selected.isExplicitMale ? 0.93 : 0.98);
+
       utterance.rate = targetRate;
-      utterance.pitch = options?.pitch ?? 0.98;
+      utterance.pitch = targetPitch;
       utterance.volume = 1.0;
 
       activeMessageId.value = options?.messageId ?? null;

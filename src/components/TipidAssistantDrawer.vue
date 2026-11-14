@@ -10,7 +10,7 @@ import {
   Loader2,
   WifiOff,
   ArrowRight,
-  Wallet,
+  CreditCard,
   Sparkles,
   Volume2,
   VolumeX
@@ -52,6 +52,7 @@ import {
 } from "@/lib/assistantEngine";
 import { sendAssistantMessage, type ChatHistoryTurn } from "@/lib/assistantClient";
 import TipidCoachAvatar, { type CoachAvatarMood } from "./TipidCoachAvatar.vue";
+import WalletCard from "@/components/WalletCard.vue";
 import type { BillRecurrence, SavingsGoalColor } from "@/types/finance";
 
 interface EditableDraft {
@@ -271,6 +272,101 @@ function triggerCelebratingAnimation(): void {
   }, 2100);
 }
 
+interface CardAnimationState {
+  draftId: string;
+  wallet: string;
+  beforeBalance: number;
+  afterBalance: number;
+  currentDisplayBalance: number;
+  amount: number;
+  type: "expense" | "income";
+  desc: string;
+}
+
+const activeCardAnimation = ref<CardAnimationState | null>(null);
+let cardAnimRaf: number | null = null;
+
+function clearCardAnimation(): void {
+  if (cardAnimRaf !== null && typeof window !== "undefined") {
+    window.cancelAnimationFrame(cardAnimRaf);
+    cardAnimRaf = null;
+  }
+  activeCardAnimation.value = null;
+}
+
+function startCardDeductionAnimation(
+  draftId: string,
+  wallet: string,
+  beforeBal: number,
+  afterBal: number,
+  amount: number,
+  type: "expense" | "income",
+  desc: string
+): Promise<void> {
+  clearCardAnimation();
+
+  activeCardAnimation.value = {
+    draftId,
+    wallet,
+    beforeBalance: beforeBal,
+    afterBalance: afterBal,
+    currentDisplayBalance: beforeBal,
+    amount,
+    type,
+    desc
+  };
+
+  const visual = resolveWalletVisual(wallet);
+  const speechText =
+    type === "income"
+      ? `Received ${amount} pesos into your ${visual.displayName}.`
+      : `Deducted ${amount} pesos from your ${visual.displayName} for ${desc}.`;
+  speak(speechText);
+
+  return new Promise((resolve) => {
+    if (typeof window === "undefined" || typeof window.requestAnimationFrame !== "function") {
+      activeCardAnimation.value = null;
+      resolve();
+      return;
+    }
+
+    const duration = 1200;
+    const startTime = performance.now();
+
+    function step(now: number) {
+      const elapsed = Math.max(0, now - startTime);
+      const progress = Math.min(1, elapsed / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = beforeBal + (afterBal - beforeBal) * eased;
+      if (activeCardAnimation.value) {
+        activeCardAnimation.value.currentDisplayBalance = current;
+      }
+
+      if (progress < 1) {
+        cardAnimRaf = window.requestAnimationFrame(step);
+      } else {
+        if (activeCardAnimation.value) {
+          activeCardAnimation.value.currentDisplayBalance = afterBal;
+        }
+        cardAnimRaf = null;
+        setTimeout(() => {
+          activeCardAnimation.value = null;
+          resolve();
+        }, 600);
+      }
+    }
+
+    cardAnimRaf = window.requestAnimationFrame(step);
+  });
+}
+
+function draftProjectedBalance(draft: EditableDraft): number {
+  if (draft.action.type !== "expense" && draft.action.type !== "income") return 0;
+  const current = effectiveSnapshot.value.walletBalances[draft.action.method] ?? 0;
+  const amt = Number(draft.action.amount) || 0;
+  return draft.action.type === "expense" ? current - amt : current + amt;
+}
+
 function nextId(prefix: string): string {
   seq += 1;
   return `${prefix}-${Date.now()}-${seq}`;
@@ -394,6 +490,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   clearAvatarTimers();
+  clearCardAnimation();
   if (dialogRef.value?.open) {
     dialogRef.value.close();
   }
@@ -408,6 +505,7 @@ function scrollToBottom(): void {
 const quickPrompts = computed(() =>
   isTl.value
     ? [
+        { label: "📱 Paste Bank SMS", prompt: "You have paid PHP 450.00 to Starbucks using your MariBank Debit Card ending in 1234." },
         { label: "Tour & Guide", prompt: "Paano gamitin ang Tipid app at ano ang mga benefits nito?" },
         { label: "Check spending", prompt: "Kumusta gastos ko ngayon? Nag-o-overspend ba ako?" },
         { label: "Kaya ba ₱1,500?", prompt: "Kaya ba ng budget ko kung gumastos ako ng 1500?" },
@@ -418,6 +516,7 @@ const quickPrompts = computed(() =>
         { label: "Capabilities", prompt: "Ano ang mga kaya mong gawin?" }
       ]
     : [
+        { label: "📱 Paste Bank SMS", prompt: "You have paid PHP 450.00 to Starbucks using your MariBank Debit Card ending in 1234." },
         { label: "Tour & Guide", prompt: "How do I use Tipid and what are its key benefits?" },
         { label: "Check spending", prompt: "Am I overspending? Check my spending habits." },
         { label: "Afford ₱1,500?", prompt: "Can I afford a ₱1,500 purchase right now?" },
@@ -428,6 +527,24 @@ const quickPrompts = computed(() =>
         { label: "What can you do?", prompt: "What can you help me do inside Tipid?" }
       ]
 );
+
+async function handleQuickPromptClick(chip: { label: string; prompt: string }): Promise<void> {
+  if (chip.label.includes("Bank SMS") || chip.label.includes("SMS")) {
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard && typeof navigator.clipboard.readText === "function") {
+        const text = await navigator.clipboard.readText();
+        if (text && text.trim().length > 8) {
+          draftText.value = text.trim();
+          await submitPrompt(text.trim());
+          return;
+        }
+      }
+    } catch {
+      // Clipboard read blocked by browser permissions: fallback cleanly
+    }
+  }
+  await submitPrompt(chip.prompt);
+}
 
 function handleComposerKeydown(e: KeyboardEvent): void {
   if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
@@ -682,6 +799,18 @@ async function confirmDraft(draft: EditableDraft): Promise<void> {
           isTl.value ? "Naka-save offline — isi-sync online." : "Saved offline — syncs when online."
         );
       }
+
+      // Trigger signature 3D ATM card deduction or credit countdown animation
+      const afterBal = action.type === "income" ? walletBal + safeAmount : walletBal - safeAmount;
+      await startCardDeductionAnimation(
+        draft.id,
+        method,
+        walletBal,
+        afterBal,
+        safeAmount,
+        action.type,
+        cleanDesc
+      );
 
       draft.status = "saved";
       triggerCelebratingAnimation();
@@ -1024,33 +1153,34 @@ function warningCardClass(level: AssistantBehaviorAlert["level"] | "watch" | "wa
     <div class="flex h-full flex-col overflow-hidden bg-[var(--bg-surface)]">
       <!-- Modern Coach Hero Header -->
       <header
-        class="relative shrink-0 border-b border-[var(--border-subtle)] bg-gradient-to-b from-[var(--accent-soft)]/55 to-[var(--bg-surface)] px-4 py-3.5 sm:px-5"
+        class="relative shrink-0 border-b border-[var(--border-subtle)] bg-gradient-to-b from-[var(--accent-soft)]/55 to-[var(--bg-surface)] px-3.5 py-3 sm:px-5 sm:py-3.5"
         style="padding-top: max(0.95rem, var(--safe-top))"
       >
-        <div class="flex items-center justify-between gap-3">
-          <div class="flex min-w-0 items-center gap-3">
-            <TipidCoachAvatar :mood="coachMood" :is-speaking="isAvatarSpeaking" size="md" />
-            <div class="min-w-0">
-              <div class="flex items-center gap-2">
+        <div class="flex items-center justify-between gap-2.5">
+          <!-- Coach Identity Column -->
+          <div class="flex min-w-0 items-center gap-2.5 sm:gap-3">
+            <TipidCoachAvatar :mood="coachMood" :is-speaking="isAvatarSpeaking" size="sm" class="shrink-0" />
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 sm:gap-2">
                 <h2
                   id="tipid-assistant-title"
-                  class="truncate text-[15px] font-bold tracking-tight text-[var(--text-primary)]"
+                  class="whitespace-nowrap shrink-0 text-sm sm:text-[15px] font-bold tracking-tight text-[var(--text-primary)]"
                 >
                   Tipid Coach
                 </h2>
                 <span
                   v-if="lastMode === 'ai' && !isOffline"
-                  class="inline-flex items-center rounded-full bg-[var(--accent-soft)] px-2 py-0.5 text-[10px] font-bold tracking-wide text-[var(--accent)]"
+                  class="whitespace-nowrap shrink-0 inline-flex items-center rounded-full bg-[var(--accent-soft)] px-1.5 py-0.5 text-[9.5px] font-bold tracking-wider text-[var(--accent)] ring-1 ring-[var(--accent)]/30"
                 >
                   AI
                 </span>
               </div>
-              <p class="mt-0.5 flex items-center gap-1.5 text-[11.5px] font-medium text-[var(--text-secondary)]">
-                <WifiOff v-if="isOffline" :size="11" class="text-[var(--warning)]" aria-hidden="true" />
+              <p class="mt-0.5 flex items-center gap-1.5 text-[11px] sm:text-[11.5px] font-medium text-[var(--text-secondary)] min-w-0">
+                <WifiOff v-if="isOffline" :size="11" class="shrink-0 text-[var(--warning)]" aria-hidden="true" />
                 <span
                   v-else
                   :class="[
-                    'inline-block h-2 w-2 rounded-full',
+                    'inline-block h-1.5 w-1.5 shrink-0 rounded-full',
                     coachMood === 'caution'
                       ? 'bg-[var(--warning)]'
                       : coachMood === 'thinking'
@@ -1060,69 +1190,66 @@ function warningCardClass(level: AssistantBehaviorAlert["level"] | "watch" | "wa
                   aria-hidden="true"
                 />
                 <span class="truncate">{{ coachStatusLabel }}</span>
+                <span class="shrink-0 text-[var(--text-muted)]">·</span>
+                <span class="shrink-0 font-mono font-semibold tabular-nums text-[var(--text-primary)]">
+                  ₱{{ formatPeso(effectiveSnapshot.overallBalance) }}
+                </span>
               </p>
             </div>
           </div>
 
-          <div class="flex shrink-0 items-center gap-1.5">
+          <!-- Responsive Header Action Bar -->
+          <div class="flex shrink-0 items-center gap-1 sm:gap-1.5">
             <button
               type="button"
-              class="tipid-compact inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]/85 px-2.5 text-xs font-medium text-[var(--text-secondary)] shadow-2xs transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
+              class="tipid-compact whitespace-nowrap shrink-0 inline-flex h-8 sm:h-8.5 items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]/85 px-2 sm:px-2.5 text-xs font-semibold text-[var(--text-secondary)] shadow-2xs transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
               :title="isTl ? 'Buksan ang Welcome Tour & Gabay' : 'Open Welcome Tour & Guide'"
               @click="handleOpenTour"
             >
-              <Sparkles :size="13" class="text-[var(--accent)]" aria-hidden="true" />
-              <span>{{ isTl ? "Gabay" : "Tour" }}</span>
+              <Sparkles :size="13" class="text-[var(--accent)] shrink-0" aria-hidden="true" />
+              <span class="hidden sm:inline">{{ isTl ? "Gabay" : "Tour" }}</span>
             </button>
             <button
               type="button"
-              class="tipid-compact inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]/85 px-2.5 text-xs font-medium text-[var(--text-secondary)] shadow-2xs transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
+              class="tipid-compact whitespace-nowrap shrink-0 inline-flex h-8 sm:h-8.5 items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]/85 px-2 sm:px-2.5 text-xs font-semibold text-[var(--text-secondary)] shadow-2xs transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
               :title="isTl ? 'Linisin ang usapan' : 'Clear chat'"
               @click="clearChat"
             >
-              <Trash2 :size="13" aria-hidden="true" />
-              <span>Clear</span>
+              <Trash2 :size="13" class="shrink-0" aria-hidden="true" />
+              <span class="hidden sm:inline">{{ isTl ? "Clear" : "Clear" }}</span>
             </button>
             <button
               type="button"
-              class="tipid-compact tipid-compact-touch inline-flex h-10 w-10 items-center justify-center rounded-xl text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
+              class="tipid-compact whitespace-nowrap shrink-0 inline-flex h-8 w-8 sm:h-8.5 sm:w-8.5 items-center justify-center rounded-xl text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
               :aria-label="isTl ? 'Isara ang assistant' : 'Close assistant'"
               @click="dialogRef?.close()"
             >
-              <X :size="18" aria-hidden="true" />
+              <X :size="16" aria-hidden="true" />
             </button>
           </div>
         </div>
 
-        <!-- Compact Ledger Pulse + Alert Trigger -->
-        <div class="mt-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px]">
-          <div class="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)]/90 px-2.5 py-1 font-medium text-[var(--text-secondary)] shadow-2xs">
-            <Wallet :size="12" class="text-[var(--accent)]" aria-hidden="true" />
-            <span class="font-mono font-semibold tabular-nums text-[var(--text-primary)]">
-              ₱{{ formatPeso(effectiveSnapshot.overallBalance) }}
-            </span>
-            <span v-if="effectiveSnapshot.budget" class="text-[var(--text-muted)]">
-              · {{ effectiveSnapshot.budgetCycle === "kinsenas" ? "Kinsenas" : "Monthly" }}
-            </span>
-          </div>
-
+        <!-- Optional Active Spending Warning Banner -->
+        <div v-if="activeWarnings.length > 0" class="mt-2.5">
           <button
-            v-if="activeWarnings.length > 0"
             type="button"
             :class="[
-              'tipid-compact inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-semibold transition-opacity hover:opacity-90',
+              'tipid-compact w-full inline-flex items-center justify-between gap-2 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-opacity hover:opacity-90',
               warningCardClass(activeWarnings[0].severity)
             ]"
             @click="submitPrompt(isTl ? 'Suriin ang spending warnings at Luho ko' : 'Explain my spending warnings and how to fix them')"
           >
-            <ShieldAlert
-              v-if="activeWarnings[0].severity === 'critical'"
-              :size="12"
-              aria-hidden="true"
-            />
-            <AlertTriangle v-else :size="12" aria-hidden="true" />
-            <span class="max-w-[11rem] truncate">{{ activeWarnings[0].title }}</span>
-            <span v-if="activeWarnings.length > 1" class="opacity-80">
+            <div class="flex min-w-0 items-center gap-1.5 truncate">
+              <ShieldAlert
+                v-if="activeWarnings[0].severity === 'critical'"
+                :size="13"
+                class="shrink-0"
+                aria-hidden="true"
+              />
+              <AlertTriangle v-else :size="13" class="shrink-0" aria-hidden="true" />
+              <span class="truncate">{{ activeWarnings[0].title }}</span>
+            </div>
+            <span v-if="activeWarnings.length > 1" class="shrink-0 rounded-full bg-black/10 px-1.5 py-0.5 text-[10px] dark:bg-white/10">
               +{{ activeWarnings.length - 1 }}
             </span>
           </button>
@@ -1161,18 +1288,23 @@ function warningCardClass(level: AssistantBehaviorAlert["level"] | "watch" | "wa
               <div class="rounded-2xl rounded-tl-md border border-[var(--border-subtle)] bg-[var(--bg-inset)]/65 px-3.5 py-2.5 text-[13.5px] leading-relaxed text-[var(--text-primary)] whitespace-pre-line shadow-2xs">
                 {{ msg.text }}
               </div>
-              <div v-if="isVoiceSupported" class="flex items-center gap-1.5 pl-1">
+              <div v-if="isVoiceSupported" class="flex items-center gap-1.5 pl-0.5 pt-0.5">
                 <button
                   type="button"
-                  class="tipid-compact inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
+                  :class="[
+                    'tipid-compact inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-all',
+                    isSpeakingMessage(msg.id)
+                      ? 'border-[var(--accent)]/40 bg-[var(--accent-soft)] font-semibold text-[var(--accent)] shadow-2xs'
+                      : 'border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]'
+                  ]"
                   :aria-label="isSpeakingMessage(msg.id) ? 'Stop voice' : 'Listen with English voice'"
                   :title="isSpeakingMessage(msg.id) ? 'Stop speaking' : 'Listen with English voice'"
                   @click="toggleSpeakAssistantMessage(msg.id, msg.text)"
                 >
-                  <VolumeX v-if="isSpeakingMessage(msg.id)" :size="12" class="text-[var(--accent)]" aria-hidden="true" />
-                  <Volume2 v-else :size="12" aria-hidden="true" />
-                  <span :class="isSpeakingMessage(msg.id) ? 'font-semibold text-[var(--accent)]' : ''">
-                    {{ isSpeakingMessage(msg.id) ? "Stop voice" : "Listen" }}
+                  <VolumeX v-if="isSpeakingMessage(msg.id)" :size="12" class="animate-pulse text-[var(--accent)]" aria-hidden="true" />
+                  <Volume2 v-else :size="12" class="text-[var(--text-muted)]" aria-hidden="true" />
+                  <span>
+                    {{ isSpeakingMessage(msg.id) ? "Stop Voice" : "Listen" }}
                   </span>
                 </button>
               </div>
@@ -1229,6 +1361,53 @@ function warningCardClass(level: AssistantBehaviorAlert["level"] | "watch" | "wa
               <span>{{ draftSavedSummary(draft.action) }}</span>
             </div>
 
+            <!-- Active 3D ATM Card Live Deduction / Credit Animation View -->
+            <div
+              v-else-if="activeCardAnimation && activeCardAnimation.draftId === draft.id"
+              class="mt-3 overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-inset)]/75 p-3.5 shadow-inner"
+            >
+              <div class="mb-2.5 flex items-center justify-between">
+                <div class="flex items-center gap-1.5 text-xs font-bold text-[var(--text-primary)]">
+                  <CreditCard :size="14" class="text-[var(--accent)]" aria-hidden="true" />
+                  <span>
+                    {{
+                      activeCardAnimation.type === 'income'
+                        ? (isTl ? 'Auto-Credit sa Card' : 'Card Auto-Credit')
+                        : (isTl ? 'Auto-Deduct sa Card' : 'Card Auto-Deduct')
+                    }}
+                  </span>
+                </div>
+                <span
+                  :class="[
+                    'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-xs font-bold shadow-2xs animate-pulse',
+                    activeCardAnimation.type === 'income'
+                      ? 'bg-[var(--income-soft)] text-[var(--income)]'
+                      : 'bg-[var(--expense-soft)] text-[var(--expense)]'
+                  ]"
+                >
+                  {{ activeCardAnimation.type === 'income' ? '+' : '-' }}₱{{ formatPeso(activeCardAnimation.amount) }}
+                </span>
+              </div>
+
+              <!-- Real 3D ATM Card with Live Animated Balance -->
+              <div class="overflow-hidden rounded-xl">
+                <WalletCard
+                  :method="activeCardAnimation.wallet"
+                  :balance="activeCardAnimation.currentDisplayBalance"
+                  :show-edit="false"
+                  :is-deck-inactive="false"
+                />
+              </div>
+
+              <p class="mt-2 text-center text-[11px] font-medium text-[var(--text-secondary)]">
+                {{
+                  activeCardAnimation.type === 'income'
+                    ? (isTl ? 'Pumapasok ang pondo sa iyong card...' : 'Crediting funds to your card...')
+                    : (isTl ? 'Ibinabawas ang bayad sa iyong card...' : 'Deducting balance from your card...')
+                }}
+              </p>
+            </div>
+
             <div v-else-if="draft.status === 'dismissed'" class="mt-2 text-xs text-[var(--text-muted)]">
               {{ isTl ? "Kinansela ang draft na ito." : "Draft dismissed." }}
             </div>
@@ -1237,6 +1416,26 @@ function warningCardClass(level: AssistantBehaviorAlert["level"] | "watch" | "wa
             <div v-else class="mt-3 space-y-2.5">
               <!-- Expense / Income -->
               <template v-if="draft.action.type === 'expense' || draft.action.type === 'income'">
+                <!-- Live Bank Card Balance Projection -->
+                <div class="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-inset)]/45 px-3 py-2 text-xs">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span
+                      class="inline-block h-3.5 w-6 shrink-0 rounded-xs border border-white/20 shadow-2xs"
+                      :style="{ background: `linear-gradient(135deg, ${resolveWalletVisual(draft.action.method).surfaceStart}, ${resolveWalletVisual(draft.action.method).surfaceEnd})` }"
+                    />
+                    <span class="truncate font-semibold text-[var(--text-primary)]">
+                      {{ resolveWalletVisual(draft.action.method).displayName }}
+                    </span>
+                  </div>
+                  <div class="shrink-0 font-mono text-[11px] font-medium text-[var(--text-secondary)]">
+                    <span>₱{{ formatPeso(effectiveSnapshot.walletBalances[draft.action.method] ?? 0) }}</span>
+                    <span class="mx-1 text-[var(--text-muted)]">➔</span>
+                    <span :class="draft.action.type === 'expense' ? 'font-bold text-[var(--expense)]' : 'font-bold text-[var(--income)]'">
+                      ₱{{ formatPeso(draftProjectedBalance(draft)) }}
+                    </span>
+                  </div>
+                </div>
+
                 <div class="grid grid-cols-2 gap-2">
                   <select
                     v-model="draft.action.type"
@@ -1667,13 +1866,22 @@ function warningCardClass(level: AssistantBehaviorAlert["level"] | "watch" | "wa
                 </button>
                 <button
                   type="button"
-                  :disabled="draft.status === 'saving'"
+                  :disabled="draft.status === 'saving' || !!activeCardAnimation"
                   class="tipid-compact inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-[var(--accent)] px-3.5 text-xs font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-60"
                   @click="confirmDraft(draft)"
                 >
                   <Loader2 v-if="draft.status === 'saving'" :size="13" class="animate-spin" aria-hidden="true" />
+                  <CreditCard v-else-if="draft.action.type === 'expense' || draft.action.type === 'income'" :size="13" aria-hidden="true" />
                   <ArrowRight v-else :size="13" aria-hidden="true" />
-                  <span>{{ isTl ? "Confirm & Save" : "Confirm & Save" }}</span>
+                  <span>
+                    {{
+                      draft.action.type === 'expense'
+                        ? (isTl ? 'Confirm & I-bawas sa Card' : 'Confirm & Deduct')
+                        : draft.action.type === 'income'
+                          ? (isTl ? 'Confirm & I-pasok sa Card' : 'Confirm & Credit')
+                          : (isTl ? 'Confirm & Save' : 'Confirm & Save')
+                    }}
+                  </span>
                 </button>
               </div>
             </div>
@@ -1692,22 +1900,25 @@ function warningCardClass(level: AssistantBehaviorAlert["level"] | "watch" | "wa
 
       <!-- Quick Prompt Chips + Auto-Resizing Composer -->
       <footer
-        class="shrink-0 border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] px-4 pt-2.5 sm:px-5"
+        class="shrink-0 border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] px-3.5 pt-2.5 sm:px-5"
         style="padding-bottom: max(0.875rem, var(--safe-bottom))"
       >
-        <div class="tipid-chip-rail mb-2.5 flex gap-1.5 overflow-x-auto pr-4">
+        <div class="tipid-chip-rail mb-2.5 flex gap-1.5 overflow-x-auto pb-0.5">
           <button
             v-for="chip in quickPrompts"
             :key="chip.label"
             type="button"
-            class="tipid-compact shrink-0 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-inset)]/75 px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
-            @click="submitPrompt(chip.prompt)"
+            class="tipid-compact shrink-0 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-3 py-1 text-xs font-medium text-[var(--text-secondary)] shadow-2xs transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
+            @click="handleQuickPromptClick(chip)"
           >
             {{ chip.label }}
           </button>
         </div>
 
-        <form class="flex items-end gap-2" @submit.prevent="submitPrompt()">
+        <form
+          class="group flex items-end gap-1.5 rounded-2xl border border-[var(--border-strong)] bg-[var(--bg-inset)]/45 p-1.5 transition-all focus-within:border-[var(--accent)] focus-within:bg-[var(--bg-surface)] focus-within:ring-2 focus-within:ring-[var(--accent-soft)]"
+          @submit.prevent="submitPrompt()"
+        >
           <label for="tipid-assistant-input" class="visually-hidden">
             {{ isTl ? "Mensahing pantanong o utos kay Tipid Coach" : "Message Tipid Coach" }}
           </label>
@@ -1719,17 +1930,17 @@ function warningCardClass(level: AssistantBehaviorAlert["level"] | "watch" | "wa
             maxlength="1200"
             :disabled="sending"
             :placeholder="isTl ? 'Magtanong, mag-paste ng SMS/resibo, o mag-utos...' : 'Ask anything, paste SMS/receipt, or log an update...'"
-            class="tipid-input min-h-[44px] min-w-0 flex-1 resize-none py-2.5 text-base leading-snug sm:text-sm"
+            class="min-h-[38px] max-h-32 min-w-0 flex-1 resize-none border-0 bg-transparent px-2.5 py-2 text-base leading-snug text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-0 sm:text-sm"
             @input="resizeComposer"
             @keydown="handleComposerKeydown"
           />
           <button
             type="submit"
             :disabled="sending || !draftText.trim()"
-            class="tipid-compact inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--accent)] text-white shadow-xs transition-colors hover:bg-[var(--accent-hover)] disabled:opacity-50"
+            class="tipid-compact inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--accent)] text-white shadow-xs transition-all hover:bg-[var(--accent-hover)] active:scale-95 disabled:pointer-events-none disabled:opacity-35"
             :aria-label="isTl ? 'Ipadala' : 'Send message'"
           >
-            <Send :size="16" aria-hidden="true" />
+            <Send :size="15" aria-hidden="true" />
           </button>
         </form>
       </footer>
