@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   ShieldOff,
   SlidersHorizontal,
+  Sparkles,
   Sun,
   Target,
   Trash2,
@@ -33,6 +34,7 @@ import { useAuthGuard } from "@/composables/useAuthGuard";
 import { useFinanceData } from "@/composables/useFinanceData";
 import { useTheme } from "@/composables/useTheme";
 import { pushToast } from "@/composables/useToast";
+import { useWelcomeTour } from "@/composables/useWelcomeTour";
 import { useI18n } from "@/lib/i18n";
 import {
   buildTransactionsCsv,
@@ -82,6 +84,7 @@ const uidRef = computed(() => user.value?.uid);
 const { entries, budget, wallets, goals, notificationSettings } = useFinanceData(uidRef);
 const { themePreference, setThemePreference } = useTheme();
 const { lang, t, isTl, setLanguage } = useI18n();
+const { openTour: openWelcomeTour } = useWelcomeTour();
 
 const activeTab = ref<ProfileTabId>("plan");
 const tabDefs = computed(() => [
@@ -1216,6 +1219,32 @@ async function handleDeleteAccount() {
                 </button>
               </div>
             </fieldset>
+
+            <!-- Welcome Tour Replay Tile -->
+            <div class="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3.5 shadow-xs sm:p-4">
+              <div class="flex items-center gap-3">
+                <div class="tipid-icon-badge h-9 w-9 rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]" aria-hidden="true">
+                  <Sparkles :size="16" />
+                </div>
+                <div>
+                  <h3 class="text-xs font-bold text-[var(--text-primary)]">
+                    {{ isTl ? "Welcome Tour & Gabay sa App" : "Welcome Tour & App Walkthrough" }}
+                  </h3>
+                  <p class="text-[11px] text-[var(--text-muted)]">
+                    {{ isTl ? "Panoorin muli ang animated gabay kung paano gamitin ang Tipid." : "Revisit the animated mascot guide and learn about Tipid's features." }}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                class="tipid-compact inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[var(--accent-soft)] px-3 py-1.5 text-xs font-semibold text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-white"
+                @click="openWelcomeTour"
+              >
+                <Sparkles :size="13" aria-hidden="true" />
+                <span>{{ isTl ? "Panoorin" : "View Tour" }}</span>
+              </button>
+            </div>
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <fieldset>

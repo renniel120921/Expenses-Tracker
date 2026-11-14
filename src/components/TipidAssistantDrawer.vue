@@ -10,7 +10,10 @@ import {
   Loader2,
   WifiOff,
   ArrowRight,
-  Wallet
+  Wallet,
+  Sparkles,
+  Volume2,
+  VolumeX
 } from "@lucide/vue";
 import {
   CATEGORIES,
@@ -37,6 +40,8 @@ import { notifyWriteResult } from "@/lib/offlineSync";
 import { resolveWalletVisual } from "@/lib/walletVisuals";
 import { useFinanceData, useSharedFinanceSnapshot } from "@/composables/useFinanceData";
 import { useI18n } from "@/lib/i18n";
+import { useWelcomeTour } from "@/composables/useWelcomeTour";
+import { useCoachVoice } from "@/composables/useCoachVoice";
 import { pushToast } from "@/composables/useToast";
 import {
   analyzeSpendingBehavior,
@@ -101,6 +106,14 @@ const emit = defineEmits<{
 }>();
 
 const { lang, isTl } = useI18n();
+const { openTour } = useWelcomeTour();
+const {
+  isSupported: isVoiceSupported,
+  isSpeaking: isVoiceSpeaking,
+  speak,
+  stop: stopVoice,
+  isSpeakingMessage
+} = useCoachVoice();
 const sharedSnapshot = useSharedFinanceSnapshot();
 const lazyUidRef = computed(() => (props.open && props.uid ? props.uid : undefined));
 const lazyData = useFinanceData(lazyUidRef, {
@@ -191,10 +204,12 @@ const latestAssistantMessageId = computed(() => {
   return "";
 });
 
+const isAvatarSpeaking = computed(() => isSpeaking.value || isVoiceSpeaking.value);
+
 const coachMood = computed<CoachAvatarMood>(() => {
   if (sending.value) return "thinking";
   if (isCelebrating.value) return "happy";
-  if (isSpeaking.value) return "speaking";
+  if (isAvatarSpeaking.value) return "speaking";
   if (activeWarnings.value.length > 0) return "caution";
   return "idle";
 });
@@ -205,6 +220,9 @@ const coachStatusLabel = computed(() => {
   }
   if (isCelebrating.value) {
     return isTl.value ? "Naitala sa ledger" : "Saved to ledger";
+  }
+  if (isVoiceSpeaking.value) {
+    return isTl.value ? "Nagsasalita..." : "Speaking narration...";
   }
   if (isSpeaking.value) {
     return isTl.value ? "Sumasagot..." : "Replying...";
@@ -300,11 +318,25 @@ function handlePointerUp(e: PointerEvent) {
 }
 
 function handleDialogClose() {
+  stopVoice();
   clearAvatarTimers();
   if (dialogRef.value) {
     dialogRef.value.returnValue = "";
   }
   emit("close");
+}
+
+function toggleSpeakAssistantMessage(id: string, text: string): void {
+  if (isSpeakingMessage(id)) {
+    stopVoice();
+  } else {
+    speak(text, { messageId: id, force: true });
+  }
+}
+
+function handleOpenTour(): void {
+  dialogRef.value?.close();
+  openTour();
 }
 
 function resizeComposer(): void {
@@ -376,6 +408,7 @@ function scrollToBottom(): void {
 const quickPrompts = computed(() =>
   isTl.value
     ? [
+        { label: "Tour & Guide", prompt: "Paano gamitin ang Tipid app at ano ang mga benefits nito?" },
         { label: "Check spending", prompt: "Kumusta gastos ko ngayon? Nag-o-overspend ba ako?" },
         { label: "Kaya ba ₱1,500?", prompt: "Kaya ba ng budget ko kung gumastos ako ng 1500?" },
         { label: "Split ₱15k sahod", prompt: "Paano ko hahatiin ang 15000 sahod ko?" },
@@ -385,6 +418,7 @@ const quickPrompts = computed(() =>
         { label: "Capabilities", prompt: "Ano ang mga kaya mong gawin?" }
       ]
     : [
+        { label: "Tour & Guide", prompt: "How do I use Tipid and what are its key benefits?" },
         { label: "Check spending", prompt: "Am I overspending? Check my spending habits." },
         { label: "Afford ₱1,500?", prompt: "Can I afford a ₱1,500 purchase right now?" },
         { label: "Split ₱15k payday", prompt: "Split my 15000 payday based on my bills and jars" },
@@ -995,7 +1029,7 @@ function warningCardClass(level: AssistantBehaviorAlert["level"] | "watch" | "wa
       >
         <div class="flex items-center justify-between gap-3">
           <div class="flex min-w-0 items-center gap-3">
-            <TipidCoachAvatar :mood="coachMood" size="md" />
+            <TipidCoachAvatar :mood="coachMood" :is-speaking="isAvatarSpeaking" size="md" />
             <div class="min-w-0">
               <div class="flex items-center gap-2">
                 <h2
@@ -1031,6 +1065,15 @@ function warningCardClass(level: AssistantBehaviorAlert["level"] | "watch" | "wa
           </div>
 
           <div class="flex shrink-0 items-center gap-1.5">
+            <button
+              type="button"
+              class="tipid-compact inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]/85 px-2.5 text-xs font-medium text-[var(--text-secondary)] shadow-2xs transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
+              :title="isTl ? 'Buksan ang Welcome Tour & Gabay' : 'Open Welcome Tour & Guide'"
+              @click="handleOpenTour"
+            >
+              <Sparkles :size="13" class="text-[var(--accent)]" aria-hidden="true" />
+              <span>{{ isTl ? "Gabay" : "Tour" }}</span>
+            </button>
             <button
               type="button"
               class="tipid-compact inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]/85 px-2.5 text-xs font-medium text-[var(--text-secondary)] shadow-2xs transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
@@ -1110,11 +1153,29 @@ function warningCardClass(level: AssistantBehaviorAlert["level"] | "watch" | "wa
                   ? (sending ? 'idle' : coachMood)
                   : (msg.warning && msg.warning.level !== 'none' ? 'caution' : 'idle')
               "
+              :is-speaking="isSpeakingMessage(msg.id)"
               size="xs"
               class="mt-0.5"
             />
-            <div class="rounded-2xl rounded-tl-md border border-[var(--border-subtle)] bg-[var(--bg-inset)]/65 px-3.5 py-2.5 text-[13.5px] leading-relaxed text-[var(--text-primary)] whitespace-pre-line shadow-2xs">
-              {{ msg.text }}
+            <div class="flex min-w-0 flex-col gap-1">
+              <div class="rounded-2xl rounded-tl-md border border-[var(--border-subtle)] bg-[var(--bg-inset)]/65 px-3.5 py-2.5 text-[13.5px] leading-relaxed text-[var(--text-primary)] whitespace-pre-line shadow-2xs">
+                {{ msg.text }}
+              </div>
+              <div v-if="isVoiceSupported" class="flex items-center gap-1.5 pl-1">
+                <button
+                  type="button"
+                  class="tipid-compact inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--text-primary)]"
+                  :aria-label="isSpeakingMessage(msg.id) ? 'Stop voice' : 'Listen with English voice'"
+                  :title="isSpeakingMessage(msg.id) ? 'Stop speaking' : 'Listen with English voice'"
+                  @click="toggleSpeakAssistantMessage(msg.id, msg.text)"
+                >
+                  <VolumeX v-if="isSpeakingMessage(msg.id)" :size="12" class="text-[var(--accent)]" aria-hidden="true" />
+                  <Volume2 v-else :size="12" aria-hidden="true" />
+                  <span :class="isSpeakingMessage(msg.id) ? 'font-semibold text-[var(--accent)]' : ''">
+                    {{ isSpeakingMessage(msg.id) ? "Stop voice" : "Listen" }}
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
 

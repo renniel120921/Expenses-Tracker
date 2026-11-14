@@ -2,30 +2,57 @@
 import { computed } from "vue";
 
 export type CoachAvatarMood = "idle" | "thinking" | "speaking" | "happy" | "caution";
-export type CoachAvatarSize = "xs" | "sm" | "md" | "lg";
+export type CoachAvatarSize = "xs" | "sm" | "md" | "lg" | "xl";
 
 const props = withDefaults(
   defineProps<{
     mood?: CoachAvatarMood;
     size?: CoachAvatarSize;
+    isSpeaking?: boolean;
+    isMouthMoving?: boolean;
   }>(),
   {
     mood: "idle",
-    size: "md"
+    size: "md",
+    isSpeaking: false,
+    isMouthMoving: undefined
   }
 );
+
+const effectiveMouthTalking = computed(() => {
+  if (props.isSpeaking === false && props.isMouthMoving !== true) {
+    return false;
+  }
+  if (props.isSpeaking) {
+    if (props.isMouthMoving !== undefined) {
+      return props.isMouthMoving;
+    }
+    return true;
+  }
+  if (props.isMouthMoving === true) {
+    return true;
+  }
+  return false;
+});
 
 const sizeClass = computed(() => {
   if (props.size === "xs") return "h-7 w-7";
   if (props.size === "sm") return "h-9 w-9";
   if (props.size === "lg") return "h-14 w-14";
+  if (props.size === "xl") return "h-20 w-20";
   return "h-12 w-12";
 });
 </script>
 
 <template>
   <span
-    :class="['tipid-coach-avatar', `mood-${mood}`, sizeClass]"
+    :class="[
+      'tipid-coach-avatar',
+      `mood-${mood}`,
+      isSpeaking && 'is-speaking-active',
+      effectiveMouthTalking && 'is-mouth-moving',
+      sizeClass
+    ]"
     aria-hidden="true"
   >
     <span class="tipid-coach-aura" />
@@ -189,14 +216,14 @@ const sizeClass = computed(() => {
 
           <!-- Mouth Expressions -->
           <g class="tipid-coach-mouth">
-            <!-- Speaking Animated Mouth -->
-            <g v-if="mood === 'speaking'" class="tipid-coach-mouth-speaking">
+            <!-- Speaking Animated Mouth (when actively vocalizing words) -->
+            <g v-if="effectiveMouthTalking" class="tipid-coach-mouth-speaking">
               <ellipse cx="32" cy="37.5" rx="3.1" ry="2.2" fill="#9E483E" />
               <path d="M29.7 36.7C30.8 36.3 33.2 36.3 34.3 36.7" stroke="#FFFFFF" stroke-width="0.95" stroke-linecap="round" />
             </g>
 
-            <!-- Happy Open Grin -->
-            <g v-else-if="mood === 'happy'">
+            <!-- Warm resting open smile when paused between words, or happy mood -->
+            <g v-else-if="mood === 'happy' || isSpeaking">
               <path
                 d="M27.6 36.2C28.8 39.2 35.2 39.2 36.4 36.2H27.6Z"
                 fill="#A3493F"
@@ -268,7 +295,8 @@ const sizeClass = computed(() => {
   border-color: color-mix(in srgb, var(--accent) 65%, transparent);
 }
 
-.mood-speaking .tipid-coach-aura {
+.mood-speaking .tipid-coach-aura,
+.is-speaking-active .tipid-coach-aura {
   border-color: color-mix(in srgb, var(--accent) 80%, transparent);
 }
 
@@ -365,15 +393,17 @@ const sizeClass = computed(() => {
     animation: tipid-coach-blink 4.6s ease-in-out infinite;
   }
 
-  .mood-speaking .tipid-coach-head {
+  .mood-speaking .tipid-coach-head,
+  .is-speaking-active .tipid-coach-head {
     animation: tipid-coach-nod 1.15s ease-in-out infinite;
   }
 
-  .mood-speaking .tipid-coach-mouth-speaking {
-    animation: tipid-coach-talk 0.42s ease-in-out infinite;
+  .is-mouth-moving .tipid-coach-mouth-speaking {
+    animation: tipid-coach-talk 0.28s ease-in-out infinite;
   }
 
-  .mood-speaking .tipid-coach-aura {
+  .mood-speaking .tipid-coach-aura,
+  .is-speaking-active .tipid-coach-aura {
     animation: tipid-coach-ring-pulse 1.5s ease-in-out infinite;
   }
 

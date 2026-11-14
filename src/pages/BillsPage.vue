@@ -1170,9 +1170,9 @@ async function confirmDeleteBill() {
 
             <ul v-else class="space-y-2.5">
               <li v-for="bill in filteredBills" :key="bill.id">
-                <article class="tipid-card-interactive tipid-card-has-action flex items-center justify-between gap-3 p-3.5 sm:px-4">
-                  <div class="flex min-w-0 items-center gap-3">
-                    <label class="tipid-checkbox-label shrink-0">
+                <article class="tipid-card-interactive tipid-card-has-action flex flex-col gap-3 p-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                  <div class="flex min-w-0 items-start gap-3 sm:items-center sm:flex-1">
+                    <label class="tipid-checkbox-label mt-0.5 shrink-0 sm:mt-0">
                       <input
                         type="checkbox"
                         class="tipid-checkbox"
@@ -1185,7 +1185,7 @@ async function confirmDeleteBill() {
 
                     <div
                       :class="[
-                        'tipid-icon-badge h-11 w-11 shrink-0 rounded-2xl',
+                        'tipid-icon-badge h-10 w-10 shrink-0 rounded-2xl sm:h-11 sm:w-11',
                         bill.status === 'Paid'
                           ? 'bg-[var(--income-soft)] text-[var(--income)]'
                           : dueRelativeLabel(bill).tone === 'overdue'
@@ -1199,9 +1199,9 @@ async function confirmDeleteBill() {
                       <component :is="getCategoryIcon(bill.category)" :size="19" />
                     </div>
 
-                    <div class="min-w-0">
+                    <div class="min-w-0 flex-1">
                       <div class="flex flex-wrap items-center gap-1.5">
-                        <h3 class="min-w-0">
+                        <h3 class="min-w-0 max-w-full">
                           <button
                             type="button"
                             :class="[
@@ -1215,7 +1215,7 @@ async function confirmDeleteBill() {
                         </h3>
                         <span
                           :class="[
-                            'rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-wide',
+                            'whitespace-nowrap rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-wide',
                             dueRelativeLabel(bill).tone === 'overdue'
                               ? 'bg-[var(--expense-soft)] text-[var(--expense)]'
                               : dueRelativeLabel(bill).tone === 'today'
@@ -1229,7 +1229,7 @@ async function confirmDeleteBill() {
                         </span>
                         <span
                           v-if="recurrenceLabel(bill.recurrence)"
-                          class="inline-flex items-center gap-1 rounded-md bg-[var(--accent-soft)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--accent)]"
+                          class="inline-flex whitespace-nowrap items-center gap-1 rounded-md bg-[var(--accent-soft)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--accent)]"
                         >
                           <Repeat :size="10" aria-hidden="true" />
                           <span>{{ recurrenceLabel(bill.recurrence) }}</span>
@@ -1243,8 +1243,8 @@ async function confirmDeleteBill() {
                     </div>
                   </div>
 
-                  <div class="flex shrink-0 items-center gap-2">
-                    <div class="text-right">
+                  <div class="flex items-center justify-between gap-3 border-t border-[var(--border-subtle)] pt-2.5 sm:border-t-0 sm:pt-0 sm:shrink-0 sm:justify-end">
+                    <div class="text-left sm:text-right">
                       <p
                         :class="[
                           'tipid-amount font-mono text-sm font-bold sm:text-base',
@@ -1258,25 +1258,27 @@ async function confirmDeleteBill() {
                       </p>
                     </div>
 
-                    <button
-                      v-if="bill.status !== 'Paid'"
-                      type="button"
-                      class="tipid-compact inline-flex items-center gap-1 rounded-xl bg-[var(--accent)] px-2.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[var(--accent-hover)]"
-                      :aria-label="`${isTl ? 'Bayaran ang' : 'Pay'} ${bill.title}`"
-                      @click="openPayDialog(bill)"
-                    >
-                      <CreditCard :size="13" aria-hidden="true" />
-                      <span>{{ isTl ? "Bayaran" : "Pay" }}</span>
-                    </button>
+                    <div class="flex items-center gap-2">
+                      <button
+                        v-if="bill.status !== 'Paid'"
+                        type="button"
+                        class="tipid-compact inline-flex items-center gap-1 rounded-xl bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[var(--accent-hover)]"
+                        :aria-label="`${isTl ? 'Bayaran ang' : 'Pay'} ${bill.title}`"
+                        @click="openPayDialog(bill)"
+                      >
+                        <CreditCard :size="13" aria-hidden="true" />
+                        <span>{{ isTl ? "Bayaran" : "Pay" }}</span>
+                      </button>
 
-                    <button
-                      type="button"
-                      class="tipid-compact tipid-compact-touch inline-flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors hover:bg-[var(--expense-soft)] hover:text-[var(--expense)]"
-                      :aria-label="`Delete ${bill.title}`"
-                      @click="pendingDelete = bill"
-                    >
-                      <Trash2 :size="15" aria-hidden="true" />
-                    </button>
+                      <button
+                        type="button"
+                        class="tipid-compact tipid-compact-touch inline-flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors hover:bg-[var(--expense-soft)] hover:text-[var(--expense)]"
+                        :aria-label="`Delete ${bill.title}`"
+                        @click="pendingDelete = bill"
+                      >
+                        <Trash2 :size="15" aria-hidden="true" />
+                      </button>
+                    </div>
                   </div>
                 </article>
               </li>
@@ -1450,9 +1452,9 @@ async function confirmDeleteBill() {
                       />
                     </div>
 
-                    <article class="tipid-card-interactive tipid-card-has-action flex flex-1 items-center justify-between gap-2.5 p-3">
-                      <div class="flex min-w-0 items-center gap-2.5">
-                        <label class="tipid-checkbox-label shrink-0">
+                    <article class="tipid-card-interactive tipid-card-has-action flex flex-1 flex-col gap-2.5 p-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div class="flex min-w-0 items-start gap-2.5 sm:items-center sm:flex-1">
+                        <label class="tipid-checkbox-label mt-0.5 shrink-0 sm:mt-0">
                           <input
                             type="checkbox"
                             class="tipid-checkbox"
@@ -1479,7 +1481,7 @@ async function confirmDeleteBill() {
                           <component :is="getCategoryIcon(bill.category)" :size="16" />
                         </span>
 
-                        <div class="min-w-0">
+                        <div class="min-w-0 flex-1">
                           <p class="min-w-0">
                             <button
                               type="button"
@@ -1500,23 +1502,23 @@ async function confirmDeleteBill() {
                         </div>
                       </div>
 
-                      <div class="flex shrink-0 items-center gap-2">
-                        <div class="text-right">
+                      <div class="flex items-center justify-between gap-2 border-t border-[var(--border-subtle)] pt-2 sm:border-t-0 sm:pt-0 sm:shrink-0 sm:justify-end">
+                        <div class="text-left sm:text-right">
                           <p class="tipid-amount font-mono text-xs font-bold text-[var(--text-primary)] sm:text-sm">
                             ₱{{ formatPeso(bill.amount) }}
                           </p>
-                          <p class="inline-flex items-center justify-end gap-1 text-[10px] font-medium text-[var(--text-muted)]">
+                          <p class="inline-flex items-center gap-1 text-[10px] font-medium text-[var(--text-muted)]">
                             <AlertTriangle v-if="billTone(bill) === 'overdue'" :size="10" class="text-[var(--expense)]" aria-hidden="true" />
                             <CheckCircle2 v-else-if="bill.status === 'Paid'" :size="10" class="text-[var(--income)]" aria-hidden="true" />
                             <Clock v-else :size="10" aria-hidden="true" />
-                            <span>{{ dueRelativeLabel(bill).text }}</span>
+                            <span class="whitespace-nowrap">{{ dueRelativeLabel(bill).text }}</span>
                           </p>
                         </div>
 
                         <button
                           v-if="bill.status !== 'Paid'"
                           type="button"
-                          class="tipid-compact inline-flex items-center gap-1 rounded-lg bg-[var(--accent)] px-2 py-1 text-[11px] font-semibold text-white hover:bg-[var(--accent-hover)]"
+                          class="tipid-compact inline-flex items-center gap-1 rounded-lg bg-[var(--accent)] px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-[var(--accent-hover)]"
                           :aria-label="`${isTl ? 'Bayaran ang' : 'Pay'} ${bill.title}`"
                           @click="openPayDialog(bill)"
                         >

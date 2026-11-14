@@ -34,6 +34,8 @@ import AppToast from "./AppToast.vue";
 import LockScreen from "./LockScreen.vue";
 import TipidAssistantDrawer from "./TipidAssistantDrawer.vue";
 import TipidCoachAvatar from "./TipidCoachAvatar.vue";
+import TipidWelcomeTour from "./TipidWelcomeTour.vue";
+import { useWelcomeTour } from "@/composables/useWelcomeTour";
 import type { NavTab } from "@/types/finance";
 import type { AuthUserView } from "@/composables/useAuthGuard";
 
@@ -92,11 +94,25 @@ async function handleSignOut() {
   window.location.href = "login.html";
 }
 
+const { checkAutoOpen } = useWelcomeTour();
+
 onMounted(() => {
   if (import.meta.env.PROD) {
     initServiceWorker();
   }
+  if (props.user?.uid && !props.isLocked) {
+    checkAutoOpen();
+  }
 });
+
+watch(
+  () => [props.user?.uid, props.isLocked] as const,
+  ([uid, locked]) => {
+    if (uid && !locked) {
+      checkAutoOpen();
+    }
+  }
+);
 </script>
 
 <template>
@@ -405,6 +421,8 @@ onMounted(() => {
         <span>{{ assistantWarnings.length }}</span>
       </span>
     </button>
+
+    <TipidWelcomeTour />
 
     <TipidAssistantDrawer
       v-if="user?.uid && !isLocked"

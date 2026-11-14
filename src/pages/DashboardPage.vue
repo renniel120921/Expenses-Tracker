@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   ReceiptText,
   Scale,
+  Sparkles,
   Users,
   ShieldCheck,
   ShoppingBag,
@@ -36,6 +37,7 @@ import CashFlowChart from "@/components/CashFlowChart.vue";
 import { useAuthGuard } from "@/composables/useAuthGuard";
 import { useFinanceData } from "@/composables/useFinanceData";
 import { pushToast } from "@/composables/useToast";
+import { useWelcomeTour } from "@/composables/useWelcomeTour";
 import { useI18n } from "@/lib/i18n";
 import {
   entryDate,
@@ -77,6 +79,7 @@ const {
   withSavingsGoals: true
 });
 const { t, isTl } = useI18n();
+const { openTour: openWelcomeTour } = useWelcomeTour();
 
 const horizon = ref<"thisMonth" | "thisWeek" | "last30Days" | "all">("thisMonth");
 const chartMode = ref<"daily" | "cumulative" | "flow">("daily");
@@ -413,6 +416,17 @@ async function confirmDeleteEntry() {
         </div>
 
         <div class="flex shrink-0 items-center gap-2">
+          <!-- Welcome Tour / App Guide Pill -->
+          <button
+            type="button"
+            class="tipid-compact inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] shadow-xs transition-colors hover:bg-[var(--bg-inset)] hover:text-[var(--accent)] sm:min-h-[32px]"
+            :aria-label="isTl ? 'Buksan ang gabay at welcome tour' : 'Open welcome tour and app guide'"
+            @click="openWelcomeTour"
+          >
+            <Sparkles :size="13" class="text-[var(--accent)]" aria-hidden="true" />
+            <span>{{ isTl ? "Gabay sa App" : "App Guide" }}</span>
+          </button>
+
           <!-- Compact select on narrow phones -->
           <select
             v-model="horizon"

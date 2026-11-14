@@ -1452,23 +1452,37 @@ function answerPaydayPlan(
 function answerAppGuide(isTl: boolean): string {
   if (isTl) {
     return (
-      "Marami akong kayang gawin kasama ang buong Tipid app! Puwede mo akong utusan o tanungin ng mga ito:\n" +
-      "• Mag-log gamit ang natural chat o pasted GCash/Maya SMS/resibo\n" +
-      "• Wallet transfers (hal. 'Transfer 1500 from Land Bank to GCash')\n" +
-      "• Bills at Utang tracking (hal. 'Add Meralco bill 2400 due 2026-11-25 monthly', 'May utang si Marco 500', o 'Nagbayad na si Marco')\n" +
-      "• Savings Jars & Budget limits (hal. 'Deposit 500 to Emergency Fund from GCash', 'Set budget 15000', o 'Switch to kinsenas')\n" +
-      "• Smart checks: 'Kaya ko ba bumili ng 2,000 shoes?', 'Split my 15000 sahod', at 50/30/20 spending audit.\n\n" +
-      "Lahat ng galaw sa pera ay dadaan muna sa Confirm & Save card bago pumasok sa ledger."
+      "Malugod kitang gagabayan sa paggamit ng Tipid app! Heto ang mga pangunahing kakayahan at benepisyo nito:\n\n" +
+      "1. **Pribado at 100% Offline-Ready**\n" +
+      "   • Hindi kailangan ng bank password o ATM PIN. Ikaw ang may buong kontrol sa iyong data.\n" +
+      "   • Pwedeng mag-log kahit walang data o internet. Awtomatikong magsi-sync kapag online na.\n\n" +
+      "2. **Totoong 3D ATM Cards & Wallets**\n" +
+      "   • May authentic textures ang LandBank, BDO, BPI, GoTyme, Maya, at GCash.\n" +
+      "   • Pindutin ang card para mag-3D flip at makita ang card details at balances.\n\n" +
+      "3. **Smart Bills na may Auto-Deduct sa Card**\n" +
+      "   • Magtakda ng recurring utilities o renta. Piliin kung anong ATM card ang pambayad at panoorin ang live auto-deduction animation.\n\n" +
+      "4. **Safe-to-Spend & 50/30/20 Plan**\n" +
+      "   • Real-time Safe-to-Spend calculation, Kinsenas/Monthly cycles, at virtual savings jars.\n\n" +
+      "5. **Tipid Coach Assistant & Natural Commands**\n" +
+      "   • Utusan ako tulad ng 'Log 150 kape via GCash' o mag-paste ng SMS/resibo. Lahat ay dadaan muna sa Confirm & Save draft.\n\n" +
+      "💡 *Tip:* Pindutin ang 'Tour' sa itaas o 'Gabay sa App' sa Dashboard para sa animated interactive walkthrough!"
     );
   }
   return (
-    "Here is everything I can help you handle inside Tipid:\n" +
-    "• Fast logging from plain chat OR pasted GCash, Maya, or bank SMS/receipt text\n" +
-    "• Wallet-to-wallet transfers (e.g., 'Transfer 1500 from Land Bank to GCash')\n" +
-    "• Bills & Utang (e.g., 'Add Meralco bill 2400 due 2026-11-25 monthly', 'Marco owes me 500', or 'Settled Meralco bill')\n" +
-    "• Savings Jars & Budgets (e.g., 'Deposit 500 to Emergency Fund from GCash', 'Set budget 15000', or 'Switch to kinsenas')\n" +
-    "• Financial Coaching: 'Can I afford ₱2,000 shoes?', 'Split my 15k payday', debt payoff order, and 50/30/20 breakdown.\n\n" +
-    "Every change uses an editable Confirm & Save card first so you always stay in control."
+    "Here is your quick guide to mastering Tipid and its core benefits:\n\n" +
+    "1. **100% Private & Offline-Ready**\n" +
+    "   • Zero bank logins or ATM PINs required. Your financial records are private and user-owned.\n" +
+    "   • Full offline support—record entries anywhere without signal; syncs smoothly upon reconnection.\n\n" +
+    "2. **Authentic 3D ATM Cards & Wallets**\n" +
+    "   • Realistic textures for LandBank, BDO, BPI, GoTyme, Maya, and GCash.\n" +
+    "   • Tap any card in the deck to flip in 3D and view details, CVV, and centavo-exact balances.\n\n" +
+    "3. **Smart Bills with Live ATM Auto-Deduction**\n" +
+    "   • Schedule utilities or rent. Mark as paid to trigger real-time deduction from your selected bank card.\n\n" +
+    "4. **Safe-to-Spend & 50/30/20 Budgeting**\n" +
+    "   • Real-time Safe-to-Spend tracking, Kinsenas/Monthly pay cycles, and dedicated savings jars.\n\n" +
+    "5. **Tipid Coach AI & Fast Natural Logging**\n" +
+    "   • Plain text commands ('Log 150 coffee via GCash') or pasted SMS/receipt text with an editable Confirm & Save card.\n\n" +
+    "💡 *Tip:* Tap 'Tour' at the top or 'App Guide' on your Dashboard to open the animated interactive walkthrough!"
   );
 }
 
